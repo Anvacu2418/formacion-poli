@@ -52,8 +52,8 @@
 
         // --- CONFIGURACIÓN DEL JUEGO (EDITAR AQUÍ SI NECESITAS CAMBIAR LA FRASE) ---
         const GAME_CONFIG = {
-            pointsPerWord: 50,
-            bonusPoints: 100,
+            pointsPerWord: 5,  // CAMBIO: 5 puntos por palabra (4 palabras = 20 pts)
+            bonusPoints: 10,   // CAMBIO: 10 puntos de bono (Total = 30 pts)
             sentenceStructure: [
                 { text: "La", type: "text" },
                 { type: "blank", correct: "pasión", placeholder: "______" },
@@ -218,10 +218,11 @@
                             </div>
                         </div>
 
-                        {/* Feedback de error */}
+                        {/* Feedback de error - AHORA CON MENSAJE DE ORTOGRAFÍA */}
                         {gameState === 'error' && (
-                            <div className="bg-red-50 text-red-600 px-4 py-2 rounded-lg font-medium flex items-center gap-2 animate-bounce border border-red-200">
-                                <span className="font-bold">!</span> Algunas palabras no coinciden. ¡Revisa el chat de Teams!
+                            <div className="bg-red-50 text-red-600 px-4 py-2 rounded-lg font-medium flex items-center gap-2 animate-bounce border border-red-200 text-center">
+                                <span className="font-bold">!</span> 
+                                <span>Ups, revisa la ortografía (tildes) y consulta el chat de Teams.</span>
                             </div>
                         )}
 
@@ -266,7 +267,7 @@
                                         </div>
                                         <div className="mt-4 pt-4 border-t border-blue-500/50 flex justify-between text-xs text-blue-200">
                                             <span>Precisión Total</span>
-                                            <span>Bono Teams: +100</span>
+                                            <span>Bono Teams: +10</span>
                                         </div>
                                     </div>
                                 </div>
