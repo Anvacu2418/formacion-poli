@@ -54,7 +54,7 @@
     <script type="text/babel" data-type="module">
         const { useState, useEffect, useCallback, useRef } = React;
         
-        // --- ✅ CONFIGURACIÓN DE FIREBASE ANGIE VANESSA ✅ ---
+        // --- ✅ CONFIGURACIÓN DE FIREBASE ✅ ---
         const myFirebaseConfig = {
             apiKey: "AIzaSyAgEw68vOmqBC0vm8zFGNVyRpEtNCGl0Wk",
             authDomain: "brain-op.firebaseapp.com",
@@ -70,7 +70,7 @@
             ? JSON.parse(window.__firebase_config) 
             : myFirebaseConfig;
 
-        // Importaciones de módulos Firebase (vía CDN dinámico)
+        // Importaciones de módulos Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
@@ -110,6 +110,7 @@
             const [timeLeft, setTimeLeft] = useState(30);
             const [ranking, setRanking] = useState([]);
             const [errorDetail, setErrorDetail] = useState("");
+            const [isRegistering, setIsRegistering] = useState(false);
 
             const [math, setMath] = useState({ q: '', isCorrect: true, displayA: 0 });
             const [attention, setAttention] = useState([]);
@@ -128,8 +129,7 @@
             useEffect(() => {
                 const initAuth = async () => {
                     try {
-                        // Forzamos un retraso para asegurar carga completa
-                        await new Promise(resolve => setTimeout(resolve, 1000));
+                        await new Promise(resolve => setTimeout(resolve, 800));
 
                         const unsubscribe = onAuthStateChanged(auth, async (u) => {
                             if (u) {
@@ -144,14 +144,19 @@
                                         setView(GAMES.LOGIN);
                                     }
                                 } catch (err) {
-                                    setView(GAMES.LOGIN);
+                                    // Error específico: Firestore no encontrado o sin permisos
+                                    if (err.message.includes("not-found") || err.message.includes("permissions")) {
+                                        setErrorDetail("Firestore no iniciado");
+                                        setView(GAMES.ERROR);
+                                    } else {
+                                        setView(GAMES.LOGIN);
+                                    }
                                 }
                             } else {
-                                // Intentar login anónimo si no hay usuario
                                 try {
                                     await signInAnonymously(auth);
                                 } catch (e) {
-                                    setErrorDetail(e.code);
+                                    setErrorDetail("Auth inactiva");
                                     setView(GAMES.ERROR);
                                 }
                             }
@@ -173,6 +178,11 @@
                 (snap) => {
                     const data = snap.docs.map(d => d.data()).sort((a, b) => (b.totalPoints || 0) - (a.totalPoints || 0));
                     setRanking(data);
+                }, (err) => {
+                    if (err.message.includes("not-found")) {
+                        setErrorDetail("Firestore no iniciado");
+                        setView(GAMES.ERROR);
+                    }
                 });
                 return () => unsubscribe();
             }, [user, view]);
@@ -180,6 +190,8 @@
             const handleRegister = async (e) => {
                 e.preventDefault();
                 if (!user) return;
+                
+                setIsRegistering(true);
                 const data = { 
                     uid: user.uid, 
                     name: e.target.name.value, 
@@ -188,12 +200,15 @@
                     highScore: 0, 
                     lastActive: new Date().toISOString() 
                 };
+
                 try {
                     await setDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'users', user.uid), data);
                     setProfile(data);
                     setView(GAMES.MENU);
                 } catch (err) {
-                    alert("Error: Activa 'Firestore Database' en tu consola.");
+                    setIsRegistering(false);
+                    setErrorDetail("Firestore no iniciado");
+                    setView(GAMES.ERROR);
                 }
             };
 
@@ -210,9 +225,7 @@
                         totalPoints: (prev.totalPoints || 0) + finalScore,
                         highScore: Math.max(prev.highScore || 0, finalScore)
                     }));
-                } catch (e) {
-                    console.error("Save score error:", e);
-                }
+                } catch (e) { console.error(e); }
             };
 
             const genMath = useCallback(() => {
@@ -261,27 +274,29 @@
             // --- VISTAS ---
 
             if (view === GAMES.ERROR) return (
-                <div className="h-screen flex flex-col items-center justify-center p-8 bg-white text-center">
-                    <div className="w-20 h-20 bg-red-50 rounded-3xl flex items-center justify-center mb-6 border-4 border-red-100">
-                        <Icon name="ShieldAlert" size={40} className="text-red-500" />
+                <div className="h-screen flex flex-col items-center justify-center p-8 bg-white text-center animate-in fade-in duration-500">
+                    <div className="w-24 h-24 bg-red-50 rounded-full flex items-center justify-center mb-6 border-4 border-red-100">
+                        <Icon name="Database" size={48} className="text-red-500" />
                     </div>
-                    <h2 className="text-2xl font-black text-slate-800 tracking-tight">Acceso Restringido</h2>
+                    <h2 className="text-2xl font-black text-slate-800 tracking-tight">Falta Base de Datos</h2>
                     <div className="bg-slate-50 p-6 rounded-3xl mt-4 mb-8 text-sm text-slate-600 text-left border border-slate-100 max-w-sm">
-                        <p className="font-bold text-slate-800 mb-2 underline italic">Solución en segundos:</p>
-                        <ol className="list-decimal ml-4 space-y-2">
-                            <li>En Firebase, ve a la pestaña <b>Método de acceso</b>.</li>
-                            <li>Dale a <b>Agregar nuevo proveedor</b>.</li>
-                            <li>Busca <b>Anónimo</b>, actívalo y dale a <b>Guardar</b>.</li>
+                        <p className="font-bold text-slate-800 mb-2 underline italic text-center">Último paso para jugar:</p>
+                        <ol className="list-decimal ml-4 space-y-3">
+                            <li>En tu Firebase, ve a <b>Compilación</b> > <b>Firestore Database</b>.</li>
+                            <li>Haz clic en <b>Crear base de datos</b>.</li>
+                            <li>Selecciona <b>Comenzar en modo de prueba</b>.</li>
+                            <li>Dale a <b>Habilitar</b> (Siguiente/Aceptar).</li>
                         </ol>
                     </div>
-                    <button onClick={() => window.location.reload()} className="w-full max-w-xs py-4 bg-indigo-600 text-white rounded-2xl font-bold shadow-xl active:scale-95 transition-all">Ya lo activé, entrar ahora</button>
+                    <button onClick={() => window.location.reload()} className="w-full max-w-xs py-5 bg-indigo-600 text-white rounded-2xl font-bold shadow-xl active:scale-95 transition-all">Ya lo habilité, entrar ahora</button>
+                    <p className="mt-6 text-[10px] text-slate-400 uppercase font-black tracking-widest italic">{errorDetail}</p>
                 </div>
             );
 
             if (view === 'loading') return (
                 <div className="h-screen flex flex-col items-center justify-center bg-indigo-600 text-white">
                     <Icon name="Brain" size={80} className="animate-bounce mb-6" />
-                    <p className="font-bold tracking-[0.3em] animate-pulse text-sm uppercase">Iniciando Brain-Op...</p>
+                    <p className="font-bold tracking-[0.3em] animate-pulse text-sm uppercase">Sincronizando Brain-Op...</p>
                 </div>
             );
 
@@ -293,21 +308,28 @@
                                 <Icon name="Brain" size={48} />
                             </div>
                         </div>
-                        <h1 className="text-4xl font-black text-center text-slate-800 mb-2 tracking-tight">Brain-Op</h1>
-                        <p className="text-slate-500 mb-10 text-sm font-medium">Entrena tu mente para liderar en USAM y Poli.</p>
+                        <h1 className="text-4xl font-black text-slate-800 mb-2 tracking-tight leading-none">Brain-Op</h1>
+                        <p className="text-slate-500 mb-10 text-sm font-medium leading-relaxed">Entrena tu mente para liderar en <br/>USAM y Poli.</p>
                         <form onSubmit={handleRegister} className="space-y-5 text-left">
                             <div>
-                                <label className="text-xs font-bold text-slate-400 uppercase ml-2 mb-2 block tracking-widest text-center">Nombre Completo</label>
-                                <input name="name" required className="w-full px-6 py-4 bg-slate-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-2xl outline-none font-semibold transition-all text-center" placeholder="Ej. Ana Milena" />
+                                <label className="text-[10px] font-black text-slate-400 uppercase ml-2 mb-2 block tracking-[0.2em] text-center">Nombre Completo</label>
+                                <input name="name" required className="w-full px-6 py-4 bg-slate-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-2xl outline-none font-bold transition-all text-center text-slate-700 shadow-sm" placeholder="Tu nombre" />
                             </div>
                             <div>
-                                <label className="text-xs font-bold text-slate-400 uppercase ml-2 mb-2 block tracking-widest text-center">Institución</label>
-                                <select name="uni" className="w-full px-6 py-4 bg-slate-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-2xl outline-none font-semibold appearance-none cursor-pointer text-center">
-                                    <option value="Poli">Politécnico Grancolombiano</option>
-                                    <option value="USAM">Universidad San Marcos</option>
+                                <label className="text-[10px] font-black text-slate-400 uppercase ml-2 mb-2 block tracking-[0.2em] text-center">Institución</label>
+                                <select name="uni" className="w-full px-6 py-4 bg-slate-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-2xl outline-none font-bold appearance-none cursor-pointer text-center text-slate-700 shadow-sm">
+                                    <option value="Politécnico Grancolombiano">Politécnico Grancolombiano</option>
+                                    <option value="Universidad San Marcos">Universidad San Marcos</option>
                                 </select>
                             </div>
-                            <button className="w-full py-5 bg-indigo-600 text-white rounded-2xl font-bold text-lg shadow-xl shadow-indigo-100 hover:bg-indigo-700 active:scale-95 transition-all mt-6">Empezar a Entrenar</button>
+                            <button 
+                                type="submit"
+                                disabled={isRegistering}
+                                className={`w-full py-5 bg-indigo-600 text-white rounded-2xl font-bold text-lg shadow-xl shadow-indigo-100 hover:bg-indigo-700 active:scale-95 transition-all mt-6 flex items-center justify-center gap-3 ${isRegistering ? 'opacity-70' : ''}`}
+                            >
+                                {isRegistering ? <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span> : null}
+                                {isRegistering ? 'Accediendo...' : 'Empezar a Entrenar'}
+                            </button>
                         </form>
                     </div>
                 </div>
@@ -316,13 +338,13 @@
             return (
                 <div className="max-w-md mx-auto min-h-screen bg-slate-50 flex flex-col shadow-2xl relative overflow-hidden">
                     <div className="bg-white/80 backdrop-blur-md p-5 border-b flex justify-between items-center sticky top-0 z-40">
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-3 text-left">
                             <div className="w-11 h-11 bg-indigo-600 rounded-2xl flex items-center justify-center text-white font-black text-xl shadow-lg shadow-indigo-100">
                                 {profile?.name?.[0] || 'U'}
                             </div>
-                            <div className="min-w-0 text-left">
+                            <div className="min-w-0">
                                 <p className="text-[10px] font-extrabold text-indigo-600 uppercase tracking-tighter leading-none">{profile?.university}</p>
-                                <p className="font-bold text-slate-800 text-sm leading-tight truncate max-w-[140px]">{profile?.name || 'Invitado'}</p>
+                                <p className="font-bold text-slate-800 text-sm leading-tight truncate max-w-[140px]">{profile?.name || 'Usuario'}</p>
                             </div>
                         </div>
                         <div className="bg-amber-100 px-4 py-2 rounded-2xl border border-amber-200 flex items-center gap-2 shadow-sm">
@@ -335,21 +357,21 @@
                         {view === GAMES.MENU && (
                             <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                                 <div className="bg-gradient-to-br from-indigo-600 to-indigo-800 p-8 rounded-[2.5rem] text-white shadow-2xl relative overflow-hidden text-center">
-                                    <div className="relative z-10">
+                                    <div className="relative z-10 text-white">
                                         <h2 className="text-2xl font-bold mb-1 italic tracking-tight">¡Hola de nuevo!</h2>
                                         <p className="text-indigo-100 text-sm mb-8 font-medium opacity-90">Tu entrenamiento estratégico está listo.</p>
-                                        <div className="flex gap-3">
+                                        <div className="flex gap-3 text-white">
                                             <div className="flex-1 glass-card p-4 rounded-3xl border border-white/20">
                                                 <p className="text-[10px] uppercase font-black opacity-60 mb-1 tracking-wider">Récord</p>
                                                 <p className="font-black text-lg">{profile?.highScore || 0} <span className="text-[10px] font-bold">PTS</span></p>
                                             </div>
                                             <div className="flex-1 glass-card p-4 rounded-3xl border border-white/20">
                                                 <p className="text-[10px] uppercase font-black opacity-60 mb-1 tracking-wider">Estatus</p>
-                                                <p className="font-black text-lg">Activo 🔥</p>
+                                                <p className="font-black text-lg text-white">Activo 🔥</p>
                                             </div>
                                         </div>
                                     </div>
-                                    <Icon name="Brain" size={150} className="absolute -right-10 -bottom-10 opacity-10" />
+                                    <Icon name="Brain" size={150} className="absolute -right-10 -bottom-10 opacity-10 text-white" />
                                 </div>
 
                                 <div className="space-y-4">
@@ -377,7 +399,7 @@
                         {view === GAMES.RANKING && (
                             <div className="animate-in slide-in-from-right duration-300">
                                 <div className="flex items-center gap-4 mb-8">
-                                    <button onClick={() => setView(GAMES.MENU)} className="p-3 bg-white hover:bg-slate-100 rounded-2xl transition-all shadow-sm"><Icon name="ArrowLeft" size={24} /></button>
+                                    <button onClick={() => setView(GAMES.MENU)} className="p-3 bg-white hover:bg-slate-100 rounded-2xl transition-all shadow-sm text-left"><Icon name="ArrowLeft" size={24} /></button>
                                     <h2 className="font-black text-2xl text-slate-800 tracking-tight">Top Estrategas</h2>
                                 </div>
                                 <div className="space-y-4">
@@ -399,7 +421,7 @@
                             </div>
                         )}
 
-                        {/* Juegos Logic */}
+                        {/* Juegos Lógica */}
                         {(view === GAMES.CALCULO || view === GAMES.ATENCION || view === GAMES.MEMORIA) && gameState !== 'finished' && (
                             <div className="h-full flex flex-col animate-in zoom-in duration-300">
                                 <div className="flex justify-between items-center mb-8 bg-white p-4 rounded-[2rem] shadow-sm border border-slate-100">
@@ -483,7 +505,7 @@
                                 <p className="text-slate-500 mb-12 text-lg font-medium">Has sumado <span className="text-indigo-600 font-black px-3 py-1 bg-indigo-50 rounded-xl">{score}</span> puntos a tu perfil.</p>
                                 <div className="w-full space-y-4">
                                     <button onClick={() => start(view)} className="w-full py-5 bg-indigo-600 text-white rounded-[2rem] font-bold text-xl shadow-xl shadow-indigo-100 hover:bg-indigo-700 active:scale-95 transition-all">Reintentar Ahora</button>
-                                    <button onClick={() => setView(GAMES.MENU)} className="w-full py-5 bg-white text-slate-400 rounded-[2rem] font-bold text-lg hover:text-slate-600 transition-all text-slate-400">Volver al Menú</button>
+                                    <button onClick={() => setView(GAMES.MENU)} className="w-full py-5 bg-white text-slate-400 rounded-[2rem] font-bold text-lg hover:text-slate-600 transition-all border border-slate-100 shadow-sm">Volver al Menú</button>
                                 </div>
                             </div>
                         )}
