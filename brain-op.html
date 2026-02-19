@@ -53,9 +53,8 @@
     <script type="text/babel" data-type="module">
         const { useState, useEffect, useCallback, useRef } = React;
         
-        // --- ⚠️ ATENCIÓN: CONFIGURACIÓN DE FIREBASE ⚠️ ---
-        // Para que funcione en GitHub, crea un proyecto en console.firebase.google.com
-        // y pega aquí tus credenciales de "Web App".
+        // --- ⚠️ CONFIGURACIÓN DE FIREBASE ⚠️ ---
+        // Pega aquí tus credenciales de la Consola de Firebase -> Configuración del proyecto -> Tus Apps
         const myFirebaseConfig = {
             apiKey: "",           // <--- PEGA TU API KEY AQUÍ
             authDomain: "",       // <--- PEGA TU AUTH DOMAIN AQUÍ
@@ -65,7 +64,7 @@
             appId: ""             // <--- PEGA TU APP ID AQUÍ
         };
 
-        // Verificamos si estamos en el entorno de desarrollo o en GitHub
+        // Verificamos configuración del entorno
         const isConfigured = myFirebaseConfig.apiKey !== "";
         const firebaseConfig = (window.__firebase_config && !isConfigured) 
             ? JSON.parse(window.__firebase_config) 
@@ -100,9 +99,10 @@
             return <span ref={iconRef} className="lucide-icon-wrapper inline-flex items-center justify-center leading-none"></span>;
         };
 
-        const GAMES = { LOGIN: 'login', MENU: 'menu', CALCULO: 'calculo', ATENCION: 'atencion', MEMORIA: 'memoria', RANKING: 'ranking' };
+        const GAMES = { LOGIN: 'login', MENU: 'menu', CALCULO: 'calculo', ATENCION: 'atencion', MEMORIA: 'memoria', RANKING: 'ranking', ERROR: 'error' };
 
         const App = () => {
+            // Pantalla de error si no hay API Key
             if (!firebaseConfig.apiKey) {
                 return (
                     <div className="h-screen flex flex-col items-center justify-center p-6 bg-white text-center">
@@ -130,6 +130,7 @@
             const [gameState, setGameState] = useState('idle');
             const [timeLeft, setTimeLeft] = useState(30);
             const [ranking, setRanking] = useState([]);
+            const [errorMessage, setErrorMessage] = useState("");
 
             const [math, setMath] = useState({ q: '', isCorrect: true, displayA: 0 });
             const [attention, setAttention] = useState([]);
@@ -144,52 +145,98 @@
                 { id: 'Check', label: 'Cierre' }
             ];
 
+            // Auth Initialization
             useEffect(() => {
-                const initAuth = async () => {
+                const init = async () => {
                     try {
+                        // Iniciar sesión
                         if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                             await signInWithCustomToken(auth, __initial_auth_token);
                         } else {
                             await signInAnonymously(auth);
                         }
-                    } catch (error) { console.error(error); }
-                };
-                initAuth();
 
-                return onAuthStateChanged(auth, async (u) => {
-                    if (u) {
-                        setUser(u);
-                        try {
-                            const snap = await getDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'users', u.uid));
-                            if (snap.exists()) {
-                                setProfile(snap.data());
-                                setView(GAMES.MENU);
-                            } else { setView(GAMES.LOGIN); }
-                        } catch (err) { setView(GAMES.LOGIN); }
+                        // Escuchar cambios de estado
+                        const unsubscribe = onAuthStateChanged(auth, async (u) => {
+                            if (u) {
+                                setUser(u);
+                                try {
+                                    const userDocRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'users', u.uid);
+                                    const snap = await getDoc(userDocRef);
+                                    if (snap.exists()) {
+                                        setProfile(snap.data());
+                                        setView(GAMES.MENU);
+                                    } else {
+                                        setView(GAMES.LOGIN);
+                                    }
+                                } catch (err) {
+                                    console.error("Error al obtener perfil:", err);
+                                    // Si falla el doc, vamos al login pero avisamos
+                                    setView(GAMES.LOGIN);
+                                }
+                            }
+                        });
+                        return unsubscribe;
+                    } catch (error) {
+                        console.error("Error crítico en init:", error);
+                        setErrorMessage(error.message);
+                        setView(GAMES.ERROR);
                     }
-                });
+                };
+                
+                init();
             }, []);
 
+            // Ranking Listener
             useEffect(() => {
-                if (!user) return;
-                return onSnapshot(collection(db, 'artifacts', APP_ID, 'public', 'data', 'users'), (snap) => {
+                if (!user || (view !== GAMES.RANKING && view !== GAMES.MENU)) return;
+                const unsubscribe = onSnapshot(collection(db, 'artifacts', APP_ID, 'public', 'data', 'users'), 
+                (snap) => {
                     const data = snap.docs.map(d => d.data()).sort((a, b) => (b.totalPoints || 0) - (a.totalPoints || 0));
                     setRanking(data);
+                }, (err) => {
+                    console.error("Error en ranking snapshot:", err);
                 });
-            }, [user]);
+                return () => unsubscribe();
+            }, [user, view]);
 
             const handleRegister = async (e) => {
                 e.preventDefault();
-                const data = { uid: user.uid, name: e.target.name.value, university: e.target.uni.value, totalPoints: 0, highScore: 0, lastActive: new Date().toISOString() };
-                await setDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'users', user.uid), data);
-                setProfile(data);
-                setView(GAMES.MENU);
+                if (!user) return;
+                const data = { 
+                    uid: user.uid, 
+                    name: e.target.name.value, 
+                    university: e.target.uni.value, 
+                    totalPoints: 0, 
+                    highScore: 0, 
+                    lastActive: new Date().toISOString() 
+                };
+                try {
+                    await setDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'users', user.uid), data);
+                    setProfile(data);
+                    setView(GAMES.MENU);
+                } catch (err) {
+                    alert("Error al registrar: " + err.message + ". Verifica las reglas de Firestore.");
+                }
             };
 
             const saveScore = async (finalScore) => {
                 if (!user || !profile || finalScore <= 0) return;
                 const ref = doc(db, 'artifacts', APP_ID, 'public', 'data', 'users', user.uid);
-                await updateDoc(ref, { totalPoints: increment(finalScore), highScore: Math.max(profile.highScore || 0, finalScore) });
+                try {
+                    await updateDoc(ref, { 
+                        totalPoints: increment(finalScore), 
+                        highScore: Math.max(profile.highScore || 0, finalScore) 
+                    });
+                    // Actualizar perfil localmente
+                    setProfile(prev => ({
+                        ...prev,
+                        totalPoints: (prev.totalPoints || 0) + finalScore,
+                        highScore: Math.max(prev.highScore || 0, finalScore)
+                    }));
+                } catch (err) {
+                    console.error("Error guardando puntaje:", err);
+                }
             };
 
             const genMath = useCallback(() => {
@@ -235,10 +282,21 @@
                 if (g === GAMES.MEMORIA) { genSeq(); }
             };
 
+            // Vistas de Pantalla
+            if (view === GAMES.ERROR) return (
+                <div className="h-screen flex flex-col items-center justify-center p-6 bg-red-50 text-center">
+                    <Icon name="WifiOff" size={60} className="text-red-500 mb-4" />
+                    <h2 className="text-xl font-bold text-red-700">Error de Conexión</h2>
+                    <p className="text-red-600/70 text-sm mt-2 mb-6">{errorMessage}</p>
+                    <button onClick={() => window.location.reload()} className="px-6 py-3 bg-red-600 text-white rounded-xl font-bold">Reintentar</button>
+                </div>
+            );
+
             if (view === 'loading') return (
                 <div className="h-screen flex flex-col items-center justify-center bg-indigo-600 text-white">
                     <Icon name="Brain" size={64} className="animate-bounce mb-6" />
-                    <p className="font-bold tracking-[0.2em] animate-pulse text-sm uppercase">Cargando Estrategia...</p>
+                    <p className="font-bold tracking-[0.2em] animate-pulse text-sm uppercase">Cargando Brain-Op...</p>
+                    <p className="text-indigo-200 text-xs mt-4 opacity-50">Estableciendo conexión segura con la nube</p>
                 </div>
             );
 
@@ -272,6 +330,7 @@
 
             return (
                 <div className="max-w-md mx-auto min-h-screen bg-slate-50 flex flex-col shadow-2xl relative overflow-hidden">
+                    {/* Barra Superior */}
                     <div className="bg-white/80 backdrop-blur-md p-5 border-b flex justify-between items-center sticky top-0 z-40">
                         <div className="flex items-center gap-3">
                             <div className="w-11 h-11 bg-indigo-600 rounded-2xl flex items-center justify-center text-white font-black text-xl shadow-lg shadow-indigo-100">
@@ -279,7 +338,7 @@
                             </div>
                             <div className="min-w-0">
                                 <p className="text-[10px] font-extrabold text-indigo-600 uppercase tracking-tighter leading-none">{profile?.university}</p>
-                                <p className="font-bold text-slate-800 text-sm leading-tight truncate max-w-[140px]">{profile?.name}</p>
+                                <p className="font-bold text-slate-800 text-sm leading-tight truncate max-w-[140px]">{profile?.name || 'Invitado'}</p>
                             </div>
                         </div>
                         <div className="bg-amber-100 px-4 py-2 rounded-2xl border border-amber-200 flex items-center gap-2 shadow-sm">
@@ -318,8 +377,8 @@
                                             { id: GAMES.MEMORIA, label: 'Ruta Venta', desc: 'Secuencia lógica', color: 'purple', icon: 'BookOpen' },
                                             { id: GAMES.RANKING, label: 'Ranking', desc: 'Líderes Operación', color: 'green', icon: 'Users' }
                                         ].map(game => (
-                                            <button key={game.id} onClick={() => game.id === GAMES.RANKING ? setView(GAMES.RANKING) : start(game.id)} className={`p-6 bg-white rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-xl hover:border-${game.color}-200 transition-all text-left group`}>
-                                                <div className={`w-12 h-12 bg-${game.color}-50 text-${game.color}-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
+                                            <button key={game.id} onClick={() => game.id === GAMES.RANKING ? setView(GAMES.RANKING) : start(game.id)} className={`p-6 bg-white rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-xl transition-all text-left group active:scale-95`}>
+                                                <div className={`w-12 h-12 bg-slate-50 text-slate-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
                                                     <Icon name={game.icon} size={24} />
                                                 </div>
                                                 <h4 className="font-extrabold text-slate-800 text-sm mb-1">{game.label}</h4>
@@ -339,7 +398,7 @@
                                 </div>
                                 <div className="space-y-4 text-center">
                                     {ranking.map((p, i) => (
-                                        <div key={i} className={`flex items-center p-6 rounded-[2.5rem] border-2 transition-all ${p.uid === user.uid ? 'bg-indigo-50 border-indigo-200 shadow-inner' : 'bg-white border-slate-100 shadow-sm'}`}>
+                                        <div key={i} className={`flex items-center p-6 rounded-[2.5rem] border-2 transition-all ${p.uid === user?.uid ? 'bg-indigo-50 border-indigo-200 shadow-inner' : 'bg-white border-slate-100 shadow-sm'}`}>
                                             <span className={`w-12 font-black text-xl ${i<3 ? 'text-amber-500' : 'text-slate-200'}`}>#{i+1}</span>
                                             <div className="flex-1 text-left">
                                                 <p className="font-bold text-slate-800 text-base leading-tight">{p.name}</p>
@@ -351,10 +410,12 @@
                                             </div>
                                         </div>
                                     ))}
+                                    {ranking.length === 0 && <p className="text-slate-400 italic">No hay datos en el ranking aún.</p>}
                                 </div>
                             </div>
                         )}
 
+                        {/* Juego Lógica */}
                         {(view === GAMES.CALCULO || view === GAMES.ATENCION || view === GAMES.MEMORIA) && gameState !== 'finished' && (
                             <div className="h-full flex flex-col animate-in zoom-in duration-300">
                                 <div className="flex justify-between items-center mb-8 bg-white p-4 rounded-[2rem] shadow-sm border border-slate-100">
@@ -371,14 +432,14 @@
 
                                 {view === GAMES.CALCULO && (
                                     <div className="flex-1 flex flex-col justify-center text-center">
-                                        <div className="bg-white p-12 rounded-[4rem] shadow-xl border border-slate-100 mb-10 transform hover:scale-[1.02] transition-transform">
+                                        <div className="bg-white p-12 rounded-[4rem] shadow-xl border border-slate-100 mb-10">
                                             <p className="text-[11px] text-slate-400 font-black uppercase tracking-[0.3em] mb-4 italic">¿Es Correcta la Beca?</p>
                                             <h3 className="text-xl font-bold text-slate-600 mb-2">{math.q}</h3>
                                             <div className="text-6xl font-black text-indigo-600 tracking-tighter">${math.displayA}</div>
                                         </div>
                                         <div className="grid grid-cols-2 gap-6">
-                                            <button onClick={() => { if(!math.isCorrect) setScore(s=>s+10); else setScore(s=>Math.max(0, s-5)); genMath(); }} className="py-10 bg-white border-2 border-red-50 text-red-500 rounded-[3rem] shadow-sm active:scale-95 transition-all flex justify-center items-center hover:bg-red-50 hover:border-red-200"><Icon name="X" size={56} /></button>
-                                            <button onClick={() => { if(math.isCorrect) setScore(s=>s+10); else setScore(s=>Math.max(0, s-5)); genMath(); }} className="py-10 bg-white border-2 border-green-50 text-green-500 rounded-[3rem] shadow-sm active:scale-95 transition-all flex justify-center items-center hover:bg-green-50 hover:border-green-200"><Icon name="Check" size={56} /></button>
+                                            <button onClick={() => { if(!math.isCorrect) setScore(s=>s+10); else setScore(s=>Math.max(0, s-5)); genMath(); }} className="py-10 bg-white border-2 border-red-50 text-red-500 rounded-[3rem] shadow-sm active:scale-95 transition-all flex justify-center items-center"><Icon name="X" size={56} /></button>
+                                            <button onClick={() => { if(math.isCorrect) setScore(s=>s+10); else setScore(s=>Math.max(0, s-5)); genMath(); }} className="py-10 bg-white border-2 border-green-50 text-green-500 rounded-[3rem] shadow-sm active:scale-95 transition-all flex justify-center items-center"><Icon name="Check" size={56} /></button>
                                         </div>
                                     </div>
                                 )}
