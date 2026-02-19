@@ -54,7 +54,7 @@
     <script type="text/babel" data-type="module">
         const { useState, useEffect, useCallback, useRef } = React;
         
-        // --- ✅ CONFIGURACIÓN DE FIREBASE INTEGRADA ✅ ---
+        // --- ✅ CONFIGURACIÓN DE FIREBASE ANGIE VANESSA ✅ ---
         const myFirebaseConfig = {
             apiKey: "AIzaSyAgEw68vOmqBC0vm8zFGNVyRpEtNCGl0Wk",
             authDomain: "brain-op.firebaseapp.com",
@@ -65,13 +65,12 @@
             measurementId: "G-XQY9TETKTQ"
         };
 
-        // Detección de configuración
         const isConfigured = myFirebaseConfig.apiKey !== "";
         const firebaseConfig = (window.__firebase_config && !isConfigured) 
             ? JSON.parse(window.__firebase_config) 
             : myFirebaseConfig;
 
-        // Importaciones de módulos Firebase
+        // Importaciones de módulos Firebase (vía CDN dinámico)
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
@@ -125,33 +124,12 @@
                 { id: 'Check', label: 'Cierre' }
             ];
 
-            // Auth Initialization mejorada para manejar admin-restricted-operation
+            // Auth Initialization
             useEffect(() => {
                 const initAuth = async () => {
                     try {
-                        // Forzamos un pequeño retraso para asegurar que los scripts de Firebase están listos
-                        await new Promise(resolve => setTimeout(resolve, 500));
-
-                        // Si usamos configuración propia, intentamos login anónimo
-                        if (isConfigured) {
-                            try {
-                                await signInAnonymously(auth);
-                            } catch (e) {
-                                console.error("Anonymous login error:", e);
-                                if (e.code === 'auth/admin-restricted-operation') {
-                                    throw new Error("Operación restringida por el administrador. Asegúrate de habilitar el inicio de sesión anónimo en Authentication > Sign-in method.");
-                                }
-                                throw e;
-                            }
-                        } else if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                            try {
-                                await signInWithCustomToken(auth, __initial_auth_token);
-                            } catch (e) {
-                                await signInAnonymously(auth);
-                            }
-                        } else {
-                            await signInAnonymously(auth);
-                        }
+                        // Forzamos un retraso para asegurar carga completa
+                        await new Promise(resolve => setTimeout(resolve, 1000));
 
                         const unsubscribe = onAuthStateChanged(auth, async (u) => {
                             if (u) {
@@ -168,11 +146,19 @@
                                 } catch (err) {
                                     setView(GAMES.LOGIN);
                                 }
+                            } else {
+                                // Intentar login anónimo si no hay usuario
+                                try {
+                                    await signInAnonymously(auth);
+                                } catch (e) {
+                                    setErrorDetail(e.code);
+                                    setView(GAMES.ERROR);
+                                }
                             }
                         });
+
                         return unsubscribe;
                     } catch (error) {
-                        console.error("Firebase Auth Error:", error);
                         setErrorDetail(error.message);
                         setView(GAMES.ERROR);
                     }
@@ -187,8 +173,6 @@
                 (snap) => {
                     const data = snap.docs.map(d => d.data()).sort((a, b) => (b.totalPoints || 0) - (a.totalPoints || 0));
                     setRanking(data);
-                }, (err) => {
-                    console.error("Ranking error:", err);
                 });
                 return () => unsubscribe();
             }, [user, view]);
@@ -209,7 +193,7 @@
                     setProfile(data);
                     setView(GAMES.MENU);
                 } catch (err) {
-                    alert("Error al registrar: " + err.message);
+                    alert("Error: Activa 'Firestore Database' en tu consola.");
                 }
             };
 
@@ -281,19 +265,23 @@
                     <div className="w-20 h-20 bg-red-50 rounded-3xl flex items-center justify-center mb-6 border-4 border-red-100">
                         <Icon name="ShieldAlert" size={40} className="text-red-500" />
                     </div>
-                    <h2 className="text-xl font-bold text-slate-800">Error de Autenticación</h2>
-                    <p className="text-slate-500 text-sm mt-2 mb-8 max-w-xs italic text-center leading-relaxed">
-                        {errorDetail}
-                    </p>
-                    <button onClick={() => window.location.reload()} className="w-full max-w-xs py-4 bg-indigo-600 text-white rounded-2xl font-bold shadow-lg active:scale-95 transition-all">Reintentar Conexión</button>
-                    <p className="mt-6 text-xs text-slate-400">Si el error persiste, verifica que el proveedor 'Anónimo' esté activo en Firebase.</p>
+                    <h2 className="text-2xl font-black text-slate-800 tracking-tight">Acceso Restringido</h2>
+                    <div className="bg-slate-50 p-6 rounded-3xl mt-4 mb-8 text-sm text-slate-600 text-left border border-slate-100 max-w-sm">
+                        <p className="font-bold text-slate-800 mb-2 underline italic">Solución en segundos:</p>
+                        <ol className="list-decimal ml-4 space-y-2">
+                            <li>En Firebase, ve a la pestaña <b>Método de acceso</b>.</li>
+                            <li>Dale a <b>Agregar nuevo proveedor</b>.</li>
+                            <li>Busca <b>Anónimo</b>, actívalo y dale a <b>Guardar</b>.</li>
+                        </ol>
+                    </div>
+                    <button onClick={() => window.location.reload()} className="w-full max-w-xs py-4 bg-indigo-600 text-white rounded-2xl font-bold shadow-xl active:scale-95 transition-all">Ya lo activé, entrar ahora</button>
                 </div>
             );
 
             if (view === 'loading') return (
                 <div className="h-screen flex flex-col items-center justify-center bg-indigo-600 text-white">
                     <Icon name="Brain" size={80} className="animate-bounce mb-6" />
-                    <p className="font-bold tracking-[0.3em] animate-pulse text-sm uppercase">Cargando Brain-Op...</p>
+                    <p className="font-bold tracking-[0.3em] animate-pulse text-sm uppercase">Iniciando Brain-Op...</p>
                 </div>
             );
 
@@ -305,7 +293,7 @@
                                 <Icon name="Brain" size={48} />
                             </div>
                         </div>
-                        <h1 className="text-4xl font-black text-slate-800 mb-2 tracking-tight">Brain-Op</h1>
+                        <h1 className="text-4xl font-black text-center text-slate-800 mb-2 tracking-tight">Brain-Op</h1>
                         <p className="text-slate-500 mb-10 text-sm font-medium">Entrena tu mente para liderar en USAM y Poli.</p>
                         <form onSubmit={handleRegister} className="space-y-5 text-left">
                             <div>
@@ -327,7 +315,6 @@
 
             return (
                 <div className="max-w-md mx-auto min-h-screen bg-slate-50 flex flex-col shadow-2xl relative overflow-hidden">
-                    {/* Barra Superior */}
                     <div className="bg-white/80 backdrop-blur-md p-5 border-b flex justify-between items-center sticky top-0 z-40">
                         <div className="flex items-center gap-3">
                             <div className="w-11 h-11 bg-indigo-600 rounded-2xl flex items-center justify-center text-white font-black text-xl shadow-lg shadow-indigo-100">
@@ -344,12 +331,12 @@
                         </div>
                     </div>
 
-                    <main className="flex-1 overflow-y-auto p-6 pb-28">
+                    <main className="flex-1 overflow-y-auto p-6 pb-28 text-center">
                         {view === GAMES.MENU && (
                             <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                                 <div className="bg-gradient-to-br from-indigo-600 to-indigo-800 p-8 rounded-[2.5rem] text-white shadow-2xl relative overflow-hidden text-center">
                                     <div className="relative z-10">
-                                        <h2 className="text-2xl font-bold mb-1 italic tracking-tight leading-none">¡Hola de nuevo!</h2>
+                                        <h2 className="text-2xl font-bold mb-1 italic tracking-tight">¡Hola de nuevo!</h2>
                                         <p className="text-indigo-100 text-sm mb-8 font-medium opacity-90">Tu entrenamiento estratégico está listo.</p>
                                         <div className="flex gap-3">
                                             <div className="flex-1 glass-card p-4 rounded-3xl border border-white/20">
@@ -390,7 +377,7 @@
                         {view === GAMES.RANKING && (
                             <div className="animate-in slide-in-from-right duration-300">
                                 <div className="flex items-center gap-4 mb-8">
-                                    <button onClick={() => setView(GAMES.MENU)} className="p-3 bg-white hover:bg-slate-100 rounded-2xl transition-all shadow-sm text-left"><Icon name="ArrowLeft" size={24} /></button>
+                                    <button onClick={() => setView(GAMES.MENU)} className="p-3 bg-white hover:bg-slate-100 rounded-2xl transition-all shadow-sm"><Icon name="ArrowLeft" size={24} /></button>
                                     <h2 className="font-black text-2xl text-slate-800 tracking-tight">Top Estrategas</h2>
                                 </div>
                                 <div className="space-y-4">
@@ -407,15 +394,15 @@
                                             </div>
                                         </div>
                                     ))}
-                                    {ranking.length === 0 && <p className="text-center text-slate-400 italic">No hay datos en el ranking todavía.</p>}
+                                    {ranking.length === 0 && <p className="text-center text-slate-400 italic mt-20">Esperando a los primeros retadores...</p>}
                                 </div>
                             </div>
                         )}
 
-                        {/* Juego Lógica */}
+                        {/* Juegos Logic */}
                         {(view === GAMES.CALCULO || view === GAMES.ATENCION || view === GAMES.MEMORIA) && gameState !== 'finished' && (
                             <div className="h-full flex flex-col animate-in zoom-in duration-300">
-                                <div className="flex justify-between items-center mb-8 bg-white p-4 rounded-[2rem] shadow-sm border border-slate-100 text-center">
+                                <div className="flex justify-between items-center mb-8 bg-white p-4 rounded-[2rem] shadow-sm border border-slate-100">
                                     <div className="flex items-center gap-2 px-2">
                                         <button onClick={() => setView(GAMES.MENU)} className="p-2 hover:bg-red-50 text-slate-400 hover:text-red-500 rounded-xl transition-all" title="Salir"><Icon name="X" size={20} /></button>
                                         <button onClick={() => start(view)} className="p-2 hover:bg-amber-50 text-slate-400 hover:text-amber-500 rounded-xl transition-all" title="Reiniciar"><Icon name="RotateCcw" size={20} /></button>
@@ -443,7 +430,7 @@
 
                                 {view === GAMES.ATENCION && (
                                     <div className="flex-1 flex flex-col justify-center text-center">
-                                        <p className="text-slate-400 text-[11px] font-black uppercase mb-8 tracking-[0.2em] italic text-center">Encuentra el error de proceso</p>
+                                        <p className="text-slate-400 text-[11px] font-black uppercase mb-8 tracking-[0.2em] italic">Encuentra el error de proceso</p>
                                         <div className="grid grid-cols-4 gap-4 p-5 bg-white rounded-[3rem] shadow-xl border border-slate-100">
                                             {attention.map(item => (
                                                 <button key={item.id} onClick={() => { if(item.isOdd) { setScore(s=>s+15); genAttention(); } else setScore(s=>Math.max(0, s-10)); }} className="aspect-square flex items-center justify-center p-3 rounded-3xl bg-slate-50 text-slate-300 hover:bg-indigo-50 hover:text-indigo-600 transition-all active:scale-90 border-2 border-transparent hover:border-indigo-100"><Icon name={item.icon} size={32} /></button>
@@ -496,7 +483,7 @@
                                 <p className="text-slate-500 mb-12 text-lg font-medium">Has sumado <span className="text-indigo-600 font-black px-3 py-1 bg-indigo-50 rounded-xl">{score}</span> puntos a tu perfil.</p>
                                 <div className="w-full space-y-4">
                                     <button onClick={() => start(view)} className="w-full py-5 bg-indigo-600 text-white rounded-[2rem] font-bold text-xl shadow-xl shadow-indigo-100 hover:bg-indigo-700 active:scale-95 transition-all">Reintentar Ahora</button>
-                                    <button onClick={() => setView(GAMES.MENU)} className="w-full py-5 bg-white text-slate-400 rounded-[2rem] font-bold text-lg hover:text-slate-600 transition-all">Volver al Menú</button>
+                                    <button onClick={() => setView(GAMES.MENU)} className="w-full py-5 bg-white text-slate-400 rounded-[2rem] font-bold text-lg hover:text-slate-600 transition-all text-slate-400">Volver al Menú</button>
                                 </div>
                             </div>
                         )}
