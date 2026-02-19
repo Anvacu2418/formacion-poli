@@ -19,9 +19,6 @@
         body { 
             font-family: 'Plus Jakarta Sans', sans-serif; 
             -webkit-tap-highlight-color: transparent;
-            margin: 0;
-            padding: 0;
-            background-color: #f8fafc;
         }
 
         .animate-pulse-slow { 
@@ -39,24 +36,14 @@
             justify-content: center; 
         }
 
+        .custom-shadow {
+            box-shadow: 0 10px 30px -5px rgba(79, 70, 229, 0.1), 0 4px 10px -5px rgba(79, 70, 229, 0.05);
+        }
+
         .glass-card {
             background: rgba(255, 255, 255, 0.8);
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.5);
-        }
-        
-        #root:empty {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            background-color: #4f46e5;
-            color: white;
-            font-weight: bold;
-        }
-        #root:empty::after {
-            content: "CARGANDO BRAIN-OP...";
-            letter-spacing: 0.2em;
         }
     </style>
 </head>
@@ -66,42 +53,39 @@
     <script type="text/babel" data-type="module">
         const { useState, useEffect, useCallback, useRef } = React;
         
-        // ==========================================
-        // CONFIGURACIÓN DE FIREBASE (TU BASE DE DATOS)
-        // ==========================================
+        // --- ⚠️ ATENCIÓN: CONFIGURACIÓN DE FIREBASE ⚠️ ---
+        // Para que funcione en GitHub, crea un proyecto en console.firebase.google.com
+        // y pega aquí tus credenciales de "Web App".
         const myFirebaseConfig = {
-            apiKey: "AIzaSyAgEw68vOmqBC0vm8zFGNVyRpEtNCGl0Wk",
-            authDomain: "brain-op.firebaseapp.com",
-            projectId: "brain-op",
-            storageBucket: "brain-op.firebasestorage.app",
-            messagingSenderId: "193463235722",
-            appId: "1:193463235722:web:858216dfc63eb1af4e6973",
-            measurementId: "G-XQY9TETKTQ"
+            apiKey: "",           // <--- PEGA TU API KEY AQUÍ
+            authDomain: "",       // <--- PEGA TU AUTH DOMAIN AQUÍ
+            projectId: "",        // <--- PEGA TU PROJECT ID AQUÍ
+            storageBucket: "",
+            messagingSenderId: "",
+            appId: ""             // <--- PEGA TU APP ID AQUÍ
         };
 
-        // Lógica de detección de entorno
-        const firebaseConfig = (window.__firebase_config && JSON.parse(window.__firebase_config).apiKey !== "") 
+        // Verificamos si estamos en el entorno de desarrollo o en GitHub
+        const isConfigured = myFirebaseConfig.apiKey !== "";
+        const firebaseConfig = (window.__firebase_config && !isConfigured) 
             ? JSON.parse(window.__firebase_config) 
             : myFirebaseConfig;
 
-        const isConfigured = firebaseConfig.apiKey && firebaseConfig.apiKey !== "";
-
-        // Importaciones de módulos Firebase (Gstatic ESM)
+        // Importaciones de módulos Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // Inicialización
         let app, auth, db;
-        if (isConfigured) {
+        if (firebaseConfig.apiKey) {
             app = initializeApp(firebaseConfig);
             auth = getAuth(app);
             db = getFirestore(app);
         }
-        
-        const APP_ID = typeof __app_id !== 'undefined' ? __app_id : 'brain-op-v1';
 
-        // --- COMPONENTE DE ICONOS ---
+        const APP_ID = typeof __app_id !== 'undefined' ? __app_id : 'brain-op-prod';
+
+        // --- ICONOS ---
         const Icon = ({ name, size = 24, className = "" }) => {
             const iconRef = useRef(null);
             useEffect(() => {
@@ -119,6 +103,26 @@
         const GAMES = { LOGIN: 'login', MENU: 'menu', CALCULO: 'calculo', ATENCION: 'atencion', MEMORIA: 'memoria', RANKING: 'ranking' };
 
         const App = () => {
+            if (!firebaseConfig.apiKey) {
+                return (
+                    <div className="h-screen flex flex-col items-center justify-center p-6 bg-white text-center">
+                        <div className="w-24 h-24 bg-red-50 rounded-full flex items-center justify-center mb-6">
+                            <Icon name="ShieldAlert" size={48} className="text-red-500" />
+                        </div>
+                        <h1 className="text-2xl font-black text-slate-800 mb-4">Falta Configuración</h1>
+                        <p className="text-slate-500 max-w-xs mb-8">
+                            Asegúrate de haber configurado las credenciales de Firebase correctamente en el archivo HTML para que los puntos se guarden en GitHub.
+                        </p>
+                        <div className="bg-slate-50 p-4 rounded-2xl text-xs font-mono text-left text-slate-600 border border-slate-100">
+                            const myFirebaseConfig = &#123;<br/>
+                            &nbsp;&nbsp;apiKey: "TU_API_KEY",<br/>
+                            &nbsp;&nbsp;...<br/>
+                            &#125;;
+                        </div>
+                    </div>
+                );
+            }
+
             const [user, setUser] = useState(null);
             const [profile, setProfile] = useState(null);
             const [view, setView] = useState('loading');
@@ -140,13 +144,7 @@
                 { id: 'Check', label: 'Cierre' }
             ];
 
-            // MANDATORY RULE 3: Auth FIRST
             useEffect(() => {
-                if (!isConfigured) {
-                    setTimeout(() => setView('no-config'), 1000);
-                    return;
-                }
-
                 const initAuth = async () => {
                     try {
                         if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
@@ -154,86 +152,46 @@
                         } else {
                             await signInAnonymously(auth);
                         }
-                    } catch (error) {
-                        console.error("Auth init error:", error);
-                    }
+                    } catch (error) { console.error(error); }
                 };
                 initAuth();
 
-                const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-                    if (firebaseUser) setUser(firebaseUser);
+                return onAuthStateChanged(auth, async (u) => {
+                    if (u) {
+                        setUser(u);
+                        try {
+                            const snap = await getDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'users', u.uid));
+                            if (snap.exists()) {
+                                setProfile(snap.data());
+                                setView(GAMES.MENU);
+                            } else { setView(GAMES.LOGIN); }
+                        } catch (err) { setView(GAMES.LOGIN); }
+                    }
                 });
-                return () => unsubscribe();
             }, []);
 
-            // Fetch profile once authenticated
             useEffect(() => {
                 if (!user) return;
-                const fetchProfile = async () => {
-                    try {
-                        const userDocRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'users', user.uid);
-                        const snap = await getDoc(userDocRef);
-                        if (snap.exists()) {
-                            setProfile(snap.data());
-                            setView(GAMES.MENU);
-                        } else {
-                            setView(GAMES.LOGIN);
-                        }
-                    } catch (err) {
-                        console.error("Error profile:", err);
-                        setView(GAMES.LOGIN);
-                    }
-                };
-                fetchProfile();
-            }, [user]);
-
-            // Real-time Ranking (Rule 2: memory sort)
-            useEffect(() => {
-                if (!user || !db || (view !== GAMES.RANKING && view !== GAMES.MENU)) return;
-                const usersCol = collection(db, 'artifacts', APP_ID, 'public', 'data', 'users');
-                const unsubscribe = onSnapshot(usersCol, (snap) => {
-                    const data = snap.docs.map(d => d.data())
-                        .sort((a, b) => (b.totalPoints || 0) - (a.totalPoints || 0));
+                return onSnapshot(collection(db, 'artifacts', APP_ID, 'public', 'data', 'users'), (snap) => {
+                    const data = snap.docs.map(d => d.data()).sort((a, b) => (b.totalPoints || 0) - (a.totalPoints || 0));
                     setRanking(data);
-                }, (err) => console.error("Ranking error:", err));
-                return () => unsubscribe();
-            }, [user, view]);
+                });
+            }, [user]);
 
             const handleRegister = async (e) => {
                 e.preventDefault();
-                if (!user || !db) return;
-                const data = {
-                    uid: user.uid,
-                    name: e.target.name.value,
-                    university: e.target.uni.value,
-                    totalPoints: 0,
-                    highScore: 0,
-                    lastActive: new Date().toISOString()
-                };
-                try {
-                    await setDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'users', user.uid), data);
-                    setProfile(data);
-                    setView(GAMES.MENU);
-                } catch (err) { console.error("Register err:", err); }
+                const data = { uid: user.uid, name: e.target.name.value, university: e.target.uni.value, totalPoints: 0, highScore: 0, lastActive: new Date().toISOString() };
+                await setDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'users', user.uid), data);
+                setProfile(data);
+                setView(GAMES.MENU);
             };
 
             const saveScore = async (finalScore) => {
-                if (!user || !profile || !db || finalScore <= 0) return;
+                if (!user || !profile || finalScore <= 0) return;
                 const ref = doc(db, 'artifacts', APP_ID, 'public', 'data', 'users', user.uid);
-                try {
-                    await updateDoc(ref, {
-                        totalPoints: increment(finalScore),
-                        highScore: Math.max(profile.highScore || 0, finalScore)
-                    });
-                    setProfile(prev => ({
-                        ...prev,
-                        totalPoints: (prev.totalPoints || 0) + finalScore,
-                        highScore: Math.max(prev.highScore || 0, finalScore)
-                    }));
-                } catch (err) { console.error("Save err:", err); }
+                await updateDoc(ref, { totalPoints: increment(finalScore), highScore: Math.max(profile.highScore || 0, finalScore) });
             };
 
-            // Juegos
             const genMath = useCallback(() => {
                 const b = Math.floor(Math.random() * 9 + 1) * 100;
                 const d = [10, 20, 25, 50][Math.floor(Math.random() * 4)];
@@ -268,7 +226,7 @@
                     saveScore(score);
                 }
                 return () => clearInterval(t);
-            }, [gameState, timeLeft, score]);
+            }, [gameState, timeLeft, score, profile]);
 
             const start = (g) => {
                 setScore(0); setTimeLeft(30); setView(g);
@@ -277,54 +235,36 @@
                 if (g === GAMES.MEMORIA) { genSeq(); }
             };
 
-            const restartGame = () => {
-                setScore(0); setTimeLeft(30);
-                if (view === GAMES.CALCULO) genMath();
-                if (view === GAMES.ATENCION) genAttention();
-                if (view === GAMES.MEMORIA) genSeq();
-                setGameState('playing');
-            };
-
-            const exitToMenu = () => { setGameState('idle'); setView(GAMES.MENU); };
-
-            // --- UI ---
-
-            if (view === 'no-config') return (
-                <div className="h-screen flex flex-col items-center justify-center p-8 text-center bg-white">
-                    <div className="p-6 bg-red-50 text-red-500 rounded-full mb-8"><Icon name="ShieldAlert" size={64} /></div>
-                    <h2 className="text-3xl font-black text-slate-800 mb-4 tracking-tight uppercase italic">Falta Configuración</h2>
-                    <p className="text-slate-500 max-w-sm mb-10 leading-relaxed italic">Revisa que hayas copiado correctamente los datos de Firebase en el código.</p>
-                </div>
-            );
-
             if (view === 'loading') return (
                 <div className="h-screen flex flex-col items-center justify-center bg-indigo-600 text-white">
                     <Icon name="Brain" size={64} className="animate-bounce mb-6" />
-                    <p className="font-black tracking-[0.2em] animate-pulse text-sm uppercase">Cargando Brain-Op...</p>
+                    <p className="font-bold tracking-[0.2em] animate-pulse text-sm uppercase">Cargando Estrategia...</p>
                 </div>
             );
 
             if (view === GAMES.LOGIN) return (
                 <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-slate-50">
-                    <div className="w-full max-w-md bg-white p-10 rounded-[3.5rem] shadow-2xl border border-indigo-50 animate-in zoom-in duration-500">
+                    <div className="w-full max-w-md bg-white p-10 rounded-[3rem] shadow-xl border border-indigo-50 animate-in zoom-in duration-500">
                         <div className="flex justify-center mb-8">
-                            <div className="p-5 bg-indigo-600 rounded-3xl text-white shadow-xl"><Icon name="Brain" size={48} /></div>
+                            <div className="p-5 bg-indigo-600 rounded-3xl text-white shadow-xl shadow-indigo-100">
+                                <Icon name="Brain" size={48} />
+                            </div>
                         </div>
-                        <h1 className="text-4xl font-black text-center text-slate-800 mb-2 tracking-tight italic">Brain-Op</h1>
-                        <p className="text-center text-slate-500 mb-10 text-sm font-medium">Entrenamiento para equipos USAM y Poli.</p>
+                        <h1 className="text-4xl font-black text-center text-slate-800 mb-2 tracking-tight leading-none">Brain-Op</h1>
+                        <p className="text-center text-slate-500 mb-10 text-sm font-medium">Entrena tu mente para liderar en USAM y Poli.</p>
                         <form onSubmit={handleRegister} className="space-y-5">
                             <div>
-                                <label className="text-xs font-bold text-slate-400 uppercase ml-2 mb-2 block tracking-widest">Tu Nombre</label>
-                                <input name="name" required className="w-full px-6 py-4 bg-slate-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-2xl outline-none font-semibold transition-all shadow-inner" placeholder="Ej. Juan Pérez" />
+                                <label className="text-xs font-bold text-slate-400 uppercase ml-2 mb-2 block tracking-widest">Nombre Completo</label>
+                                <input name="name" required className="w-full px-6 py-4 bg-slate-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-2xl outline-none font-semibold transition-all" placeholder="Ej. Ana Milena" />
                             </div>
                             <div>
                                 <label className="text-xs font-bold text-slate-400 uppercase ml-2 mb-2 block tracking-widest">Institución</label>
-                                <select name="uni" className="w-full px-6 py-4 bg-slate-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-2xl outline-none font-semibold appearance-none cursor-pointer shadow-inner">
-                                    <option value="Politécnico">Politécnico Grancolombiano</option>
-                                    <option value="San Marcos">Universidad San Marcos</option>
+                                <select name="uni" className="w-full px-6 py-4 bg-slate-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-2xl outline-none font-semibold appearance-none cursor-pointer">
+                                    <option value="Poli">Politécnico Grancolombiano</option>
+                                    <option value="USAM">Universidad San Marcos</option>
                                 </select>
                             </div>
-                            <button className="w-full py-5 bg-indigo-600 text-white rounded-2xl font-bold text-lg shadow-xl hover:bg-indigo-700 active:scale-95 transition-all mt-6 uppercase tracking-widest">Iniciar</button>
+                            <button className="w-full py-5 bg-indigo-600 text-white rounded-2xl font-bold text-lg shadow-xl shadow-indigo-100 hover:bg-indigo-700 active:scale-95 transition-all mt-6">Empezar a Entrenar</button>
                         </form>
                     </div>
                 </div>
@@ -334,10 +274,12 @@
                 <div className="max-w-md mx-auto min-h-screen bg-slate-50 flex flex-col shadow-2xl relative overflow-hidden">
                     <div className="bg-white/80 backdrop-blur-md p-5 border-b flex justify-between items-center sticky top-0 z-40">
                         <div className="flex items-center gap-3">
-                            <div className="w-11 h-11 bg-indigo-600 rounded-2xl flex items-center justify-center text-white font-black text-xl shadow-lg border-2 border-indigo-100">{profile?.name?.[0]}</div>
-                            <div>
+                            <div className="w-11 h-11 bg-indigo-600 rounded-2xl flex items-center justify-center text-white font-black text-xl shadow-lg shadow-indigo-100">
+                                {profile?.name?.[0] || 'U'}
+                            </div>
+                            <div className="min-w-0">
                                 <p className="text-[10px] font-extrabold text-indigo-600 uppercase tracking-tighter leading-none">{profile?.university}</p>
-                                <p className="font-bold text-slate-800 text-sm truncate max-w-[140px]">{profile?.name}</p>
+                                <p className="font-bold text-slate-800 text-sm leading-tight truncate max-w-[140px]">{profile?.name}</p>
                             </div>
                         </div>
                         <div className="bg-amber-100 px-4 py-2 rounded-2xl border border-amber-200 flex items-center gap-2 shadow-sm">
@@ -349,17 +291,17 @@
                     <main className="flex-1 overflow-y-auto p-6 pb-28">
                         {view === GAMES.MENU && (
                             <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                                <div className="bg-gradient-to-br from-indigo-600 to-indigo-800 p-8 rounded-[3rem] text-white shadow-2xl relative overflow-hidden">
+                                <div className="bg-gradient-to-br from-indigo-600 to-indigo-800 p-8 rounded-[2.5rem] text-white shadow-2xl relative overflow-hidden">
                                     <div className="relative z-10">
-                                        <h2 className="text-2xl font-bold mb-1 italic">Entrenamiento</h2>
-                                        <p className="text-indigo-100 text-sm mb-8 font-medium opacity-90 tracking-wide italic">Evoluciona tu gestión hoy.</p>
+                                        <h2 className="text-2xl font-bold mb-1 italic">¡Hola de nuevo!</h2>
+                                        <p className="text-indigo-100 text-sm mb-8 font-medium opacity-90">Tu entrenamiento estratégico de hoy está listo.</p>
                                         <div className="flex gap-3">
-                                            <div className="flex-1 glass-card p-4 rounded-3xl border border-white/20 shadow-lg text-center">
-                                                <p className="text-[10px] uppercase font-black opacity-60 mb-1">Récord</p>
-                                                <p className="font-black text-lg">{profile?.highScore || 0}</p>
+                                            <div className="flex-1 glass-card p-4 rounded-3xl border border-white/20 text-center">
+                                                <p className="text-[10px] uppercase font-black opacity-60 mb-1 tracking-wider">Récord</p>
+                                                <p className="font-black text-lg">{profile?.highScore || 0} <span className="text-[10px] font-bold">PTS</span></p>
                                             </div>
-                                            <div className="flex-1 glass-card p-4 rounded-3xl border border-white/20 shadow-lg text-center">
-                                                <p className="text-[10px] uppercase font-black opacity-60 mb-1">Estatus</p>
+                                            <div className="flex-1 glass-card p-4 rounded-3xl border border-white/20 text-center">
+                                                <p className="text-[10px] uppercase font-black opacity-60 mb-1 tracking-wider">Estatus</p>
                                                 <p className="font-black text-lg">Activo 🔥</p>
                                             </div>
                                         </div>
@@ -367,19 +309,24 @@
                                     <Icon name="Brain" size={150} className="absolute -right-10 -bottom-10 opacity-10" />
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-4">
-                                    {[
-                                        { g: GAMES.CALCULO, t: 'Auditoría', d: 'Cálculos', i: 'Zap', c: 'amber' },
-                                        { g: GAMES.ATENCION, t: 'Detalle', d: 'Visual', i: 'Target', c: 'blue' },
-                                        { g: GAMES.MEMORIA, t: 'Ruta Venta', d: 'Memoria', i: 'BookOpen', c: 'purple' },
-                                        { g: GAMES.RANKING, t: 'Ranking', d: 'Líderes', i: 'Users', c: 'green' }
-                                    ].map((item) => (
-                                        <button key={item.g} onClick={() => item.g === GAMES.RANKING ? setView(GAMES.RANKING) : start(item.g)} className="p-6 bg-white rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-xl transition-all text-left group">
-                                            <div className={`w-12 h-12 bg-${item.c}-50 text-${item.c}-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-sm`}><Icon name={item.i} size={24} /></div>
-                                            <h4 className="font-extrabold text-slate-800 text-sm mb-1">{item.t}</h4>
-                                            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">{item.d}</p>
-                                        </button>
-                                    ))}
+                                <div className="space-y-4">
+                                    <h3 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Módulos de Agilidad</h3>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        {[
+                                            { id: GAMES.CALCULO, label: 'Auditoría', desc: 'Becas y cálculos', color: 'amber', icon: 'Zap' },
+                                            { id: GAMES.ATENCION, label: 'Detalle', desc: 'Atención visual', color: 'blue', icon: 'Target' },
+                                            { id: GAMES.MEMORIA, label: 'Ruta Venta', desc: 'Secuencia lógica', color: 'purple', icon: 'BookOpen' },
+                                            { id: GAMES.RANKING, label: 'Ranking', desc: 'Líderes Operación', color: 'green', icon: 'Users' }
+                                        ].map(game => (
+                                            <button key={game.id} onClick={() => game.id === GAMES.RANKING ? setView(GAMES.RANKING) : start(game.id)} className={`p-6 bg-white rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-xl hover:border-${game.color}-200 transition-all text-left group`}>
+                                                <div className={`w-12 h-12 bg-${game.color}-50 text-${game.color}-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
+                                                    <Icon name={game.icon} size={24} />
+                                                </div>
+                                                <h4 className="font-extrabold text-slate-800 text-sm mb-1">{game.label}</h4>
+                                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">{game.desc}</p>
+                                            </button>
+                                        ))}
+                                    </div>
                                 </div>
                             </div>
                         )}
@@ -388,19 +335,19 @@
                             <div className="animate-in slide-in-from-right duration-300">
                                 <div className="flex items-center gap-4 mb-8">
                                     <button onClick={() => setView(GAMES.MENU)} className="p-3 bg-white hover:bg-slate-100 rounded-2xl transition-all shadow-sm"><Icon name="ArrowLeft" size={24} /></button>
-                                    <h2 className="font-black text-2xl text-slate-800 tracking-tight italic uppercase">Top Estrategas</h2>
+                                    <h2 className="font-black text-2xl text-slate-800 tracking-tight">Top Estrategas</h2>
                                 </div>
-                                <div className="space-y-4">
+                                <div className="space-y-4 text-center">
                                     {ranking.map((p, i) => (
-                                        <div key={p.uid || i} className={`flex items-center p-6 rounded-[2.5rem] border-2 transition-all shadow-sm ${p.uid === user?.uid ? 'bg-indigo-50 border-indigo-200 shadow-inner' : 'bg-white border-slate-100'}`}>
+                                        <div key={i} className={`flex items-center p-6 rounded-[2.5rem] border-2 transition-all ${p.uid === user.uid ? 'bg-indigo-50 border-indigo-200 shadow-inner' : 'bg-white border-slate-100 shadow-sm'}`}>
                                             <span className={`w-12 font-black text-xl ${i<3 ? 'text-amber-500' : 'text-slate-200'}`}>#{i+1}</span>
-                                            <div className="flex-1">
+                                            <div className="flex-1 text-left">
                                                 <p className="font-bold text-slate-800 text-base leading-tight">{p.name}</p>
                                                 <p className="text-[11px] text-slate-400 font-black uppercase tracking-widest">{p.university}</p>
                                             </div>
                                             <div className="text-right">
                                                 <p className="font-black text-indigo-600 text-2xl leading-none">{p.totalPoints || 0}</p>
-                                                <p className="text-[10px] text-slate-400 font-bold uppercase mt-1">Pts</p>
+                                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Pts</p>
                                             </div>
                                         </div>
                                     ))}
@@ -412,40 +359,36 @@
                             <div className="h-full flex flex-col animate-in zoom-in duration-300">
                                 <div className="flex justify-between items-center mb-8 bg-white p-4 rounded-[2rem] shadow-sm border border-slate-100">
                                     <div className="flex items-center gap-2 px-2">
-                                        <button onClick={exitToMenu} className="p-2 hover:bg-red-50 text-slate-400 hover:text-red-500 rounded-xl transition-all"><Icon name="X" size={20} /></button>
-                                        <button onClick={restartGame} className="p-2 hover:bg-amber-50 text-slate-400 hover:text-amber-500 rounded-xl transition-all"><Icon name="RotateCcw" size={20} /></button>
+                                        <button onClick={() => setView(GAMES.MENU)} className="p-2 hover:bg-red-50 text-slate-400 hover:text-red-500 rounded-xl transition-all"><Icon name="X" size={20} /></button>
+                                        <button onClick={() => start(view)} className="p-2 hover:bg-amber-50 text-slate-400 hover:text-amber-500 rounded-xl transition-all"><Icon name="RotateCcw" size={20} /></button>
                                     </div>
                                     <div className="flex flex-col items-center">
                                         <span className="font-black text-slate-800 text-lg leading-none">{score}</span>
                                         <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Puntos</span>
                                     </div>
-                                    <div className={`px-5 py-2 rounded-2xl text-sm font-black text-white transition-all shadow-sm ${timeLeft < 10 ? 'bg-red-500 animate-pulse' : 'bg-slate-800'}`}>
-                                        {timeLeft}s
-                                    </div>
+                                    <div className={`px-5 py-2 rounded-2xl text-sm font-black text-white transition-all duration-500 ${timeLeft < 10 ? 'bg-red-500 animate-pulse' : 'bg-slate-800'}`}>{timeLeft}s</div>
                                 </div>
 
                                 {view === GAMES.CALCULO && (
-                                    <div className="flex-1 flex flex-col justify-center">
-                                        <div className="bg-white p-12 rounded-[4rem] shadow-xl border border-slate-100 text-center mb-10">
-                                            <p className="text-[11px] text-slate-400 font-black uppercase tracking-[0.3em] mb-4 italic">¿Beca Correcta?</p>
-                                            <h3 className="text-xl font-bold text-slate-600 mb-2 italic">{math.q}</h3>
+                                    <div className="flex-1 flex flex-col justify-center text-center">
+                                        <div className="bg-white p-12 rounded-[4rem] shadow-xl border border-slate-100 mb-10 transform hover:scale-[1.02] transition-transform">
+                                            <p className="text-[11px] text-slate-400 font-black uppercase tracking-[0.3em] mb-4 italic">¿Es Correcta la Beca?</p>
+                                            <h3 className="text-xl font-bold text-slate-600 mb-2">{math.q}</h3>
                                             <div className="text-6xl font-black text-indigo-600 tracking-tighter">${math.displayA}</div>
                                         </div>
                                         <div className="grid grid-cols-2 gap-6">
-                                            <button onClick={() => { if(!math.isCorrect) setScore(s=>s+10); else setScore(s=>Math.max(0, s-5)); genMath(); }} className="py-10 bg-white border-2 border-red-50 text-red-500 rounded-[3rem] shadow-md active:scale-95 transition-all flex justify-center items-center hover:bg-red-50 hover:border-red-200"><Icon name="X" size={56} /></button>
-                                            <button onClick={() => { if(math.isCorrect) setScore(s=>s+10); else setScore(s=>Math.max(0, s-5)); genMath(); }} className="py-10 bg-white border-2 border-green-50 text-green-500 rounded-[3rem] shadow-md active:scale-95 transition-all flex justify-center items-center hover:bg-green-50 hover:border-green-200"><Icon name="Check" size={56} /></button>
+                                            <button onClick={() => { if(!math.isCorrect) setScore(s=>s+10); else setScore(s=>Math.max(0, s-5)); genMath(); }} className="py-10 bg-white border-2 border-red-50 text-red-500 rounded-[3rem] shadow-sm active:scale-95 transition-all flex justify-center items-center hover:bg-red-50 hover:border-red-200"><Icon name="X" size={56} /></button>
+                                            <button onClick={() => { if(math.isCorrect) setScore(s=>s+10); else setScore(s=>Math.max(0, s-5)); genMath(); }} className="py-10 bg-white border-2 border-green-50 text-green-500 rounded-[3rem] shadow-sm active:scale-95 transition-all flex justify-center items-center hover:bg-green-50 hover:border-green-200"><Icon name="Check" size={56} /></button>
                                         </div>
                                     </div>
                                 )}
 
                                 {view === GAMES.ATENCION && (
-                                    <div className="flex-1 flex flex-col justify-center">
-                                        <p className="text-center text-slate-400 text-[11px] font-black uppercase mb-8 tracking-[0.2em] italic uppercase">Busca el intruso visual</p>
+                                    <div className="flex-1 flex flex-col justify-center text-center">
+                                        <p className="text-slate-400 text-[11px] font-black uppercase mb-8 tracking-[0.2em] italic">Encuentra el error de proceso</p>
                                         <div className="grid grid-cols-4 gap-4 p-5 bg-white rounded-[3rem] shadow-xl border border-slate-100">
                                             {attention.map(item => (
-                                                <button key={item.id} onClick={() => { if(item.isOdd) { setScore(s=>s+15); genAttention(); } else setScore(s=>Math.max(0, s-10)); }} className="aspect-square flex items-center justify-center p-3 rounded-3xl bg-slate-50 text-slate-300 hover:bg-indigo-50 hover:text-indigo-600 transition-all active:scale-90 border-2 border-transparent hover:border-indigo-100 shadow-sm">
-                                                    <Icon name={item.icon} size={32} />
-                                                </button>
+                                                <button key={item.id} onClick={() => { if(item.isOdd) { setScore(s=>s+15); genAttention(); } else setScore(s=>Math.max(0, s-10)); }} className="aspect-square flex items-center justify-center p-3 rounded-3xl bg-slate-50 text-slate-300 hover:bg-indigo-50 hover:text-indigo-600 transition-all active:scale-90 border-2 border-transparent hover:border-indigo-100"><Icon name={item.icon} size={32} /></button>
                                             ))}
                                         </div>
                                     </div>
@@ -455,16 +398,14 @@
                                     <div className="flex-1 flex flex-col justify-center text-center">
                                         {gameState === 'memorizing' ? (
                                             <div className="animate-pulse-slow">
-                                                <p className="text-purple-600 font-black uppercase mb-10 tracking-[0.3em]">Memoriza</p>
+                                                <p className="text-purple-600 font-black uppercase mb-10 tracking-[0.3em]">Memoriza la Secuencia</p>
                                                 <div className="flex gap-4 justify-center">
-                                                    {sequence.map((iconName, i) => (
-                                                        <div key={i} className="p-7 bg-white text-purple-600 rounded-[2.5rem] shadow-xl border-2 border-purple-100"><Icon name={iconName} size={48} /></div>
-                                                    ))}
+                                                    {sequence.map((iconName, i) => (<div key={i} className="p-7 bg-white text-purple-600 rounded-[2.5rem] shadow-xl border-2 border-purple-100"><Icon name={iconName} size={48} /></div>))}
                                                 </div>
                                             </div>
                                         ) : (
-                                            <div className="space-y-10 animate-in fade-in">
-                                                <p className="text-slate-400 text-[11px] font-black uppercase tracking-[0.2em]">Repite la secuencia</p>
+                                            <div className="space-y-10 animate-in fade-in duration-300">
+                                                <p className="text-slate-400 text-[11px] font-black uppercase tracking-[0.2em]">Repite la ruta operativa</p>
                                                 <div className="grid grid-cols-3 gap-4">
                                                     {memorySteps.map((step) => (
                                                         <button key={step.id} onClick={() => {
@@ -474,7 +415,7 @@
                                                                 setUserSeq(n);
                                                                 if(n.length === sequence.length) { setScore(s=>s+25); genSeq(); }
                                                             } else { setScore(s=>Math.max(0, s-10)); genSeq(); }
-                                                        }} className="p-8 bg-white rounded-[2.5rem] border border-slate-100 shadow-sm flex flex-col items-center gap-3 hover:border-purple-300 transition-all active:scale-95 group">
+                                                        }} className="p-8 bg-white rounded-[2.5rem] border border-slate-100 shadow-sm flex flex-col items-center gap-3 hover:border-purple-300 hover:bg-purple-50 transition-all active:scale-95 group">
                                                             <Icon name={step.id} size={32} className="text-slate-400 group-hover:text-purple-600" />
                                                             <span className="text-[10px] font-black uppercase text-slate-400 group-hover:text-purple-600 tracking-tight">{step.label}</span>
                                                         </button>
@@ -489,25 +430,31 @@
 
                         {gameState === 'finished' && (
                             <div className="h-full flex flex-col items-center justify-center text-center p-8 animate-in zoom-in duration-500">
-                                <div className="p-12 bg-amber-100 text-amber-600 rounded-full mb-10 shadow-2xl relative">
+                                <div className="p-12 bg-amber-100 text-amber-600 rounded-full mb-10 shadow-2xl shadow-amber-50 relative">
                                     <Icon name="Trophy" size={100} />
                                     <div className="absolute -top-2 -right-2 w-10 h-10 bg-indigo-600 rounded-full border-4 border-white flex items-center justify-center shadow-lg"><Icon name="Check" size={20} className="text-white" /></div>
                                 </div>
-                                <h2 className="text-4xl font-black text-slate-800 mb-3 tracking-tight italic uppercase">¡Completado!</h2>
-                                <p className="text-slate-500 mb-12 text-lg font-medium">Has sumado <span className="text-indigo-600 font-black px-3 py-1 bg-indigo-50 rounded-xl">{score}</span> puntos.</p>
+                                <h2 className="text-4xl font-black text-slate-800 mb-3 tracking-tight italic uppercase leading-none">¡Nivel Completado!</h2>
+                                <p className="text-slate-500 mb-12 text-lg font-medium">Has sumado <span className="text-indigo-600 font-black px-3 py-1 bg-indigo-50 rounded-xl">{score}</span> puntos a tu perfil.</p>
                                 <div className="w-full space-y-4">
-                                    <button onClick={restartGame} className="w-full py-5 bg-indigo-600 text-white rounded-[2rem] font-bold text-xl shadow-xl hover:bg-indigo-700 active:scale-95 transition-all">Reintentar</button>
-                                    <button onClick={exitToMenu} className="w-full py-5 bg-white text-slate-400 rounded-[2rem] font-bold text-lg hover:text-slate-600 transition-all italic uppercase">Menú Principal</button>
+                                    <button onClick={() => start(view)} className="w-full py-5 bg-indigo-600 text-white rounded-[2rem] font-bold text-xl shadow-xl shadow-indigo-100 hover:bg-indigo-700 active:scale-95 transition-all">Reintentar Ahora</button>
+                                    <button onClick={() => setView(GAMES.MENU)} className="w-full py-5 bg-white text-slate-400 rounded-[2rem] font-bold text-lg hover:text-slate-600 transition-all">Volver al Menú</button>
                                 </div>
                             </div>
                         )}
                     </main>
 
                     {view === GAMES.MENU && (
-                        <nav className="absolute bottom-0 w-full bg-white/90 backdrop-blur-md border-t p-6 flex justify-around items-center rounded-t-[3rem] shadow-[0_-20px_60px_-15px_rgba(79,70,229,0.15)]">
-                            <button className="text-indigo-600 flex flex-col items-center gap-1.5"><Icon name="Brain" size={28}/><span className="text-[10px] font-black tracking-widest uppercase">Entrenar</span></button>
-                            <button onClick={() => setView(GAMES.RANKING)} className="text-slate-300 flex flex-col items-center gap-1.5 hover:text-indigo-400 transition-all"><Icon name="TrendingUp" size={28}/><span className="text-[10px] font-black tracking-widest uppercase">Ranking</span></button>
-                            <button onClick={() => window.location.reload()} className="text-slate-300 flex flex-col items-center gap-1.5 hover:text-red-400 transition-all"><Icon name="LogOut" size={28}/><span className="text-[10px] font-black tracking-widest uppercase">Salir</span></button>
+                        <nav className="absolute bottom-0 w-full bg-white/90 backdrop-blur-md border-t p-6 flex justify-around items-center rounded-t-[3rem] shadow-[0_-20px_60px_-15px_rgba(79,70,229,0.15)] text-center">
+                            <button className="text-indigo-600 flex flex-col items-center gap-1.5 transition-transform hover:scale-110">
+                                <Icon name="Brain" size={28}/><span className="text-[10px] font-black tracking-widest uppercase">Entrenar</span>
+                            </button>
+                            <button onClick={() => setView(GAMES.RANKING)} className="text-slate-300 flex flex-col items-center gap-1.5 hover:text-indigo-400 transition-all hover:scale-110">
+                                <Icon name="TrendingUp" size={28}/><span className="text-[10px] font-black tracking-widest uppercase">Ranking</span>
+                            </button>
+                            <button onClick={() => window.location.reload()} className="text-slate-300 flex flex-col items-center gap-1.5 hover:text-red-400 transition-all hover:scale-110">
+                                <Icon name="LogOut" size={28}/><span className="text-[10px] font-black tracking-widest uppercase">Salir</span>
+                            </button>
                         </nav>
                     )}
                 </div>
