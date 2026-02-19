@@ -4,111 +4,53 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Brain-Op | Entrenamiento Estratégico</title>
-    <!-- Tailwind CSS para el diseño -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- React y ReactDOM via CDN -->
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <!-- Babel para compilar JSX en el navegador -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
-        
-        body { 
-            font-family: 'Plus Jakarta Sans', sans-serif; 
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        .animate-pulse-slow { 
-            animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite; 
-        }
-
-        @keyframes pulse { 
-            0%, 100% { opacity: 1; } 
-            50% { opacity: .7; } 
-        }
-
-        /* Estilo para que Lucide funcione bien con el wrapper de React */
-        .lucide-icon-wrapper i { 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-        }
-
-        /* Suavizado de bordes y sombras */
-        .custom-shadow {
-            box-shadow: 0 10px 30px -5px rgba(79, 70, 229, 0.1), 0 4px 10px -5px rgba(79, 70, 229, 0.05);
-        }
-
-        .glass-card {
-            background: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.5);
-        }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
+        .animate-pulse-slow { animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .7; } }
+        .lucide-icon-wrapper i { display: flex; align-items: center; justify-content: center; }
+        .glass-card { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.5); }
     </style>
 </head>
 <body class="bg-slate-50">
     <div id="root"></div>
 
-    <script type="text/babel" data-type="module">
+    <script type="text/babel">
         const { useState, useEffect, useCallback, useRef } = React;
-        
-        // --- CONFIGURACIÓN DE FIREBASE ---
-        const firebaseConfig = window.__firebase_config ? JSON.parse(window.__firebase_config) : {
-            apiKey: "",
-            authDomain: "",
-            projectId: "",
-            storageBucket: "",
-            messagingSenderId: "",
-            appId: ""
-        };
 
-        // Importaciones de módulos Firebase
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const APP_ID = typeof __app_id !== 'undefined' ? __app_id : 'brain-op-prod';
-
-        // --- ICONOS (Adaptador corregido para Lucide CDN) ---
+        // --- ADAPTADOR DE ICONOS ---
         const Icon = ({ name, size = 24, className = "" }) => {
             const iconRef = useRef(null);
-            
             useEffect(() => {
                 if (window.lucide && iconRef.current) {
                     const kebabName = name.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
                     iconRef.current.innerHTML = `<i data-lucide="${kebabName}"></i>`;
-                    
                     window.lucide.createIcons({
-                        attrs: {
-                            'stroke-width': 2.5,
-                            width: size,
-                            height: size,
-                            class: className,
-                            stroke: 'currentColor'
-                        }
+                        attrs: { 'stroke-width': 2.5, width: size, height: size, class: className, stroke: 'currentColor' }
                     });
                 }
             }, [name, size, className]);
-
-            return <span ref={iconRef} className="lucide-icon-wrapper inline-flex items-center justify-center leading-none"></span>;
+            return <span ref={iconRef} className="lucide-icon-wrapper inline-flex items-center justify-center"></span>;
         };
 
         const GAMES = { LOGIN: 'login', MENU: 'menu', CALCULO: 'calculo', ATENCION: 'atencion', MEMORIA: 'memoria', RANKING: 'ranking' };
 
         const App = () => {
-            const [user, setUser] = useState(null);
             const [profile, setProfile] = useState(null);
             const [view, setView] = useState('loading');
             const [score, setScore] = useState(0);
             const [gameState, setGameState] = useState('idle');
             const [timeLeft, setTimeLeft] = useState(30);
-            const [ranking, setRanking] = useState([]);
+            const [ranking, setRanking] = useState([
+                { name: "Ana Milena", university: "Poli", totalPoints: 1250 },
+                { name: "Carlos Perez", university: "USAM", totalPoints: 980 }
+            ]);
 
             const [math, setMath] = useState({ q: '', isCorrect: true, displayA: 0 });
             const [attention, setAttention] = useState([]);
@@ -123,88 +65,41 @@
                 { id: 'Check', label: 'Cierre' }
             ];
 
-            // Inicialización de Auth
+            // Carga inicial (Simulando base de datos local)
             useEffect(() => {
-                const initAuth = async () => {
-                    try {
-                        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                            await signInWithCustomToken(auth, __initial_auth_token);
-                        } else {
-                            await signInAnonymously(auth);
-                        }
-                    } catch (error) {
-                        console.error("Auth init error", error);
+                const saved = localStorage.getItem('brainop_user');
+                setTimeout(() => {
+                    if (saved) {
+                        setProfile(JSON.parse(saved));
+                        setView(GAMES.MENU);
+                    } else {
+                        setView(GAMES.LOGIN);
                     }
-                };
-                initAuth();
-
-                const unsubscribe = onAuthStateChanged(auth, async (u) => {
-                    if (u) {
-                        setUser(u);
-                        try {
-                            const userDocRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'users', u.uid);
-                            const snap = await getDoc(userDocRef);
-                            if (snap.exists()) {
-                                setProfile(snap.data());
-                                setView(GAMES.MENU);
-                            } else {
-                                setView(GAMES.LOGIN);
-                            }
-                        } catch (err) {
-                            console.error("Error cargando perfil:", err);
-                            setView(GAMES.LOGIN);
-                        }
-                    }
-                });
-                return () => unsubscribe();
+                }, 1500);
             }, []);
 
-            // Ranking en tiempo real
-            useEffect(() => {
-                if (!user) return;
-                const usersCollection = collection(db, 'artifacts', APP_ID, 'public', 'data', 'users');
-                const unsubscribe = onSnapshot(usersCollection, (snap) => {
-                    const data = snap.docs.map(d => d.data())
-                        .sort((a, b) => (b.totalPoints || 0) - (a.totalPoints || 0));
-                    setRanking(data);
-                }, (err) => console.error("Ranking error", err));
-                return () => unsubscribe();
-            }, [user]);
-
-            const handleRegister = async (e) => {
+            const handleRegister = (e) => {
                 e.preventDefault();
-                if (!user) return;
                 const data = {
-                    uid: user.uid,
                     name: e.target.name.value,
                     university: e.target.uni.value,
                     totalPoints: 0,
-                    highScore: 0,
-                    lastActive: new Date().toISOString()
+                    highScore: 0
                 };
-                try {
-                    await setDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'users', user.uid), data);
-                    setProfile(data);
-                    setView(GAMES.MENU);
-                } catch (err) {
-                    console.error("Error registrando:", err);
-                }
+                localStorage.setItem('brainop_user', JSON.stringify(data));
+                setProfile(data);
+                setView(GAMES.MENU);
             };
 
-            const saveScore = async (finalScore) => {
-                if (!user || !profile || finalScore <= 0) return;
-                const ref = doc(db, 'artifacts', APP_ID, 'public', 'data', 'users', user.uid);
-                try {
-                    await updateDoc(ref, {
-                        totalPoints: increment(finalScore),
-                        highScore: Math.max(profile.highScore || 0, finalScore)
-                    });
-                } catch (err) {
-                    console.error("Error guardando puntaje:", err);
-                }
+            const saveScore = (finalScore) => {
+                const newProfile = { ...profile };
+                newProfile.totalPoints += finalScore;
+                newProfile.highScore = Math.max(newProfile.highScore, finalScore);
+                setProfile(newProfile);
+                localStorage.setItem('brainop_user', JSON.stringify(newProfile));
             };
 
-            // Generadores de Juegos
+            // Lógica de Juegos
             const genMath = useCallback(() => {
                 const b = Math.floor(Math.random() * 9 + 1) * 100;
                 const d = [10, 20, 25, 50][Math.floor(Math.random() * 4)];
@@ -239,33 +134,16 @@
                     saveScore(score);
                 }
                 return () => clearInterval(t);
-            }, [gameState, timeLeft, score, profile]);
+            }, [gameState, timeLeft]);
 
             const start = (g) => {
-                setScore(0); 
-                setTimeLeft(30); 
-                setView(g);
+                setScore(0); setTimeLeft(30); setView(g);
                 if (g === GAMES.CALCULO) { setGameState('playing'); genMath(); }
                 if (g === GAMES.ATENCION) { setGameState('playing'); genAttention(); }
                 if (g === GAMES.MEMORIA) { genSeq(); }
             };
 
-            const restartGame = () => {
-                setScore(0);
-                setTimeLeft(30);
-                if (view === GAMES.CALCULO) genMath();
-                if (view === GAMES.ATENCION) genAttention();
-                if (view === GAMES.MEMORIA) genSeq();
-                setGameState('playing');
-            };
-
-            const exitToMenu = () => {
-                setGameState('idle');
-                setView(GAMES.MENU);
-            };
-
-            // --- VISTAS ---
-
+            // VISTAS
             if (view === 'loading') return (
                 <div className="h-screen flex flex-col items-center justify-center bg-indigo-600 text-white">
                     <Icon name="Brain" size={64} className="animate-bounce mb-6" />
@@ -274,247 +152,143 @@
             );
 
             if (view === GAMES.LOGIN) return (
-                <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-slate-50">
-                    <div className="w-full max-w-md bg-white p-10 rounded-[3rem] shadow-xl border border-indigo-50 animate-in zoom-in duration-500">
+                <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-slate-50 text-slate-800">
+                    <div className="w-full max-w-md bg-white p-10 rounded-[3rem] shadow-xl border border-indigo-50">
                         <div className="flex justify-center mb-8">
                             <div className="p-5 bg-indigo-600 rounded-3xl text-white shadow-xl shadow-indigo-100">
                                 <Icon name="Brain" size={48} />
                             </div>
                         </div>
-                        <h1 className="text-4xl font-black text-center text-slate-800 mb-2 tracking-tight">Brain-Op</h1>
+                        <h1 className="text-4xl font-black text-center mb-2 tracking-tight">Brain-Op</h1>
                         <p className="text-center text-slate-500 mb-10 text-sm font-medium">Entrena tu mente para liderar en USAM y Poli.</p>
                         <form onSubmit={handleRegister} className="space-y-5">
-                            <div>
-                                <label className="text-xs font-bold text-slate-400 uppercase ml-2 mb-2 block tracking-widest">Nombre Completo</label>
-                                <input name="name" required className="w-full px-6 py-4 bg-slate-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-2xl outline-none font-semibold transition-all" placeholder="Ej. Ana Milena" />
-                            </div>
-                            <div>
-                                <label className="text-xs font-bold text-slate-400 uppercase ml-2 mb-2 block tracking-widest">Institución</label>
-                                <select name="uni" className="w-full px-6 py-4 bg-slate-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-2xl outline-none font-semibold appearance-none cursor-pointer">
-                                    <option value="Poli">Politécnico Grancolombiano</option>
-                                    <option value="USAM">Universidad San Marcos</option>
-                                </select>
-                            </div>
-                            <button className="w-full py-5 bg-indigo-600 text-white rounded-2xl font-bold text-lg shadow-xl shadow-indigo-100 hover:bg-indigo-700 active:scale-95 transition-all mt-6">Empezar a Entrenar</button>
+                            <input name="name" required className="w-full px-6 py-4 bg-slate-50 border-2 border-transparent focus:border-indigo-500 rounded-2xl outline-none font-semibold" placeholder="Tu Nombre" />
+                            <select name="uni" className="w-full px-6 py-4 bg-slate-50 border-2 border-transparent focus:border-indigo-500 rounded-2xl outline-none font-semibold">
+                                <option value="Poli">Politécnico Grancolombiano</option>
+                                <option value="USAM">Universidad San Marcos</option>
+                            </select>
+                            <button className="w-full py-5 bg-indigo-600 text-white rounded-2xl font-bold text-lg shadow-xl hover:bg-indigo-700 active:scale-95 transition-all">Empezar</button>
                         </form>
                     </div>
                 </div>
             );
 
             return (
-                <div className="max-w-md mx-auto min-h-screen bg-slate-50 flex flex-col shadow-2xl relative overflow-hidden">
-                    {/* Barra Superior */}
+                <div className="max-w-md mx-auto min-h-screen bg-slate-50 flex flex-col shadow-2xl relative overflow-hidden text-slate-800">
+                    {/* Header */}
                     <div className="bg-white/80 backdrop-blur-md p-5 border-b flex justify-between items-center sticky top-0 z-40">
                         <div className="flex items-center gap-3">
-                            <div className="w-11 h-11 bg-indigo-600 rounded-2xl flex items-center justify-center text-white font-black text-xl shadow-lg shadow-indigo-100">
-                                {profile?.name?.[0] || 'U'}
+                            <div className="w-11 h-11 bg-indigo-600 rounded-2xl flex items-center justify-center text-white font-black text-xl">
+                                {profile?.name?.[0]}
                             </div>
                             <div>
-                                <p className="text-[10px] font-extrabold text-indigo-600 uppercase tracking-tighter leading-none">{profile?.university}</p>
-                                <p className="font-bold text-slate-800 text-sm leading-tight truncate max-w-[140px]">{profile?.name}</p>
+                                <p className="text-[10px] font-extrabold text-indigo-600 uppercase leading-none">{profile?.university}</p>
+                                <p className="font-bold text-sm leading-tight truncate max-w-[140px]">{profile?.name}</p>
                             </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                            <div className="bg-amber-100 px-4 py-2 rounded-2xl border border-amber-200 flex items-center gap-2 shadow-sm">
-                                <Icon name="Zap" size={18} className="text-amber-500 fill-amber-500" />
-                                <span className="font-black text-amber-700 text-sm">{profile?.totalPoints || 0}</span>
-                            </div>
+                        <div className="bg-amber-100 px-4 py-2 rounded-2xl border border-amber-200 flex items-center gap-2">
+                            <Icon name="Zap" size={18} className="text-amber-500" />
+                            <span className="font-black text-amber-700 text-sm">{profile?.totalPoints}</span>
                         </div>
                     </div>
 
                     <main className="flex-1 overflow-y-auto p-6 pb-28">
                         {view === GAMES.MENU && (
-                            <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                            <div className="space-y-8">
                                 <div className="bg-gradient-to-br from-indigo-600 to-indigo-800 p-8 rounded-[2.5rem] text-white shadow-2xl relative overflow-hidden">
-                                    <div className="relative z-10">
-                                        <h2 className="text-2xl font-bold mb-1 italic">¡Hola de nuevo!</h2>
-                                        <p className="text-indigo-100 text-sm mb-8 font-medium opacity-90">Tu entrenamiento estratégico de hoy está listo.</p>
-                                        <div className="flex gap-3">
-                                            <div className="flex-1 glass-card p-4 rounded-3xl border border-white/20">
-                                                <p className="text-[10px] uppercase font-black opacity-60 mb-1 tracking-wider">Récord</p>
-                                                <p className="font-black text-lg">{profile?.highScore || 0} <span className="text-[10px] font-bold">PTS</span></p>
-                                            </div>
-                                            <div className="flex-1 glass-card p-4 rounded-3xl border border-white/20">
-                                                <p className="text-[10px] uppercase font-black opacity-60 mb-1 tracking-wider">Estatus</p>
-                                                <p className="font-black text-lg">Activo 🔥</p>
-                                            </div>
+                                    <h2 className="text-2xl font-bold mb-1 italic relative z-10">¡Hola!</h2>
+                                    <p className="text-indigo-100 text-sm mb-8 font-medium relative z-10">Tu entrenamiento está listo.</p>
+                                    <div className="flex gap-3 relative z-10">
+                                        <div className="flex-1 glass-card p-4 rounded-3xl">
+                                            <p className="text-[10px] uppercase font-black opacity-60 mb-1">Récord</p>
+                                            <p className="font-black text-lg">{profile?.highScore} PTS</p>
+                                        </div>
+                                        <div className="flex-1 glass-card p-4 rounded-3xl">
+                                            <p className="text-[10px] uppercase font-black opacity-60 mb-1">Estatus</p>
+                                            <p className="font-black text-lg">Activo 🔥</p>
                                         </div>
                                     </div>
                                     <Icon name="Brain" size={150} className="absolute -right-10 -bottom-10 opacity-10" />
                                 </div>
 
-                                <div className="space-y-4">
-                                    <h3 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Módulos de Agilidad</h3>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <button onClick={() => start(GAMES.CALCULO)} className="p-6 bg-white rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-xl hover:border-amber-200 transition-all text-left group">
-                                            <div className="w-12 h-12 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform"><Icon name="Zap" size={24} /></div>
-                                            <h4 className="font-extrabold text-slate-800 text-sm mb-1">Auditoría</h4>
-                                            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Becas y cálculos</p>
-                                        </button>
-                                        <button onClick={() => start(GAMES.ATENCION)} className="p-6 bg-white rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-xl hover:border-blue-200 transition-all text-left group">
-                                            <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform"><Icon name="Target" size={24} /></div>
-                                            <h4 className="font-extrabold text-slate-800 text-sm mb-1">Detalle</h4>
-                                            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Atención visual</p>
-                                        </button>
-                                        <button onClick={() => start(GAMES.MEMORIA)} className="p-6 bg-white rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-xl hover:border-purple-200 transition-all text-left group">
-                                            <div className="w-12 h-12 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform"><Icon name="BookOpen" size={24} /></div>
-                                            <h4 className="font-extrabold text-slate-800 text-sm mb-1">Ruta Venta</h4>
-                                            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Secuencia lógica</p>
-                                        </button>
-                                        <button onClick={() => setView(GAMES.RANKING)} className="p-6 bg-white rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-xl hover:border-green-200 transition-all text-left group">
-                                            <div className="w-12 h-12 bg-green-50 text-green-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform"><Icon name="Users" size={24} /></div>
-                                            <h4 className="font-extrabold text-slate-800 text-sm mb-1">Ranking</h4>
-                                            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Líderes Operación</p>
-                                        </button>
-                                    </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <button onClick={() => start(GAMES.CALCULO)} className="p-6 bg-white rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-xl transition-all text-left group">
+                                        <div className="w-12 h-12 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center mb-4"><Icon name="Zap" size={24} /></div>
+                                        <h4 className="font-extrabold text-sm mb-1">Auditoría</h4>
+                                        <p className="text-[10px] text-slate-400 font-bold uppercase">Cálculos</p>
+                                    </button>
+                                    <button onClick={() => start(GAMES.ATENCION)} className="p-6 bg-white rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-xl transition-all text-left group">
+                                        <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mb-4"><Icon name="Target" size={24} /></div>
+                                        <h4 className="font-extrabold text-sm mb-1">Detalle</h4>
+                                        <p className="text-[10px] text-slate-400 font-bold uppercase">Atención</p>
+                                    </button>
+                                    <button onClick={() => start(GAMES.MEMORIA)} className="p-6 bg-white rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-xl transition-all text-left group">
+                                        <div className="w-12 h-12 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center mb-4"><Icon name="BookOpen" size={24} /></div>
+                                        <h4 className="font-extrabold text-sm mb-1">Ruta Venta</h4>
+                                        <p className="text-[10px] text-slate-400 font-bold uppercase">Memoria</p>
+                                    </button>
+                                    <button onClick={() => setView(GAMES.RANKING)} className="p-6 bg-white rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-xl transition-all text-left group">
+                                        <div className="w-12 h-12 bg-green-50 text-green-600 rounded-2xl flex items-center justify-center mb-4"><Icon name="Users" size={24} /></div>
+                                        <h4 className="font-extrabold text-sm mb-1">Ranking</h4>
+                                        <p className="text-[10px] text-slate-400 font-bold uppercase">Top 10</p>
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
+                        {view === GAMES.CALCULO && gameState === 'playing' && (
+                            <div className="h-full flex flex-col text-center">
+                                <div className="flex justify-between items-center mb-8 bg-white p-4 rounded-3xl shadow-sm">
+                                    <button onClick={() => setView(GAMES.MENU)}><Icon name="X" className="text-slate-400" /></button>
+                                    <span className="font-black">{score} PTS</span>
+                                    <span className="bg-slate-800 text-white px-4 py-1 rounded-xl">{timeLeft}s</span>
+                                </div>
+                                <div className="bg-white p-12 rounded-[3rem] shadow-xl mb-10">
+                                    <p className="text-[11px] text-slate-400 font-black uppercase mb-4 tracking-widest">¿Cálculo Correcto?</p>
+                                    <h3 className="text-xl font-bold text-slate-600 mb-2">{math.q}</h3>
+                                    <div className="text-6xl font-black text-indigo-600">${math.displayA}</div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-6">
+                                    <button onClick={() => { if(!math.isCorrect) setScore(s=>s+10); genMath(); }} className="py-8 bg-white text-red-500 rounded-[2rem] shadow-sm border-2 border-red-50 active:scale-95 transition-all flex justify-center"><Icon name="X" size={48} /></button>
+                                    <button onClick={() => { if(math.isCorrect) setScore(s=>s+10); genMath(); }} className="py-8 bg-white text-green-500 rounded-[2rem] shadow-sm border-2 border-green-50 active:scale-95 transition-all flex justify-center"><Icon name="Check" size={48} /></button>
                                 </div>
                             </div>
                         )}
 
                         {view === GAMES.RANKING && (
-                            <div className="animate-in slide-in-from-right duration-300">
-                                <div className="flex items-center gap-4 mb-8">
-                                    <button onClick={() => setView(GAMES.MENU)} className="p-3 bg-white hover:bg-slate-100 rounded-2xl transition-all shadow-sm"><Icon name="ArrowLeft" size={24} /></button>
-                                    <h2 className="font-black text-2xl text-slate-800 tracking-tight">Top Estrategas</h2>
+                            <div className="space-y-4">
+                                <div className="flex items-center gap-4 mb-6">
+                                    <button onClick={() => setView(GAMES.MENU)} className="p-3 bg-white rounded-2xl shadow-sm"><Icon name="ArrowLeft" /></button>
+                                    <h2 className="font-black text-2xl">Líderes</h2>
                                 </div>
-                                <div className="space-y-4">
-                                    {ranking.map((p, i) => (
-                                        <div key={i} className={`flex items-center p-6 rounded-[2.5rem] border-2 transition-all ${p.uid === user.uid ? 'bg-indigo-50 border-indigo-200 shadow-inner' : 'bg-white border-slate-100 shadow-sm'}`}>
-                                            <span className={`w-12 font-black text-xl ${i<3 ? 'text-amber-500' : 'text-slate-200'}`}>#{i+1}</span>
-                                            <div className="flex-1">
-                                                <p className="font-bold text-slate-800 text-base leading-tight">{p.name}</p>
-                                                <p className="text-[11px] text-slate-400 font-black uppercase tracking-widest">{p.university}</p>
-                                            </div>
-                                            <div className="text-right">
-                                                <p className="font-black text-indigo-600 text-2xl leading-none">{p.totalPoints || 0}</p>
-                                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Pts</p>
-                                            </div>
+                                {ranking.map((p, i) => (
+                                    <div key={i} className="flex items-center p-6 bg-white rounded-[2rem] shadow-sm border border-slate-50">
+                                        <span className="w-10 font-black text-indigo-600">#{i+1}</span>
+                                        <div className="flex-1">
+                                            <p className="font-bold">{p.name}</p>
+                                            <p className="text-[10px] font-black uppercase opacity-40">{p.university}</p>
                                         </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Vistas de Juego Activo */}
-                        {(view === GAMES.CALCULO || view === GAMES.ATENCION || view === GAMES.MEMORIA) && gameState !== 'finished' && (
-                            <div className="h-full flex flex-col animate-in zoom-in duration-300">
-                                {/* Cabecera de Juego con Controles */}
-                                <div className="flex justify-between items-center mb-8 bg-white p-4 rounded-[2rem] shadow-sm border border-slate-100">
-                                    <div className="flex items-center gap-2 px-2">
-                                        <button onClick={exitToMenu} className="p-2 hover:bg-red-50 text-slate-400 hover:text-red-500 rounded-xl transition-all" title="Salir al menú">
-                                            <Icon name="X" size={20} />
-                                        </button>
-                                        <button onClick={restartGame} className="p-2 hover:bg-amber-50 text-slate-400 hover:text-amber-500 rounded-xl transition-all" title="Reiniciar juego">
-                                            <Icon name="RotateCcw" size={20} />
-                                        </button>
+                                        <p className="font-black text-xl text-indigo-600">{p.totalPoints}</p>
                                     </div>
-                                    <div className="flex flex-col items-center">
-                                        <span className="font-black text-slate-800 text-lg leading-none">{score}</span>
-                                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Puntos</span>
-                                    </div>
-                                    <div className={`px-5 py-2 rounded-2xl text-sm font-black text-white transition-all duration-500 ${timeLeft < 10 ? 'bg-red-500 animate-pulse' : 'bg-slate-800'}`}>
-                                        {timeLeft}s
-                                    </div>
-                                </div>
-
-                                {view === GAMES.CALCULO && (
-                                    <div className="flex-1 flex flex-col justify-center">
-                                        <div className="bg-white p-12 rounded-[4rem] shadow-xl border border-slate-100 text-center mb-10 transform hover:scale-[1.02] transition-transform">
-                                            <p className="text-[11px] text-slate-400 font-black uppercase tracking-[0.3em] mb-4 italic">¿Es Correcta la Beca?</p>
-                                            <h3 className="text-xl font-bold text-slate-600 mb-2">{math.q}</h3>
-                                            <div className="text-6xl font-black text-indigo-600 tracking-tighter">${math.displayA}</div>
-                                        </div>
-                                        <div className="grid grid-cols-2 gap-6">
-                                            <button onClick={() => { if(!math.isCorrect) setScore(s=>s+10); else setScore(s=>Math.max(0, s-5)); genMath(); }} className="py-10 bg-white border-2 border-red-50 text-red-500 rounded-[3rem] shadow-sm active:scale-95 transition-all flex justify-center items-center hover:bg-red-50 hover:border-red-200"><Icon name="X" size={56} /></button>
-                                            <button onClick={() => { if(math.isCorrect) setScore(s=>s+10); else setScore(s=>Math.max(0, s-5)); genMath(); }} className="py-10 bg-white border-2 border-green-50 text-green-500 rounded-[3rem] shadow-sm active:scale-95 transition-all flex justify-center items-center hover:bg-green-50 hover:border-green-200"><Icon name="Check" size={56} /></button>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {view === GAMES.ATENCION && (
-                                    <div className="flex-1 flex flex-col justify-center">
-                                        <p className="text-center text-slate-400 text-[11px] font-black uppercase mb-8 tracking-[0.2em] italic">Encuentra el error de proceso</p>
-                                        <div className="grid grid-cols-4 gap-4 p-5 bg-white rounded-[3rem] shadow-xl border border-slate-100">
-                                            {attention.map(item => (
-                                                <button key={item.id} onClick={() => { if(item.isOdd) { setScore(s=>s+15); genAttention(); } else setScore(s=>Math.max(0, s-10)); }} className="aspect-square flex items-center justify-center p-3 rounded-3xl bg-slate-50 text-slate-300 hover:bg-indigo-50 hover:text-indigo-600 transition-all active:scale-90 border-2 border-transparent hover:border-indigo-100">
-                                                    <Icon name={item.icon} size={32} />
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
-
-                                {view === GAMES.MEMORIA && (
-                                    <div className="flex-1 flex flex-col justify-center">
-                                        {gameState === 'memorizing' ? (
-                                            <div className="text-center animate-pulse-slow">
-                                                <p className="text-purple-600 font-black uppercase mb-10 tracking-[0.3em]">Memoriza la Secuencia</p>
-                                                <div className="flex gap-4 justify-center">
-                                                    {sequence.map((iconName, i) => (
-                                                        <div key={i} className="p-7 bg-white text-purple-600 rounded-[2.5rem] shadow-xl border-2 border-purple-100">
-                                                            <Icon name={iconName} size={48} />
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        ) : (
-                                            <div className="space-y-10 animate-in fade-in duration-300">
-                                                <p className="text-center text-slate-400 text-[11px] font-black uppercase tracking-[0.2em]">Repite la ruta operativa</p>
-                                                <div className="grid grid-cols-3 gap-4">
-                                                    {memorySteps.map((step) => (
-                                                        <button key={step.id} onClick={() => {
-                                                            const next = userSeq.length;
-                                                            if (step.id === sequence[next]) {
-                                                                const n = [...userSeq, step.id];
-                                                                setUserSeq(n);
-                                                                if(n.length === sequence.length) { setScore(s=>s+25); genSeq(); }
-                                                            } else { 
-                                                                setScore(s=>Math.max(0, s-10)); 
-                                                                genSeq(); 
-                                                            }
-                                                        }} className="p-8 bg-white rounded-[2.5rem] border border-slate-100 shadow-sm flex flex-col items-center gap-3 hover:border-purple-300 hover:bg-purple-50 transition-all active:scale-95 group">
-                                                            <Icon name={step.id} size={32} className="text-slate-400 group-hover:text-purple-600" />
-                                                            <span className="text-[10px] font-black uppercase text-slate-400 group-hover:text-purple-600 tracking-tight">{step.label}</span>
-                                                        </button>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
+                                ))}
                             </div>
                         )}
 
                         {gameState === 'finished' && (
-                            <div className="h-full flex flex-col items-center justify-center text-center p-8 animate-in zoom-in duration-500">
-                                <div className="p-12 bg-amber-100 text-amber-600 rounded-full mb-10 shadow-2xl shadow-amber-50 relative">
-                                    <Icon name="Trophy" size={100} />
-                                    <div className="absolute -top-2 -right-2 w-10 h-10 bg-indigo-600 rounded-full border-4 border-white flex items-center justify-center shadow-lg">
-                                        <Icon name="Check" size={20} className="text-white" />
-                                    </div>
-                                </div>
-                                <h2 className="text-4xl font-black text-slate-800 mb-3 tracking-tight italic uppercase">¡Nivel Completado!</h2>
-                                <p className="text-slate-500 mb-12 text-lg font-medium">Has sumado <span className="text-indigo-600 font-black px-3 py-1 bg-indigo-50 rounded-xl">{score}</span> puntos a tu perfil.</p>
-                                <div className="w-full space-y-4">
-                                    <button onClick={restartGame} className="w-full py-5 bg-indigo-600 text-white rounded-[2rem] font-bold text-xl shadow-xl shadow-indigo-100 hover:bg-indigo-700 active:scale-95 transition-all">Reintentar Ahora</button>
-                                    <button onClick={exitToMenu} className="w-full py-5 bg-white text-slate-400 rounded-[2rem] font-bold text-lg hover:text-slate-600 transition-all">Volver al Menú</button>
-                                </div>
+                            <div className="h-full flex flex-col items-center justify-center text-center">
+                                <div className="p-10 bg-amber-100 text-amber-600 rounded-full mb-8"><Icon name="Trophy" size={80} /></div>
+                                <h2 className="text-4xl font-black mb-3">¡Bien hecho!</h2>
+                                <p className="text-slate-500 mb-10 text-lg">Sumaste <span className="text-indigo-600 font-black px-3 py-1 bg-indigo-50 rounded-xl">{score}</span> puntos.</p>
+                                <button onClick={() => setView(GAMES.MENU)} className="w-full py-5 bg-indigo-600 text-white rounded-2xl font-bold text-xl shadow-xl active:scale-95 transition-all">Volver al Inicio</button>
                             </div>
                         )}
                     </main>
 
-                    {/* Navegación Inferior Estilo App */}
                     {view === GAMES.MENU && (
-                        <nav className="absolute bottom-0 w-full bg-white/90 backdrop-blur-md border-t p-6 flex justify-around items-center rounded-t-[3rem] shadow-[0_-20px_60px_-15px_rgba(79,70,229,0.15)]">
-                            <button className="text-indigo-600 flex flex-col items-center gap-1.5 transition-transform hover:scale-110">
-                                <Icon name="Brain" size={28}/><span className="text-[10px] font-black tracking-widest uppercase">Entrenar</span>
-                            </button>
-                            <button onClick={() => setView(GAMES.RANKING)} className="text-slate-300 flex flex-col items-center gap-1.5 hover:text-indigo-400 transition-all hover:scale-110">
-                                <Icon name="TrendingUp" size={28}/><span className="text-[10px] font-black tracking-widest uppercase">Ranking</span>
-                            </button>
-                            <button onClick={() => window.location.reload()} className="text-slate-300 flex flex-col items-center gap-1.5 hover:text-red-400 transition-all hover:scale-110">
-                                <Icon name="LogOut" size={28}/><span className="text-[10px] font-black tracking-widest uppercase">Salir</span>
-                            </button>
+                        <nav className="absolute bottom-0 w-full bg-white border-t p-6 flex justify-around rounded-t-[2.5rem] shadow-2xl">
+                            <button className="text-indigo-600 flex flex-col items-center gap-1"><Icon name="Brain" size={24}/><span className="text-[9px] font-black uppercase">Entrenar</span></button>
+                            <button onClick={() => setView(GAMES.RANKING)} className="text-slate-300 flex flex-col items-center gap-1"><Icon name="TrendingUp" size={24}/><span className="text-[9px] font-black uppercase">Ranking</span></button>
+                            <button onClick={() => { localStorage.clear(); window.location.reload(); }} className="text-slate-300 flex flex-col items-center gap-1"><Icon name="LogOut" size={24}/><span className="text-[9px] font-black uppercase">Salir</span></button>
                         </nav>
                     )}
                 </div>
