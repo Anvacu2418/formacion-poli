@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPACE SIM: Operación Tiempos</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Urbanist:wght@400;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --space-black: #020617;
+            --hud-cyan: #22d3ee;
+            --hud-red: #ef4444;
+            --hud-gold: #fbbf24;
+        }
+
+        body {
+            background-color: var(--space-black);
+            color: #e2e8f0;
+            font-family: 'Urbanist', sans-serif;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            background-image: radial-gradient(circle at center, #0f172a 0%, #020617 100%);
+        }
+
+        .orbitron { font-family: 'Orbitron', sans-serif; }
+        .mono { font-family: 'Share Tech Mono', monospace; }
+
+        /* Estética de Cabina (Cockpit) */
+        .cockpit-frame {
+            border: 4px solid #334155;
+            box-shadow: 0 0 50px rgba(0,0,0,0.9), inset 0 0 100px rgba(34, 211, 238, 0.05);
+            background: rgba(15, 23, 42, 0.95);
+            position: relative;
+            z-index: 20;
+        }
+
+        /* Líneas de escaneo CRT */
+        .scanlines {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+            background-size: 100% 3px, 3px 100%;
+            pointer-events: none;
+            z-index: 50;
+            opacity: 0.1;
+        }
+
+        /* Barra de Oxígeno Estilo de Lucha */
+        .health-bar-bg {
+            width: 300px;
+            height: 14px;
+            background: #0f172a;
+            border: 1px solid #475569;
+            transform: skew(-20deg);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .health-bar-val {
+            height: 100%;
+            width: 100%;
+            background: linear-gradient(90deg, #22d3ee, #0891b2);
+            transition: width 0.4s ease-out, background 0.3s;
+            box-shadow: 0 0 15px var(--hud-cyan);
+        }
+
+        .health-danger { background: linear-gradient(90deg, #ef4444, #991b1b) !important; box-shadow: 0 0 15px var(--hud-red) !important; }
+
+        /* Botón de Pista Titilante */
+        .hint-btn {
+            animation: pulse-soft 2s infinite;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        @keyframes pulse-soft {
+            0%, 100% { opacity: 0.4; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.1); }
+        }
+
+        .lock-fase {
+            opacity: 0.3;
+            filter: grayscale(1);
+            transition: all 0.5s;
+        }
+
+        .lock-fase.active { opacity: 1; filter: grayscale(0); border-color: var(--hud-cyan); box-shadow: 0 0 10px rgba(34, 211, 238, 0.2); }
+        .lock-fase.done { color: #4ade80 !important; border-color: #4ade80 !important; opacity: 1; filter: grayscale(0); }
+
+        .input-nebula {
+            background: rgba(0,0,0,0.6);
+            border-bottom: 2px solid var(--hud-cyan);
+            outline: none;
+            color: var(--hud-cyan);
+            font-weight: 900;
+        }
+
+        /* Animación Presionar Start */
+        .press-start {
+            animation: blink 1.2s step-end infinite;
+        }
+
+        @keyframes blink { 50% { opacity: 0.1; } }
+
+        .bg-space-img {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: url('https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?auto=format&fit=crop&w=1920&q=80');
+            background-size: cover;
+            background-position: center;
+            opacity: 0.3;
+            z-index: 1;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center p-4">
+
+    <div class="bg-space-img"></div>
+    <div class="scanlines"></div>
+
+    <!-- MAIN CONSOLE -->
+    <div id="main-ui" class="w-full max-w-5xl cockpit-frame rounded-2xl p-8 overflow-hidden">
+        
+        <!-- HUD TOP -->
+        <div class="flex justify-between items-center mb-8 border-b border-slate-700 pb-6 relative z-30">
+            <div class="flex items-center gap-4">
+                <div class="mono text-xs text-slate-500 uppercase tracking-widest">
+                    Sistema_V: <span class="text-cyan-400 font-bold">Inmersive_Mode_Alpha</span>
+                </div>
+            </div>
+            
+            <div class="flex gap-12 items-center">
+                <!-- Reloj -->
+                <div class="text-right">
+                    <p class="mono text-[9px] text-slate-500 mb-1 uppercase">Reloj de Misión</p>
+                    <p id="timer" class="orbitron text-2xl font-black text-cyan-400 tracking-tighter">01:30</p>
+                </div>
+                <!-- Barra de Oxigeno -->
+                <div class="text-right">
+                    <p class="mono text-[9px] text-slate-500 mb-1 uppercase tracking-widest">Nivel de Oxígeno</p>
+                    <div class="health-bar-bg">
+                        <div id="oxygen-bar" class="health-bar-val"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PANTALLA INICIO -->
+        <div id="scr-start" class="text-center py-10 relative z-30">
+            <h1 class="orbitron text-7xl font-black mb-2 tracking-tighter text-white uppercase italic">
+                <span class="text-cyan-400">STAR</span> SIMULATOR
+            </h1>
+            <p class="mono text-xs text-slate-400 uppercase tracking-[0.5em] mb-10">Misión: Sincronización Temporal PoliPuntos</p>
+            
+            <div class="max-w-xl mx-auto mb-10">
+                <p class="text-lg text-slate-300 leading-relaxed italic mb-6">
+                    "Sistemas de navegación corrompidos. El oxígeno es crítico (90s). Restablece la frecuencia de expedición antes del fallo total."
+                </p>
+                <!-- PISTA INICIAL CRÍTICA -->
+                <div class="bg-cyan-500/10 border border-cyan-500/30 p-4 rounded-xl flex items-center gap-4 text-left">
+                    <i class="fa-solid fa-triangle-exclamation text-cyan-400 text-2xl"></i>
+                    <p class="mono text-[10px] text-cyan-100 uppercase tracking-wider">
+                        <span class="font-bold text-white">Aviso de Operaciones:</span><br>
+                        Toda la información fue compartida en el equipo de <span class="text-white font-bold underline">Gerencia en Teams</span>.
+                    </p>
+                </div>
+            </div>
+
+            <div class="mb-12">
+                <button id="btn-boot" class="press-start orbitron text-2xl font-black text-cyan-400 hover:text-white transition-colors uppercase tracking-[0.2em]">
+                    [ Iniciar Secuencia ]
+                </button>
+            </div>
+
+            <div class="text-[10px] mono text-slate-600 uppercase tracking-widest">
+                Protocolo de Formación Estratégica
+            </div>
+        </div>
+
+        <!-- PANTALLA JUEGO -->
+        <div id="scr-game" class="hidden relative z-30">
+            
+            <!-- Lock Bar -->
+            <div class="flex gap-3 mb-8 justify-center">
+                <div id="lock-1" class="lock-fase active w-full border-2 border-slate-700 p-3 rounded-lg text-center">
+                    <i class="fa-solid fa-microchip mb-1"></i><p class="mono text-[8px] uppercase">Fase 01</p>
+                </div>
+                <div id="lock-2" class="lock-fase w-full border-2 border-slate-700 p-3 rounded-lg text-center">
+                    <i class="fa-solid fa-microchip mb-1"></i><p class="mono text-[8px] uppercase">Fase 02</p>
+                </div>
+                <div id="lock-3" class="lock-fase w-full border-2 border-slate-700 p-3 rounded-lg text-center">
+                    <i class="fa-solid fa-microchip mb-1"></i><p class="mono text-[8px] uppercase">Fase 03</p>
+                </div>
+                <div id="lock-4" class="lock-fase w-full border-2 border-slate-700 p-3 rounded-lg text-center">
+                    <i class="fa-solid fa-microchip mb-1"></i><p class="mono text-[8px] uppercase">Fase 04</p>
+                </div>
+                <div id="lock-5" class="lock-fase w-full border-2 border-slate-700 p-3 rounded-lg text-center">
+                    <i class="fa-solid fa-microchip mb-1"></i><p class="mono text-[8px] uppercase">Fase 05</p>
+                </div>
+            </div>
+
+            <!-- Dashboard de Preguntas -->
+            <div id="challenge-container" class="bg-slate-900/90 border-2 border-slate-800 rounded-2xl p-10 min-h-[320px] flex items-center justify-center text-center relative shadow-inner">
+                
+                <!-- PISTA TITILANTE -->
+                <div id="hint-trigger" class="hint-btn absolute top-4 right-6 text-cyan-500/50 hover:text-cyan-400">
+                    <i class="fa-solid fa-tower-broadcast text-xl"></i>
+                    <span class="mono text-[8px] block mt-1 uppercase">Señal</span>
+                </div>
+
+                <!-- FASES -->
+                <div id="f-1" class="fase-content w-full">
+                    <p class="mono text-cyan-500 text-[10px] mb-6 tracking-widest uppercase font-bold"># Calibrando_Tiempos: Protocolo_Oficial</p>
+                    <p class="text-3xl font-medium leading-relaxed text-slate-100">
+                        "El tiempo de respuesta para copias de acta, diplomas y contenidos es de 
+                        <input type="text" id="ans-1" placeholder="??" class="input-nebula w-24 mx-2 text-center" autocomplete="off"> 
+                        días hábiles."
+                    </p>
+                </div>
+
+                <div id="f-2" class="fase-content w-full hidden">
+                    <p class="mono text-cyan-500 text-[10px] mb-6 tracking-widest uppercase font-bold"># Calibrando_Ventana: Días_Hábiles</p>
+                    <p class="text-3xl font-medium leading-relaxed text-slate-100">
+                        "Los días hábiles oficiales para el cálculo se cuentan únicamente de 
+                        <input type="text" id="ans-2a" placeholder="Inicio" class="input-nebula w-40 mx-2 text-center text-xl" autocomplete="off"> 
+                        a 
+                        <input type="text" id="ans-2b" placeholder="Fin" class="input-nebula w-40 mx-2 text-center text-xl" autocomplete="off">."
+                    </p>
+                </div>
+
+                <div id="f-3" class="fase-content w-full hidden">
+                    <p class="mono text-cyan-500 text-[10px] mb-6 tracking-widest uppercase font-bold"># Calibrando_Ignición: Activador</p>
+                    <p class="text-3xl font-medium leading-relaxed text-slate-100">
+                        "El tiempo de respuesta empieza a contar desde el momento del 
+                        <input type="text" id="ans-3" placeholder="Evento" class="input-nebula w-48 mx-2 text-center" autocomplete="off"> 
+                        efectuado."
+                    </p>
+                </div>
+
+                <div id="f-4" class="fase-content w-full hidden">
+                    <p class="mono text-cyan-500 text-[10px] mb-6 tracking-widest uppercase font-bold"># Calibrando_Datos: Información_Fiel</p>
+                    <p class="text-3xl font-medium leading-relaxed text-slate-100">
+                        "Para evitar reclamos, debemos brindar siempre información precisa, tiempos formales y fechas 
+                        <input type="text" id="ans-4" placeholder="Adjetivo" class="input-nebula w-48 mx-2 text-center" autocomplete="off">."
+                    </p>
+                </div>
+
+                <div id="f-5" class="fase-content w-full hidden">
+                    <p class="mono text-cyan-500 text-[10px] mb-6 tracking-widest uppercase font-bold"># Calibrando_Salida: Escalamiento</p>
+                    <p class="text-3xl font-medium leading-relaxed text-slate-100">
+                        "Podemos escalar a la Universidad solo si la solicitud ya 
+                        <input type="text" id="ans-5" placeholder="Acción" class="input-nebula w-48 mx-2 text-center" autocomplete="off"> 
+                        el tiempo oficial."
+                    </p>
+                </div>
+            </div>
+
+            <!-- Feedback de Sistema -->
+            <div id="hint-text" class="h-6 mt-4 text-center mono text-[10px] text-slate-500 uppercase tracking-widest"></div>
+
+            <div class="mt-8 flex flex-col items-center">
+                <button id="btn-verify" class="orbitron px-16 py-4 bg-cyan-600 hover:bg-cyan-500 text-white font-black rounded-lg shadow-lg tracking-widest hover:scale-105 active:scale-95 transition-all">
+                    EJECUTAR_CÓDIGO
+                </button>
+                <p class="mt-4 mono text-[9px] text-slate-600 uppercase tracking-tighter">Terminal activa: Presiona Enter para procesar datos</p>
+            </div>
+        </div>
+
+        <!-- PANTALLA ÉXITO -->
+        <div id="scr-success" class="hidden text-center py-10 relative z-30">
+            <div class="mb-6 text-green-400">
+                <i class="fa-solid fa-trophy text-8xl animate-bounce"></i>
+            </div>
+            <h2 class="orbitron text-5xl font-black mb-4 uppercase italic">Misión <span class="text-green-400">Completada</span></h2>
+            
+            <div class="bg-slate-900 border-2 border-green-500/30 p-8 rounded-2xl max-w-2xl mx-auto my-8 shadow-2xl">
+                <p class="text-xl text-slate-200 leading-relaxed mb-6 font-medium">
+                    Sincronización restaurada. Has demostrado un dominio absoluto de los tiempos de expedición. 
+                    <br><br>
+                    <span class="text-white italic bg-slate-800 p-4 rounded-xl border border-slate-700 block">
+                        "La claridad en estos puntos es la clave para una gestión estratega que genera confianza."
+                    </span>
+                </p>
+                
+                <div class="flex flex-col md:flex-row gap-6 justify-center items-center">
+                    <div class="bg-slate-950 border border-slate-800 p-6 rounded-xl text-center">
+                        <p class="mono text-[10px] text-slate-500 mb-1 uppercase font-bold tracking-widest">Recompensa</p>
+                        <p class="text-5xl font-black text-white">50 <span class="text-cyan-400 font-bold tracking-tighter">Pts</span></p>
+                    </div>
+                    <div class="bg-magenta-500/10 border border-magenta-500/20 p-6 rounded-xl flex items-center gap-4 max-w-xs">
+                        <i class="fa-solid fa-camera text-magenta-400 text-3xl"></i>
+                        <p class="text-magenta-300 text-[10px] font-bold uppercase text-left leading-tight tracking-wider">
+                            Captura este panel de mando y compártelo por Teams.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <button onclick="location.reload()" class="mono text-[10px] text-slate-600 hover:text-white uppercase tracking-widest underline underline-offset-8">
+                Reiniciar Simulador
+            </button>
+        </div>
+
+        <!-- PANTALLA FALLO -->
+        <div id="scr-fail" class="hidden text-center py-16 relative z-30">
+            <i class="fa-solid fa-triangle-exclamation text-red-500 text-8xl mb-8 animate-pulse"></i>
+            <h2 class="orbitron text-5xl font-black mb-4 uppercase text-red-500">Misión <span class="text-white">Fallida</span></h2>
+            <p id="fail-msg" class="text-slate-400 text-2xl font-bold mb-12 uppercase italic tracking-tighter">Fallo en soporte vital.</p>
+            <button onclick="location.reload()" class="orbitron px-16 py-5 bg-red-600 hover:bg-red-500 text-white font-black rounded-xl uppercase tracking-widest shadow-lg">
+                Reiniciar Sistemas
+            </button>
+        </div>
+
+    </div>
+
+    <!-- AUDIO Y LÓGICA -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/js/all.min.js"></script>
+    <script>
+        // Use an IIFE or window object to ensure functions are available globally for onclick
+        (function() {
+            let phase = 1;
+            const totalPhases = 5;
+            let oxygen = 100;
+            let time = 90; // Reducido a 90 segundos (1.5 minutos)
+            let gameLoop;
+
+            const hints = {
+                1: "Comunicado Gerencia: Punto 1 (8 días hábiles)",
+                2: "Comunicado Gerencia: Punto 2 (Lunes a Viernes)",
+                3: "Comunicado Gerencia: Punto 3 (Desde el Pago)",
+                4: "Comunicado Gerencia: Punto 4 (Fechas correctas/precisas)",
+                5: "Comunicado Gerencia: Punto 5 (Si ya venció/cumplió)"
+            };
+
+            window.bootSystem = function() {
+                document.getElementById('scr-start').classList.add('hidden');
+                document.getElementById('scr-game').classList.remove('hidden');
+                startTimers();
+                focusInput();
+            };
+
+            function startTimers() {
+                gameLoop = setInterval(() => {
+                    time--;
+                    updateHUD();
+                    if(time <= 0) gameOver("Tiempo agotado. Fallo en soporte vital.");
+                }, 1000);
+            }
+
+            function updateHUD() {
+                const m = Math.floor(time / 60);
+                const s = time % 60;
+                const timeEl = document.getElementById('timer');
+                if (timeEl) {
+                    timeEl.innerText = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+                    // Alerta roja cuando queda menos de 20 segundos
+                    if(time <= 20) timeEl.classList.add('text-red-500', 'animate-pulse');
+                }
+
+                const bar = document.getElementById('oxygen-bar');
+                if (bar) {
+                    bar.style.width = oxygen + "%";
+                    if(oxygen <= 50) bar.classList.add('health-danger');
+                }
+            }
+
+            window.showHint = function() {
+                const hintDisplay = document.getElementById('hint-text');
+                if (hintDisplay) {
+                    hintDisplay.innerText = hints[phase];
+                    hintDisplay.classList.remove('text-green-400', 'text-red-500');
+                    setTimeout(() => { if (hintDisplay.innerText === hints[phase]) hintDisplay.innerText = ""; }, 3000);
+                }
+            };
+
+            function focusInput() {
+                const currentInp = document.querySelector(`#f-${phase} input`);
+                if(currentInp) currentInp.focus();
+            }
+
+            function norm(val) {
+                if (!val) return "";
+                return val.toUpperCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            }
+
+            window.executeCommand = function() {
+                let correct = false;
+                
+                if(phase === 1) {
+                    if(norm(document.getElementById('ans-1').value) === "8") correct = true;
+                } else if(phase === 2) {
+                    const v1 = norm(document.getElementById('ans-2a').value);
+                    const v2 = norm(document.getElementById('ans-2b').value);
+                    if((v1 === "LUNES" && v2 === "VIERNES") || (v1 === "LUNES A VIERNES")) correct = true;
+                } else if(phase === 3) {
+                    if(norm(document.getElementById('ans-3').value) === "PAGO") correct = true;
+                } else if(phase === 4) {
+                    const v = norm(document.getElementById('ans-4').value);
+                    if(v.includes("CORRECTA") || v === "PRECISA" || v === "EXACTA") correct = true;
+                } else if(phase === 5) {
+                    const v = norm(document.getElementById('ans-5').value);
+                    if(v === "CUMPLIO" || v.includes("VENCIO") || v.includes("PASO")) correct = true;
+                }
+
+                const hintText = document.getElementById('hint-text');
+                if(correct) {
+                    if (hintText) {
+                        hintText.innerText = "✓ COMANDO VALIDADO. SINCRONIZANDO...";
+                        hintText.classList.add('text-green-400');
+                    }
+                    
+                    const lock = document.getElementById(`lock-${phase}`);
+                    if (lock) {
+                        lock.classList.remove('active');
+                        lock.classList.add('done');
+                        const icon = lock.querySelector('i');
+                        if (icon) icon.className = "fa-solid fa-check text-xl mb-1";
+                    }
+
+                    setTimeout(advance, 800);
+                } else {
+                    if (hintText) {
+                        hintText.innerText = "✗ ERROR DE DATOS. REINTENTAR.";
+                        hintText.classList.add('text-red-500');
+                    }
+                    const container = document.getElementById('challenge-container');
+                    if (container) {
+                        container.classList.add('glitch-shake');
+                        setTimeout(() => container.classList.remove('glitch-shake'), 400);
+                    }
+                    
+                    oxygen -= 25.1;
+                    if (oxygen < 0) oxygen = 0;
+                    updateHUD();
+                    if(oxygen <= 0) gameOver("Suministro de oxígeno agotado.");
+                }
+            };
+
+            function advance() {
+                if(phase < totalPhases) {
+                    const currentFase = document.getElementById(`f-${phase}`);
+                    if (currentFase) currentFase.classList.add('hidden');
+                    
+                    phase++;
+                    
+                    const nextFase = document.getElementById(`f-${phase}`);
+                    if (nextFase) nextFase.classList.remove('hidden');
+                    
+                    const nextLock = document.getElementById(`lock-${phase}`);
+                    if (nextLock) nextLock.classList.add('active');
+                    
+                    const hintText = document.getElementById('hint-text');
+                    if (hintText) {
+                        hintText.innerText = "";
+                        hintText.classList.remove('text-green-400', 'text-red-500');
+                    }
+                    focusInput();
+                } else {
+                    gameWin();
+                }
+            }
+
+            function gameWin() {
+                clearInterval(gameLoop);
+                const gameScr = document.getElementById('scr-game');
+                if (gameScr) gameScr.classList.add('hidden');
+                const successScr = document.getElementById('scr-success');
+                if (successScr) successScr.classList.remove('hidden');
+            }
+
+            function gameOver(msg) {
+                clearInterval(gameLoop);
+                const gameScr = document.getElementById('scr-game');
+                if (gameScr) gameScr.classList.add('hidden');
+                const failMsg = document.getElementById('fail-msg');
+                if (failMsg) failMsg.innerText = msg;
+                const failScr = document.getElementById('scr-fail');
+                if (failScr) failScr.classList.remove('hidden');
+            }
+
+            // Bind buttons explicitly
+            document.addEventListener('DOMContentLoaded', () => {
+                document.getElementById('btn-boot').onclick = window.bootSystem;
+                document.getElementById('btn-verify').onclick = window.executeCommand;
+                document.getElementById('hint-trigger').onclick = window.showHint;
+            });
+
+            window.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    const startScr = document.getElementById('scr-start');
+                    const gameScr = document.getElementById('scr-game');
+                    if(startScr && !startScr.classList.contains('hidden')) window.bootSystem();
+                    else if(gameScr && !gameScr.classList.contains('hidden')) window.executeCommand();
+                }
+            });
+        })();
+    </script>
+</body>
+</html>
