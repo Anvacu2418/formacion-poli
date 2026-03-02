@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Wiki Gestión BO</title>
     
-    <!-- 1. PREVENCIÓN PANTALLA BLANCA (Configuración de entorno) -->
+    <!-- 1. PREVENCIÓN PANTALLA BLANCA -->
     <script>window.process = { env: { NODE_ENV: 'production' } };</script>
 
     <!-- 2. ESTILOS (Tailwind CSS) Y FUENTES -->
@@ -36,7 +36,7 @@
 <body>
     <div id="root"></div>
 
-    <!-- 4. TU APLICACIÓN WIKI (Lógica Completa Corregida y Actualizada) -->
+    <!-- 4. APLICACIÓN WIKI ACTUALIZADA -->
     <script type="text/babel" data-presets="react" data-type="module">
         import React, { useState } from 'https://esm.sh/react@18.2.0';
         import { createRoot } from 'https://esm.sh/react-dom@18.2.0/client';
@@ -47,10 +47,9 @@
             MessageCircle, Clipboard, Send, HelpCircle, Home, ExternalLink, Link, Eye, Info
         } from 'https://esm.sh/lucide-react@0.263.1';
 
-        // --- DATA DEL SISTEMA ---
         const wikiData = {
             links: {
-                formDescuentos: "https://forms.office.com/Pages/DesignPageV2.aspx?prevorigin=shell&origin=NeoPortalPage&subpage=design&id=BQZldA8p5Em-njqSbbFJyqjt2zcJafdOkBCR-pMG625UOEhHU082RTBIU01KMFQ3WjlRSTlBUE5WUyQlQCN0PWcu",
+                formDescuentos: "https://forms.office.com/r/WgdS54TJaY",
                 teamsSoporte: "https://teams.microsoft.com/l/channel/19%3A1f9d3fa1936741ec9571e0ec69f1e7b6%40thread.tacv2/Soporte%20Operaci%C3%B3n?groupId=c1accda4-6cca-4dd7-bc44-8eb7ecb22741&tenantId=74650605-290f-49e4-be9e-3a926db149ca",
                 gestionDescuentosVisual: "https://whitneyintl.sharepoint.com/:x:/t/GestinBackoffice/IQDUYXMFXijlSrLqWvKLP9aiAS8uK-195hmIs4HXLJZvXY0?e=fXNXhC",
                 guiaRematricula: "https://view.genially.com/66a803b4211e0130bc4f0319/interactive-content-rematricula-2026-1",
@@ -80,27 +79,21 @@
                 }
             ],
             mesaAyudaItems: [
-                { id: 1, title: 'Aplicación de alivios', desc: 'Aplicación de alivios financieros que se otorgan en el periodo académico. Ejemplo (Pronto pago).', tipificacion: 'ORDEN DE MATRÍCULA' },
-                { id: 2, title: 'Aplicación de descuentos', desc: 'Aplicación de descuentos por convenio (Sena, Policia, Cies, etc.). Adjuntar soportes según corresponda.', tipificacion: 'ORDEN DE MATRÍCULA' },
-                { id: 3, title: 'Creación de anticipos', desc: 'Cuando requiere pagar matrícula con cesantías y este valor es superior al de la matrícula.', tipificacion: 'ORDEN DE MATRÍCULA' },
-                { id: 4, title: 'Diferencia del 50%', desc: 'Cuando el estudiante se acoge al pago por bloques y requiere el pago pendiente.', tipificacion: 'ORDEN DE MATRÍCULA' },
-                { id: 5, title: 'Estimación de cuota', desc: 'Cuando no registra el cargo de la orden de pago en Banner.', tipificacion: 'ORDEN DE MATRÍCULA' },
-                { id: 7, title: 'Carta Crédito', desc: 'Legalización crédito para todas las entidades financieras con convenio. Adjuntar carta crédito.', tipificacion: 'LEGALIZACIÓN DE MATRÍCULA' },
-                { id: 8, title: 'Legalización de pago', desc: 'No aplica Icetex ni pagos timbre. Para PayU: Revisar primero link transaccional. Si >3 días y no registra, escalar.', tipificacion: 'LEGALIZACIÓN DE MATRÍCULA' },
-                { id: 9, title: 'Última materia', desc: 'Solicitud de orden por "última materia". Revisar avance curricular antes de cargar.', tipificacion: 'INSCRIPCIÓN ÚLTIMA MATERIA' },
-                { id: 10, title: 'Cambios de Programa/Sede/Mod', desc: 'Cambio de jornada, modalidad, sede, programa, doble programa o segundo ciclo cuando falla autogestión.', tipificacion: 'INCONVENIENTE PLATAFORMA COMPLEMENTARIAS' },
+                { id: 7, title: 'Carta Crédito', desc: 'Legalización crédito (Aplica para todas las entidad financieras con las que tenemos convenio) Deben adjuntar la carta crédito.', tipificacion: 'LEGALIZACIÓN DE MATRÍCULA' },
+                { id: 8, title: 'Legalización de pago', desc: 'Legalizar pago matrícula. No aplica Icetex/Timbre. Para PayU revisar primero link transaccional. Si >3 días y no registra en Analytics, escalar.', tipificacion: 'LEGALIZACIÓN DE MATRÍCULA' },
+                { id: 10, title: 'Cambios de Programa/Sede/Mod', desc: 'Cambio de jornada, modalidad, sede, programa, doble programa o segundo ciclo cuando falla autogestión o novedad excesiva.', tipificacion: 'INCONVENIENTE PLATAFORMA COMPLEMENTARIAS' },
                 { id: 11, title: 'Énfasis', desc: 'Cuando el estudiante presencial no puede solicitar el énfasis por autogestión. Adjuntar nombre del énfasis.', tipificacion: 'INCONVENIENTE PLATAFORMA COMPLEMENTARIAS' },
-                { id: 12, title: 'Acceso a Inscripción', desc: 'Situaciones técnicas que impidan el acceso a la inscripción de asignaturas. Cargar soportes.', tipificacion: 'INSCRIPCIÓN DE ASIGNATURAS' },
-                { id: 13, title: 'Sobrepasos', desc: 'Falta de cupos presenciales. Revisar restricciones en virtuales (posible jornada contraria).', tipificacion: 'INSCRIPCIÓN DE ASIGNATURAS' },
-                { id: 14, title: 'Ampliación de créditos', desc: 'Cuando se evidencia que por plan de estudios debe inscribir más materias y requiere más cupo.', tipificacion: 'INSCRIPCIÓN DE ASIGNATURAS' },
+                { id: 12, title: 'Acceso a Inscripción de Asignaturas', desc: 'Situación técnica que impida la inscripción (Cargar soportes completos).', tipificacion: 'INSCRIPCIÓN DE ASIGNATURAS' },
+                { id: 13, title: 'Sobrepasos', desc: 'Falta de cupos presenciales. Revisar que virtuales no estén en restricción (posible jornada contraria).', tipificacion: 'INSCRIPCIÓN DE ASIGNATURAS' },
+                { id: 14, title: 'Ampliación de créditos', desc: 'Cuando por plan de estudios el estudiante debe inscribir más materias y requiere más créditos.', tipificacion: 'INSCRIPCIÓN DE ASIGNATURAS' },
                 { id: 15, title: 'Proyecciones', desc: 'Cuando al estudiante no le registran las proyecciones necesarias para inscribir asignaturas.', tipificacion: 'INSCRIPCIÓN DE ASIGNATURAS' },
-                { id: 16, title: 'Saber pro', desc: 'Situaciones con las pruebas (Validar inscripción o verificar credenciales cuando no han realizado registro).', tipificacion: 'PRUEBAS SABER PRO' },
-                { id: 17, title: 'Reconocimiento de créditos', desc: 'Dudas sobre créditos solicitados o cargados a un programa específico.', tipificacion: 'VALIDACIÓN PLAN DE ESTUDIOS' },
-                { id: 18, title: 'Actualización Correo-Celular', desc: 'Vincular celular con Office 365. Extranjeros deben incluir indicativo de país.', tipificacion: 'ACTUALIZACIÓN Y/O CORRECCIÓN DE DATOS' },
-                { id: 19, title: 'Restablecimiento Contraseña', desc: 'Si el CPO no permite el cambio de clave. Adjuntar soportes del error.', tipificacion: 'CONTRASEÑAS PLATAFORMA' },
-                { id: 20, title: 'Cambio SO a TM', desc: 'Cuando Analytics muestra todo aprobado para grado pero el estado sigue en SO.', tipificacion: 'PAZ Y SALVOS GRADOS' },
+                { id: 16, title: 'Saber pro', desc: 'Situaciones de inscripción o credenciales cuando no han realizado registro.', tipificacion: 'PRUEBAS SABER PRO' },
+                { id: 17, title: 'Reconocimiento de créditos', desc: 'Dudas sobre los créditos solicitados a un programa específico.', tipificacion: 'VALIDACIÓN PLAN DE ESTUDIOS' },
+                { id: 18, title: 'Actualización Correo-Celular', desc: 'Para actualizar número y vincular con Office 365. Extranjeros requieren indicativo.', tipificacion: 'ACTUALIZACIÓN Y/O CORRECCIÓN DE DATOS' },
+                { id: 19, title: 'Restablecimiento Contraseña', desc: 'Si por algún motivo no permite cambiar contraseña en el CPO. (Adjuntar soportes).', tipificacion: 'CONTRASEÑAS PLATAFORMA' },
+                { id: 20, title: 'Cambio SO a TM', desc: 'Analytics muestra todo aprobado para grado pero el estado continúa en SO.', tipificacion: 'PAZ Y SALVOS GRADOS' },
                 { id: 21, title: 'Validación de documentos', desc: 'Cuando pasa más de una semana hábil de haber cargado documentos de grado.', tipificacion: 'PAZ Y SALVOS GRADOS' },
-                { id: 22, title: 'Retiro de cargos financieros', desc: 'Reversión de cargos por certificados, diferencias, licencias o diplomados. No aplica para Deuda Cartera.', tipificacion: 'CARTERA-DEUDA O ABONO' }
+                { id: 22, title: 'Retiro de cargos financieros', desc: 'Reversión de cargos por certificados, 50%, licencias, etc. No aplica concepto CRÉDITO DEUDA.', tipificacion: 'CARTERA-DEUDA O ABONO' }
             ],
             chatPisoItems: [
                 { id: 1, title: 'Media Matrícula', desc: 'Gestión y aplicación directa.' },
@@ -110,23 +103,22 @@
                 { id: 5, title: 'Estimación de Cuota', desc: 'Inserción de cargos de matrícula en Banner.' },
                 { id: 6, title: 'Licencia ED', desc: 'Generación de orden de pago English Discoveries.' },
                 { id: 7, title: 'Anticipo de Matrícula', desc: 'Generación de ordenes (cheques con centavos).' },
-                { id: 8, title: 'Certificados Primer Nivel', desc: 'Revisar que registre el pago en sistema y validar con el estudiante la ruta para descargarlo por el SmartCampus.' },
+                { id: 8, title: 'Certificados Primer Nivel', desc: 'Revisar pago y validar con estudiante ruta de descarga (SmartCampus).' },
                 { id: 9, title: 'Última Materia', desc: 'Si avance curricular muestra que falta solo una.' }
             ],
             idiomasInfo: {
                 tipos: [
-                    { t: 'Certificado de uso de licencia de inglés', d: 'Opción válida para cumplir requisito institucional (auxilios económicos o cesantías).' },
+                    { t: 'Certificado de uso de licencia de inglés', d: 'Informa que la licencia es una opción válida para cumplir requisito institucional.' },
                     { t: 'Certificado de cumplimiento del requisito', d: 'Detalla cómo el estudiante cumplió el requisito.' },
-                    { t: 'Certificado de obligatoriedad', d: 'Señala que el inglés es obligatorio para título.' }
+                    { t: 'Certificado de obligatoriedad', d: 'Señala que el inglés es obligatorio para el título.' }
                 ],
-                warning: 'Si el estudiante ya completó el proceso pero no aparece aprobado, NO emitir certificado. Revisar que el CAPP esté actualizado. En caso de no estar actualizado: Solicitar actualización. Si aún así no registra: Escalar a través de ticket por "Validación plan de estudios".'
+                warning: 'Si el estudiante ya completó el proceso pero no aparece aprobado, NO emitir certificado. Revisar CAPP, solicitar actualización o escalar por ticket de validación.'
             },
             tips: [
-                { id: 't1', title: '⛔ NO DERIVAR TICKETS DE DESCUENTOS', content: 'Respuesta INMEDIATA. Solo ticket si hay error en Banner.', type: 'warning' },
-                { id: 't2', title: '📅 Vigencia Pronto Pago', content: 'Hasta el 21 de Diciembre. ¡Usa esto para cierre!', type: 'success' },
-                { id: 't3', title: '🎓 Descuento Ingresante', content: 'Solo si pasa a 2do o 3er semestre. Cruzar con 2025-60.', type: 'warning' },
-                { id: 't4', title: '⚡ Tiempos de Respuesta (SLA)', content: '• Solicitudes BO: ¡INMEDIATO!\n• Nota: Si el BO indica que no alcanza a gestionar, derivar a Mesa de Ayuda (Ticket). Tiempo: 24 a 72 hrs hábiles.', type: 'info' },
-                { id: 't5', title: '⚠️ Regla de Oro (Descuentos)', content: 'REGLA DE MAYOR VALOR: Siempre se otorga el descuento de mayor porcentaje (%). Si tiene 10% y 15%, se aplica el 15%.', type: 'info' }
+                { id: 't1', title: '⛔ NO DERIVAR TICKETS DE DESCUENTOS', content: 'Respuesta INMEDIATA por BO. Solo ticket si hay error confirmado en Banner.', type: 'warning' },
+                { id: 't2', title: '📅 Vigencia Pronto Pago', content: 'Hasta el 21 de Diciembre. ¡Úsalo como argumento de cierre!', type: 'success' },
+                { id: 't4', title: '⚡ Tiempos de Respuesta (SLA)', content: '• BO: ¡INMEDIATO!\n• Mesa de Ayuda: 24 a 72 hrs hábiles.', type: 'info' },
+                { id: 't5', title: '⚠️ Regla de Oro (Descuentos)', content: 'Regla de Mayor Valor: Siempre se otorga el descuento de mayor porcentaje (%).', type: 'info' }
             ]
         };
 
@@ -139,7 +131,7 @@
             const [filterCategory, setFilterCategory] = useState('Todos');
 
             const copyTemplate = () => {
-                const t = `ID: \nTipo de estudiante: (Regular/Convenio)\nPrograma y Modalidad: \nConsulta: (¿Qué necesita el estudiante? Sé concret@)\nSoportes: Si aplica / NA`;
+                const t = `ID: \nTipo de estudiante: \nPrograma y Modalidad: \nConsulta: \nSoportes: `;
                 navigator.clipboard.writeText(t);
                 alert('¡Plantilla copiada!');
             };
@@ -164,12 +156,11 @@
                         </div>
                         <h1 className="text-4xl font-bold text-gray-800 mb-4">Bienvenido a tu <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-emerald-500">Wiki BO</span></h1>
                         <p className="text-lg text-gray-600 max-w-3xl mb-8 leading-relaxed bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
-                            Esta herramienta ha sido creada para que tengas a la mano qué solicitudes gestiona nuestro Back Office, con el fin de ser más resolutivos y precisos en cómo pedir cada gestión.
-                            <br/><strong>Recuerda:</strong> Una solicitud bien escalada es una solución rápida para el estudiante.
+                            Tu herramienta para gestiones rápidas y precisas. Aquí encuentras lo que gestiona el Back Office y cómo escalar correctamente a Mesa de Ayuda.
                         </p>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-2xl mb-10">
                             <a href={wikiData.links.formDescuentos} target="_blank" className="flex items-center justify-center p-4 bg-emerald-600 text-white rounded-xl shadow-lg hover:bg-emerald-700 font-bold group transition-transform hover:-translate-y-1">
-                                <Calculator className="w-6 h-6 mr-3 group-hover:scale-110"/> Solicitud Descuentos
+                                <Calculator className="w-6 h-6 mr-3 group-hover:scale-110"/> Solicitud de Descuentos
                             </a>
                             <a href={wikiData.links.teamsSoporte} target="_blank" className="flex items-center justify-center p-4 bg-indigo-600 text-white rounded-xl shadow-lg hover:bg-indigo-700 font-bold group transition-transform hover:-translate-y-1">
                                 <MessageCircle className="w-6 h-6 mr-3 group-hover:scale-110"/> Soporte Operación
@@ -192,7 +183,7 @@
 
                 if (activeSection === 'definitions') return (
                     <div className="space-y-6 animate-fadeIn">
-                        <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg"><h2 className="text-xl font-bold text-blue-800 flex items-center"><BookOpen className="w-6 h-6 mr-2" /> Diccionario de Solicitudes</h2></div>
+                        <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg"><h2 className="text-xl font-bold text-blue-800 flex items-center"><BookOpen className="w-6 h-6 mr-2" /> Diccionario BO</h2></div>
                         <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
                             {['Todos', 'Financiero', 'Documentación', 'Idiomas'].map(cat => (
                                 <button key={cat} onClick={() => setFilterCategory(cat)} className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap ${filterCategory === cat ? 'bg-slate-800 text-white shadow-md' : 'bg-white border text-gray-600 hover:bg-gray-50'}`}>{cat}</button>
@@ -214,7 +205,7 @@
                                         )}
                                     </div>
                                     {item.action && (
-                                        <a href={wikiData.links[item.action.link]} target="_blank" className="mt-4 w-full bg-blue-50 text-blue-700 hover:bg-blue-100 py-2 rounded-lg font-bold flex items-center justify-center text-sm transition-colors border border-blue-200">
+                                        <a href={wikiData.links[item.action.link]} target="_blank" className="mt-4 w-full bg-blue-50 text-blue-700 hover:bg-blue-100 py-2 rounded-lg font-bold flex items-center justify-center text-sm border border-blue-200">
                                             <IconComp icon={item.action.icon} className="w-4 h-4 mr-2"/> {item.action.label}
                                         </a>
                                     )}
@@ -227,35 +218,21 @@
                 if (activeSection === 'mesaAyuda') return (
                     <div className="space-y-6 animate-fadeIn">
                         <div className="bg-rose-50 border-l-4 border-rose-500 p-5 rounded-r-lg">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <h2 className="text-xl font-bold text-rose-800 flex items-center"><HelpCircle className="w-6 h-6 mr-2" /> Mesa de Ayuda / Escalamiento Técnico</h2>
-                                    <p className="text-rose-600 mt-1">Directorio de tipificaciones para expertos. Haz clic en la tarjeta para ver el título correcto.</p>
-                                </div>
-                                <div className="hidden md:block bg-white/50 px-4 py-2 rounded-lg border border-rose-200">
-                                    <span className="text-xs font-bold text-rose-800 uppercase tracking-widest">SLA: 24 - 72 Horas</span>
-                                </div>
-                            </div>
+                            <h2 className="text-xl font-bold text-rose-800 flex items-center"><HelpCircle className="w-6 h-6 mr-2" /> Mesa de Ayuda / Escalamiento</h2>
+                            <p className="text-rose-600 mt-1">Aquí solo se deben escalar solicitudes que el BO NO puede gestionar. Tiempos: 24-72h hábiles.</p>
                         </div>
-
                         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {wikiData.mesaAyudaItems.map((item, idx) => (
-                                <div key={idx} className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm transition-all tipificacion-card group flex flex-col justify-between">
+                                <div key={idx} className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm tipificacion-card group transition-all flex flex-col justify-between">
                                     <div>
-                                        <div className="flex items-center justify-between mb-3">
-                                            <span className="text-[10px] font-bold text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">SOLICITUD #{item.id}</span>
-                                            <Info size={14} className="text-rose-300 opacity-0 group-hover:opacity-100 transition-opacity" />
-                                        </div>
                                         <h3 className="font-bold text-gray-800 mb-2 leading-tight">{item.title}</h3>
-                                        <p className="text-xs text-gray-600 mb-4 leading-relaxed">{item.desc}</p>
+                                        <p className="text-xs text-gray-600 mb-4">{item.desc}</p>
                                     </div>
-                                    
-                                    <div className="mt-auto pt-3 border-t border-dashed border-gray-100">
-                                        <div className="p-3 bg-rose-50 rounded-lg border border-rose-100 group-hover:bg-rose-100 transition-colors">
-                                            <p className="text-[9px] uppercase tracking-wider font-extrabold text-rose-400 mb-1">Título exacto para el caso:</p>
-                                            <p className="text-[11px] font-bold text-rose-800 select-all cursor-pointer flex items-center justify-between">
-                                                {item.tipificacion}
-                                                <Clipboard size={10} className="ml-2" />
+                                    <div className="pt-3 border-t border-dashed border-gray-100">
+                                        <div className="p-2 bg-rose-50 rounded-lg border border-rose-100 group-hover:bg-rose-100">
+                                            <p className="text-[9px] uppercase tracking-wider font-extrabold text-rose-400 mb-1">Título para el caso:</p>
+                                            <p className="text-[10px] font-bold text-rose-800 flex items-center justify-between">
+                                                {item.tipificacion} <Clipboard size={10} />
                                             </p>
                                         </div>
                                     </div>
@@ -267,37 +244,27 @@
 
                 if (activeSection === 'tips') return (
                     <div className="space-y-6 animate-fadeIn">
-                        <div className="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-lg"><h2 className="text-xl font-bold text-amber-800 flex items-center"><Lightbulb className="w-6 h-6 mr-2" /> Tips & Certificados</h2></div>
-                        <div className="bg-orange-50 rounded-2xl p-6 border border-orange-200 shadow-sm relative overflow-hidden">
-                            <h3 className="text-xl font-bold text-orange-900 mb-4 flex items-center relative z-10"><Globe className="w-6 h-6 mr-2"/> Tipos de Certificados Idiomas</h3>
+                        <div className="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-lg"><h2 className="text-xl font-bold text-amber-800 flex items-center"><Lightbulb className="w-6 h-6 mr-2" /> Tips & SLAs</h2></div>
+                        <div className="bg-orange-50 rounded-2xl p-6 border border-orange-200 relative overflow-hidden">
+                            <h3 className="text-xl font-bold text-orange-900 mb-4 flex items-center relative z-10"><Globe className="w-6 h-6 mr-2"/> Certificados de Idiomas</h3>
                             <div className="grid md:grid-cols-3 gap-4 mb-6 relative z-10">
                                 {wikiData.idiomasInfo.tipos.map((t, idx) => (
-                                    <div key={idx} className="bg-white/80 p-4 rounded-xl border border-orange-100">
-                                        <h4 className="font-bold text-orange-800 text-sm mb-2">{t.t}</h4>
-                                        <p className="text-xs text-orange-900/80 leading-relaxed">{t.d}</p>
+                                    <div key={idx} className="bg-white/80 p-4 rounded-xl border border-orange-100 text-xs">
+                                        <h4 className="font-bold text-orange-800 mb-1">{t.t}</h4>
+                                        <p className="text-orange-900/80">{t.d}</p>
                                     </div>
                                 ))}
                             </div>
-                            <div className="bg-red-50 border-l-4 border-red-400 p-4 rounded-r-lg relative z-10">
-                                <p className="font-bold text-red-800 text-sm mb-1">⚠️ ¡Validación Crítica!</p>
-                                <p className="text-sm text-red-700 leading-relaxed">{wikiData.idiomasInfo.warning}</p>
+                            <div className="bg-red-50 border-l-4 border-red-400 p-4 rounded-r-lg relative z-10 text-sm">
+                                <p className="font-bold text-red-800 mb-1">⚠️ ¡Validación Crítica!</p>
+                                <p className="text-red-700">{wikiData.idiomasInfo.warning}</p>
                             </div>
-                            <div className="absolute top-0 right-0 -mt-10 -mr-10 w-32 h-32 bg-orange-200 rounded-full opacity-20 blur-2xl"></div>
                         </div>
                         <div className="space-y-4">
                             {wikiData.tips.map(tip => (
                                 <div key={tip.id} className="bg-white rounded-xl shadow-sm border-l-4 p-6 hover:bg-gray-50 transition-colors" style={{borderLeftColor: tip.type === 'success' ? '#10B981' : tip.type === 'warning' ? '#F59E0B' : '#3B82F6'}}>
-                                    <div className="flex items-start">
-                                        <div className="mr-3 mt-1">
-                                            {tip.type === 'warning' && <AlertTriangle className="w-5 h-5 text-amber-500" />}
-                                            {tip.type === 'success' && <CheckCircle className="w-5 h-5 text-emerald-500" />}
-                                            {tip.type === 'info' && <Clock className="w-5 h-5 text-blue-500" />}
-                                        </div>
-                                        <div>
-                                            <h3 className="font-bold text-lg text-gray-800 mb-2">{tip.title}</h3>
-                                            <p className="text-gray-600 whitespace-pre-line text-sm leading-relaxed">{tip.content}</p>
-                                        </div>
-                                    </div>
+                                    <h3 className="font-bold text-lg text-gray-800 mb-2">{tip.title}</h3>
+                                    <p className="text-gray-600 text-sm leading-relaxed whitespace-pre-line">{tip.content}</p>
                                 </div>
                             ))}
                         </div>
@@ -307,32 +274,19 @@
                 if (activeSection === 'discounts') return (
                      <div className="space-y-8 animate-fadeIn">
                         <div className="bg-gradient-to-r from-emerald-500 to-teal-600 rounded-2xl p-8 text-white shadow-lg relative overflow-hidden">
-                            <div className="relative z-10">
-                                <h2 className="text-2xl font-bold mb-4 flex items-center"><Lightbulb className="w-8 h-8 mr-3"/> Información General</h2>
-                                <p className="bg-white/10 p-4 rounded-xl border border-white/20 text-lg">"Si evidenciamos en <b>Analytics Académico</b> (códigos TA, TV, TO) o trazabilidad de semestres anteriores, <b>NO necesitamos adjuntar soporte nuevamente</b>."</p>
-                                
-                                <div className="mt-6 flex flex-col sm:flex-row gap-4">
-                                    <a href={wikiData.links.formDescuentos} target="_blank" className="bg-white text-emerald-700 px-6 py-3 rounded-full font-bold shadow-md hover:bg-emerald-50 transition-colors flex items-center justify-center">
-                                        <ExternalLink className="w-5 h-5 mr-2"/> Solicitud de Descuentos
-                                    </a>
-                                    <a href={wikiData.links.gestionDescuentosVisual} target="_blank" className="bg-emerald-800 text-white px-6 py-3 rounded-full font-bold shadow-md hover:bg-emerald-900 transition-colors flex items-center justify-center text-sm">
-                                        <Eye className="w-5 h-5 mr-2"/> Consultar Gestión (Excel)
-                                    </a>
-                                </div>
-
-                                <div className="mt-6 bg-white/20 p-4 rounded-xl border border-white/30">
-                                    <h3 className="font-bold text-lg mb-2 flex items-center"><CheckCircle className="w-5 h-5 mr-2"/> Regla de Mayor Valor</h3>
-                                    <p className="text-sm">Siempre se otorga el descuento de mayor %. (Si tiene 10% y 15%, se aplica el 15%).</p>
-                                </div>
+                            <h2 className="text-2xl font-bold mb-4 flex items-center relative z-10"><Lightbulb className="w-8 h-8 mr-3"/> Información General de Descuentos</h2>
+                            <p className="bg-white/10 p-4 rounded-xl border border-white/20 text-lg relative z-10">"Si evidenciamos códigos TA, TV, TO en Analytics o historial de semestres previos, NO pedir soporte."</p>
+                            <div className="mt-6 flex gap-4 relative z-10">
+                                <a href={wikiData.links.formDescuentos} target="_blank" className="bg-white text-emerald-700 px-6 py-3 rounded-full font-bold shadow-md hover:bg-emerald-50 transition-colors">Solicitud de Descuentos</a>
+                                <a href={wikiData.links.gestionDescuentosVisual} target="_blank" className="bg-emerald-800 text-white px-6 py-3 rounded-full font-bold border border-emerald-400 hover:bg-emerald-900 transition-colors">Consultar Gestión</a>
                             </div>
-                            <Calculator size={200} className="absolute -right-10 -bottom-20 text-white opacity-10 rotate-12" />
                         </div>
                         <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
-                            <h3 className="text-lg font-bold text-gray-800 mb-4">Acumulables Permitidos</h3>
+                            <h3 className="text-lg font-bold text-gray-800 mb-4">Acumulables</h3>
                             <ul className="space-y-3">
-                                <li className="p-3 bg-gray-50 rounded-lg border border-gray-100 font-medium text-gray-700 flex items-center"><span className="w-6 h-6 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-xs mr-3 font-bold">1</span> Pronto Pago + Dcto. Ingresante</li>
-                                <li className="p-3 bg-gray-50 rounded-lg border border-gray-100 font-medium text-gray-700 flex items-center"><span className="w-6 h-6 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-xs mr-3 font-bold">2</span> Pronto Pago + Convenio</li>
-                                <li className="p-3 bg-gray-50 rounded-lg border border-gray-100 font-medium text-gray-700 flex items-center"><span className="w-6 h-6 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-xs mr-3 font-bold">3</span> Reintegro + Convenio</li>
+                                <li className="p-3 bg-gray-50 rounded-lg text-gray-700 font-medium">1. Pronto Pago + Dcto. Ingresante</li>
+                                <li className="p-3 bg-gray-50 rounded-lg text-gray-700 font-medium">2. Pronto Pago + Convenio</li>
+                                <li className="p-3 bg-gray-50 rounded-lg text-gray-700 font-medium">3. Reintegro + Convenio</li>
                             </ul>
                         </div>
                     </div>
@@ -342,29 +296,26 @@
                      <div className="space-y-6 animate-fadeIn">
                         <div className="bg-indigo-50 border-l-4 border-indigo-500 p-5 rounded-r-lg">
                             <h2 className="text-xl font-bold text-indigo-800 flex items-center"><MessageCircle className="w-6 h-6 mr-2" /> Chat de Piso / Apoyo Operativo</h2>
-                            <p className="text-indigo-600 mt-1 text-sm font-medium italic">Gestión operativa en tiempo real para casos específicos.</p>
                         </div>
                         <div className="grid md:grid-cols-2 gap-8">
                             <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
-                                <div className="bg-indigo-600 px-6 py-4"><h3 className="text-white font-bold flex items-center text-sm"><CheckCircle className="w-5 h-5 mr-2"/> Lo que SÍ atendemos aquí</h3></div>
-                                <div className="divide-y divide-gray-100 max-h-[500px] overflow-y-auto">
+                                <div className="bg-indigo-600 px-6 py-4 text-white font-bold">Gestiones Directas</div>
+                                <div className="divide-y divide-gray-100 overflow-y-auto max-h-[500px]">
                                     {wikiData.chatPisoItems.map(item => (
                                         <div key={item.id} className="p-4 hover:bg-indigo-50 transition-colors">
                                             <p className="font-bold text-gray-800 text-sm mb-1">{item.title}</p>
-                                            <p className="text-xs text-gray-500 leading-relaxed">{item.desc}</p>
+                                            <p className="text-xs text-gray-500">{item.desc}</p>
                                         </div>
                                     ))}
                                 </div>
                             </div>
                             <div className="flex flex-col gap-6">
-                                <div className="bg-slate-800 text-white rounded-xl shadow-lg p-6">
-                                    <h3 className="font-bold mb-4 flex items-center text-indigo-300"><Clipboard className="w-5 h-5 mr-2"/> Plantilla Obligatoria</h3>
-                                    <div className="bg-slate-900/50 p-4 rounded-lg font-mono text-xs text-gray-300 border border-slate-700 whitespace-pre-wrap leading-loose">ID: <br/>Tipo de estudiante: <br/>Programa y Modalidad: <br/>Consulta: <br/>Soportes: </div>
-                                    <button onClick={copyTemplate} className="mt-4 w-full bg-indigo-500 hover:bg-indigo-400 py-2 rounded-lg font-bold text-sm transition-transform active:scale-95">Copiar Plantilla</button>
+                                <div className="bg-slate-800 text-white rounded-xl p-6">
+                                    <h3 className="font-bold mb-4 flex items-center text-indigo-300"><Clipboard className="w-5 h-5 mr-2"/> Plantilla Chat</h3>
+                                    <div className="bg-slate-900/50 p-4 rounded-lg font-mono text-xs text-gray-300 border border-slate-700 whitespace-pre-wrap leading-loose">ID: \nTipo: \nPrograma: \nConsulta: \nSoportes: </div>
+                                    <button onClick={copyTemplate} className="mt-4 w-full bg-indigo-500 hover:bg-indigo-400 py-2 rounded-lg font-bold">Copiar Plantilla</button>
                                 </div>
-                                <a href={wikiData.links.teamsSoporte} target="_blank" className="w-full bg-green-600 hover:bg-green-700 text-white py-4 rounded-lg font-bold flex items-center justify-center shadow-md transition-all hover:-translate-y-1">
-                                    <Send className="w-5 h-5 mr-2"/> Abrir Chat de Soporte (Teams)
-                                </a>
+                                <a href={wikiData.links.teamsSoporte} target="_blank" className="w-full bg-green-600 hover:bg-green-700 text-white py-4 rounded-lg font-bold flex items-center justify-center shadow-lg transition-transform hover:-translate-y-1"><Send className="w-5 h-5 mr-2"/> Ir al Chat de Piso</a>
                             </div>
                         </div>
                     </div>
@@ -376,7 +327,7 @@
                 <div className="min-h-screen flex flex-col md:flex-row">
                     <aside className={`fixed md:sticky top-0 z-30 h-screen w-64 bg-slate-900 text-white transition-transform ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 flex flex-col shadow-2xl`}>
                         <div className="p-6 border-b border-slate-800 flex justify-between items-center cursor-pointer" onClick={() => setActiveSection('home')}>
-                            <div><h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-emerald-400">Wiki BO</h1><p className="text-xs text-slate-400 mt-1">Base de Conocimiento</p></div>
+                            <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-emerald-400">Wiki BO</h1>
                             <button onClick={() => setMobileMenuOpen(false)} className="md:hidden text-slate-400"><X /></button>
                         </div>
                         <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
@@ -393,19 +344,17 @@
                                 </button>
                             ))}
                         </nav>
-                        <div className="p-4 bg-slate-950 border-t border-slate-800">
-                             <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Poli Servicio - 2026</p>
-                        </div>
+                        <div className="p-4 bg-slate-950 border-t border-slate-800 text-[10px] text-slate-500 uppercase font-bold text-center">Poli Servicio - 2026</div>
                     </aside>
-                    <main className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
-                        <div className="md:hidden bg-white border-b p-4 flex justify-between items-center sticky top-0 z-20 shadow-sm">
+                    <main className="flex-1 flex flex-col h-screen overflow-hidden">
+                        <div className="md:hidden bg-white border-b p-4 flex justify-between items-center sticky top-0 z-20">
                             <h1 className="text-lg font-bold text-slate-800">Wiki Gestión BO</h1>
                             <button onClick={() => setMobileMenuOpen(true)} className="text-slate-600 bg-gray-100 p-2 rounded-lg"><Menu /></button>
                         </div>
                         <div className="flex-1 p-4 md:p-8 overflow-y-auto bg-gray-50 scroll-smooth">
                             <div className="max-w-6xl mx-auto pb-10">
                                 {activeSection !== 'home' && (
-                                    <button onClick={() => setActiveSection('home')} className="mb-6 text-xs font-bold text-blue-500 flex items-center hover:text-blue-700 transition-colors uppercase tracking-widest">
+                                    <button onClick={() => setActiveSection('home')} className="mb-6 text-xs font-bold text-blue-500 flex items-center hover:text-blue-700 uppercase tracking-widest transition-colors">
                                         <ChevronRight size={14} className="rotate-180 mr-1" /> Volver al Inicio
                                     </button>
                                 )}
