@@ -104,6 +104,7 @@
                 </div>
             </div>
 
+            <!-- Pantalla Inicio con Instrucciones Actualizadas -->
             <div id="start-screen" class="modal glass-panel active-modal">
                 <div class="mb-4">
                     <svg width="80" height="80" viewBox="0 0 40 40" style="margin: 0 auto;">
@@ -118,9 +119,11 @@
                 
                 <div class="text-left bg-white/5 p-4 rounded-xl border border-white/10 mb-4">
                     <p class="text-[11px] leading-relaxed text-gray-200">
-                        • ¡Usa las <b>NUBES MÓVILES</b> para subir!<br>
-                        • Toca los bloques <span class="text-yellow-400 font-bold">?</span> para activar los retos.<br>
-                        • ¡Doble salto disponible (pulsa salto en el aire)!
+                        • Muévete con las <b>FLECHAS DEL TECLADO</b>.<br>
+                        • ¡<b>DOBLE SALTO</b> activado! Usa la <b>BARRA ESPACIADORA</b> en el aire.<br>
+                        • Usa las <b>NUBES MÓVILES</b> para subir.<br>
+                        • Toca los bloques <span class="text-yellow-400 font-bold">?</span> para activar retos.<br>
+                        • Gana hasta <span class="text-yellow-400 font-bold">50 POLIPUNTOS</span>.
                     </p>
                 </div>
 
@@ -181,7 +184,7 @@
         function preload() {
             const g = this.make.graphics();
             
-            // GEEKO KAWAII
+            // GEEKO KAWAII (Versión Original)
             g.fillStyle(0x00a859).fillRoundedRect(0, 0, 32, 32, 10);
             g.fillStyle(0xfdb913).fillRoundedRect(4, 0, 24, 6, 2);
             g.fillStyle(0xffffff).fillCircle(10, 14, 5).fillCircle(22, 14, 5);
@@ -217,7 +220,7 @@
             g.lineStyle(2, 0xffffff).strokeCircle(12, 12, 10);
             g.generateTexture('coin', 24, 24);
 
-            // NUBE PLATAFORMA (Kawaii)
+            // NUBE PLATAFORMA
             g.clear().fillStyle(0xffffff).fillCircle(15, 15, 15).fillCircle(35, 15, 20).fillCircle(55, 15, 15);
             g.generateTexture('cloud_platform', 70, 35);
 
@@ -235,7 +238,7 @@
 
             // Fondo Cielo
             this.add.rectangle(gameState.worldWidth/2, 250, gameState.worldWidth, 500, 0x5c94fc);
-            for(let i=0; i<20; i++) {
+            for(let i=0; i<25; i++) {
                 this.add.circle(Phaser.Math.Between(0, gameState.worldWidth), Phaser.Math.Between(50, 150), Phaser.Math.Between(30, 80), 0xffffff, 0.3);
             }
 
@@ -244,31 +247,28 @@
                 platforms.create(x+20, 485, 'block').setScale(1, 0.8).refreshBody();
             }
 
-            // Diseño de nivel estático
             const map = [
-                [400, 350], [440, 350], [800, 350], [840, 350], [880, 350],
-                [1400, 380], [1900, 380], [2450, 380]
+                [400, 350], [800, 350], [1400, 380], [1900, 380], [2450, 380], [2900, 350]
             ];
             map.forEach(p => platforms.create(p[0], p[1], 'block'));
 
-            // NUBES MÓVILES (Ayuda para NotiBooms)
+            // NUBES MÓVILES
             movingClouds = this.physics.add.group({ allowGravity: false, immovable: true });
-            
             const cloudPaths = [
-                {x: 550, y: 320, range: 100, horizontal: true},
-                {x: 1100, y: 350, range: 120, horizontal: false},
-                {x: 1650, y: 320, range: 100, horizontal: true},
-                {x: 2150, y: 350, range: 120, horizontal: false},
-                {x: 2800, y: 320, range: 100, horizontal: true}
+                {x: 550, y: 320, range: 120, horiz: true},
+                {x: 1100, y: 350, range: 140, horiz: false},
+                {x: 1650, y: 320, range: 120, horiz: true},
+                {x: 2150, y: 350, range: 140, horiz: false},
+                {x: 2750, y: 320, range: 120, horiz: true}
             ];
 
-            cloudPaths.forEach((path, i) => {
-                let cloud = movingClouds.create(path.x, path.y, 'cloud_platform');
+            cloudPaths.forEach((p, i) => {
+                let c = movingClouds.create(p.x, p.y, 'cloud_platform');
                 this.tweens.add({
-                    targets: cloud,
-                    x: path.horizontal ? path.x + path.range : path.x,
-                    y: path.horizontal ? path.y : path.y - path.range,
-                    duration: 2000 + (i * 200),
+                    targets: c,
+                    x: p.horiz ? p.x + p.range : p.x,
+                    y: p.horiz ? p.y : p.y - p.range,
+                    duration: 2200 + (i * 150),
                     ease: 'Sine.easeInOut',
                     yoyo: true,
                     repeat: -1
@@ -278,16 +278,16 @@
             player = this.physics.add.sprite(100, 400, 'geeko').setCollideWorldBounds(true);
             this.cameras.main.startFollow(player, true, 0.1, 0.1);
 
-            coins = this.physics.add.group({ key: 'coin', repeat: 60, setXY: { x: 300, y: 0, stepX: 55 } });
+            coins = this.physics.add.group({ key: 'coin', repeat: 40, setXY: { x: 300, y: 0, stepX: 75 } });
             coins.children.iterate(c => {
                 c.setX(Phaser.Math.Between(200, 3300));
                 c.setY(Phaser.Math.Between(100, 420));
                 c.setBounceY(0.4);
             });
 
-            // Bloques NotiBoom (Cerca de las nubes móviles)
+            // Bloques de Activación por Contacto
             boomBlocks = this.physics.add.group({ immovable: true, allowGravity: false });
-            const boomX = [550, 1100, 1650, 2150, 2800];
+            const boomX = [550, 1100, 1650, 2150, 2750];
             boomX.forEach((x, i) => {
                 let b = boomBlocks.create(x + 35, 180, 'q_block');
                 b.setData('idx', i);
@@ -296,20 +296,13 @@
 
             goal = this.physics.add.staticSprite(3400, 400, 'goal');
 
-            // Colisiones y Overlaps
             this.physics.add.collider(player, platforms);
             this.physics.add.collider(player, movingClouds);
             this.physics.add.collider(coins, platforms);
             
-            // Cambio importante: Activación por contacto simple
+            // Activación por contacto simple (overlap)
             this.physics.add.overlap(player, boomBlocks, handleBlockHit, null, this);
-            
-            this.physics.add.overlap(player, coins, (p, c) => { 
-                c.disableBody(true, true); 
-                gameState.score += 10; 
-                updateHUD(); 
-            }, null, this);
-            
+            this.physics.add.overlap(player, coins, (p, c) => { c.disableBody(true, true); }, null, this);
             this.physics.add.overlap(player, goal, checkWin, null, this);
 
             cursors = this.input.keyboard.createCursorKeys();
@@ -318,25 +311,17 @@
         function update() {
             if (gameState.paused) { player.setVelocityX(0); return; }
 
-            if (cursors.left.isDown) { 
-                player.setVelocityX(-320); 
-                player.setFlipX(true); 
-            } else if (cursors.right.isDown) { 
-                player.setVelocityX(320); 
-                player.setFlipX(false); 
-            } else { 
-                player.setVelocityX(0); 
-            }
+            if (cursors.left.isDown) { player.setVelocityX(-320); player.setFlipX(true); }
+            else if (cursors.right.isDown) { player.setVelocityX(320); player.setFlipX(false); }
+            else player.setVelocityX(0);
 
-            // Salto y Doble Salto
-            const didPressJump = Phaser.Input.Keyboard.JustDown(cursors.up) || 
-                               Phaser.Input.Keyboard.JustDown(this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE));
+            // Soporta tanto Flecha Arriba como Barra Espaciadora para saltar
+            const didJump = Phaser.Input.Keyboard.JustDown(cursors.up) || 
+                            Phaser.Input.Keyboard.JustDown(this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE));
             
-            if (player.body.touching.down) {
-                gameState.jumpCount = 0;
-            }
+            if (player.body.touching.down) gameState.jumpCount = 0;
 
-            if (didPressJump) {
+            if (didJump) {
                 if (player.body.touching.down) {
                     player.setVelocityY(-650);
                     gameState.jumpCount = 1;
@@ -361,8 +346,6 @@
                 
                 b.setTexture('used_block');
                 b.setData('activated', true);
-                
-                // Efecto de rebote al tocar
                 this.tweens.add({ targets: b, y: b.y - 15, duration: 100, yoyo: true });
                 
                 showTrivia(data);
@@ -383,11 +366,11 @@
                 btn.onclick = () => {
                     if (i === data.a) {
                         gameState.boomsSolved++;
-                        gameState.score += 100;
-                        document.getElementById('trivia-q').innerHTML = "<span class='text-green-400 font-bold'>¡CORRECTO! +100 Puntos.</span>";
+                        gameState.score += 10; // 10 puntos por respuesta correcta (Total 50)
+                        document.getElementById('trivia-q').innerHTML = "<span class='text-green-400 font-bold'>¡CORRECTO! +10 Polipuntos.</span>";
                     } else {
                         gameState.lives--;
-                        document.getElementById('trivia-q').innerHTML = "<span class='text-red-400 font-bold'>¡UPS! Repasa la normativa. Pierdes una vida.</span>";
+                        document.getElementById('trivia-q').innerHTML = "<span class='text-red-400 font-bold'>¡UPS! Debes repasar el comunicado. Pierdes una vida.</span>";
                     }
                     updateHUD();
                     opts.innerHTML = '';
@@ -406,19 +389,16 @@
         }
 
         function checkWin() {
-            if (gameState.boomsSolved >= gameState.totalBooms) {
-                end(true);
-            } else {
-                player.setVelocityX(-500);
-            }
+            if (gameState.boomsSolved >= gameState.totalBooms) end(true);
+            else player.setVelocityX(-500);
         }
 
         function end(win) {
             gameState.paused = true;
             const modal = document.getElementById('end-screen');
             document.getElementById('end-icon').innerText = win ? "🎓" : "❌";
-            document.getElementById('end-status').innerText = win ? "¡GRADUADO EXPERTO!" : "INTÉNTALO DE NUEVO";
-            document.getElementById('end-score').innerText = `PUNTAJE: ${gameState.score}`;
+            document.getElementById('end-status').innerText = win ? "¡EXPERTO DE LA SEMANA!" : "INTÉNTALO DE NUEVO";
+            document.getElementById('end-score').innerText = `HAS GANADO: ${gameState.score} POLIPUNTOS`;
             modal.classList.add('active-modal');
         }
     </script>
