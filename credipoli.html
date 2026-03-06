@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CrediPoli: El Navegante 40-60</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        .poly-gradient-text {
+            background: linear-gradient(to right, #00d2ff, #3a7bd5);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .option-btn {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .option-btn:hover {
+            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.1);
+            border-color: #00d2ff;
+        }
+
+        .progress-bar {
+            transition: width 0.5s ease;
+        }
+
+        @keyframes pulse-soft {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .anim-pulse {
+            animation: pulse-soft 2s infinite;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="game-container" class="w-full max-w-2xl px-4">
+        <!-- Dashboard Superior -->
+        <div class="flex justify-between items-center mb-6 px-2">
+            <div>
+                <h2 class="text-xs uppercase tracking-widest text-slate-400 font-bold">Misión CrediPoli</h2>
+                <div class="flex items-center gap-2">
+                    <span id="polipuntos" class="text-2xl font-black poly-gradient-text">0</span>
+                    <span class="text-xs text-blue-300 font-semibold">POLIPUNTOS (MÁX 50)</span>
+                </div>
+            </div>
+            <div class="text-right">
+                <span class="text-xs text-slate-400 block">Nivel de Confianza</span>
+                <div id="hearts" class="flex gap-1 justify-end mt-1">
+                    <span class="text-red-500">❤️</span>
+                    <span class="text-red-500">❤️</span>
+                    <span class="text-red-500">❤️</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pantalla de Inicio -->
+        <div id="start-screen" class="glass p-10 text-center">
+            <div class="mb-6 flex justify-center">
+                <div class="w-20 h-20 bg-blue-500/20 rounded-full flex items-center justify-center border border-blue-400/30">
+                    <span class="text-4xl">🎓</span>
+                </div>
+            </div>
+            <h1 class="text-3xl font-black mb-4 uppercase tracking-tighter">El Navegante <span class="text-blue-400">40-60</span></h1>
+            <p class="text-slate-300 mb-8 text-sm leading-relaxed">
+                Ayuda a los estudiantes del Poli a financiar su carrera. Responde correctamente para ganar hasta <b>50 Polipuntos</b>.
+            </p>
+            <button onclick="startGame()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 px-10 rounded-xl transition-all shadow-lg shadow-blue-500/20 active:scale-95">
+                INICIAR ASESORÍA
+            </button>
+        </div>
+
+        <!-- Pantalla de Juego -->
+        <div id="quiz-screen" class="glass p-8 hidden relative overflow-hidden">
+            <div id="progress" class="absolute top-0 left-0 h-1 bg-blue-400 progress-bar" style="width: 0%"></div>
+            
+            <div class="mb-6 flex items-center justify-between">
+                <span id="question-number" class="text-xs font-bold text-blue-400 bg-blue-400/10 px-3 py-1 rounded-full text-center">PASO 1 DE 7</span>
+                <span id="category-label" class="text-[10px] text-slate-500 uppercase tracking-widest font-bold">RADICACIÓN DIGITAL</span>
+            </div>
+
+            <h3 id="question-text" class="text-xl font-semibold mb-8 leading-tight">
+                Cargando...
+            </h3>
+
+            <div id="options-container" class="grid gap-4">
+                <!-- Opciones dinámicas -->
+            </div>
+        </div>
+
+        <!-- Pantalla Final -->
+        <div id="end-screen" class="glass p-10 text-center hidden">
+            <h2 id="end-title" class="text-3xl font-black mb-2">¡MISIÓN COMPLETADA!</h2>
+            <p id="end-msg" class="text-slate-300 mb-6">Has demostrado ser un experto en CrediPoli.</p>
+            
+            <div class="bg-white/5 rounded-2xl p-6 mb-8 border border-white/10">
+                <span class="text-sm text-slate-400 block mb-1">Total Recaudado</span>
+                <div class="flex items-baseline justify-center gap-2">
+                    <span id="final-points" class="text-5xl font-black poly-gradient-text">0</span>
+                    <span class="text-xl text-slate-400">/ 50</span>
+                </div>
+                <span class="block text-blue-300 text-xs mt-2 font-bold tracking-widest uppercase">Polipuntos Obtenidos</span>
+            </div>
+
+            <div class="flex flex-col gap-4 mt-6">
+                <button onclick="openModal()" class="bg-purple-600/20 hover:bg-purple-600/40 border border-purple-500/50 text-purple-200 font-bold py-3 px-6 rounded-xl transition-all flex items-center justify-center gap-2">
+                    <span class="text-xl">💡</span> ¿Cómo explicar el 40/60? (Método Bolsillos)
+                </button>
+                <button onclick="location.reload()" class="text-blue-400 font-bold hover:underline py-2">REINTENTAR ENTRENAMIENTO</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Explicativo de los Bolsillos -->
+    <div id="pocket-modal" class="fixed inset-0 bg-slate-900/90 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="glass max-w-lg w-full p-8 relative transform scale-95 transition-transform duration-300" id="pocket-modal-content">
+            <button onclick="closeModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-3xl font-light">&times;</button>
+            <h2 class="text-2xl font-black mb-6 poly-gradient-text text-center">El Método de los "Dos Bolsillos" 🎒</h2>
+            
+            <div class="space-y-4 text-left">
+                <!-- Bolsillo 1 -->
+                <div class="bg-blue-900/30 border border-blue-500/30 rounded-xl p-4 flex gap-4 items-start">
+                    <div class="text-3xl mt-1">⏳</div>
+                    <div>
+                        <h4 class="font-bold text-blue-300 text-sm uppercase tracking-wider mb-1">1. Mientras Estudias</h4>
+                        <p class="text-sm text-slate-300 leading-relaxed">Durante el semestre pagas el <b>40% del capital</b> + los intereses calculados sobre el 100% de ese semestre.</p>
+                    </div>
+                </div>
+                
+                <!-- Bolsillo 2 -->
+                <div class="bg-purple-900/30 border border-purple-500/30 rounded-xl p-4 flex gap-4 items-start">
+                    <div class="text-3xl mt-1">🧊</div>
+                    <div>
+                        <h4 class="font-bold text-purple-300 text-sm uppercase tracking-wider mb-1">2. La Bolsa Acumulada</h4>
+                        <p class="text-sm text-slate-300 leading-relaxed">El 60% restante se va sumando en una "bolsa". <span class="text-white font-semibold">Mientras estudias, NO pagas cuotas sobre esa gran bolsa acumulada.</span></p>
+                    </div>
+                </div>
+
+                <!-- Bolsillo 3 -->
+                <div class="bg-emerald-900/30 border border-emerald-500/30 rounded-xl p-4 flex gap-4 items-start">
+                    <div class="text-3xl mt-1">🎓</div>
+                    <div>
+                        <h4 class="font-bold text-emerald-300 text-sm uppercase tracking-wider mb-1">3. Cuando te Gradúas</h4>
+                        <p class="text-sm text-slate-300 leading-relaxed">Esa gran bolsa se convierte en tu crédito final (hasta a 60 meses, generando intereses). ¡Pero el estudiante <b>puede hacer abonos a capital en cualquier momento</b> para reducir su deuda!</p>
+                    </div>
+                </div>
+            </div>
+            
+            <button onclick="closeModal()" class="w-full mt-8 bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl transition-all">¡Entendido, lo tengo claro!</button>
+        </div>
+    </div>
+
+    <script>
+        // Nueva configuración de puntaje total = 50
+        // Preguntas 1-4: 8 pts c/u = 32
+        // Preguntas 5-7: 6 pts c/u = 18
+        // Total: 32 + 18 = 50
+        const questions = [
+            {
+                q: "¿A través de qué canal se debe realizar la solicitud y radicación del crédito educativo 40-60?",
+                options: ["100% presencial", "100% virtual", "Mixto"],
+                correct: 1,
+                points: 8,
+                cat: "CANALES"
+            },
+            {
+                q: "¿La línea 40-60 de CrediPoli solo aplica para estudiantes de pregrado?",
+                options: ["SÍ", "NO"],
+                correct: 0,
+                points: 8,
+                cat: "ELIGIBILIDAD"
+            },
+            {
+                q: "¿Qué porcentaje del valor total de la matrícula financiada debe cancelar el estudiante mensualmente durante el semestre académico?",
+                options: ["30%", "40%", "50%", "60%"],
+                correct: 1,
+                points: 8,
+                cat: "FLUJO DE CAJA"
+            },
+            {
+                q: "Para acceder a la línea 40-60, ¿Es obligatorio que el estudiante y aspirante presente un codeudor?",
+                options: ["SÍ", "NO"],
+                correct: 0,
+                points: 8,
+                cat: "GARANTÍAS"
+            },
+            {
+                q: "¿Cuál es el monto máximo permitido a financiar por semestre?",
+                options: ["$4.000.000", "$6.000.000", "$10.000.000"],
+                correct: 2,
+                points: 6,
+                cat: "LÍMITES"
+            },
+            {
+                q: "¿Los intereses generados por el 60% acumulado se deben pagar de forma progresiva mientras el estudiante está en su estudio?",
+                options: ["SÍ", "NO"],
+                correct: 0,
+                points: 6,
+                cat: "COSTOS"
+            },
+            {
+                q: "¿Cuál es el plazo máximo de cuotas para cancelar el 40% correspondiente a la etapa de estudio?",
+                options: ["Hasta 3 cuotas", "Hasta 6 cuotas", "Hasta 5 cuotas"],
+                correct: 1,
+                points: 6,
+                cat: "PLAZOS"
+            }
+        ];
+
+        let currentQ = 0;
+        let score = 0;
+        let lives = 3;
+
+        function startGame() {
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('quiz-screen').classList.remove('hidden');
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            const question = questions[currentQ];
+            document.getElementById('question-number').innerText = `PASO ${currentQ + 1} DE ${questions.length}`;
+            document.getElementById('category-label').innerText = question.cat;
+            document.getElementById('question-text').innerText = question.q;
+            document.getElementById('progress').style.width = `${(currentQ / questions.length) * 100}%`;
+
+            const container = document.getElementById('options-container');
+            container.innerHTML = '';
+
+            question.options.forEach((opt, index) => {
+                const btn = document.createElement('button');
+                btn.className = "option-btn w-full p-4 rounded-xl border border-white/10 text-left hover:bg-white/5 font-medium flex items-center justify-between group";
+                btn.innerHTML = `
+                    <span>${opt}</span>
+                    <span class="opacity-0 group-hover:opacity-100 transition-opacity text-blue-400">→</span>
+                `;
+                btn.onclick = () => checkAnswer(index);
+                container.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(index) {
+            const question = questions[currentQ];
+            const btns = document.getElementsByClassName('option-btn');
+            
+            for(let b of btns) b.style.pointerEvents = 'none';
+
+            if (index === question.correct) {
+                btns[index].classList.add('border-green-500', 'bg-green-500/10');
+                score += question.points;
+                updateScore();
+                setTimeout(nextQuestion, 600);
+            } else {
+                btns[index].classList.add('border-red-500', 'bg-red-500/10');
+                btns[question.correct].classList.add('border-green-500', 'bg-green-500/10');
+                lives--;
+                updateHearts();
+                
+                if (lives <= 0) {
+                    setTimeout(endGame, 1000);
+                } else {
+                    setTimeout(nextQuestion, 1500);
+                }
+            }
+        }
+
+        function nextQuestion() {
+            currentQ++;
+            if (currentQ < questions.length) {
+                loadQuestion();
+            } else {
+                endGame();
+            }
+        }
+
+        function updateScore() {
+            const el = document.getElementById('polipuntos');
+            el.innerText = score;
+            el.classList.add('anim-pulse');
+            setTimeout(() => el.classList.remove('anim-pulse'), 500);
+        }
+
+        function updateHearts() {
+            const container = document.getElementById('hearts');
+            let h = "";
+            for (let i = 0; i < 3; i++) {
+                h += i < lives ? "❤️ " : "<span class='grayscale opacity-30'>❤️</span> ";
+            }
+            container.innerHTML = h;
+        }
+
+        function endGame() {
+            document.getElementById('quiz-screen').classList.add('hidden');
+            document.getElementById('end-screen').classList.remove('hidden');
+            document.getElementById('final-points').innerText = score;
+
+            if (lives <= 0) {
+                document.getElementById('end-title').innerText = "ASESORÍA FALLIDA";
+                document.getElementById('end-title').classList.add('text-red-400');
+                document.getElementById('end-msg').innerText = "No lograste completar el expediente del estudiante. ¡Revisa la capacitación de CrediPoli!";
+            } else if (score === 50) {
+                document.getElementById('end-title').innerText = "¡MAESTRÍA TOTAL!";
+                document.getElementById('end-msg').innerText = "Has radicado el crédito con perfección absoluta. ¡50 Polipuntos para ti!";
+            }
+        }
+
+        // Lógica del Pop-up (Modal)
+        function openModal() {
+            const modal = document.getElementById('pocket-modal');
+            const content = document.getElementById('pocket-modal-content');
+            modal.classList.remove('hidden');
+            // Pequeño retraso para que la animación de CSS funcione
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                content.classList.remove('scale-95');
+            }, 10);
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('pocket-modal');
+            const content = document.getElementById('pocket-modal-content');
+            modal.classList.add('opacity-0');
+            content.classList.add('scale-95');
+            // Esperar a que termine la transición para ocultarlo del DOM
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+    </script>
+</body>
+</html>
