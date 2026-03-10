@@ -43,14 +43,14 @@
         </button>
     </header>
 
-    <!-- PANTALLA 1: INICIO (Contexto Restaurado) -->
-    <main id="screen-intro" class="w-full max-w-4xl flex flex-col items-center justify-center mt-10">
-        <div class="glass p-10 rounded-2xl shadow-2xl text-center relative overflow-hidden w-full">
+    <!-- PANTALLA 1: INICIO -->
+    <main id="screen-intro" class="w-full max-w-4xl flex flex-col items-center justify-center mt-10 text-center">
+        <div class="glass p-10 rounded-2xl shadow-2xl relative overflow-hidden w-full">
             <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-600 to-red-500"></div>
             <div class="text-blue-400 mb-6 mx-auto animate-pulse flex justify-center">
                 <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
             </div>
-            <h2 class="text-4xl font-bold mb-6 text-white tracking-tight text-center text-balance">Expediente #402: Anomalía de Datos</h2>
+            <h2 class="text-4xl font-bold mb-6 text-white tracking-tight text-balance">Expediente #402: Anomalía de Datos</h2>
             
             <div class="bg-black/30 p-6 rounded-xl text-left border border-slate-700/50 mb-8 max-w-2xl mx-auto">
                 <h3 class="text-red-400 font-bold mb-2 flex items-center gap-2 uppercase text-sm tracking-widest">
@@ -81,7 +81,8 @@
                     <h3 class="font-bold text-slate-200 uppercase text-xs tracking-widest">Evidencia A: Captura de Pantalla</h3>
                 </div>
                 <div class="relative rounded-lg overflow-hidden border border-slate-700 bg-black">
-                    <video id="video-player" class="w-full h-auto" controls controlsList="nodownload" src="Fragemento Video.mp4">
+                    <!-- VIDEO CORREGIDO: Usando nombre sin espacios -->
+                    <video id="video-player" class="w-full h-auto" controls controlsList="nodownload" src="video-evidencia.mp4">
                         Tu navegador no soporta el video.
                     </video>
                 </div>
@@ -90,7 +91,7 @@
         </div>
 
         <div class="bg-slate-800 border border-slate-600 p-6 rounded-xl shadow-2xl flex flex-col h-full max-h-[85vh] overflow-y-auto custom-scrollbar">
-            <h2 class="text-xl font-bold text-white mb-6 border-b border-slate-700 pb-2 text-left">Reporte de Auditoría</h2>
+            <h2 class="text-xl font-bold text-white mb-6 border-b border-slate-700 pb-2 text-left text-center">Reporte de Auditoría</h2>
             <div class="space-y-4 flex-grow text-left">
                 <div>
                     <label class="block text-xs font-bold text-blue-200 uppercase tracking-widest mb-2">Nombre del Analista</label>
@@ -128,7 +129,7 @@
         </p>
         
         <div class="bg-black/40 px-10 py-6 rounded-2xl border border-amber-500/30 mb-8 inline-block shadow-2xl">
-            <p class="text-xs text-slate-500 uppercase tracking-widest mb-1">Puntaje Potencial</p>
+            <p class="text-xs text-slate-500 uppercase tracking-widest mb-1 text-center">Puntaje Potencial</p>
             <p class="text-6xl font-mono font-bold text-amber-400">+50</p>
             <p class="text-[10px] text-amber-400 uppercase mt-2 text-center">Sujeto a validación del reporte</p>
         </div>
@@ -183,14 +184,13 @@
 
         const statusDot = document.getElementById('db-status');
 
-        // Lógica de Autenticación Resiliente para evitar Custom Token Mismatch
+        // Lógica de Autenticación Resiliente
         const initAuth = async () => {
             try {
                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                     try {
                         await signInWithCustomToken(auth, __initial_auth_token);
                     } catch (tokenError) {
-                        console.warn("Token mismatch, falling back to anonymous auth...");
                         await signInAnonymously(auth);
                     }
                 } else {
