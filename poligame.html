@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proyecto Ojo de Halcón</title>
+    <!-- Tailwind CSS para los estilos (sin instalar nada) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .custom-scrollbar::-webkit-scrollbar { width: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(30, 41, 59, 0.5); border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(71, 85, 105, 0.8); border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(100, 116, 139, 1); }
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body class="min-h-screen bg-slate-900 text-slate-100 font-sans flex flex-col items-center p-4">
+
+    <!-- HUD Header -->
+    <header class="w-full max-w-6xl flex justify-between items-center mb-6 bg-white/5 p-4 rounded-xl border border-white/10 backdrop-blur-sm relative z-20">
+        <div class="flex items-center gap-3">
+            <!-- Botón secreto del administrador (Doble Clic aquí) -->
+            <div id="admin-trigger" class="text-blue-400 cursor-pointer hover:text-blue-300 transition-colors" title="Doble clic para Admin">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><path d="m9 12 2 2 4-4"></path></svg>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold tracking-wider uppercase text-blue-100">Proyecto Ojo de Halcón</h1>
+                <p class="text-xs text-blue-300">Auditoría Forense de Calidad</p>
+            </div>
+        </div>
+        
+        <div id="reward-display" class="flex flex-col items-end">
+            <span class="text-xs text-slate-400 uppercase font-bold tracking-widest">Recompensa Máxima</span>
+            <span class="text-2xl font-mono text-amber-400 font-bold">50 POLIPUNTOS</span>
+        </div>
+
+        <button id="btn-back-sim" class="hidden bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded-lg text-sm font-bold transition-all">
+            Volver al Simulador
+        </button>
+    </header>
+
+    <!-- Admin Login Modal (Secret) -->
+    <div id="admin-login-modal" class="hidden absolute top-24 left-8 bg-slate-800 p-4 rounded-lg border border-slate-600 z-50 shadow-2xl">
+        <p class="text-xs text-slate-400 mb-2 uppercase tracking-wider">Acceso Restringido</p>
+        <div class="flex gap-2">
+            <input type="password" id="admin-pwd" placeholder="Contraseña..." class="bg-slate-900 border border-slate-700 rounded px-3 py-1 text-sm focus:outline-none focus:border-blue-500">
+            <button id="btn-admin-login" class="bg-blue-600 hover:bg-blue-500 px-3 py-1 rounded text-sm font-bold">Entrar</button>
+        </div>
+    </div>
+
+    <!-- PANTALLA 1: INTRODUCCIÓN -->
+    <main id="screen-intro" class="w-full max-w-4xl flex flex-col items-center justify-center mt-10">
+        <div class="bg-white/5 border border-white/10 p-10 rounded-2xl shadow-2xl backdrop-blur-sm text-center relative overflow-hidden w-full">
+            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-600 to-red-500"></div>
+            <div class="text-blue-400 mb-6 mx-auto animate-pulse flex justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+            </div>
+            <h2 class="text-4xl font-bold mb-6 text-white tracking-tight">Expediente #402: Actualización Crítica</h2>
+            
+            <div class="bg-black/30 p-6 rounded-xl text-left border border-slate-700/50 mb-8 max-w-2xl mx-auto">
+                <h3 class="text-red-400 font-bold mb-2 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+                    Contexto del Caso
+                </h3>
+                <p class="text-slate-300 mb-4 leading-relaxed">
+                    El 20 de febrero, se generó un ticket solicitando el cambio de número de celular de un estudiante. El proceso se "completó". Sin embargo, hoy el estudiante volvió a contactarnos furioso, asegurando que <strong>él en ningún momento solicitó dicho cambio</strong> y exigiendo saber por qué modificaron sus datos.
+                </p>
+                <p class="text-slate-300 leading-relaxed">
+                    La universidad ha encendido las alarmas: <strong>¿Estamos suplantando a los estudiantes? ¿Estamos fallando en la validación?</strong> 
+                    Se ha recuperado la grabación de pantalla del asesor involucrado. Tu misión es auditar la cinta y descubrir exactamente qué salió mal.
+                </p>
+            </div>
+
+            <button id="btn-start" class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-10 py-4 rounded-full font-bold text-lg transition-all shadow-[0_0_20px_rgba(37,99,235,0.4)] hover:scale-105 hover:shadow-[0_0_30px_rgba(37,99,235,0.6)]">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                Analizar Evidencia
+            </button>
+        </div>
+    </main>
+
+    <!-- PANTALLA 2: INVESTIGACIÓN (Video + Formulario) -->
+    <main id="screen-investigate" class="hidden w-full max-w-6xl grid grid-cols-1 lg:grid-cols-2 gap-8 relative z-10">
+        <!-- Panel Izquierdo: Video Evidencia -->
+        <div class="flex flex-col gap-4">
+            <div class="bg-white/5 border border-white/10 rounded-xl p-4 backdrop-blur-sm">
+                <div class="flex items-center gap-2 mb-3">
+                    <svg class="text-blue-400" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    <h3 class="font-bold text-slate-200">Grabación de Pantalla (Evidencia A)</h3>
+                </div>
+                <div class="relative rounded-lg overflow-hidden border border-slate-700 bg-black">
+                    <!-- VIDEO AQUÍ -->
+                    <video id="video-player" class="w-full h-auto" controls controlsList="nodownload" src="video-evidencia.mp4">
+                        Tu navegador no soporta el formato de video.
+                    </video>
+                </div>
+                <p class="text-xs text-slate-400 mt-3 text-center">Analiza detenidamente la información en pantalla. Puedes pausar y retroceder.</p>
+            </div>
+        </div>
+
+        <!-- Panel Derecho: Reporte Oficial -->
+        <div class="bg-slate-800/80 border border-slate-600 p-6 rounded-xl shadow-2xl backdrop-blur-sm flex flex-col h-full max-h-[80vh] overflow-y-auto custom-scrollbar">
+            <div class="flex items-center gap-3 mb-6 border-b border-slate-700 pb-4">
+                <svg class="text-amber-400" xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/><line x1="10" x2="8" y1="9" y2="9"/></svg>
+                <h2 class="text-2xl font-bold text-white">Reporte de Auditoría</h2>
+            </div>
+
+            <div class="space-y-6 flex-grow">
+                <div>
+                    <label class="block text-sm font-bold text-blue-200 uppercase tracking-wider mb-2">Identificación del Auditor</label>
+                    <input type="text" id="playerName" placeholder="Tu Nombre / ID" class="w-full bg-slate-900/50 border border-slate-600 rounded-lg p-3 text-slate-100 focus:outline-none focus:border-blue-400 transition-all"/>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-amber-200 uppercase tracking-wider mb-1">1. Detección del Error</label>
+                    <p class="text-xs text-slate-400 mb-2">¿Cuál fue el error operativo exacto que ocurrió en la grabación?</p>
+                    <textarea id="q1Error" rows="3" class="w-full bg-slate-900/50 border border-slate-600 rounded-lg p-3 text-slate-100 focus:outline-none focus:border-amber-400 transition-all resize-none"></textarea>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-emerald-200 uppercase tracking-wider mb-1">2. Causa Raíz</label>
+                    <p class="text-xs text-slate-400 mb-2">¿Por qué crees que el asesor lo cometió? ¿Qué factor humano falló?</p>
+                    <textarea id="q2Reason" rows="3" class="w-full bg-slate-900/50 border border-slate-600 rounded-lg p-3 text-slate-100 focus:outline-none focus:border-emerald-400 transition-all resize-none"></textarea>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-red-300 uppercase tracking-wider mb-1">3. Impacto y Gravedad</label>
+                    <p class="text-xs text-slate-400 mb-2">¿Cuáles son las consecuencias de haber hecho este cambio sin solicitud real?</p>
+                    <textarea id="q3Impact" rows="3" class="w-full bg-slate-900/50 border border-slate-600 rounded-lg p-3 text-slate-100 focus:outline-none focus:border-red-400 transition-all resize-none"></textarea>
+                </div>
+            </div>
+
+            <div id="error-msg" class="hidden mt-4 p-3 bg-red-900/50 border border-red-500 rounded-lg text-red-200 text-sm text-center"></div>
+
+            <button id="btn-submit" class="mt-6 w-full py-4 rounded-xl font-bold text-lg transition-all shadow-lg flex justify-center items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white hover:shadow-[0_0_20px_rgba(16,185,129,0.4)]">
+                Enviar Reporte y Reclamar Puntos
+            </button>
+        </div>
+    </main>
+
+    <!-- PANTALLA 3: ÉXITO -->
+    <main id="screen-success" class="hidden w-full max-w-2xl flex flex-col items-center justify-center mt-10 text-center">
+        <div class="text-amber-400 mb-6 mx-auto">
+            <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg>
+        </div>
+        <h2 class="text-4xl font-bold mb-4 text-white">Reporte Transmitido</h2>
+        <p class="text-xl text-emerald-300 mb-8">Has completado la auditoría forense con éxito.</p>
+        
+        <div class="bg-black/40 px-12 py-6 rounded-2xl border border-amber-500/30 mb-8 shadow-[0_0_30px_rgba(251,191,36,0.2)]">
+            <p class="text-sm text-slate-400 uppercase tracking-widest mb-2 font-bold">Recompensa Asignada</p>
+            <p class="text-6xl font-mono font-bold text-amber-400">+50</p>
+            <p class="text-sm text-amber-400 uppercase tracking-widest mt-1">Polipuntos</p>
+        </div>
+
+        <p class="text-slate-300 italic max-w-lg mb-8">
+            "Tu capacidad de análisis protege la identidad de nuestros estudiantes. La calidad nunca debe ser víctima de la velocidad."
+        </p>
+
+        <button id="btn-restart" class="text-slate-400 hover:text-white underline transition-colors">Realizar otra auditoría</button>
+    </main>
+
+    <!-- PANTALLA 4: ADMIN DASHBOARD -->
+    <main id="screen-admin" class="hidden w-full max-w-6xl mt-4">
+        <div class="bg-slate-800 rounded-xl border border-slate-700 p-6 shadow-2xl">
+            <div class="flex items-center gap-3 mb-6 border-b border-slate-700 pb-4">
+                <svg class="text-blue-400" xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5V19A9 3 0 0 0 21 19V5"/><path d="M3 12A9 3 0 0 0 21 12"/></svg>
+                <h2 class="text-2xl font-bold text-white">Base de Datos de Auditoría (Admin)</h2>
+                <span id="admin-count" class="ml-auto bg-blue-900/50 text-blue-300 px-3 py-1 rounded-full text-sm font-bold">0 Reportes</span>
+            </div>
+            <div id="admin-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Los reportes se cargarán aquí -->
+            </div>
+        </div>
+    </main>
+
+    <!-- LÓGICA DEL JUEGO Y CONEXIÓN A FIREBASE -->
+    <script type="module">
+        // 1. IMPORTAR FIREBASE DIRECTO DEL NAVEGADOR
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // ==========================================
+        // 🚨 CONFIGURACIÓN DE FIREBASE (¡Pega tus datos aquí!)
+        // ==========================================
+        const customFirebaseConfig = {
+            apiKey: "TU_API_KEY",
+            authDomain: "TU_PROYECTO.firebaseapp.com",
+            projectId: "TU_PROYECTO",
+            storageBucket: "TU_PROYECTO.firebasestorage.app",
+            messagingSenderId: "TU_SENDER_ID",
+            appId: "TU_APP_ID"
+        };
+        
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : customFirebaseConfig;
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'ojo-halcon-app';
+        
+        // Ruta para la base de datos (Compatible con simulador web y tu proyecto final)
+        const dbPath = typeof __firebase_config !== 'undefined' ? `artifacts/${appId}/public/data/incident_reports` : 'incident_reports';
+        // ==========================================
+
+        // Inicializar Firebase
+        let app, auth, db, userId;
+        try {
+            if (firebaseConfig.apiKey === "TU_API_KEY") {
+                console.warn("⚠️ Firebase no configurado: Pon tus datos reales en la configuración para guardar.");
+            } else {
+                app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+                
+                const initAuth = async () => {
+                    try {
+                        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                            await signInWithCustomToken(auth, __initial_auth_token);
+                        } else {
+                            await signInAnonymously(auth);
+                        }
+                    } catch (error) {
+                        console.error("Error de autenticación:", error);
+                    }
+                };
+                initAuth();
+
+                onAuthStateChanged(auth, (user) => {
+                    if (user) userId = user.uid;
+                });
+            }
+        } catch (e) {
+            console.warn("Firebase no está configurado aún.");
+        }
+
+        // 2. CONTROL DE PANTALLAS (UI)
+        const screens = {
+            intro: document.getElementById('screen-intro'),
+            investigate: document.getElementById('screen-investigate'),
+            success: document.getElementById('screen-success'),
+            admin: document.getElementById('screen-admin')
+        };
+        
+        function showScreen(screenName) {
+            Object.values(screens).forEach(s => s.classList.add('hidden'));
+            screens[screenName].classList.remove('hidden');
+            
+            // Ocultar recompensa si estamos en admin
+            document.getElementById('reward-display').classList.toggle('hidden', screenName === 'admin');
+            document.getElementById('btn-back-sim').classList.toggle('hidden', screenName !== 'admin');
+        }
+
+        // Eventos Básicos
+        document.getElementById('btn-start').addEventListener('click', () => {
+            showScreen('investigate');
+        });
+        
+        document.getElementById('btn-restart').addEventListener('click', () => {
+            document.getElementById('playerName').value = '';
+            document.getElementById('q1Error').value = '';
+            document.getElementById('q2Reason').value = '';
+            document.getElementById('q3Impact').value = '';
+            showScreen('intro');
+        });
+
+        // 3. ENVÍO DEL REPORTE A FIREBASE
+        const btnSubmit = document.getElementById('btn-submit');
+        const errorMsg = document.getElementById('error-msg');
+
+        btnSubmit.addEventListener('click', async () => {
+            const pName = document.getElementById('playerName').value.trim();
+            const q1 = document.getElementById('q1Error').value.trim();
+            const q2 = document.getElementById('q2Reason').value.trim();
+            const q3 = document.getElementById('q3Impact').value.trim();
+
+            if (!pName || !q1 || !q2 || !q3) {
+                errorMsg.textContent = "Por favor, completa todos los campos del reporte.";
+                errorMsg.classList.remove('hidden');
+                return;
+            }
+
+            if (!userId) {
+                errorMsg.textContent = "Error: No hay conexión con la base de datos (Firebase). Revisa tu configuración.";
+                errorMsg.classList.remove('hidden');
+                return;
+            }
+
+            errorMsg.classList.add('hidden');
+            btnSubmit.textContent = "Transmitiendo...";
+            btnSubmit.disabled = true;
+
+            try {
+                // Guardar en Firestore usando la ruta correcta
+                await addDoc(collection(db, dbPath), {
+                    playerName: pName,
+                    q1Error: q1,
+                    q2Reason: q2,
+                    q3Impact: q3,
+                    timestamp: new Date().toISOString(),
+                    userId: userId
+                });
+                
+                showScreen('success');
+            } catch (error) {
+                console.error("Error al guardar:", error);
+                errorMsg.textContent = "Hubo un error al enviar el reporte.";
+                errorMsg.classList.remove('hidden');
+            } finally {
+                btnSubmit.textContent = "Enviar Reporte y Reclamar Puntos";
+                btnSubmit.disabled = false;
+            }
+        });
+
+        // 4. LÓGICA DEL PANEL DE ADMINISTRADOR
+        let adminUnsubscribe = null;
+        const adminTrigger = document.getElementById('admin-trigger');
+        const adminModal = document.getElementById('admin-login-modal');
+        const btnAdminLogin = document.getElementById('btn-admin-login');
+        const adminList = document.getElementById('admin-list');
+
+        adminTrigger.addEventListener('dblclick', () => {
+            adminModal.classList.toggle('hidden');
+        });
+
+        document.getElementById('btn-back-sim').addEventListener('click', () => {
+            showScreen('intro');
+            if (adminUnsubscribe) adminUnsubscribe(); // Dejar de escuchar la BD
+        });
+
+        btnAdminLogin.addEventListener('click', () => {
+            const pwd = document.getElementById('admin-pwd').value;
+            if (pwd === 'admin') {
+                adminModal.classList.add('hidden');
+                document.getElementById('admin-pwd').value = '';
+                showScreen('admin');
+                loadAdminData();
+            } else {
+                alert('Contraseña incorrecta');
+            }
+        });
+
+        function loadAdminData() {
+            if (!db) return;
+            
+            adminList.innerHTML = '<p class="text-slate-500 col-span-2 text-center py-10">Cargando reportes...</p>';
+            
+            // Cargar desde Firestore usando la ruta correcta
+            adminUnsubscribe = onSnapshot(collection(db, dbPath), (snapshot) => {
+                const reports = [];
+                snapshot.forEach(doc => reports.push({ id: doc.id, ...doc.data() }));
+                
+                // Ordenar del más reciente al más antiguo
+                reports.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                
+                document.getElementById('admin-count').textContent = `${reports.length} Reportes Recibidos`;
+                
+                if (reports.length === 0) {
+                    adminList.innerHTML = '<p class="text-slate-500 col-span-2 text-center py-10">Aún no hay reportes.</p>';
+                    return;
+                }
+
+                adminList.innerHTML = reports.map(r => `
+                    <div class="bg-slate-900/80 p-5 rounded-lg border border-slate-600">
+                        <div class="flex justify-between items-start mb-4">
+                            <h3 class="font-bold text-lg text-emerald-400">👤 ${r.playerName}</h3>
+                            <span class="text-xs text-slate-500">${new Date(r.timestamp).toLocaleString()}</span>
+                        </div>
+                        <div class="space-y-3 text-sm">
+                            <div><span class="text-amber-200 font-bold block mb-1">1. Error Detectado:</span><p class="text-slate-300 bg-black/30 p-2 rounded">${r.q1Error}</p></div>
+                            <div><span class="text-emerald-200 font-bold block mb-1">2. Causa Raíz:</span><p class="text-slate-300 bg-black/30 p-2 rounded">${r.q2Reason}</p></div>
+                            <div><span class="text-red-300 font-bold block mb-1">3. Impacto/Gravedad:</span><p class="text-slate-300 bg-black/30 p-2 rounded">${r.q3Impact}</p></div>
+                        </div>
+                    </div>
+                `).join('');
+            });
+        }
+    </script>
+</body>
+</html>
