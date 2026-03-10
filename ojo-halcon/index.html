@@ -13,6 +13,8 @@
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(100, 116, 139, 1); }
         .hidden { display: none !important; }
         .glass { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        @keyframes pulse-green { 0% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(52, 211, 153, 0); } 100% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0); } }
+        .status-pulse { animation: pulse-green 2s infinite; }
     </style>
 </head>
 <body class="min-h-screen bg-slate-900 text-slate-100 font-sans flex flex-col items-center p-4">
@@ -20,9 +22,9 @@
     <!-- CABECERA HUD -->
     <header class="w-full max-w-6xl flex justify-between items-center mb-6 glass p-4 rounded-xl relative z-20">
         <div class="flex items-center gap-3">
-            <!-- Botón secreto (Doble clic aquí para entrar como Admin) -->
-            <div id="admin-trigger" class="text-blue-400 cursor-pointer hover:text-blue-300 transition-colors">
+            <div id="admin-trigger" class="text-blue-400 cursor-pointer hover:text-blue-300 transition-colors relative">
                 <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><path d="m9 12 2 2 4-4"></path></svg>
+                <div id="db-status" class="absolute -top-1 -right-1 w-3 h-3 bg-slate-500 rounded-full border-2 border-slate-900"></div>
             </div>
             <div>
                 <h1 class="text-xl font-bold tracking-wider uppercase text-blue-100">Proyecto Ojo de Halcón</h1>
@@ -40,15 +42,6 @@
         </button>
     </header>
 
-    <!-- LOGIN ADMINISTRADOR (Oculto) -->
-    <div id="admin-login-modal" class="hidden absolute top-24 left-8 bg-slate-800 p-4 rounded-lg border border-slate-600 z-50 shadow-2xl">
-        <p class="text-xs text-slate-400 mb-2 uppercase tracking-wider">Acceso de Líder</p>
-        <div class="flex gap-2">
-            <input type="password" id="admin-pwd" placeholder="Clave..." class="bg-slate-900 border border-slate-700 rounded px-3 py-1 text-sm focus:outline-none focus:border-blue-500 text-white">
-            <button id="btn-admin-login" class="bg-blue-600 hover:bg-blue-500 px-3 py-1 rounded text-sm font-bold">Entrar</button>
-        </div>
-    </div>
-
     <!-- PANTALLA 1: INICIO -->
     <main id="screen-intro" class="w-full max-w-4xl flex flex-col items-center justify-center mt-10">
         <div class="glass p-10 rounded-2xl shadow-2xl text-center relative overflow-hidden w-full">
@@ -57,108 +50,57 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
             </div>
             <h2 class="text-4xl font-bold mb-6 text-white tracking-tight">Expediente #402: Anomalía de Datos</h2>
-            
-            <div class="bg-black/30 p-6 rounded-xl text-left border border-slate-700/50 mb-8 max-w-2xl mx-auto">
-                <h3 class="text-red-400 font-bold mb-2 flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
-                    Contexto de Auditoría
-                </h3>
-                <p class="text-slate-300 mb-4 leading-relaxed">
-                    Un estudiante reporta que su número de celular fue cambiado el 20 de febrero <strong>sin su autorización</strong>. Este es un caso crítico de seguridad de la información.
-                </p>
-                <p class="text-slate-300 leading-relaxed italic">
-                    Analiza la grabación de pantalla del asesor que atendió el caso y detecta en qué momento se rompió el protocolo. ¿Estamos ante un error humano o una falla de validación?
-                </p>
-            </div>
-
+            <p class="text-slate-300 mb-8 max-w-2xl mx-auto">Analiza la grabación y detecta el error crítico de validación. Tu experticia es vital para proteger al estudiante.</p>
             <button id="btn-start" class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-10 py-4 rounded-full font-bold text-lg transition-all shadow-lg hover:scale-105">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-                Iniciar Auditoría Forense
+                Iniciar Auditoría
             </button>
         </div>
     </main>
 
     <!-- PANTALLA 2: INVESTIGACIÓN -->
     <main id="screen-investigate" class="hidden w-full max-w-6xl grid grid-cols-1 lg:grid-cols-2 gap-8 relative z-10">
-        <!-- Video Evidencia -->
-        <div class="flex flex-col gap-4">
-            <div class="glass rounded-xl p-4">
-                <div class="flex items-center gap-2 mb-3">
-                    <svg class="text-blue-400" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                    <h3 class="font-bold text-slate-200 uppercase text-xs tracking-widest">Evidencia A: Captura de Pantalla</h3>
-                </div>
-                <div class="relative rounded-lg overflow-hidden border border-slate-700 bg-black">
-                    <video id="video-player" class="w-full h-auto" controls controlsList="nodownload" src="video-evidencia.mp4">
-                        Tu navegador no soporta el video.
-                    </video>
-                </div>
-                <p class="text-xs text-slate-400 mt-3 text-center">Analiza detenidamente. Puedes pausar y retroceder para ver los nombres en pantalla.</p>
-            </div>
+        <div class="glass rounded-xl p-4 h-fit">
+            <video id="video-player" class="w-full h-auto rounded-lg border border-slate-700 bg-black" controls controlsList="nodownload" src="video-evidencia.mp4">
+                Tu navegador no soporta el video.
+            </video>
         </div>
-
-        <!-- Formulario de Reporte -->
         <div class="bg-slate-800 border border-slate-600 p-6 rounded-xl shadow-2xl flex flex-col h-full max-h-[85vh] overflow-y-auto custom-scrollbar">
-            <div class="flex items-center gap-3 mb-6 border-b border-slate-700 pb-4">
-                <svg class="text-amber-400" xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/><line x1="10" x2="8" y1="9" y2="9"/></svg>
-                <h2 class="text-2xl font-bold text-white">Reporte de Auditoría</h2>
+            <h2 class="text-xl font-bold text-white mb-6 border-b border-slate-700 pb-2">Reporte de Auditoría</h2>
+            <div class="space-y-4 flex-grow">
+                <input type="text" id="playerName" placeholder="Tu nombre completo" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-3 text-white focus:outline-none">
+                <textarea id="q1Error" rows="2" placeholder="1. ¿Cuál es el error exacto?" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-3 text-white resize-none focus:outline-none"></textarea>
+                <textarea id="q2Reason" rows="2" placeholder="2. ¿Por qué ocurrió?" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-3 text-white resize-none focus:outline-none"></textarea>
+                <textarea id="q3Impact" rows="2" placeholder="3. Gravedad del Impacto" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-3 text-white resize-none focus:outline-none"></textarea>
             </div>
-
-            <div class="space-y-6 flex-grow">
-                <div>
-                    <label class="block text-sm font-bold text-blue-200 uppercase tracking-wider mb-2">Nombre del Analista</label>
-                    <input type="text" id="playerName" placeholder="Tu nombre completo" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-3 text-white focus:outline-none focus:border-blue-400">
-                </div>
-                <div>
-                    <label class="block text-sm font-bold text-amber-200 uppercase mb-1">1. ¿Cuál es el error exacto?</label>
-                    <p class="text-[10px] text-slate-400 mb-2 italic">Describe qué viste en los nombres de los sistemas Genesys vs HubSpot.</p>
-                    <textarea id="q1Error" rows="3" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-3 text-white focus:outline-none focus:border-amber-400 resize-none"></textarea>
-                </div>
-                <div>
-                    <label class="block text-sm font-bold text-emerald-200 uppercase mb-1">2. ¿Por qué ocurrió?</label>
-                    <p class="text-[10px] text-slate-400 mb-2 italic">¿Fue distracción, falta de validación o exceso de velocidad?</p>
-                    <textarea id="q2Reason" rows="3" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-3 text-white focus:outline-none focus:border-emerald-400 resize-none"></textarea>
-                </div>
-                <div>
-                    <label class="block text-sm font-bold text-red-300 uppercase mb-1">3. Gravedad del Impacto</label>
-                    <p class="text-[10px] text-slate-400 mb-2 italic">¿Cómo afecta esto la confianza del estudiante y la seguridad de sus datos?</p>
-                    <textarea id="q3Impact" rows="3" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-3 text-white focus:outline-none focus:border-red-400 resize-none"></textarea>
-                </div>
-            </div>
-
             <div id="error-msg" class="hidden mt-4 p-3 bg-red-900/50 border border-red-500 rounded-lg text-red-200 text-sm text-center"></div>
-
-            <button id="btn-submit" class="mt-6 w-full py-4 rounded-xl font-bold text-lg bg-emerald-600 hover:bg-emerald-500 text-white transition-all shadow-lg flex justify-center items-center gap-2">
-                Enviar Hallazgos y Reclamar Puntos
-            </button>
+            <button id="btn-submit" class="mt-6 w-full py-4 rounded-xl font-bold bg-emerald-600 hover:bg-emerald-500 text-white transition-all shadow-lg">Transmitir Informe</button>
         </div>
     </main>
 
-    <!-- PANTALLA 3: ÉXITO -->
-    <main id="screen-success" class="hidden w-full max-w-2xl flex flex-col items-center justify-center mt-10 text-center">
-        <div class="text-amber-400 mb-6 mx-auto">
-            <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg>
+    <!-- PANTALLA 3: ÉXITO (ACTUALIZADA) -->
+    <main id="screen-success" class="hidden w-full max-w-2xl text-center mt-20 animate-in fade-in duration-500">
+        <div class="text-emerald-400 mb-6 mx-auto">
+            <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
         </div>
-        <h2 class="text-4xl font-bold mb-4 text-white">¡Auditoría Exitosa!</h2>
-        <p class="text-xl text-emerald-300 mb-8">Tus hallazgos han sido registrados en la central de calidad.</p>
-        
-        <div class="bg-black/40 px-12 py-6 rounded-2xl border border-amber-500/30 mb-8 shadow-2xl">
-            <p class="text-xs text-slate-400 uppercase tracking-widest mb-2 font-bold">Total Obtenido</p>
-            <p class="text-6xl font-mono font-bold text-amber-400">+50</p>
-            <p class="text-xs text-amber-400 uppercase tracking-widest mt-1">Polipuntos</p>
-        </div>
-
-        <p class="text-slate-400 italic max-w-lg mb-8">
-            "La seguridad de los datos de nuestros estudiantes depende de tu agudeza visual. ¡Buen trabajo!"
+        <h2 class="text-4xl font-bold mb-4 text-white">¡Informe Recibido!</h2>
+        <p class="text-xl text-slate-300 mb-8 max-w-lg mx-auto">
+            Tus respuestas serán analizadas minuciosamente por nuestro equipo de calidad. <br>
+            <span class="text-emerald-400 font-semibold">Gracias por tu experticia y compromiso con la seguridad de la información.</span>
         </p>
+        
+        <div class="bg-black/40 px-10 py-6 rounded-2xl border border-amber-500/30 mb-8 inline-block shadow-2xl">
+            <p class="text-xs text-slate-500 uppercase tracking-widest mb-1">Puntaje Potencial</p>
+            <p class="text-6xl font-mono font-bold text-amber-400">+50</p>
+            <p class="text-[10px] text-amber-400 uppercase mt-2">Sujeto a validación de reporte</p>
+        </div>
 
-        <button id="btn-restart" class="text-slate-500 hover:text-white underline transition-colors">Volver al inicio</button>
+        <button id="btn-restart" class="block mx-auto text-slate-500 hover:text-white underline transition-colors">Volver al Centro de Comando</button>
     </main>
 
-    <!-- PANTALLA 4: ADMIN (Dashboard) -->
+    <!-- PANTALLA 4: ADMIN -->
     <main id="screen-admin" class="hidden w-full max-w-6xl mt-4">
         <div class="glass rounded-xl border border-slate-700 p-6 shadow-2xl">
             <div class="flex items-center gap-3 mb-6 border-b border-slate-700 pb-4">
-                <svg class="text-blue-400" xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5V19A9 3 0 0 0 21 19V5"/><path d="M3 12A9 3 0 0 0 21 12"/></svg>
                 <h2 class="text-2xl font-bold text-white uppercase tracking-tight">Reportes de Analistas</h2>
                 <span id="admin-count" class="ml-auto bg-blue-900/50 text-blue-300 px-3 py-1 rounded-full text-xs font-bold">0 Reportes</span>
             </div>
@@ -168,136 +110,87 @@
         </div>
     </main>
 
-    <!-- FIREBASE & LÓGICA -->
+    <!-- LOGIN ADMIN (OCULTO) -->
+    <div id="admin-login-modal" class="hidden absolute top-24 left-8 bg-slate-800 p-4 rounded-lg border border-slate-600 z-50 shadow-2xl">
+        <p class="text-xs text-slate-400 mb-2 uppercase tracking-wider">Acceso de Líder</p>
+        <div class="flex gap-2">
+            <input type="password" id="admin-pwd" placeholder="Clave..." class="bg-slate-900 border border-slate-700 rounded px-3 py-1 text-sm text-white focus:outline-none">
+            <button id="btn-admin-login" class="bg-blue-600 hover:bg-blue-500 px-3 py-1 rounded text-sm font-bold">Entrar</button>
+        </div>
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // CONFIGURACIÓN REAL DE FIREBASE (TU PROYECTO)
         const firebaseConfig = {
             apiKey: "AIzaSyDtnZiaEB7hD8RqBD9-9LpLumV3SHjY4vA",
             authDomain: "poligame-ojo-halcon.firebaseapp.com",
             projectId: "poligame-ojo-halcon",
             storageBucket: "poligame-ojo-halcon.firebasestorage.app",
             messagingSenderId: "345922782607",
-            appId: "1:345922782607:web:988d9e8a48f160d5ba77fa",
-            measurementId: "G-7VCT52V2K1"
+            appId: "1:345922782607:web:988d9e8a48f160d5ba77fa"
         };
 
-        // Inicialización
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        let userId = null;
+        let user = null;
 
-        // Autenticación Silenciosa
-        signInAnonymously(auth).catch(err => console.error("Error Auth:", err));
-        onAuthStateChanged(auth, user => { if(user) userId = user.uid; });
+        const statusDot = document.getElementById('db-status');
+        signInAnonymously(auth).then(() => {
+            statusDot.classList.add('bg-emerald-500', 'status-pulse');
+            statusDot.classList.remove('bg-slate-500');
+        });
+        onAuthStateChanged(auth, u => user = u);
 
-        // Identificador de la APP para rutas de Firestore (Regla 1)
-        const appId = "ojo-halcon-app";
-        const reportsRef = collection(db, 'artifacts', appId, 'public', 'data', 'incident_reports');
-
-        // UI Manager
         const showScreen = (name) => {
-            const screens = ['intro', 'investigate', 'success', 'admin'];
-            screens.forEach(s => document.getElementById(`screen-${s}`).classList.add('hidden'));
+            ['intro', 'investigate', 'success', 'admin'].forEach(s => document.getElementById(`screen-${s}`).classList.add('hidden'));
             document.getElementById(`screen-${name}`).classList.remove('hidden');
-            
             document.getElementById('reward-display').classList.toggle('hidden', name === 'admin');
             document.getElementById('btn-back-sim').classList.toggle('hidden', name !== 'admin');
         };
 
-        // Eventos
         document.getElementById('btn-start').onclick = () => showScreen('investigate');
-        document.getElementById('btn-restart').onclick = () => {
-            document.getElementById('playerName').value = '';
-            document.getElementById('q1Error').value = '';
-            document.getElementById('q2Reason').value = '';
-            document.getElementById('q3Impact').value = '';
-            showScreen('intro');
-        };
+        document.getElementById('btn-restart').onclick = () => showScreen('intro');
+        document.getElementById('btn-back-sim').onclick = () => showScreen('intro');
 
-        // Enviar Reporte
         document.getElementById('btn-submit').onclick = async () => {
-            const btn = document.getElementById('btn-submit');
-            const errBox = document.getElementById('error-msg');
             const data = {
                 playerName: document.getElementById('playerName').value.trim(),
                 q1Error: document.getElementById('q1Error').value.trim(),
                 q2Reason: document.getElementById('q2Reason').value.trim(),
                 q3Impact: document.getElementById('q3Impact').value.trim(),
-                timestamp: new Date().toISOString(),
-                userId: userId
+                timestamp: new Date().toISOString()
             };
-
-            if(!data.playerName || !data.q1Error || !data.q2Reason || !data.q3Impact) {
-                errBox.textContent = "¡Cuidado! Debes completar todo el reporte de auditoría.";
-                errBox.classList.remove('hidden');
-                return;
-            }
-
-            btn.disabled = true;
-            btn.textContent = "Transmitiendo datos...";
-            
+            if(!data.playerName || !data.q1Error) return alert("Por favor completa al menos tu nombre y el error detectado.");
             try {
-                await addDoc(reportsRef, data);
+                await addDoc(collection(db, 'artifacts/ojo-halcon-app/public/data/incident_reports'), data);
                 showScreen('success');
-            } catch (e) {
-                console.error(e);
-                errBox.textContent = "Error de conexión con la base de datos.";
-                errBox.classList.remove('hidden');
-                btn.disabled = false;
-                btn.textContent = "Enviar Hallazgos y Reclamar Puntos";
-            }
+            } catch (e) { alert("Error de conexión"); }
         };
 
-        // Lógica de Admin (Secreto)
-        document.getElementById('admin-trigger').ondblclick = () => {
-            document.getElementById('admin-login-modal').classList.toggle('hidden');
-        };
-
+        document.getElementById('admin-trigger').ondblclick = () => document.getElementById('admin-login-modal').classList.toggle('hidden');
         document.getElementById('btn-admin-login').onclick = () => {
             if(document.getElementById('admin-pwd').value === 'admin') {
                 document.getElementById('admin-login-modal').classList.add('hidden');
-                document.getElementById('admin-pwd').value = '';
                 showScreen('admin');
-                initAdminDashboard();
-            } else {
-                alert("Código de líder incorrecto.");
-            }
+                loadAdmin();
+            } else alert("Clave incorrecta");
         };
 
-        document.getElementById('btn-back-sim').onclick = () => showScreen('intro');
-
-        function initAdminDashboard() {
-            onSnapshot(reportsRef, (snap) => {
-                const list = document.getElementById('admin-list');
+        function loadAdmin() {
+            onSnapshot(collection(db, 'artifacts/ojo-halcon-app/public/data/incident_reports'), snap => {
                 const items = [];
-                snap.forEach(doc => items.push({id: doc.id, ...doc.data()}));
-                
-                // Ordenar por tiempo (Regla 2: Filtro en memoria)
+                snap.forEach(doc => items.push(doc.data()));
                 items.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
-                
-                document.getElementById('admin-count').textContent = `${items.length} Reportes Recibidos`;
-                
-                if(items.length === 0) {
-                    list.innerHTML = '<p class="col-span-2 text-center text-slate-500 py-10 italic">Aún no se han recibido reportes de auditoría.</p>';
-                    return;
-                }
-
-                list.innerHTML = items.map(r => `
-                    <div class="bg-slate-900/80 p-5 rounded-lg border border-slate-600 shadow-xl">
-                        <div class="flex justify-between items-start mb-4 border-b border-slate-700 pb-2">
-                            <h3 class="font-bold text-emerald-400">👤 ${r.playerName}</h3>
-                            <span class="text-[10px] text-slate-500 uppercase">${new Date(r.timestamp).toLocaleString()}</span>
-                        </div>
-                        <div class="space-y-3 text-xs">
-                            <p><strong class="text-amber-200 uppercase block mb-1">Detección:</strong> <span class="text-slate-300 leading-relaxed">${r.q1Error}</span></p>
-                            <p><strong class="text-emerald-200 uppercase block mb-1">Causa Raíz:</strong> <span class="text-slate-300 leading-relaxed">${r.q2Reason}</span></p>
-                            <p><strong class="text-red-300 uppercase block mb-1">Impacto:</strong> <span class="text-slate-300 leading-relaxed">${r.q3Impact}</span></p>
-                        </div>
+                document.getElementById('admin-count').textContent = `${items.length} Reportes`;
+                document.getElementById('admin-list').innerHTML = items.map(r => `
+                    <div class="bg-slate-900 p-4 rounded-lg border border-slate-700">
+                        <p class="text-emerald-400 font-bold mb-1">👤 ${r.playerName}</p>
+                        <p class="text-[10px] text-slate-500 mb-2">${new Date(r.timestamp).toLocaleString()}</p>
+                        <p class="text-xs text-slate-300"><strong>Error:</strong> ${r.q1Error}</p>
                     </div>
                 `).join('');
             });
