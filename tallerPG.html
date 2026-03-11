@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reto Expertos - Taller Posgrados</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;700;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .bg-indigo-gradient {
+            background: linear-gradient(135deg, #4f46e5 0%, #4338ca 50%, #3730a3 100%);
+        }
+        .bg-gold-gradient {
+            background: linear-gradient(90deg, #f59e0b 0%, #fbbf24 100%);
+        }
+    </style>
+</head>
+<body class="bg-slate-50 antialiased">
+    <div id="root"></div>
+
+    <!-- Babel Standalone con data-type="module" permite JSX + Imports nativos -->
+    <script type="text/babel" data-type="module">
+        const { useState, useEffect, useMemo } = React;
+        
+        // --- TU CONFIGURACIÓN DE FIREBASE ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyBI4V4Ti-hV7dijrf3VsFJoPmqDsCKB9Rc",
+            authDomain: "retoposgrados.firebaseapp.com",
+            projectId: "retoposgrados",
+            storageBucket: "retoposgrados.firebasestorage.app",
+            messagingSenderId: "372209689262",
+            appId: "1:372209689262:web:55ec0e7a764cfaf94d833f",
+            measurementId: "G-X75LR3H3QS"
+        };
+
+        // Importaciones ESM de Firebase
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getFirestore, doc, setDoc, onSnapshot, collection, deleteDoc, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        const appId = "taller-posgrados-experts-v2";
+
+        // --- ICONOS SVG ---
+        const Icons = {
+            Trophy: ({ className }) => (
+                <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+            ),
+            User: () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
+            Layout: () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect width="18" height="18" x="3" y="3" rx="2"/><line x1="3" x2="21" y1="9" y2="9"/><line x1="9" x2="9" y1="21" y2="9"/></svg>,
+            Calendar: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect width="18" height="18" x="3" y="4" rx="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>,
+            Clock: () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
+            Search: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>,
+            Check: () => <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
+        };
+
+        function App() {
+            const [user, setUser] = useState(null);
+            const [role, setRole] = useState(null);
+            const [expertName, setExpertName] = useState('');
+            const [showNameInput, setShowNameInput] = useState(false);
+            const [activeChallenge, setActiveChallenge] = useState(null);
+            const [answers, setAnswers] = useState([]);
+            const [studentInput, setStudentInput] = useState({ startDate: '', endDate: '', cohort: '' });
+            const [hasSubmitted, setHasSubmitted] = useState(false);
+            const [loading, setLoading] = useState(true);
+
+            useEffect(() => {
+                signInAnonymously(auth).catch(e => console.error("Error Auth:", e));
+                onAuthStateChanged(auth, (u) => { setUser(u); setLoading(false); });
+            }, []);
+
+            useEffect(() => {
+                if (!user) return;
+                const unsubChallenge = onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'state', 'activeChallenge'), (s) => {
+                    if (s.exists()) { setActiveChallenge(s.data()); setHasSubmitted(false); }
+                    else setActiveChallenge(null);
+                });
+                const unsubAnswers = onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'answers'), (s) => {
+                    const res = []; s.forEach(d => res.push({ id: d.id, ...d.data() }));
+                    setAnswers(res);
+                });
+                return () => { unsubChallenge(); unsubAnswers(); };
+            }, [user]);
+
+            const ranking = useMemo(() => {
+                return [...answers].filter(a => a.isCorrect).sort((a, b) => a.responseTime - b.responseTime).slice(0, 3);
+            }, [answers]);
+
+            const startChallenge = async (e) => {
+                e.preventDefault();
+                if (!user) return;
+                const fd = new FormData(e.target);
+                const challenge = {
+                    cedula: fd.get('cedula'),
+                    correctStart: fd.get('correctStart'),
+                    correctEnd: fd.get('correctEnd'),
+                    correctCohort: fd.get('correctCohort').toString().trim().toUpperCase(),
+                    timestamp: Date.now()
+                };
+                const oldDocs = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'answers'));
+                for (const d of oldDocs.docs) { await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'answers', d.id)); }
+                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'state', 'activeChallenge'), challenge);
+            };
+
+            const submitAnswer = async () => {
+                if (!activeChallenge || !user) return;
+                const time = (Date.now() - activeChallenge.timestamp) / 1000;
+                const ok = studentInput.startDate === activeChallenge.correctStart &&
+                           studentInput.endDate === activeChallenge.correctEnd &&
+                           studentInput.cohort.trim().toUpperCase() === activeChallenge.correctCohort;
+                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'answers', user.uid), {
+                    userName: expertName || "Experto",
+                    ...studentInput, isCorrect: ok, responseTime: time, submittedAt: Date.now()
+                });
+                setHasSubmitted(true);
+            };
+
+            const resetAll = async () => {
+                if (!user) return;
+                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'state', 'activeChallenge'));
+                const oldDocs = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'answers'));
+                for (const d of oldDocs.docs) { await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'answers', d.id)); }
+            };
+
+            if (loading) return (
+                <div className="h-screen flex items-center justify-center bg-indigo-gradient text-white font-bold uppercase text-xs tracking-widest">
+                    Iniciando Sistema...
+                </div>
+            );
+
+            if (!role) return (
+                <div className="flex h-screen items-center justify-center bg-indigo-gradient p-4">
+                    <div className="w-full max-w-sm bg-white rounded-[40px] shadow-2xl p-12 text-center animate-in fade-in zoom-in duration-500">
+                        <div className="mb-6 flex justify-center text-yellow-500">
+                            <Icons.Trophy className="w-16 h-16" />
+                        </div>
+                        <h1 className="text-3xl font-extrabold text-slate-800 mb-1 tracking-tight uppercase">Reto Expertos</h1>
+                        <p className="text-slate-400 mb-10 text-sm font-medium tracking-wide">Taller Posgrados</p>
+                        
+                        <div className={showNameInput ? 'hidden' : 'grid gap-4'}>
+                            <button onClick={() => setRole('facilitator')} className="p-4 bg-slate-50 text-[#4338ca] rounded-2xl font-bold text-xs uppercase border-2 border-slate-100 hover:bg-slate-100 transition-all flex items-center justify-center gap-3">
+                                <Icons.User /> Facilitadora
+                            </button>
+                            <button onClick={() => setShowNameInput(true)} className="p-4 bg-[#4f46e5] text-white rounded-2xl font-bold text-xs uppercase shadow-xl hover:bg-[#4338ca] transition-all flex items-center justify-center gap-3 tracking-widest">
+                                <Icons.Layout /> Equipo (Experto)
+                            </button>
+                        </div>
+
+                        {showNameInput && (
+                            <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
+                                <input 
+                                    type="text" autoFocus placeholder="Escribe tu nombre"
+                                    className="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl outline-none focus:border-[#4f46e5] text-center text-lg font-semibold text-slate-700"
+                                    value={expertName} onChange={e => setExpertName(e.target.value)}
+                                    onKeyPress={e => e.key === 'Enter' && setRole('expert')}
+                                />
+                                <button onClick={() => setRole('expert')} disabled={expertName.length < 2} className="w-full bg-[#4f46e5] text-white p-4 rounded-2xl font-bold uppercase tracking-widest disabled:bg-slate-200 shadow-lg">
+                                    Empezar ahora
+                                </button>
+                                <button onClick={() => setShowNameInput(false)} className="text-[10px] text-slate-400 uppercase font-bold tracking-widest block mx-auto hover:text-[#4f46e5]">Regresar</button>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+
+            return (
+                <div className="min-h-screen bg-slate-50 text-slate-900 pb-10">
+                    <header className="bg-white border-b border-slate-200 px-8 py-4 flex justify-between items-center sticky top-0 z-30 shadow-sm">
+                        <div className="flex items-center gap-4">
+                            <div className="bg-[#4338ca] p-2 rounded-xl text-white shadow-md"><Icons.Calendar /></div>
+                            <h2 className="font-extrabold text-sm uppercase tracking-tight text-slate-800">Taller Posgrados</h2>
+                        </div>
+                        <button onClick={() => { setRole(null); setShowNameInput(false); }} className="text-[10px] font-bold text-slate-400 hover:text-red-500 uppercase tracking-widest border border-slate-200 px-5 py-2 rounded-full transition-all bg-slate-50">Salir</button>
+                    </header>
+
+                    <main className="max-w-7xl mx-auto p-6 grid grid-cols-1 lg:grid-cols-4 gap-8">
+                        {/* DECODIFICADOR (Vertical con cuadritos y texto seguido) */}
+                        <div className="lg:col-span-1 space-y-6">
+                            <section className="bg-[#1e1b4b] text-white rounded-[32px] p-8 shadow-2xl relative overflow-hidden">
+                                <h3 className="text-xs font-bold mb-8 text-indigo-300 uppercase tracking-[0.2em] border-b border-white/5 pb-4">Decodificador</h3>
+                                <div className="space-y-4">
+                                    {[
+                                        { label: 'PG', color: 'text-yellow-400', desc: 'Nivel Posgrado' },
+                                        { label: 'V / P', color: 'text-blue-400', desc: 'Virtual / Presencial' },
+                                        { label: '1S / 2S', color: 'text-green-400', desc: 'Semestre del Año' },
+                                        { label: 'N / A', color: 'text-orange-400', desc: 'Nuevo / Antiguo' },
+                                        { label: '1 / 2 / 3', color: 'text-pink-400', desc: 'Ingreso (Corte)' },
+                                    ].map((item, i) => (
+                                        <div key={i} className="flex items-center gap-5 p-4 bg-white/5 rounded-2xl border border-white/10 hover:bg-white/10 transition-all">
+                                            <span className={`font-bold text-xl ${item.color} leading-none min-w-[70px] text-center`}>{item.label}</span>
+                                            <span className="text-[12px] font-normal text-indigo-100 uppercase tracking-wide flex-1 leading-tight">{item.desc}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                                {/* REGLA DE ORO BANNER VIBRANTE */}
+                                <div className="mt-10 p-6 bg-gold-gradient rounded-3xl shadow-xl border-b-4 border-yellow-600 transition-transform hover:scale-[1.02]">
+                                    <h4 className="font-extrabold flex items-center gap-2 text-[10px] text-orange-950 mb-1 uppercase tracking-widest">
+                                        <Icons.Clock /> REGLA DE ORO
+                                    </h4>
+                                    <p className="text-[13px] font-bold text-orange-950 leading-snug">
+                                        Máximo <span className="underline decoration-2 font-black">2 SEMANAS ADICIONALES</span> después del inicio para reportar el pago.
+                                    </p>
+                                </div>
+                            </section>
+                        </div>
+
+                        {/* ÁREA DE TRABAJO */}
+                        <div className="lg:col-span-3 space-y-8">
+                            {role === 'facilitator' ? (
+                                <>
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                        {ranking.length > 0 ? ranking.map((top, i) => (
+                                            <div key={i} className={`p-6 bg-white rounded-[28px] border-2 flex items-center gap-5 transition-all ${i === 0 ? 'bg-yellow-50 border-yellow-200 scale-105 shadow-md' : 'border-slate-100 shadow-sm'}`}>
+                                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-lg ${i === 0 ? 'bg-yellow-400 text-yellow-950' : 'bg-slate-100 text-slate-400'}`}>{i + 1}</div>
+                                                <div className="flex-1 overflow-hidden text-slate-800">
+                                                    <p className="text-[9px] font-bold uppercase text-slate-400 tracking-widest">Experto Ganador</p>
+                                                    <p className="font-extrabold text-sm truncate uppercase mt-0.5">{top.userName}</p>
+                                                    <p className="text-[#4338ca] font-bold text-[11px] mt-1">{top.responseTime.toFixed(2)}s</p>
+                                                </div>
+                                            </div>
+                                        )) : <div className="md:col-span-3 p-8 bg-slate-50 border-2 border-dashed border-slate-200 rounded-[28px] text-center text-slate-400 text-sm font-medium tracking-widest uppercase italic">Esperando respuestas correctas...</div>}
+                                    </div>
+                                    <section className="bg-white border border-slate-200 rounded-[32px] p-10 shadow-sm">
+                                        <div className="flex justify-between items-center mb-8 border-b border-slate-50 pb-4">
+                                            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest italic">Configuración de Reto</h3>
+                                            <button onClick={resetAll} className="text-[10px] text-red-400 font-bold uppercase tracking-widest">Limpiar Sesión</button>
+                                        </div>
+                                        <form onSubmit={startChallenge} className="space-y-8 text-slate-800">
+                                            <div>
+                                                <label className="text-[11px] font-extrabold text-slate-500 uppercase ml-4 mb-2 block tracking-widest">Cédula del Estudiante</label>
+                                                <input name="cedula" required className="w-full p-5 bg-slate-50 border-2 border-slate-100 rounded-3xl outline-none focus:border-[#4f46e5] font-bold text-xl tracking-tight transition-all" placeholder="ID del estudiante" />
+                                            </div>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                                <div>
+                                                    <label className="text-[11px] font-extrabold text-slate-500 uppercase ml-4 mb-2 block tracking-widest">Fecha Inicio</label>
+                                                    <input name="correctStart" type="date" required className="w-full p-5 bg-slate-50 border-2 border-slate-100 rounded-3xl outline-none focus:border-[#4f46e5] font-bold transition-all" />
+                                                </div>
+                                                <div>
+                                                    <label className="text-[11px] font-extrabold text-slate-500 uppercase ml-4 mb-2 block tracking-widest">Fecha Fin</label>
+                                                    <input name="correctEnd" type="date" required className="w-full p-5 bg-slate-50 border-2 border-slate-100 rounded-3xl outline-none focus:border-[#4f46e5] font-bold transition-all" />
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <label className="text-[11px] font-extrabold text-slate-500 uppercase ml-4 mb-2 block tracking-widest">Corte Esperado (Analytics)</label>
+                                                <input name="correctCohort" required className="w-full p-5 bg-slate-50 border-2 border-slate-100 rounded-3xl outline-none focus:border-[#4f46e5] font-extrabold text-xl text-blue-600 uppercase tracking-tight transition-all" placeholder="EJ: PGV-1S-N-1" />
+                                            </div>
+                                            <button type="submit" className="w-full bg-[#4f46e5] text-white p-5 rounded-[28px] font-extrabold text-sm uppercase tracking-[0.2em] shadow-xl hover:bg-[#4338ca] transition-all active:scale-95">Lanzar Caso al Equipo</button>
+                                        </form>
+                                    </section>
+                                </>
+                            ) : (
+                                <div className="bg-white border-2 border-blue-100 rounded-[40px] p-12 shadow-2xl text-center">
+                                    {activeChallenge ? (
+                                        hasSubmitted ? (
+                                            <div className="py-20 animate-in fade-in zoom-in text-slate-800 text-center">
+                                                <div className="bg-green-100 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-8 text-green-600 shadow-inner">
+                                                    <Icons.Check />
+                                                </div>
+                                                <h4 className="text-4xl font-extrabold tracking-tighter uppercase leading-none">Análisis Enviado</h4>
+                                                <p className="text-slate-400 mt-6 text-sm font-bold uppercase tracking-widest">¡Mira tu posición en el podio de la pantalla!</p>
+                                            </div>
+                                        ) : (
+                                            <div className="space-y-12 text-left text-slate-800">
+                                                <div className="flex items-center justify-between border-b border-slate-100 pb-10">
+                                                    <div>
+                                                        <p className="text-blue-600 font-extrabold text-[11px] uppercase tracking-[0.3em] mb-2">Caso a Analizar</p>
+                                                        <h3 className="text-7xl font-extrabold tracking-tighter leading-none">{activeChallenge.cedula}</h3>
+                                                    </div>
+                                                    <div className="text-slate-100"><Icons.Search /></div>
+                                                </div>
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                                                    <div className="space-y-2">
+                                                        <label className="text-[11px] font-extrabold text-slate-400 uppercase ml-4 tracking-widest">Inicio Clases (Calendario)</label>
+                                                        <input type="date" className="w-full p-5 bg-slate-50 border-2 border-slate-100 rounded-[28px] font-extrabold text-lg outline-none focus:border-[#4f46e5] transition-all shadow-inner" onChange={e => setStudentInput({...studentInput, startDate: e.target.value})} />
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <label className="text-[11px] font-extrabold text-slate-400 uppercase ml-4 tracking-widest">Fin Clases (Calendario)</label>
+                                                        <input type="date" className="w-full p-5 bg-slate-50 border-2 border-slate-100 rounded-[28px] font-extrabold text-lg outline-none focus:border-[#4f46e5] transition-all shadow-inner" onChange={e => setStudentInput({...studentInput, endDate: e.target.value})} />
+                                                    </div>
+                                                    <div className="col-span-2 space-y-2">
+                                                        <label className="text-[11px] font-extrabold text-slate-400 uppercase ml-4 tracking-widest">Código Analytics (Frase completa)</label>
+                                                        <input className="w-full p-6 bg-slate-50 border-2 border-slate-100 rounded-[32px] font-extrabold text-3xl text-blue-700 outline-none focus:border-[#4f46e5] transition-all shadow-inner uppercase tracking-tight" placeholder="PGV-1S-N-1" onChange={e => setStudentInput({...studentInput, cohort: e.target.value})} />
+                                                    </div>
+                                                </div>
+                                                <button onClick={submitAnswer} className="w-full bg-[#4f46e5] text-white p-8 rounded-[35px] font-extrabold text-xl uppercase tracking-widest shadow-2xl hover:bg-[#4338ca] transition-all active:scale-95">Enviar mi Análisis Estratégico</button>
+                                            </div>
+                                        )
+                                    ) : (
+                                        <div className="py-32 italic text-slate-400 text-sm font-medium tracking-widest flex flex-col items-center gap-8">
+                                            <div className="animate-pulse bg-slate-50 p-8 rounded-full shadow-inner"><Icons.Clock /></div>
+                                            <p className="text-center uppercase leading-relaxed font-bold">Esperando que la facilitadora active el caso estratégico...</p>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    </main>
+                    <footer className="mt-12 py-10 text-center border-t border-slate-100 bg-white shadow-inner">
+                        <p className="text-[10px] text-slate-400 font-extrabold uppercase tracking-[0.5em]">Taller de Análisis de Posgrados • Ilumno 2026</p>
+                    </footer>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
