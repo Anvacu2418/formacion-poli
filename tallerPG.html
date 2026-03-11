@@ -22,28 +22,40 @@
             background: linear-gradient(90deg, #f59e0b 0%, #fbbf24 100%);
         }
 
-        /* Cuadritos del decodificador */
+        /* Estilo idéntico a la imagen image_b6279b.png */
+        .decoder-container {
+            background-color: #1e1b4b; /* Azul muy oscuro */
+            border-radius: 32px;
+            padding: 1.5rem;
+        }
+
         .sigla-box {
             background-color: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            margin-bottom: 0.75rem;
+            transition: all 0.3s ease;
         }
 
         .sigla-box:hover {
             background-color: rgba(255, 255, 255, 0.15);
-            transform: translateX(8px);
+            transform: translateX(5px);
         }
 
-        .card-shadow {
-            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.1);
+        .regla-oro-banner {
+            background: linear-gradient(90deg, #f59e0b 0%, #fbbf24 100%);
+            border-radius: 24px;
+            border-bottom: 4px solid #d97706;
         }
 
-        .btn-hover {
-            transition: all 0.2s ease;
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        @keyframes pulse-custom {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
         }
-        .btn-hover:active {
-            transform: scale(0.96);
-        }
+        .animate-pulse-soft { animation: pulse-custom 3s infinite; }
     </style>
 </head>
 <body class="bg-slate-50 antialiased text-slate-900">
@@ -57,10 +69,9 @@
     <!-- Firebase SDK (Módulos ESM) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
-        import { getFirestore, doc, setDoc, onSnapshot, collection, deleteDoc, getDocs } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, onSnapshot, collection, deleteDoc, getDocs, query } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
 
-        // CONFIGURACIÓN REAL DE TU PROYECTO
         const firebaseConfig = {
             apiKey: "AIzaSyBI4V4Ti-hV7dijrf3VsFJoPmqDsCKB9Rc",
             authDomain: "retoposgrados.firebaseapp.com",
@@ -75,23 +86,24 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
         
-        // Exportar a window para que el script de React lo vea
-        window.fb = { db, auth, doc, setDoc, onSnapshot, collection, deleteDoc, getDocs, signInAnonymously, onAuthStateChanged };
+        window.fb = { db, auth, doc, setDoc, onSnapshot, collection, deleteDoc, getDocs, query, signInAnonymously, onAuthStateChanged };
     </script>
 
     <script type="text/babel">
         const { useState, useEffect, useMemo } = React;
-        const appId = "taller-posgrados-experts"; // App ID Unificado
+        
+        // Coincide exactamente con tus reglas de image_8f2595.png
+        const appId = "taller-posgrados-experts"; 
 
         const Icons = {
             Trophy: ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>,
             User: () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
-            Layout: () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect width="18" height="18" x="3" y="3" rx="2"/><line x1="3" x2="21" y1="9" y2="9"/><line x1="9" x2="9" y1="21" y2="9"/></svg>,
             Calendar: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect width="18" height="18" x="3" y="4" rx="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>,
-            Clock: () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
-            Search: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>,
+            Clock: () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
             Check: ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>,
-            Loader: ({ className }) => <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+            X: ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>,
+            Loader: ({ className }) => <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>,
+            Search: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
         };
 
         function App() {
@@ -105,33 +117,39 @@
             const [isSubmitting, setIsSubmitting] = useState(false);
             const [hasSubmitted, setHasSubmitted] = useState(false);
             const [loading, setLoading] = useState(true);
+            const [error, setError] = useState(null);
             const [status, setStatus] = useState(null);
 
-            // Auth
             useEffect(() => {
                 const init = async () => {
                     if (!window.fb) { setTimeout(init, 100); return; }
                     try {
-                        await window.fb.signInAnonymously(window.fb.auth);
-                        window.fb.onAuthStateChanged(window.fb.auth, (u) => {
-                            setUser(u);
-                            setLoading(false);
+                        const { auth, signInAnonymously, onAuthStateChanged } = window.fb;
+                        await signInAnonymously(auth);
+                        onAuthStateChanged(auth, (u) => {
+                            if (u) { setUser(u); setLoading(false); setError(null); }
                         });
-                    } catch (e) { console.error(e); }
+                    } catch (e) {
+                        console.error("Auth Error:", e);
+                        setError("Error de entrada. Asegúrate de que 'Anónimo' esté habilitado en Firebase y que tu dominio esté autorizado.");
+                        setLoading(false);
+                    }
                 };
                 init();
             }, []);
 
-            // Listeners
             useEffect(() => {
                 if (!user || !window.fb) return;
                 const { db, doc, onSnapshot, collection } = window.fb;
 
-                // RUTA OBLIGATORIA REGLA 1
+                // Escuchamos la ruta exacta artifacts/taller-posgrados-experts/...
                 const stateRef = doc(db, 'artifacts', appId, 'public', 'data', 'state', 'activeChallenge');
                 const unsubChallenge = onSnapshot(stateRef, (s) => {
-                    if (s.exists()) { setActiveChallenge(s.data()); setHasSubmitted(false); }
+                    if (s.exists()) { setActiveChallenge(s.data()); setHasSubmitted(false); setError(null); }
                     else setActiveChallenge(null);
+                }, (err) => { 
+                    console.error("Rules Error:", err);
+                    setError("Error de permisos. Verifica las reglas de Firestore.");
                 });
 
                 const answersRef = collection(db, 'artifacts', appId, 'public', 'data', 'answers');
@@ -143,15 +161,22 @@
             }, [user]);
 
             const ranking = useMemo(() => {
-                return [...answers].filter(a => a.isCorrect).sort((a, b) => a.responseTime - b.responseTime).slice(0, 3);
+                return [...answers]
+                    .filter(a => a.isCorrect && typeof a.responseTime === 'number')
+                    .sort((a, b) => a.responseTime - b.responseTime)
+                    .slice(0, 3);
             }, [answers]);
+
+            const lastResult = useMemo(() => {
+                if (!hasSubmitted || !user) return null;
+                return answers.find(a => a.id === user.uid);
+            }, [answers, hasSubmitted, user]);
 
             const startChallenge = async (e) => {
                 e.preventDefault();
                 if (!user || !window.fb) return;
-                setStatus("Publicando...");
+                setStatus("Lanzando...");
                 const { db, doc, setDoc, collection, deleteDoc, getDocs } = window.fb;
-                
                 try {
                     const fd = new FormData(e.target);
                     const challenge = {
@@ -161,71 +186,70 @@
                         correctCohort: fd.get('correctCohort').toString().trim().toUpperCase(),
                         timestamp: Date.now()
                     };
-
-                    const answersRef = collection(db, 'artifacts', appId, 'public', 'data', 'answers');
-                    const snapshot = await getDocs(answersRef);
+                    const snapshot = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'answers'));
                     await Promise.all(snapshot.docs.map(d => deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'answers', d.id))));
-                    
-                    const stateRef = doc(db, 'artifacts', appId, 'public', 'data', 'state', 'activeChallenge');
-                    await setDoc(stateRef, challenge);
-                    setStatus("¡Reto publicado con éxito!");
+                    await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'state', 'activeChallenge'), challenge);
+                    setStatus("¡Publicado!");
                     setTimeout(() => setStatus(null), 3000);
-                } catch (err) { setStatus("Error al publicar."); }
+                } catch (err) { setStatus("Error de permisos."); }
             };
 
             const submitAnswer = async () => {
                 if (!activeChallenge || !user || !window.fb) return;
                 setIsSubmitting(true);
-                const { db, doc, setDoc } = window.fb;
-                
                 try {
                     const time = (Date.now() - activeChallenge.timestamp) / 1000;
                     const isCorrect = studentInput.startDate === activeChallenge.correctStart &&
                                      studentInput.endDate === activeChallenge.correctEnd &&
                                      studentInput.cohort.trim().toUpperCase() === activeChallenge.correctCohort;
 
-                    const myAnswerRef = doc(db, 'artifacts', appId, 'public', 'data', 'answers', user.uid);
-                    await setDoc(myAnswerRef, {
+                    await window.fb.setDoc(window.fb.doc(window.fb.db, 'artifacts', appId, 'public', 'data', 'answers', user.uid), {
                         userName: expertName || "Experto",
                         ...studentInput, isCorrect, responseTime: time, submittedAt: Date.now()
                     });
                     setHasSubmitted(true);
-                } catch (err) { alert("Error al enviar. Intenta de nuevo."); }
+                } catch (err) { alert("Error al enviar."); }
                 finally { setIsSubmitting(false); }
             };
 
             if (loading) return (
-                <div className="h-screen flex items-center justify-center bg-indigo-gradient text-white font-bold uppercase text-[10px] tracking-widest">
-                    Cargando Experiencia...
+                <div className="h-screen flex flex-col items-center justify-center bg-indigo-gradient text-white p-6 text-center">
+                    <Icons.Loader className="w-12 h-12 animate-spin mb-4" />
+                    <p className="font-bold uppercase text-[10px] tracking-[0.3em]">Cargando Entorno Seguro...</p>
                 </div>
             );
 
             if (!role) return (
-                <div className="flex h-screen items-center justify-center bg-indigo-gradient p-4">
-                    <div className="w-full max-w-sm bg-white rounded-[45px] shadow-2xl p-12 text-center animate-in fade-in zoom-in duration-500">
-                        <div className="mb-6 flex justify-center text-yellow-500 animate-bounce">
-                            <Icons.Trophy className="w-16 h-16" />
+                <div className="flex min-h-screen items-center justify-center bg-indigo-gradient p-4 sm:p-6">
+                    <div className="w-full max-w-sm bg-white rounded-[50px] shadow-2xl p-8 sm:p-12 text-center animate-in fade-in zoom-in duration-500">
+                        <div className="mb-4 sm:mb-6 flex justify-center text-yellow-500 animate-bounce">
+                            <Icons.Trophy className="w-14 h-14 sm:w-16 sm:h-16" />
                         </div>
-                        <h1 className="text-3xl font-extrabold text-slate-800 mb-1 tracking-tighter uppercase">Reto Expertos</h1>
-                        <p className="text-slate-400 mb-10 text-[10px] font-bold uppercase tracking-widest leading-none">Taller Posgrados</p>
+                        <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-800 mb-1 tracking-tighter uppercase leading-tight">Reto Expertos</h1>
+                        <p className="text-slate-400 mb-8 sm:mb-10 text-[10px] font-bold uppercase tracking-widest leading-none">Taller Posgrados</p>
                         
-                        <div className={showNameInput ? 'hidden' : 'grid gap-4'}>
-                            <button onClick={() => setRole('facilitator')} className="btn-hover p-4 bg-slate-50 text-[#4338ca] rounded-2xl font-bold text-[11px] border-2 border-slate-100 uppercase tracking-widest">Facilitadora</button>
-                            <button onClick={() => setShowNameInput(true)} className="btn-hover p-4 bg-[#4f46e5] text-white rounded-2xl font-bold text-[11px] uppercase shadow-lg shadow-blue-900/30 tracking-[0.15em]">Equipo (Experto)</button>
+                        {error && (
+                            <div className="mb-4 p-4 bg-red-50 text-red-600 rounded-2xl text-[9px] font-bold uppercase border border-red-100 leading-relaxed shadow-sm">
+                                {error}
+                            </div>
+                        )}
+
+                        <div className={showNameInput ? 'hidden' : 'flex flex-col gap-3 sm:gap-4'}>
+                            <button onClick={() => setRole('facilitator')} className="p-4 bg-slate-50 text-[#4338ca] rounded-2xl font-bold text-[10px] border-2 border-slate-100 uppercase tracking-widest active:scale-95 transition-all">Facilitadora</button>
+                            <button onClick={() => setShowNameInput(true)} className="p-4 bg-[#4f46e5] text-white rounded-2xl font-bold text-[10px] uppercase shadow-lg shadow-indigo-200 active:scale-95 transition-all tracking-[0.1em]">Equipo (Experto)</button>
                         </div>
 
                         {showNameInput && (
-                            <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
+                            <div className="space-y-4 sm:space-y-6 animate-in slide-in-from-right-4 duration-300">
                                 <input 
-                                    type="text" autoFocus placeholder="Tu Nombre de Experto"
+                                    type="text" autoFocus placeholder="Tu Nombre"
                                     className="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl outline-none focus:border-[#4f46e5] text-center text-lg font-semibold text-slate-700 shadow-inner"
                                     value={expertName} onChange={e => setExpertName(e.target.value)}
-                                    onKeyPress={e => e.key === 'Enter' && setRole('expert')}
                                 />
-                                <button onClick={() => setRole('expert')} disabled={expertName.length < 2} className="w-full bg-[#4f46e5] text-white p-5 rounded-3xl font-bold uppercase tracking-widest disabled:bg-slate-200 shadow-lg">
+                                <button onClick={() => setRole('expert')} disabled={expertName.length < 2} className="w-full bg-[#4f46e5] text-white p-4 rounded-3xl font-bold uppercase tracking-widest disabled:opacity-50 active:scale-95 transition-all shadow-lg shadow-indigo-100">
                                     Empezar ahora
                                 </button>
-                                <button onClick={() => setShowNameInput(false)} className="text-[10px] text-slate-400 uppercase font-bold tracking-widest block mx-auto hover:text-[#4f46e5]">Regresar</button>
+                                <button onClick={() => setShowNameInput(false)} className="text-[10px] text-slate-400 uppercase font-bold tracking-widest block mx-auto py-2">Regresar</button>
                             </div>
                         )}
                     </div>
@@ -233,158 +257,181 @@
             );
 
             return (
-                <div className="min-h-screen bg-slate-50 text-slate-900 pb-10">
-                    <header className="bg-white border-b border-slate-200 px-8 py-4 flex justify-between items-center sticky top-0 z-30 shadow-sm">
-                        <div className="flex items-center gap-4 text-slate-800">
-                            <div className="bg-[#4338ca] p-2 rounded-xl text-white shadow-md shadow-indigo-100"><Icons.Calendar /></div>
-                            <div>
-                                <h2 className="font-extrabold text-sm uppercase tracking-tight leading-none">Taller Posgrados</h2>
-                                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">Sesión de Análisis</p>
+                <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col no-scrollbar">
+                    <header className="bg-white border-b border-slate-200 px-4 sm:px-8 py-4 flex justify-between items-center sticky top-0 z-30 shadow-sm">
+                        <div className="flex items-center gap-3 sm:gap-4 overflow-hidden">
+                            <div className="bg-[#4338ca] p-2 rounded-xl text-white shrink-0 shadow-md"><Icons.Calendar /></div>
+                            <div className="truncate">
+                                <h2 className="font-extrabold text-xs sm:text-sm uppercase tracking-tight truncate leading-none">Taller Posgrados</h2>
+                                <p className="text-[8px] sm:text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">Análisis Estratégico</p>
                             </div>
                         </div>
-                        <div className="flex items-center gap-4">
-                            {role === 'expert' && <span className="text-[10px] font-bold text-slate-500 uppercase bg-slate-100 px-4 py-1.5 rounded-full">{expertName}</span>}
-                            <button onClick={() => location.reload()} className="text-[10px] font-bold text-slate-400 hover:text-red-500 uppercase tracking-widest border border-slate-200 px-5 py-2 rounded-full transition-all">Salir</button>
-                        </div>
+                        <button onClick={() => location.reload()} className="text-[9px] sm:text-[10px] font-bold text-slate-400 hover:text-red-500 uppercase border border-slate-200 px-3 sm:px-5 py-1.5 rounded-full transition-all shrink-0">Salir</button>
                     </header>
 
-                    <main className="max-w-7xl mx-auto p-6 grid grid-cols-1 lg:grid-cols-4 gap-8">
-                        {/* DECODIFICADOR */}
-                        <div className="lg:col-span-1 space-y-6">
-                            <section className="bg-[#1e1b4b] text-white rounded-[32px] p-8 shadow-2xl relative overflow-hidden border-b-8 border-indigo-950/20">
-                                <h3 className="text-[10px] font-bold mb-8 text-indigo-300 uppercase tracking-[0.2em] border-b border-white/5 pb-4">Decodificador</h3>
-                                <div className="space-y-4">
+                    <main className="max-w-7xl mx-auto p-4 sm:p-6 w-full grid grid-cols-1 lg:grid-cols-4 gap-6 flex-grow">
+                        {/* DECODIFICADOR RESPONSIVE - BASADO EN image_b6279b.png */}
+                        <div className="lg:col-span-1 space-y-4">
+                            <section className="decoder-container text-white shadow-2xl relative overflow-hidden border-b-8 border-indigo-950/20">
+                                <h3 className="text-[10px] font-bold mb-6 text-indigo-300 uppercase tracking-[0.2em] border-b border-white/5 pb-4">Decodificador</h3>
+                                <div className="space-y-3">
                                     {[
                                         { label: 'PG', color: 'text-yellow-400', desc: 'Nivel Posgrado' },
                                         { label: 'V / P', color: 'text-blue-400', desc: 'Virtual / Presencial' },
                                         { label: '1S / 2S', color: 'text-green-400', desc: 'Semestre del Año' },
-                                        { label: 'N / A', color: 'text-orange-400', desc: 'Nuevo / Antiguo' },
-                                        { label: '1 / 2 / 3', color: 'text-pink-400', desc: 'Ingreso (Corte)' },
+                                        { label: 'N / A', color: 'text-orange-400', desc: 'Nuevo / Antiguo' }
                                     ].map((item, i) => (
-                                        <div key={i} className="flex items-center gap-5 p-4 sigla-box rounded-2xl group transition-all">
-                                            <span className={`font-extrabold text-xl ${item.color} leading-none min-w-[70px] text-center`}>{item.label}</span>
-                                            <span className="text-[12px] font-normal text-indigo-100 uppercase tracking-wide flex-1 leading-tight">{item.desc}</span>
+                                        <div key={i} className="flex items-center gap-4 p-3 sigla-box rounded-2xl group transition-all">
+                                            <span className={`font-extrabold text-lg sm:text-xl ${item.color} leading-none min-w-[50px] sm:min-w-[70px] text-center`}>{item.label}</span>
+                                            <span className="text-[10px] sm:text-[11px] font-medium text-indigo-100 uppercase tracking-wide flex-1 leading-tight">{item.desc}</span>
                                         </div>
                                     ))}
+                                    {/* BLOQUE image_b6279b.png EXACTO */}
+                                    <div className="flex items-center gap-4 p-4 sigla-box rounded-2xl">
+                                        <div className="flex flex-col text-pink-400 font-extrabold text-xl leading-none min-w-[50px] sm:min-w-[70px] text-center gap-1">
+                                            <span>1 /</span>
+                                            <span>2 /</span>
+                                            <span>3</span>
+                                        </div>
+                                        <span className="text-[10px] sm:text-[11px] font-bold text-indigo-100 uppercase flex-1 leading-tight">Cohorte (Ingreso o Inicio de Clases)</span>
+                                    </div>
                                 </div>
                                 
-                                {/* REGLA DE ORO BANNER VIBRANTE (image_b6279b.png) */}
-                                <div className="mt-10 p-6 bg-gold-gradient rounded-3xl shadow-xl border-b-4 border-yellow-600 transition-transform hover:scale-[1.02] cursor-default">
-                                    <h4 className="font-extrabold flex items-center gap-2 text-[9px] text-orange-950 mb-2 uppercase tracking-widest">
+                                <div className="mt-8 regla-oro-banner p-5 sm:p-6 shadow-xl transition-transform hover:scale-[1.02]">
+                                    <h4 className="font-extrabold flex items-center gap-2 text-[10px] text-orange-950 mb-2 uppercase tracking-widest">
                                         <Icons.Clock /> REGLA DE ORO
                                     </h4>
-                                    <p className="text-[12.5px] font-bold text-orange-950 leading-snug">
-                                        Máximo <span className="underline decoration-2 font-black">2 SEMANAS ADICIONALES</span> después del inicio para reportar el pago.
+                                    <p className="text-[11.5px] sm:text-[13px] font-bold text-orange-950 leading-snug">
+                                        El estudiante tiene máximo <span className="underline decoration-2 font-black">2 SEMANAS ADICIONALES</span> después del inicio de clases para reportar su pago.
                                     </p>
                                 </div>
                             </section>
                         </div>
 
                         {/* ÁREA DE TRABAJO */}
-                        <div className="lg:col-span-3 space-y-8">
+                        <div className="lg:col-span-3 space-y-6 sm:space-y-8">
                             {role === 'facilitator' ? (
                                 <>
-                                    {/* PODIO */}
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-in slide-in-from-top-4 text-slate-800">
+                                    {/* PODIO RESPONSIVE */}
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 animate-in slide-in-from-top-4 text-slate-800">
                                         {ranking.length > 0 ? ranking.map((top, i) => (
-                                            <div key={top.id} className={`p-6 bg-white rounded-[28px] border-2 flex items-center gap-5 transition-all ${i === 0 ? 'bg-yellow-50 border-yellow-200 scale-105 shadow-xl' : 'border-slate-100 shadow-sm'}`}>
-                                                <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-bold text-lg ${i === 0 ? 'bg-yellow-400 text-yellow-900 shadow-md' : 'bg-slate-100 text-slate-400'}`}>{i + 1}</div>
+                                            <div key={top.id} className={`p-4 sm:p-6 bg-white rounded-[28px] border-2 flex items-center gap-4 transition-all ${i === 0 ? 'bg-yellow-50 border-yellow-200 scale-[1.02] sm:scale-105 shadow-xl' : 'border-slate-100 shadow-sm'}`}>
+                                                <div className={`w-10 h-10 sm:w-12 rounded-xl flex items-center justify-center font-bold text-base sm:text-lg ${i === 0 ? 'bg-yellow-400 text-yellow-900 shadow-md' : 'bg-slate-100 text-slate-400'}`}>{i + 1}</div>
                                                 <div className="flex-1 overflow-hidden">
-                                                    <p className="text-[9px] font-bold uppercase text-slate-400 tracking-widest">Experto Veloz</p>
-                                                    <p className="font-extrabold text-sm text-slate-800 truncate uppercase mt-0.5">{top.userName}</p>
-                                                    <p className="text-[#4338ca] font-bold text-[10px] mt-1">{top.responseTime.toFixed(2)}s</p>
+                                                    <p className="text-[8px] sm:text-[9px] font-bold uppercase text-slate-400 tracking-widest">Experto Veloz</p>
+                                                    <p className="font-extrabold text-xs sm:text-sm text-slate-800 truncate uppercase mt-0.5">{top.userName}</p>
+                                                    <p className="text-[#4338ca] font-bold text-[9px] sm:text-[10px] mt-1">{top.responseTime?.toFixed(2)}s</p>
                                                 </div>
                                             </div>
-                                        )) : <div className="md:col-span-3 p-10 bg-slate-50 border-2 border-dashed border-slate-200 rounded-[32px] text-center text-slate-400 text-xs font-bold uppercase tracking-widest italic">Esperando resultados correctos para el podio...</div>}
+                                        )) : <div className="md:col-span-3 p-8 bg-slate-50 border-2 border-dashed border-slate-200 rounded-[32px] text-center text-slate-400 text-[10px] font-bold uppercase tracking-widest italic tracking-[0.2em]">Esperando resultados correctos...</div>}
                                     </div>
 
-                                    {/* PANEL DE CONTROL FACILITADORA */}
-                                    <section className="bg-white border border-slate-200 rounded-[32px] p-10 shadow-sm animate-in fade-in duration-500">
-                                        <div className="flex justify-between items-center mb-8 border-b border-slate-50 pb-4">
-                                            <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest italic">Configuración de Caso</h3>
-                                            {status && <span className="bg-indigo-50 text-indigo-600 px-4 py-1.5 rounded-full text-[10px] font-extrabold uppercase animate-pulse">{status}</span>}
+                                    {/* PANEL FACILITADORA */}
+                                    <section className="bg-white border border-slate-200 rounded-[32px] p-6 sm:p-10 shadow-sm animate-in fade-in duration-500">
+                                        <div className="flex justify-between items-center mb-6 sm:mb-8 border-b border-slate-50 pb-4">
+                                            <h3 className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-widest italic">Nuevo desafío estratégico</h3>
+                                            {status && <span className="bg-indigo-50 text-indigo-600 px-3 py-1 rounded-full text-[8px] sm:text-[9px] font-extrabold uppercase animate-pulse">{status}</span>}
                                         </div>
-                                        <form onSubmit={startChallenge} className="space-y-8 text-slate-800">
-                                            <div>
-                                                <label className="text-[10px] font-extrabold text-slate-500 uppercase ml-4 mb-2 block tracking-widest">Cédula del Estudiante</label>
-                                                <input name="cedula" required className="w-full p-5 bg-slate-50 border-2 border-slate-100 rounded-3xl outline-none focus:border-[#4f46e5] font-bold text-xl tracking-tight transition-all shadow-inner" placeholder="Escribe el ID del caso" />
+                                        <form onSubmit={startChallenge} className="space-y-6 sm:space-y-8 text-slate-800">
+                                            <div className="space-y-2">
+                                                <label className="text-[9px] sm:text-[10px] font-extrabold text-slate-500 uppercase ml-4 block tracking-widest">Cédula del Estudiante</label>
+                                                <input name="cedula" required className="w-full p-4 sm:p-5 bg-slate-50 border-2 border-slate-100 rounded-[24px] outline-none focus:border-[#4f46e5] font-bold text-lg sm:text-xl tracking-tight transition-all" placeholder="ID del caso" />
                                             </div>
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                                <div>
-                                                    <label className="text-[10px] font-extrabold text-slate-500 uppercase ml-4 mb-2 block tracking-widest">Fecha Inicio de Clases</label>
-                                                    <input name="correctStart" type="date" required className="w-full p-5 bg-slate-50 border-2 border-slate-100 rounded-3xl outline-none focus:border-[#4f46e5] font-bold transition-all shadow-inner" />
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                <div className="space-y-2">
+                                                    <label className="text-[9px] sm:text-[10px] font-extrabold text-slate-500 uppercase ml-4 block tracking-widest">Fecha Inicio Clases</label>
+                                                    <input name="correctStart" type="date" required className="w-full p-4 sm:p-5 bg-slate-50 border-2 border-slate-100 rounded-[24px] outline-none focus:border-[#4f46e5] font-bold" />
                                                 </div>
-                                                <div>
-                                                    <label className="text-[10px] font-extrabold text-slate-500 uppercase ml-4 mb-2 block tracking-widest">Fecha Fin de Clases</label>
-                                                    <input name="correctEnd" type="date" required className="w-full p-5 bg-slate-50 border-2 border-slate-100 rounded-3xl outline-none focus:border-[#4f46e5] font-bold transition-all shadow-inner" />
+                                                <div className="space-y-2">
+                                                    <label className="text-[9px] sm:text-[10px] font-extrabold text-slate-500 uppercase ml-4 block tracking-widest">Fecha Fin Clases</label>
+                                                    <input name="correctEnd" type="date" required className="w-full p-4 sm:p-5 bg-slate-50 border-2 border-slate-100 rounded-[24px] outline-none focus:border-[#4f46e5] font-bold" />
                                                 </div>
                                             </div>
-                                            <div>
-                                                <label className="text-[10px] font-extrabold text-slate-500 uppercase ml-4 mb-2 block tracking-widest">Corte Esperado (Analytics)</label>
-                                                <input name="correctCohort" required className="w-full p-5 bg-slate-50 border-2 border-slate-100 rounded-3xl outline-none focus:border-[#4f46e5] font-extrabold text-xl text-blue-600 uppercase tracking-tight transition-all shadow-inner" placeholder="EJ: PGV-1S-N-1" />
+                                            <div className="space-y-2">
+                                                <label className="text-[9px] sm:text-[10px] font-extrabold text-slate-500 uppercase ml-4 block tracking-widest">Cohorte esperado (Analytics)</label>
+                                                <input name="correctCohort" required className="w-full p-4 sm:p-5 bg-slate-50 border-2 border-slate-100 rounded-[24px] outline-none focus:border-[#4f46e5] font-extrabold text-lg sm:text-xl text-blue-600 uppercase tracking-tight shadow-inner" placeholder="EJ: PGV-1S-N-1" />
                                             </div>
-                                            <button type="submit" className="w-full bg-[#4f46e5] text-white p-6 rounded-[28px] font-extrabold text-[12px] uppercase tracking-[0.2em] shadow-xl shadow-indigo-100 hover:bg-[#4338ca] transition-all active:scale-95">Publicar Desafío para el Equipo</button>
+                                            <button type="submit" className="w-full bg-[#4f46e5] text-white p-5 rounded-[28px] font-extrabold text-[10px] sm:text-[11px] uppercase tracking-[0.2em] shadow-xl hover:bg-[#4338ca] active:scale-95 transition-all">Lanzar Caso al Equipo</button>
                                         </form>
                                     </section>
                                 </>
                             ) : (
-                                /* VISTA DEL EQUIPO EXPERTO */
-                                <div className="bg-white border-2 border-blue-100 rounded-[40px] p-12 shadow-2xl text-center min-h-[500px] flex items-center justify-center relative overflow-hidden">
+                                /* VISTA EXPERTO RESPONSIVE */
+                                <div className="bg-white border-2 border-blue-100 rounded-[40px] sm:rounded-[50px] p-6 sm:p-12 shadow-2xl text-center min-h-[450px] sm:min-h-[550px] flex items-center justify-center relative overflow-hidden">
                                     {activeChallenge ? (
                                         hasSubmitted ? (
-                                            <div className="animate-in fade-in zoom-in text-slate-800 text-center py-10 w-full">
-                                                <div className="bg-green-100 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-8 text-green-600 shadow-inner">
-                                                    <Icons.Check className="w-12 h-12" />
+                                            <div className="animate-in fade-in zoom-in text-slate-800 text-center py-6 sm:py-10 w-full">
+                                                <div className={`w-20 h-20 sm:w-24 sm:h-24 rounded-full flex items-center justify-center mx-auto mb-6 sm:mb-8 shadow-inner border-2 ${lastResult?.isCorrect ? 'bg-green-100 text-green-600 border-green-200' : 'bg-red-100 text-red-500 border-red-200'}`}>
+                                                    {lastResult?.isCorrect ? <Icons.Check className="w-10 h-10 sm:w-12 sm:h-12" /> : <Icons.X className="w-10 h-10 sm:w-12 sm:h-12" />}
                                                 </div>
-                                                <h4 className="text-4xl font-extrabold tracking-tighter uppercase leading-none">Análisis Enviado</h4>
-                                                <p className="text-slate-400 mt-6 text-sm font-bold uppercase tracking-widest">¡Mira tu posición en el podio principal!</p>
+                                                <h4 className="text-2xl sm:text-4xl font-extrabold tracking-tighter uppercase leading-tight mb-2">
+                                                    {lastResult?.isCorrect ? "¡Genio Estratega!" : "Análisis Recibido"}
+                                                </h4>
+                                                <p className="text-slate-400 text-[10px] sm:text-xs font-bold uppercase tracking-widest mb-6">
+                                                    {lastResult?.isCorrect ? "Mira el podio en la pantalla principal" : "Revisa el resumen debajo"}
+                                                </p>
+                                                {!lastResult?.isCorrect && (
+                                                    <div className="max-w-[280px] mx-auto p-4 bg-slate-50 rounded-2xl text-[9px] sm:text-[10px] text-slate-400 uppercase font-black text-left border border-slate-100 space-y-2">
+                                                        <div className="flex justify-between items-center border-b border-slate-200 pb-2 mb-2 font-black text-slate-500 tracking-widest">RESUMEN:</div>
+                                                        <div className="flex justify-between items-center">
+                                                            <span>Inicio Clases:</span>
+                                                            <span className={lastResult?.startDate === activeChallenge.correctStart ? "text-green-500 font-bold" : "text-red-500 font-bold"}>{lastResult?.startDate === activeChallenge.correctStart ? "✓" : "✗"}</span>
+                                                        </div>
+                                                        <div className="flex justify-between items-center">
+                                                            <span>Fin Clases:</span>
+                                                            <span className={lastResult?.endDate === activeChallenge.correctEnd ? "text-green-500 font-bold" : "text-red-500 font-bold"}>{lastResult?.endDate === activeChallenge.correctEnd ? "✓" : "✗"}</span>
+                                                        </div>
+                                                        <div className="flex justify-between items-center">
+                                                            <span>Código Analytics:</span>
+                                                            <span className={lastResult?.cohort.trim().toUpperCase() === activeChallenge.correctCohort ? "text-green-500 font-bold" : "text-red-500 font-bold"}>{lastResult?.cohort.trim().toUpperCase() === activeChallenge.correctCohort ? "✓" : "✗"}</span>
+                                                        </div>
+                                                    </div>
+                                                )}
                                             </div>
                                         ) : (
-                                            <div className="space-y-12 text-left text-slate-800 w-full animate-in slide-in-from-bottom-8 duration-500">
-                                                <div className="flex items-center justify-between border-b border-slate-100 pb-10">
+                                            <div className="space-y-8 sm:space-y-12 text-left text-slate-800 w-full animate-in slide-in-from-bottom-8">
+                                                <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-100 pb-6 sm:pb-10 gap-4">
                                                     <div>
-                                                        <p className="text-blue-600 font-extrabold text-[11px] uppercase tracking-[0.3em] mb-2">ID Estudiante a Analizar</p>
-                                                        <h3 className="text-7xl font-extrabold tracking-tighter leading-none">{activeChallenge.cedula}</h3>
+                                                        <p className="text-blue-600 font-extrabold text-[9px] sm:text-[11px] uppercase tracking-[0.3em] mb-1 sm:mb-2 text-center sm:text-left">ID a Analizar</p>
+                                                        <h3 className="font-black text-slate-800 tracking-tighter text-center sm:text-left text-5xl sm:text-7xl leading-none">{activeChallenge.cedula}</h3>
                                                     </div>
-                                                    <div className="text-slate-100 p-4 bg-slate-50 rounded-3xl"><Icons.Search /></div>
+                                                    <div className="text-slate-100 p-3 sm:p-4 bg-slate-50 rounded-3xl self-center sm:self-auto shadow-inner border border-slate-100"><Icons.Search /></div>
                                                 </div>
-                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                                                    <div className="space-y-2">
-                                                        <label className="text-[11px] font-extrabold text-slate-400 uppercase ml-4 tracking-widest">Inicio de Clases</label>
-                                                        <input type="date" className="w-full p-5 bg-slate-50 border-2 border-slate-100 rounded-[28px] font-semibold text-lg outline-none focus:border-[#4f46e5] transition-all shadow-inner" onChange={e => setStudentInput({...studentInput, startDate: e.target.value})} />
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-10">
+                                                    <div className="space-y-2 text-center sm:text-left">
+                                                        <label className="text-[9px] sm:text-[11px] font-extrabold text-slate-400 uppercase ml-1 tracking-widest block">Inicio Clases</label>
+                                                        <input type="date" className="w-full p-4 sm:p-5 bg-slate-50 border-2 border-slate-100 rounded-[20px] sm:rounded-[28px] font-bold text-sm sm:text-lg outline-none focus:border-[#4f46e5] transition-all shadow-sm" onChange={e => setStudentInput({...studentInput, startDate: e.target.value})} />
                                                     </div>
-                                                    <div className="space-y-2">
-                                                        <label className="text-[11px] font-extrabold text-slate-400 uppercase ml-4 tracking-widest">Fin de Clases</label>
-                                                        <input type="date" className="w-full p-5 bg-slate-50 border-2 border-slate-100 rounded-[28px] font-semibold text-lg outline-none focus:border-[#4f46e5] transition-all shadow-inner" onChange={e => setStudentInput({...studentInput, endDate: e.target.value})} />
+                                                    <div className="space-y-2 text-center sm:text-left">
+                                                        <label className="text-[9px] sm:text-[11px] font-extrabold text-slate-400 uppercase ml-1 tracking-widest block">Fin Clases</label>
+                                                        <input type="date" className="w-full p-4 sm:p-5 bg-slate-50 border-2 border-slate-100 rounded-[20px] sm:rounded-[28px] font-bold text-sm sm:text-lg outline-none focus:border-[#4f46e5] transition-all shadow-sm" onChange={e => setStudentInput({...studentInput, endDate: e.target.value})} />
                                                     </div>
-                                                    <div className="col-span-2 space-y-2">
-                                                        <label className="text-[11px] font-extrabold text-slate-400 uppercase ml-4 tracking-widest">Código Analytics Decodificado</label>
-                                                        <input className="w-full p-6 bg-slate-50 border-2 border-slate-100 rounded-[32px] font-extrabold text-3xl text-blue-700 outline-none focus:border-[#4f46e5] transition-all shadow-inner uppercase tracking-tight" placeholder="PGV-1S-N-1" onChange={e => setStudentInput({...studentInput, cohort: e.target.value})} />
+                                                    <div className="sm:col-span-2 space-y-2 text-center sm:text-left">
+                                                        <label className="text-[9px] sm:text-[11px] font-extrabold text-slate-400 uppercase ml-1 tracking-widest block">Código Decodificado</label>
+                                                        <input className="w-full p-5 sm:p-6 bg-slate-50 border-2 border-slate-100 rounded-[24px] sm:rounded-[32px] font-extrabold text-2xl sm:text-3xl text-blue-700 outline-none focus:border-[#4f46e5] uppercase text-center shadow-sm tracking-tight" placeholder="PGV-1S-N-1" onChange={e => setStudentInput({...studentInput, cohort: e.target.value})} />
                                                     </div>
                                                 </div>
                                                 <button 
                                                     onClick={submitAnswer} 
                                                     disabled={isSubmitting}
-                                                    className="w-full bg-[#4f46e5] text-white p-8 rounded-[35px] font-extrabold text-xl uppercase tracking-widest shadow-2xl shadow-indigo-200 hover:bg-[#4338ca] transition-all active:scale-95 flex items-center justify-center gap-4"
+                                                    className="w-full bg-[#4f46e5] text-white p-6 sm:p-8 rounded-[28px] sm:rounded-[35px] font-extrabold text-base sm:text-xl uppercase tracking-widest shadow-2xl hover:bg-[#4338ca] transition-all active:scale-95 flex items-center justify-center gap-3 shadow-indigo-200"
                                                 >
-                                                    {isSubmitting ? (
-                                                        <><Icons.Loader className="w-8 h-8 animate-spin" /> Enviando...</>
-                                                    ) : "Subir Análisis Estratégico"}
+                                                    {isSubmitting ? <Icons.Loader className="w-6 h-6 animate-spin" /> : "Enviar Análisis Estratégico"}
                                                 </button>
                                             </div>
                                         )
                                     ) : (
-                                        <div className="py-20 italic text-slate-400 text-sm font-medium tracking-widest flex flex-col items-center gap-8 opacity-60">
-                                            <div className="animate-pulse bg-slate-50 p-10 rounded-full shadow-inner"><Icons.Clock /></div>
-                                            <p className="text-center uppercase leading-relaxed font-bold max-w-xs">Esperando que la facilitadora active el caso estratégico...</p>
+                                        <div className="py-12 sm:py-20 italic text-slate-400 text-[10px] sm:text-sm font-medium tracking-widest flex flex-col items-center gap-6 opacity-60">
+                                            <div className="animate-pulse bg-slate-50 p-8 sm:p-10 rounded-full shadow-inner border border-slate-100"><Icons.Clock /></div>
+                                            <p className="text-center uppercase leading-relaxed font-black max-w-[200px] sm:max-w-xs px-4">Esperando el siguiente reto estratégico...</p>
                                         </div>
                                     )}
                                 </div>
                             )}
                         </div>
                     </main>
-                    <footer className="mt-12 py-10 text-center border-t border-slate-100 bg-white shadow-inner">
-                        <p className="text-[10px] text-slate-400 font-extrabold uppercase tracking-[0.5em]">Taller de Análisis de Posgrados • Ilumno 2026</p>
+                    <footer className="mt-8 py-8 text-center border-t border-slate-100 bg-white shadow-inner">
+                        <p className="text-[8px] sm:text-[10px] text-slate-400 font-extrabold uppercase tracking-[0.4em] px-4 italic leading-relaxed">Taller de Análisis Estratégico de Posgrados • Ilumno 2026</p>
                     </footer>
                 </div>
             );
