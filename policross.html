@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PoliCross: Operación SmartCampus</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+
+        :root {
+            --poli-blue: #003B5C;
+            --poli-cyan: #00B5E2;
+            --poli-yellow: #FFB81C;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #0a192f 0%, var(--poli-blue) 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            overflow: hidden;
+            margin: 0;
+            padding: 20px;
+        }
+
+        /* Glassmorphism Classes */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+            border-radius: 24px;
+        }
+
+        /* Letter Inputs */
+        .letter-grid {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+
+        .letter-input {
+            width: 45px;
+            height: 55px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            color: white;
+            text-transform: uppercase;
+            transition: all 0.2s ease;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .letter-input:focus {
+            outline: none;
+            border-color: var(--poli-cyan);
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 181, 226, 0.4);
+        }
+
+        .letter-input.correct {
+            background: rgba(34, 197, 94, 0.8);
+            border-color: #22c55e;
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .letter-input.error {
+            background: rgba(239, 68, 68, 0.8);
+            border-color: #ef4444;
+            color: white;
+            animation: shake 0.4s ease-in-out;
+        }
+
+        /* Animations */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px) rotate(-5deg); }
+            75% { transform: translateX(5px) rotate(5deg); }
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .level-animate {
+            animation: slideIn 0.5s ease forwards;
+        }
+
+        /* Chat Bubbles */
+        .chat-bubble {
+            background: rgba(255, 255, 255, 0.9);
+            color: #1f2937;
+            border-radius: 16px 16px 16px 4px;
+            padding: 16px;
+            position: relative;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .chat-bubble::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: -10px;
+            border-width: 10px 10px 0 0;
+            border-style: solid;
+            border-color: rgba(255, 255, 255, 0.9) transparent transparent transparent;
+        }
+
+        .system-hint {
+            background: rgba(0, 181, 226, 0.15);
+            border-left: 4px solid var(--poli-cyan);
+            padding: 12px 16px;
+            border-radius: 0 12px 12px 0;
+            font-size: 0.9rem;
+            color: #e0f2fe;
+        }
+
+        /* Progress Bar */
+        .progress-bar-container {
+            width: 100%;
+            height: 8px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+        .progress-bar {
+            height: 100%;
+            background: #22c55e;
+            transition: width 0.3s ease, background-color 0.3s ease;
+        }
+
+        /* Particles Background */
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            animation: float 10s infinite linear;
+            z-index: -1;
+        }
+        @keyframes float {
+            0% { transform: translateY(100vh) scale(0); opacity: 0; }
+            50% { opacity: 1; }
+            100% { transform: translateY(-100px) scale(1); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Background Particles -->
+    <div id="particles"></div>
+
+    <div class="glass-panel w-full max-w-2xl p-6 md:p-8 relative">
+        
+        <!-- Header / Stats -->
+        <div class="flex justify-between items-center border-b border-white/10 pb-4 mb-6">
+            <div>
+                <h1 class="text-2xl font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-gamepad text-[#00B5E2]"></i> PoliCross
+                </h1>
+                <p class="text-sm text-gray-300">Operación SmartCampus</p>
+            </div>
+            <div class="flex gap-4 text-right">
+                <div class="bg-white/10 rounded-xl px-4 py-2 border border-white/5">
+                    <div class="text-xs text-gray-400 uppercase tracking-wider">Polipuntos</div>
+                    <div class="text-xl font-bold text-[#FFB81C]" id="scoreDisplay">0</div>
+                </div>
+                <div class="bg-white/10 rounded-xl px-4 py-2 border border-white/5 w-32">
+                    <div class="text-xs text-gray-400 uppercase tracking-wider">SLA / Vida</div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" id="slaBar" style="width: 100%;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Area -->
+        <div id="gameArea" class="level-animate">
+            <div class="flex justify-between items-end mb-4">
+                <span class="text-sm font-semibold text-[#00B5E2] uppercase tracking-wide" id="levelIndicator">Ticket 1 de 6</span>
+            </div>
+
+            <!-- Student Message -->
+            <div class="flex items-start gap-3 mb-4">
+                <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
+                    <i class="fa-solid fa-user text-gray-500"></i>
+                </div>
+                <div class="chat-bubble flex-1" id="studentMsg">
+                    "Hola, no recuerdo mi usuario para entrar a mis clases."
+                </div>
+            </div>
+
+            <!-- System Hint -->
+            <div class="system-hint flex items-start gap-3 mb-8">
+                <i class="fa-solid fa-robot mt-1 text-[#00B5E2]"></i>
+                <div id="systemHintMsg">
+                    <strong class="block text-white mb-1">Pista del Sistema:</strong>
+                    Como validación ágil (Consultas Generales), le confirmamos el dominio del correo que va después del @. ¿Cuál es?
+                </div>
+            </div>
+
+            <!-- Input Grid -->
+            <div class="letter-grid" id="inputContainer">
+                <!-- Inputs generados por JS -->
+            </div>
+
+            <!-- Actions -->
+            <div class="mt-8 text-center">
+                <button onclick="checkAnswer()" class="bg-[#00B5E2] hover:bg-[#0090b5] text-white font-bold py-3 px-8 rounded-xl transition-all transform hover:scale-105 shadow-lg flex items-center gap-2 mx-auto">
+                    <i class="fa-solid fa-paper-plane"></i> Resolver Ticket
+                </button>
+            </div>
+        </div>
+
+        <!-- End Screen (Hidden by default) -->
+        <div id="endScreen" class="hidden text-center py-10">
+            <div class="text-6xl mb-4">🏆</div>
+            <h2 class="text-3xl font-bold mb-2">¡Turno Finalizado!</h2>
+            <p class="text-gray-300 mb-6" id="endMessage">Has gestionado todos los tickets manteniendo un buen SLA.</p>
+            <div class="bg-white/10 inline-block rounded-2xl p-6 border border-white/20 mb-6">
+                <p class="text-sm text-gray-400 uppercase tracking-widest mb-1">Recompensa Obtenida</p>
+                <p class="text-4xl font-bold text-[#FFB81C]" id="finalScore">50 Polipuntos</p>
+            </div>
+            <button onclick="location.reload()" class="block w-full bg-white/10 hover:bg-white/20 text-white font-bold py-3 px-8 rounded-xl transition-all border border-white/20">
+                Volver a jugar
+            </button>
+        </div>
+
+    </div>
+
+    <script>
+        // Game Data based on the provided documents
+        const levels = [
+            {
+                student: "Hola, no recuerdo mi usuario para entrar a mis clases.",
+                hint: "Como validación ágil (Consultas Generales), le confirmamos el dominio del correo que va después del @. ¿Cuál es?",
+                answer: "POLIGRAN"
+            },
+            {
+                student: "Necesito cambiar mi número de celular en el sistema para recibir el código de MFA.",
+                hint: "¡Alerta de Nivel Seguridad Pro! ¿Cuántas preguntas de titularidad debes hacerle antes de proceder?",
+                answer: "TRES"
+            },
+            {
+                student: "Hola, necesito información general sobre mi plan de estudios, ¿qué datos te doy?",
+                hint: "Según el nuevo Protocolo de Datos, para consultas ágiles solo validas el correo y los últimos ____ (en letras) dígitos de su cédula y celular.",
+                answer: "CUATRO"
+            },
+            {
+                student: "Ya me registré por mi cuenta en la página del gobierno para las pruebas Saber Pro, ¿ya me puedo graduar?",
+                hint: "¡Cuidado! Si se inscribe directamente en la página del ____ y no en SmartCampus, NO será válido para su grado.",
+                answer: "ICFES"
+            },
+            {
+                student: "Pagué el 15 de marzo mi diplomado de Opción de Grado, ¿cuándo empiezo?",
+                hint: "Tras la reorganización por Semana Santa, todos los diplomados inician el seis de...",
+                answer: "ABRIL"
+            },
+            {
+                student: "Acabo de cambiar mi contraseña en el CPO, pero intento entrar y me da error.",
+                hint: "Debes indicarle que espere este número de minutos para que el sistema sincronice.",
+                answer: "CINCO"
+            },
+            {
+                student: "Ya intenté los 6 pasos y la alternativa de Authenticator, pero sigo sin poder entrar a mi correo.",
+                hint: "Debes escalar el caso a Tecnología con pantallazos bajo el título 'Inconvenientes ______ 365'.",
+                answer: "OFFICE"
+            },
+            {
+                student: "Estoy de viaje y el sistema bloqueó mi acceso por intento de hackeo.",
+                hint: "Tecnología aplicó bloqueos desde el exterior. Un país suramericano que está totalmente bloqueado es...",
+                answer: "ARGENTINA"
+            },
+            {
+                student: "Ya entré a la AppQRGrados para mi grado presencial, ¿cuántas invitaciones me darán para mi familia?",
+                hint: "La plataforma permite descargar una (1) invitación para el graduando y ______ (en letras) para sus invitados.",
+                answer: "DOS"
+            },
+            {
+                student: "Soy graduado del periodo 2026-1 y quiero descargar mis documentos digitales. ¿Dónde lo hago?",
+                hint: "Según el nuevo instructivo para recientes, debe ingresar con un código a esta plataforma oficial:",
+                answer: "DIGISIGNCOL"
+            }
+        ];
+
+        let currentLevel = 0;
+        let score = 0;
+        let sla = 100;
+        let pointsPerLevel = 50 / levels.length; // Max 50 points total
+
+        const gameArea = document.getElementById('gameArea');
+        const endScreen = document.getElementById('endScreen');
+        const inputContainer = document.getElementById('inputContainer');
+        const levelIndicator = document.getElementById('levelIndicator');
+        const studentMsg = document.getElementById('studentMsg');
+        const systemHintMsg = document.getElementById('systemHintMsg');
+        const scoreDisplay = document.getElementById('scoreDisplay');
+        const slaBar = document.getElementById('slaBar');
+
+        function initGame() {
+            createParticles();
+            loadLevel();
+        }
+
+        function loadLevel() {
+            const levelData = levels[currentLevel];
+            
+            // Animate transition
+            gameArea.classList.remove('level-animate');
+            void gameArea.offsetWidth; // trigger reflow
+            gameArea.classList.add('level-animate');
+
+            levelIndicator.innerText = `Ticket ${currentLevel + 1} de ${levels.length}`;
+            studentMsg.innerText = `"${levelData.student}"`;
+            systemHintMsg.innerHTML = `<strong class="block text-white mb-1">Pista del Sistema:</strong>${levelData.hint}`;
+            
+            // Generate Inputs
+            inputContainer.innerHTML = '';
+            for (let i = 0; i < levelData.answer.length; i++) {
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.maxLength = 1;
+                input.className = 'letter-input';
+                input.dataset.index = i;
+                
+                input.addEventListener('keyup', handleInput);
+                input.addEventListener('keydown', handleBackspace);
+                
+                inputContainer.appendChild(input);
+            }
+            
+            // Focus first input
+            setTimeout(() => {
+                if(inputContainer.children.length > 0) {
+                    inputContainer.children[0].focus();
+                }
+            }, 500);
+        }
+
+        function handleInput(e) {
+            const target = e.target;
+            const val = target.value.replace(/[^a-zA-Z]/g, '').toUpperCase();
+            target.value = val;
+
+            if (val && e.key !== 'Backspace') {
+                const next = target.nextElementSibling;
+                if (next) {
+                    next.focus();
+                }
+            }
+            
+            // If user presses Enter and the last box is filled, check answer
+            if (e.key === 'Enter') {
+                checkAnswer();
+            }
+        }
+
+        function handleBackspace(e) {
+            const target = e.target;
+            if (e.key === 'Backspace' && target.value === '') {
+                const prev = target.previousElementSibling;
+                if (prev) {
+                    prev.focus();
+                }
+            }
+        }
+
+        function checkAnswer() {
+            const inputs = document.querySelectorAll('.letter-input');
+            let userWord = '';
+            inputs.forEach(input => userWord += input.value.toUpperCase());
+            
+            const correctWord = levels[currentLevel].answer;
+
+            if (userWord === correctWord) {
+                // Success
+                inputs.forEach(input => {
+                    input.classList.remove('error');
+                    input.classList.add('correct');
+                });
+                
+                score += Math.round(pointsPerLevel);
+                animateScoreUpdate();
+
+                setTimeout(() => {
+                    currentLevel++;
+                    if (currentLevel < levels.length) {
+                        loadLevel();
+                    } else {
+                        showEndScreen(true);
+                    }
+                }, 1500);
+
+            } else {
+                // Error
+                updateSLA(-15); // Lose 15% SLA on error
+                
+                inputs.forEach(input => {
+                    input.classList.add('error');
+                    setTimeout(() => input.classList.remove('error'), 400);
+                });
+                
+                if(sla <= 0) {
+                    setTimeout(() => showEndScreen(false), 500);
+                }
+            }
+        }
+
+        function updateSLA(amount) {
+            sla += amount;
+            if (sla < 0) sla = 0;
+            if (sla > 100) sla = 100;
+            
+            slaBar.style.width = `${sla}%`;
+            
+            if (sla > 60) {
+                slaBar.style.backgroundColor = '#22c55e'; // Green
+            } else if (sla > 30) {
+                slaBar.style.backgroundColor = '#eab308'; // Yellow
+            } else {
+                slaBar.style.backgroundColor = '#ef4444'; // Red
+            }
+        }
+
+        function animateScoreUpdate() {
+            // Simple pop animation for score
+            scoreDisplay.innerText = score;
+            scoreDisplay.style.transform = 'scale(1.5)';
+            scoreDisplay.style.color = '#fff';
+            setTimeout(() => {
+                scoreDisplay.style.transform = 'scale(1)';
+                scoreDisplay.style.color = '#FFB81C';
+            }, 300);
+        }
+
+        function showEndScreen(victory) {
+            gameArea.classList.add('hidden');
+            endScreen.classList.remove('hidden');
+            
+            if (victory) {
+                // Ensure it rounds to exactly 50
+                document.getElementById('finalScore').innerText = `50 Polipuntos`;
+                document.getElementById('endMessage').innerText = "¡Excelente gestión! Dominas los nuevos protocolos de SmartCampus.";
+                createConfetti();
+            } else {
+                document.querySelector('#endScreen .text-6xl').innerText = '📉';
+                document.querySelector('#endScreen h2').innerText = 'SLA Crítico';
+                document.getElementById('finalScore').innerText = `${score} Polipuntos`;
+                document.getElementById('endMessage').innerText = "Tu nivel de servicio bajó demasiado debido a respuestas incorrectas. Repasa los protocolos y vuelve a intentarlo.";
+                document.getElementById('finalScore').style.color = '#ef4444';
+            }
+        }
+
+        // --- Visual Effects ---
+        function createParticles() {
+            const container = document.getElementById('particles');
+            for (let i = 0; i < 20; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.width = `${Math.random() * 50 + 10}px`;
+                particle.style.height = particle.style.width;
+                particle.style.left = `${Math.random() * 100}vw`;
+                particle.style.animationDuration = `${Math.random() * 10 + 5}s`;
+                particle.style.animationDelay = `${Math.random() * 5}s`;
+                container.appendChild(particle);
+            }
+        }
+
+        function createConfetti() {
+            const colors = ['#00B5E2', '#FFB81C', '#003B5C', '#ffffff'];
+            for (let i = 0; i < 100; i++) {
+                const confeti = document.createElement('div');
+                confeti.style.position = 'fixed';
+                confeti.style.width = '10px';
+                confeti.style.height = '10px';
+                confeti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confeti.style.left = Math.random() * 100 + 'vw';
+                confeti.style.top = '-10px';
+                confeti.style.zIndex = '9999';
+                confeti.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+                
+                const duration = Math.random() * 3 + 2;
+                confeti.style.transition = `top ${duration}s ease-in, transform ${duration}s linear`;
+                
+                document.body.appendChild(confeti);
+                
+                setTimeout(() => {
+                    confeti.style.top = '100vh';
+                    confeti.style.transform = `rotate(${Math.random() * 720}deg) translateX(${Math.random() * 100 - 50}px)`;
+                }, 10);
+                
+                setTimeout(() => confeti.remove(), duration * 1000);
+            }
+        }
+
+        // Start
+        window.onload = initGame;
+    </script>
+</body>
+</html>
