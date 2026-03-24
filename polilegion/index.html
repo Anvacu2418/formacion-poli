@@ -140,13 +140,17 @@
 
     <script>
         /** CARGA DE IMÁGENES (SPRITES) **/
-        // IMPORTANTE: Asegúrate de que los archivos en tu repositorio de GitHub 
-        // se llamen exactamente así, todo en minúscula y sin espacios.
+        // Usamos la URL absoluta cruda (raw) de tu propio repositorio de GitHub.
+        // Esto soluciona los errores en el editor/canvas y asegura que cargue perfecto en GitHub Pages.
         const imgPlayer = new Image();
-        imgPlayer.src = 'peleador.jpg'; 
+        imgPlayer.src = 'https://raw.githubusercontent.com/Anvacu2418/formacion-poli/main/polilegion/peleador.png'; 
+        imgPlayer.crossOrigin = "anonymous";
+        imgPlayer.onerror = () => console.error("Error cargando la imagen del peleador desde GitHub.");
         
         const imgBoss = new Image();
-        imgBoss.src = 'desinformacion.jpg';
+        imgBoss.src = 'https://raw.githubusercontent.com/Anvacu2418/formacion-poli/main/polilegion/desinformacion.png';
+        imgBoss.crossOrigin = "anonymous";
+        imgBoss.onerror = () => console.error("Error cargando la imagen de desinformación desde GitHub.");
 
         /** CONFIGURACIÓN DEL CANVAS **/
         const canvas = document.getElementById('gameCanvas');
@@ -207,7 +211,6 @@
                 opcionIzq: { texto: "Descargar reporte Teams", valor: 50, operacion: "sumar", correcta: true },
                 opcionDer: { texto: "Esperar a fin de mes", valor: 40, operacion: "restar", correcta: false }
             },
-            // NUEVOS COMUNICADOS AGREGADOS:
             {
                 tema: "Ceremonias Presenciales",
                 contexto: "Para la ceremonia presencial, ¿cuántas invitaciones digitales se pueden descargar desde la AppQRGrados?",
@@ -280,9 +283,8 @@
         canvas.addEventListener('touchmove', e => updatePlayerPosition(e.touches[0].clientX));
 
         function shuffleAndSelectQuestions() {
-            // Clonar y mezclar aleatoriamente el arreglo de 14 preguntas
             let shuffled = [...allComunicados].sort(() => 0.5 - Math.random());
-            selectedComunicados = shuffled.slice(0, 5); // Tomamos solo 5
+            selectedComunicados = shuffled.slice(0, 5);
         }
 
         function spawnGate() {
@@ -294,7 +296,6 @@
             document.getElementById('levelCount').innerText = currentLevelIndex + 1;
             const data = selectedComunicados[currentLevelIndex];
             
-            // Randomizar lado de respuesta correcta (A veces izq, a veces der)
             const isLeftCorrect = Math.random() > 0.5;
             let finalOpcionIzq, finalOpcionDer;
 
@@ -454,8 +455,6 @@
                 fightState.shake = Math.max(0, fightState.shake - 0.5);
                 let progress = Math.min(1, fightState.timer / 60); 
                 
-                // EVALUACIÓN ESTRICTA: 
-                // 5 correctas = Gana. 4 = Pelea reñida, pierde. <4 = Pierde rápido.
                 if (preguntasCorrectas === 5) {
                     fightState.bossHp = 100 * (1 - progress);
                     fightState.pHp = fightState.maxPHp - (fightState.maxPHp * 0.2 * progress);
@@ -501,15 +500,12 @@
             ctx.fillStyle = 'rgba(255, 0, 0, 0.05)'; ctx.fillRect(0, 0, canvas.width, canvas.height);
             ctx.strokeStyle = '#ff4757'; ctx.lineWidth = 5; ctx.strokeRect(20, 20, canvas.width - 40, canvas.height - 40);
 
-            // Barras de Vida
             const barW = (canvas.width / 2) - 60; const barH = 25;
             
-            // Player Bar
             ctx.fillStyle = 'rgba(255, 255, 255, 0.2)'; ctx.fillRect(40, 40, barW, barH);
-            ctx.fillStyle = '#00ffcc'; ctx.fillRect(40 + barW - (barW * (fightState.pHp / fightState.maxPHp)), 40, barW * (fightState.pHp / fightState.maxPHp), barH);
+            ctx.fillStyle = '#00ffcc'; ctx.fillRect(40 + barW - (barW * (fightState.pHp / Math.max(1, fightState.maxPHp))), 40, barW * (fightState.pHp / Math.max(1, fightState.maxPHp)), barH);
             ctx.fillStyle = '#fff'; ctx.font = 'bold 16px "Segoe UI"'; ctx.textAlign = 'left'; ctx.fillText("PELEADOR LUZ", 40, 30);
 
-            // Boss Bar
             ctx.fillStyle = 'rgba(255, 255, 255, 0.2)'; ctx.fillRect(canvas.width - 40 - barW, 40, barW, barH);
             ctx.fillStyle = '#ff4757'; ctx.fillRect(canvas.width - 40 - barW, 40, barW * (fightState.bossHp / 100), barH);
             ctx.fillStyle = '#fff'; ctx.textAlign = 'right'; ctx.fillText("DESINFORMACIÓN", canvas.width - 40, 30);
@@ -527,10 +523,8 @@
                 ctx.fillText(preguntasCorrectas === 5 ? "¡VICTORIA ÉPICA!" : "FATALIDAD", cx, cy - 180);
             }
 
-            // --- DIBUJAR SPRITES (IMÁGENES) ---
             const spriteSize = 140;
 
-            // Dibujar a "Peleador Luz"
             if(imgPlayer.complete && imgPlayer.naturalHeight !== 0) {
                 ctx.shadowBlur = 20; ctx.shadowColor = '#00ffcc';
                 ctx.drawImage(imgPlayer, fightState.pX - (spriteSize/2), fightState.pY - (spriteSize/2), spriteSize, spriteSize);
@@ -539,7 +533,6 @@
                 ctx.fillStyle = '#00ffcc'; ctx.beginPath(); ctx.arc(fightState.pX, fightState.pY, 50, 0, Math.PI * 2); ctx.fill();
             }
 
-            // Dibujar a "Desinformación"
             if(imgBoss.complete && imgBoss.naturalHeight !== 0) {
                 ctx.shadowBlur = 30; ctx.shadowColor = '#ff4757';
                 ctx.drawImage(imgBoss, fightState.bossX - (spriteSize/2), fightState.bossY - (spriteSize/2), spriteSize, spriteSize);
@@ -589,11 +582,7 @@
             wrapText(currentGate.opcionIzq.texto, canvas.width / 4, y + (h/2));
             wrapText(currentGate.opcionDer.texto, (canvas.width / 4) * 3, y + (h/2));
             
-            ctx.fillStyle = '#f1c40f'; ctx.font = '14px "Segoe UI"';
-            let symI = currentGate.opcionIzq.operacion === 'sumar' ? '+' : '-';
-            let symD = currentGate.opcionDer.operacion === 'sumar' ? '+' : '-';
-            ctx.fillText(`[ ${symI}${currentGate.opcionIzq.valor} ]`, canvas.width / 4, y + h - 15);
-            ctx.fillText(`[ ${symD}${currentGate.opcionDer.valor} ]`, (canvas.width / 4) * 3, y + h - 15);
+            // ELIMINADA LA PISTA DE LOS PUNTOS (+/-)
         }
 
         function drawPlayer() {
