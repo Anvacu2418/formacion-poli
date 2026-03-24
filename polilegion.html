@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>PoliLegión: Marcha del Conocimiento</title>
+    <style>
+        /* =========================================
+           VARIABLES Y DISEÑO BASE
+           ========================================= */
+        :root {
+            --primary: #00ffcc;
+            --danger: #ff4757;
+            --bg-color: #0f0f1b;
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden;
+            background-color: var(--bg-color);
+            background-image: radial-gradient(circle at 50% 0%, #2a2a4a 0%, #0f0f1b 70%);
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            color: white; touch-action: none;
+        }
+
+        canvas { display: block; width: 100%; height: 100%; }
+
+        /* =========================================
+           COMPONENTES UI
+           ========================================= */
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border); border-radius: 20px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+            padding: 24px; text-align: center;
+        }
+
+        #ui-layer {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; display: flex; flex-direction: column;
+            justify-content: space-between;
+        }
+
+        #hud { padding: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .hud-stat { font-size: 1.2rem; font-weight: bold; display: flex; align-items: center; gap: 8px; }
+        #troopCount { color: var(--primary); font-size: 1.5rem; }
+        
+        #reading-zone {
+            position: absolute; top: 15%; left: 50%; transform: translateX(-50%);
+            width: 85%; max-width: 600px; opacity: 0; transition: opacity 0.3s ease;
+        }
+        #reading-zone h2 { margin: 0 0 10px 0; font-size: 1.2rem; color: #f1c40f; text-transform: uppercase; letter-spacing: 2px; }
+        #reading-zone p { font-size: 1.1rem; line-height: 1.5; margin: 0; }
+
+        .fullscreen-menu {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            background: rgba(15, 15, 27, 0.85); backdrop-filter: blur(5px);
+            z-index: 10; pointer-events: auto;
+        }
+
+        .menu-content { width: 80%; max-width: 450px; }
+        .menu-content h1 { color: var(--primary); font-size: 2.5rem; margin-bottom: 10px; }
+        .menu-content p { color: #ccc; margin-bottom: 30px; font-size: 1.1rem; }
+
+        .btn {
+            background: linear-gradient(135deg, #00ffcc 0%, #00b38f 100%);
+            color: #000; border: none; padding: 15px 30px; font-size: 1.2rem;
+            font-weight: bold; border-radius: 50px; cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 255, 204, 0.4);
+            transition: transform 0.2s, box-shadow 0.2s; width: 100%; margin-top: 10px;
+        }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0, 255, 204, 0.6); }
+        .btn-danger { background: linear-gradient(135deg, #ff4757 0%, #cc0000 100%); box-shadow: 0 4px 15px rgba(255, 71, 87, 0.4); }
+
+        .hidden { display: none !important; }
+        
+        #vignette {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle, transparent 50%, rgba(0,0,0,0.8) 150%);
+            pointer-events: none; opacity: 0; transition: opacity 0.5s;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="vignette"></div>
+    <canvas id="gameCanvas"></canvas>
+
+    <!-- Interfaz de Juego Activo -->
+    <div id="ui-layer">
+        <div id="hud">
+            <div class="glass-panel hud-stat" style="padding: 10px 20px;">
+                🛡️ Tropas: <span id="troopCount">20</span>
+            </div>
+            <div class="glass-panel hud-stat" style="padding: 10px 20px; font-size: 1rem;">
+                Nivel <span id="levelCount">1</span>/5
+            </div>
+        </div>
+
+        <div id="reading-zone" class="glass-panel">
+            <h2 id="comunicadoTema">TEMA</h2>
+            <p id="comunicadoContexto">Contexto del comunicado...</p>
+        </div>
+        <div style="height: 100px;"></div>
+    </div>
+
+    <!-- Pantalla de Inicio -->
+    <div id="startScreen" class="fullscreen-menu">
+        <div class="glass-panel menu-content">
+            <h1>PoliLegión</h1>
+            <p>Guía al <b>Peleador de Luz</b>. Lee atentamente los comunicados, elige la opción correcta y multiplica tus tropas para tener una oportunidad contra el monstruo de la Desinformación.</p>
+            <button class="btn" onclick="startGame()">INICIAR MARCHA</button>
+        </div>
+    </div>
+
+    <!-- Pantalla de Preámbulo (Antes de la Batalla) -->
+    <div id="preBossScreen" class="fullscreen-menu hidden">
+        <div class="glass-panel menu-content">
+            <h1 style="color: #f1c40f;">¡Fin de la Marcha!</h1>
+            <p>Has respondido <b id="respuestasCorrectasDisplay" style="color:#00ffcc">0</b> de 5 comunicados correctamente y reuniste un ejército de <b id="finalTroopsDisplay">0</b> tropas.</p>
+            <p>¿Será suficiente para derrotar a la bestia de la Desinformación? ¡Descúbrelo ahora!</p>
+            <button class="btn btn-danger" onclick="triggerBossFight()">¡A LA BATALLA!</button>
+        </div>
+    </div>
+
+    <!-- Pantalla de Resultados -->
+    <div id="endScreen" class="fullscreen-menu hidden">
+        <div class="glass-panel menu-content">
+            <h1 id="endTitle">¡Victoria!</h1>
+            <p id="endMessage">Has derrotado la desinformación.</p>
+            <div style="font-size: 2rem; color: #f1c40f; margin-bottom: 20px; font-weight: bold;">
+                +<span id="finalScore">0</span> Polipuntos
+            </div>
+            <button class="btn" onclick="location.reload()">VOLVER A INTENTAR</button>
+        </div>
+    </div>
+
+    <script>
+        /** CARGA DE IMÁGENES (SPRITES) **/
+        // Se recomienda nombrar los archivos sin espacios ni tildes al subirlos a GitHub
+        const imgPlayer = new Image();
+        imgPlayer.src = 'Peleador Luz.jpg'; // Cambiar a 'peleador.jpg' si lo renombras en tu carpeta
+        
+        const imgBoss = new Image();
+        imgBoss.src = 'Desinformación.jpg'; // Cambiar a 'desinformacion.jpg' si lo renombras en tu carpeta
+
+        /** CONFIGURACIÓN DEL CANVAS **/
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        window.addEventListener('resize', resize);
+        resize();
+
+        // =========================================
+        // BASE DE DATOS AMPLIADA (13 COMUNICADOS)
+        // =========================================
+        const allComunicados = [
+            {
+                tema: "Descuentos + Becas",
+                contexto: "Un estudiante dice: 'Tengo beca y descuento por convenio, quiero sumar ambos'. La regla dicta que...",
+                opcionIzq: { texto: "No son acumulables", valor: 40, operacion: "sumar", correcta: true },
+                opcionDer: { texto: "Sí, con excepciones", valor: 20, operacion: "restar", correcta: false }
+            },
+            {
+                tema: "Saber Pro & TyT",
+                contexto: "¿Dónde y cómo debe realizar el estudiante el pre-registro para que sea válido para su grado?",
+                opcionIzq: { texto: "Directo en ICFES", valor: 20, operacion: "restar", correcta: false },
+                opcionDer: { texto: "Por SmartCampus", valor: 35, operacion: "sumar", correcta: true }
+            },
+            {
+                tema: "Canvas: Subgrupos",
+                contexto: "Los estudiantes no pueden ver el listado de su subgrupo. ¿Qué alternativa inmediata les ofreces?",
+                opcionIzq: { texto: "Usar 'Anuncios'", valor: 50, operacion: "sumar", correcta: true },
+                opcionDer: { texto: "Levantar ticket", valor: 30, operacion: "restar", correcta: false }
+            },
+            {
+                tema: "Renovación ICETEX",
+                contexto: "La entidad actualizó las fechas oficiales. ¿Hasta cuándo es la renovación Ordinaria?",
+                opcionIzq: { texto: "Hasta el 20 de abril", valor: 15, operacion: "restar", correcta: false },
+                opcionDer: { texto: "Hasta el 10 de abril", valor: 30, operacion: "sumar", correcta: true }
+            },
+            {
+                tema: "Documentos Digitales",
+                contexto: "La plataforma está en actualización. Para documentos de este año en adelante, ¿A qué portal oficial lo guías?",
+                opcionIzq: { texto: "Digisigncol", valor: 45, operacion: "sumar", correcta: true },
+                opcionDer: { texto: "Portal Antiguo", valor: 25, operacion: "restar", correcta: false }
+            },
+            {
+                tema: "Caso de Readmisión",
+                contexto: "Estudiante de 2025-2 no aprobó nada y tiene 'APLAZAMIENTO'. En 2026-1 este caso se clasifica como...",
+                opcionIzq: { texto: "Reintegro", valor: 30, operacion: "restar", correcta: false },
+                opcionDer: { texto: "Readmisión", valor: 40, operacion: "sumar", correcta: true }
+            },
+            {
+                tema: "Estudiantes Difíciles",
+                contexto: "Un estudiante exige hablar con un supervisor. Para dar manejo sin escalar, debes usar una frase de...",
+                opcionIzq: { texto: "Contención / Gestión", valor: 35, operacion: "sumar", correcta: true },
+                opcionDer: { texto: "Transferencia rápida", valor: 20, operacion: "restar", correcta: false }
+            },
+            {
+                tema: "Registro Asistencia",
+                contexto: "Falla el formulario de asistencia de encuentros. ¿Qué debe hacer el estudiante temporalmente?",
+                opcionIzq: { texto: "Descargar reporte Teams", valor: 50, operacion: "sumar", correcta: true },
+                opcionDer: { texto: "Esperar a fin de mes", valor: 40, operacion: "restar", correcta: false }
+            },
+            // NUEVOS COMUNICADOS AGREGADOS:
+            {
+                tema: "Ceremonias Presenciales",
+                contexto: "Para la ceremonia presencial, ¿cuántas invitaciones digitales se pueden descargar desde la AppQRGrados?",
+                opcionIzq: { texto: "2 graduando, 1 invitado", valor: 20, operacion: "restar", correcta: false },
+                opcionDer: { texto: "1 graduando, 2 invitados", valor: 40, operacion: "sumar", correcta: true }
+            },
+            {
+                tema: "Protocolo de Datos",
+                contexto: "Si un estudiante solicita ACTUALIZAR datos sensibles (celular/correo), ¿qué medida de seguridad aplicas?",
+                opcionIzq: { texto: "3 preguntas titularidad", valor: 45, operacion: "sumar", correcta: true },
+                opcionDer: { texto: "Últimos 4 dígitos cédula", valor: 30, operacion: "restar", correcta: false }
+            },
+            {
+                tema: "Derecho Virtual",
+                contexto: "Un estudiante de Derecho Virtual no tiene docente asignado. ¿Hacia dónde tipificas y derivas el ticket?",
+                opcionIzq: { texto: "Soporte Técnico IT", valor: 25, operacion: "restar", correcta: false },
+                opcionDer: { texto: "Área global Facultades", valor: 35, operacion: "sumar", correcta: true }
+            },
+            {
+                tema: "Ciberseguridad",
+                contexto: "Para proteger la cuenta de los estudiantes y evitar hackeos, la principal acción preventiva que promovemos es:",
+                opcionIzq: { texto: "Cambio de contraseñas", valor: 40, operacion: "sumar", correcta: true },
+                opcionDer: { texto: "No usar Wi-Fi en casa", valor: 15, operacion: "restar", correcta: false }
+            },
+            {
+                tema: "Posgrados Coterminal",
+                contexto: "Estudiante coterminal no ve materias inscritas para iniciar el 8 de abril. ¿Qué acción tomas?",
+                opcionIzq: { texto: "Dar info, NO derivar ticket", valor: 50, operacion: "sumar", correcta: true },
+                opcionDer: { texto: "Escalar a Tecnología", valor: 35, operacion: "restar", correcta: false }
+            },
+            {
+                tema: "Talleres FIDI Saber Pro",
+                contexto: "¿Cuándo se realizan los talleres exclusivos de Pruebas Saber para estudiantes de la FIDI?",
+                opcionIzq: { texto: "Lunes a Viernes 6pm", valor: 20, operacion: "restar", correcta: false },
+                opcionDer: { texto: "Sábados de marzo 4pm", valor: 30, operacion: "sumar", correcta: true }
+            }
+        ];
+
+        let selectedComunicados = [];
+
+        // =========================================
+        // VARIABLES GLOBALES
+        // =========================================
+        let gameState = 'START'; 
+        let tropas = 20;
+        let preguntasCorrectas = 0; 
+        let currentLevelIndex = 0;
+        let baseSpeed = canvas.height * 0.006;
+        let currentSpeed = baseSpeed;
+        
+        const player = { x: canvas.width / 2, y: canvas.height - 120, targetX: canvas.width / 2, baseRadius: 15 };
+        let currentGate = null;
+        let particles = [];
+        let floatingTexts = [];
+
+        let fightState = {
+            active: false, phase: 0, timer: 0, shake: 0,
+            bossX: 0, bossY: 0, bossHp: 100, maxBossHp: 100,
+            pX: 0, pY: 0, pHp: 0, maxPHp: 0
+        };
+
+        // =========================================
+        // CONTROLES Y SPAWN
+        // =========================================
+        function updatePlayerPosition(clientX) {
+            if (gameState !== 'PLAYING') return;
+            player.targetX = Math.max(30, Math.min(canvas.width - 30, clientX));
+        }
+        canvas.addEventListener('mousemove', e => updatePlayerPosition(e.clientX));
+        canvas.addEventListener('touchmove', e => updatePlayerPosition(e.touches[0].clientX));
+
+        function shuffleAndSelectQuestions() {
+            // Clonar y mezclar aleatoriamente el arreglo de 14 preguntas
+            let shuffled = [...allComunicados].sort(() => 0.5 - Math.random());
+            selectedComunicados = shuffled.slice(0, 5); // Tomamos solo 5
+        }
+
+        function spawnGate() {
+            if (currentLevelIndex >= 5) {
+                showPreBossScreen();
+                return;
+            }
+
+            document.getElementById('levelCount').innerText = currentLevelIndex + 1;
+            const data = selectedComunicados[currentLevelIndex];
+            
+            // Randomizar lado de respuesta correcta (A veces izq, a veces der)
+            const isLeftCorrect = Math.random() > 0.5;
+            let finalOpcionIzq, finalOpcionDer;
+
+            if (isLeftCorrect) {
+                finalOpcionIzq = data.opcionIzq.correcta ? data.opcionIzq : data.opcionDer;
+                finalOpcionDer = !data.opcionIzq.correcta ? data.opcionIzq : data.opcionDer;
+            } else {
+                finalOpcionIzq = !data.opcionIzq.correcta ? data.opcionIzq : data.opcionDer;
+                finalOpcionDer = data.opcionIzq.correcta ? data.opcionIzq : data.opcionDer;
+            }
+
+            currentGate = {
+                y: -100, passed: false,
+                tema: data.tema, contexto: data.contexto,
+                opcionIzq: finalOpcionIzq, opcionDer: finalOpcionDer
+            };
+        }
+
+        function showPreBossScreen() {
+            gameState = 'PRE_BOSS';
+            document.getElementById('ui-layer').classList.add('hidden');
+            document.getElementById('preBossScreen').classList.remove('hidden');
+            
+            document.getElementById('respuestasCorrectasDisplay').innerText = preguntasCorrectas;
+            document.getElementById('finalTroopsDisplay').innerText = tropas;
+        }
+
+        function triggerBossFight() {
+            document.getElementById('preBossScreen').classList.add('hidden');
+            gameState = 'BOSS_FIGHT';
+            
+            fightState = {
+                active: true, phase: 0, timer: 0, shake: 0,
+                bossX: canvas.width + 100, bossY: canvas.height / 2, bossHp: 100, maxBossHp: 100,
+                pX: -100, pY: canvas.height / 2, pHp: tropas, maxPHp: Math.max(1, tropas)
+            };
+        }
+
+        function createParticles(x, y, color) {
+            for (let i = 0; i < 25; i++) {
+                particles.push({ x: x, y: y, vx: (Math.random() - 0.5) * 15, vy: (Math.random() - 0.5) * 15, life: 1, color: color });
+            }
+        }
+        function createFloatingText(x, y, text, color) {
+            floatingTexts.push({ x: x, y: y, text: text, color: color, life: 1 });
+        }
+
+        // =========================================
+        // GAME LOOP & FISICAS
+        // =========================================
+        let lastTime = 0;
+        function loop(timestamp) {
+            lastTime = timestamp;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            if (gameState === 'PLAYING') {
+                updatePhysics();
+                drawEnvironment();
+                drawGates();
+                drawPlayer();
+                drawEffects();
+            } else if (gameState === 'BOSS_FIGHT') {
+                updateBossFight();
+                drawBossFight();
+                drawEffects();
+            }
+            requestAnimationFrame(loop);
+        }
+
+        function updatePhysics() {
+            player.x += (player.targetX - player.x) * 0.15;
+
+            if (currentGate && !currentGate.passed) {
+                currentGate.y += currentSpeed;
+
+                const slowMoStart = canvas.height * 0.15;
+                const slowMoEnd = canvas.height * 0.55;
+                const readingZone = document.getElementById('reading-zone');
+                const vignette = document.getElementById('vignette');
+
+                if (currentGate.y > slowMoStart && currentGate.y < slowMoEnd) {
+                    currentSpeed = baseSpeed * 0.15; 
+                    readingZone.style.opacity = '1'; vignette.style.opacity = '1';
+                    document.getElementById('comunicadoTema').innerText = currentGate.tema;
+                    document.getElementById('comunicadoContexto').innerText = currentGate.contexto;
+                } else {
+                    currentSpeed = baseSpeed;
+                    readingZone.style.opacity = '0'; vignette.style.opacity = '0';
+                }
+
+                if (currentGate.y > player.y - 20 && currentGate.y < player.y + 20) {
+                    currentGate.passed = true;
+                    resolveGateCollision();
+                }
+            }
+
+            particles.forEach(p => { p.x += p.vx; p.y += p.vy; p.life -= 0.02; });
+            particles = particles.filter(p => p.life > 0);
+            floatingTexts.forEach(ft => { ft.y -= 2; ft.life -= 0.02; });
+            floatingTexts = floatingTexts.filter(ft => ft.life > 0);
+        }
+
+        function resolveGateCollision() {
+            const isLeft = player.x < canvas.width / 2;
+            const chosenOption = isLeft ? currentGate.opcionIzq : currentGate.opcionDer;
+            
+            if (chosenOption.correcta) {
+                preguntasCorrectas++;
+                tropas += chosenOption.valor;
+                createParticles(player.x, player.y, '#00ffcc');
+                createFloatingText(player.x, player.y - 50, `+${chosenOption.valor}`, '#00ffcc');
+            } else {
+                tropas -= chosenOption.valor;
+                createParticles(player.x, player.y, '#ff4757');
+                createFloatingText(player.x, player.y - 50, `-${chosenOption.valor}`, '#ff4757');
+            }
+
+            document.getElementById('troopCount').innerText = tropas;
+
+            if (tropas <= 0) {
+                tropas = 0; document.getElementById('troopCount').innerText = tropas;
+                endGame(false, "Tu ejército fue destruido por la ignorancia antes de llegar al jefe.");
+                return;
+            }
+
+            currentLevelIndex++;
+            setTimeout(spawnGate, 1000);
+        }
+
+        // =========================================
+        // LÓGICA DE BATALLA ESTRICTA
+        // =========================================
+        function updateBossFight() {
+            fightState.timer++;
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2;
+
+            particles.forEach(p => { p.x += p.vx; p.y += p.vy; p.life -= 0.03; });
+            particles = particles.filter(p => p.life > 0);
+
+            if (fightState.phase === 0) {
+                fightState.pX += (cx - 100 - fightState.pX) * 0.1;
+                fightState.bossX += (cx + 100 - fightState.bossX) * 0.1;
+                if (fightState.timer > 60) { fightState.phase = 1; fightState.timer = 0; }
+            } else if (fightState.phase === 1) {
+                if (fightState.timer > 50) { fightState.phase = 2; fightState.timer = 0; }
+            } else if (fightState.phase === 2) {
+                fightState.pX += (cx - 20 - fightState.pX) * 0.3;
+                fightState.bossX += (cx + 20 - fightState.bossX) * 0.3;
+                
+                if (Math.abs(fightState.pX - (cx - 20)) < 5) {
+                    fightState.shake = 20; 
+                    createParticles(cx, cy, '#ff4757'); createParticles(cx, cy, '#00ffcc');
+                    fightState.phase = 3; fightState.timer = 0;
+                }
+            } else if (fightState.phase === 3) {
+                fightState.shake = Math.max(0, fightState.shake - 0.5);
+                let progress = Math.min(1, fightState.timer / 60); 
+                
+                // EVALUACIÓN ESTRICTA: 
+                // 5 correctas = Gana. 4 = Pelea reñida, pierde. <4 = Pierde rápido.
+                if (preguntasCorrectas === 5) {
+                    fightState.bossHp = 100 * (1 - progress);
+                    fightState.pHp = fightState.maxPHp - (fightState.maxPHp * 0.2 * progress);
+                } else if (preguntasCorrectas === 4) {
+                    fightState.bossHp = 100 - (90 * progress);
+                    fightState.pHp = fightState.maxPHp * (1 - progress);
+                } else {
+                    fightState.bossHp = 100 - (40 * progress);
+                    fightState.pHp = fightState.maxPHp * (1 - progress);
+                }
+
+                if (fightState.timer > 80) { fightState.phase = 4; fightState.timer = 0; }
+            } else if (fightState.phase === 4) {
+                if (preguntasCorrectas === 5) {
+                    fightState.bossX += 30; fightState.bossY -= 10; 
+                } else {
+                    fightState.pX -= 30; fightState.pY -= 10; 
+                }
+                if (fightState.timer > 40) { fightState.phase = 5; }
+            } else if (fightState.phase === 5) {
+                if (preguntasCorrectas === 5) {
+                    endGame(true, "¡PERFECCIÓN! Comprendiste todos los comunicados y aniquilaste la Desinformación.");
+                } else if (preguntasCorrectas === 4) {
+                    endGame(false, "¡Estuvo cerca! Le bajaste mucha vida al jefe, pero un solo error bastó para perder. Intenta sacar 5 de 5.");
+                } else {
+                    endGame(false, "Te faltó mucha comprensión lectora. La Desinformación te aplastó fácilmente.");
+                }
+                fightState.active = false;
+            }
+        }
+
+        // =========================================
+        // DIBUJAR ENTORNO Y SPRITES
+        // =========================================
+        function drawBossFight() {
+            ctx.save();
+            if (fightState.shake > 0) {
+                const dx = (Math.random() - 0.5) * fightState.shake;
+                const dy = (Math.random() - 0.5) * fightState.shake;
+                ctx.translate(dx, dy);
+            }
+
+            ctx.fillStyle = 'rgba(255, 0, 0, 0.05)'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.strokeStyle = '#ff4757'; ctx.lineWidth = 5; ctx.strokeRect(20, 20, canvas.width - 40, canvas.height - 40);
+
+            // Barras de Vida
+            const barW = (canvas.width / 2) - 60; const barH = 25;
+            
+            // Player Bar
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.2)'; ctx.fillRect(40, 40, barW, barH);
+            ctx.fillStyle = '#00ffcc'; ctx.fillRect(40 + barW - (barW * (fightState.pHp / fightState.maxPHp)), 40, barW * (fightState.pHp / fightState.maxPHp), barH);
+            ctx.fillStyle = '#fff'; ctx.font = 'bold 16px "Segoe UI"'; ctx.textAlign = 'left'; ctx.fillText("PELEADOR LUZ", 40, 30);
+
+            // Boss Bar
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.2)'; ctx.fillRect(canvas.width - 40 - barW, 40, barW, barH);
+            ctx.fillStyle = '#ff4757'; ctx.fillRect(canvas.width - 40 - barW, 40, barW * (fightState.bossHp / 100), barH);
+            ctx.fillStyle = '#fff'; ctx.textAlign = 'right'; ctx.fillText("DESINFORMACIÓN", canvas.width - 40, 30);
+
+            const cx = canvas.width / 2; const cy = canvas.height / 2;
+            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+
+            if (fightState.phase === 1) {
+                ctx.fillStyle = '#f1c40f'; ctx.font = 'bold 80px "Segoe UI"'; ctx.fillText("VS", cx, cy - 150);
+            } else if (fightState.phase === 2 && fightState.timer < 10) {
+                ctx.fillStyle = '#ff4757'; ctx.font = 'bold 60px "Segoe UI"'; ctx.fillText("¡PELEEN!", cx, cy - 150);
+            } else if (fightState.phase === 4) {
+                ctx.fillStyle = preguntasCorrectas === 5 ? '#00ffcc' : '#ff4757';
+                ctx.font = 'bold 40px "Segoe UI"';
+                ctx.fillText(preguntasCorrectas === 5 ? "¡VICTORIA ÉPICA!" : "FATALIDAD", cx, cy - 180);
+            }
+
+            // --- DIBUJAR SPRITES (IMÁGENES) ---
+            const spriteSize = 140;
+
+            // Dibujar a "Peleador Luz"
+            if(imgPlayer.complete && imgPlayer.naturalHeight !== 0) {
+                ctx.shadowBlur = 20; ctx.shadowColor = '#00ffcc';
+                ctx.drawImage(imgPlayer, fightState.pX - (spriteSize/2), fightState.pY - (spriteSize/2), spriteSize, spriteSize);
+                ctx.shadowBlur = 0;
+            } else {
+                ctx.fillStyle = '#00ffcc'; ctx.beginPath(); ctx.arc(fightState.pX, fightState.pY, 50, 0, Math.PI * 2); ctx.fill();
+            }
+
+            // Dibujar a "Desinformación"
+            if(imgBoss.complete && imgBoss.naturalHeight !== 0) {
+                ctx.shadowBlur = 30; ctx.shadowColor = '#ff4757';
+                ctx.drawImage(imgBoss, fightState.bossX - (spriteSize/2), fightState.bossY - (spriteSize/2), spriteSize, spriteSize);
+                ctx.shadowBlur = 0;
+            } else {
+                ctx.fillStyle = '#ff4757'; ctx.beginPath();
+                for (let i = 0; i < 8; i++) {
+                    const angle = (i * Math.PI) / 4;
+                    const r = i % 2 === 0 ? 60 : 40;
+                    const x = fightState.bossX + Math.cos(angle) * r;
+                    const y = fightState.bossY + Math.sin(angle) * r;
+                    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+                }
+                ctx.closePath(); ctx.fill();
+            }
+
+            ctx.restore();
+        }
+
+        function drawEnvironment() {
+            ctx.strokeStyle = 'rgba(255,255,255,0.1)'; ctx.lineWidth = 2; ctx.setLineDash([10, 15]);
+            ctx.beginPath(); ctx.moveTo(canvas.width / 2, 0); ctx.lineTo(canvas.width / 2, canvas.height); ctx.stroke(); ctx.setLineDash([]);
+        }
+
+        function drawGates() {
+            if (!currentGate || currentGate.passed) return;
+            const y = currentGate.y; const h = 80; 
+            
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.1)'; ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)'; ctx.lineWidth = 2;
+
+            ctx.beginPath(); ctx.roundRect(10, y, (canvas.width / 2) - 15, h, 15); ctx.fill(); ctx.stroke();
+            ctx.beginPath(); ctx.roundRect((canvas.width / 2) + 5, y, (canvas.width / 2) - 15, h, 15); ctx.fill(); ctx.stroke();
+
+            ctx.fillStyle = '#ffffff'; ctx.font = 'bold 16px "Segoe UI"'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            
+            function wrapText(text, x, yMax) {
+                if(text.length > 20) {
+                    let splitIdx = text.indexOf(' ', 15);
+                    if(splitIdx === -1) splitIdx = text.length;
+                    ctx.fillText(text.substring(0, splitIdx), x, yMax - 10);
+                    ctx.fillText(text.substring(splitIdx), x, yMax + 10);
+                } else {
+                    ctx.fillText(text, x, yMax);
+                }
+            }
+
+            wrapText(currentGate.opcionIzq.texto, canvas.width / 4, y + (h/2));
+            wrapText(currentGate.opcionDer.texto, (canvas.width / 4) * 3, y + (h/2));
+            
+            ctx.fillStyle = '#f1c40f'; ctx.font = '14px "Segoe UI"';
+            let symI = currentGate.opcionIzq.operacion === 'sumar' ? '+' : '-';
+            let symD = currentGate.opcionDer.operacion === 'sumar' ? '+' : '-';
+            ctx.fillText(`[ ${symI}${currentGate.opcionIzq.valor} ]`, canvas.width / 4, y + h - 15);
+            ctx.fillText(`[ ${symD}${currentGate.opcionDer.valor} ]`, (canvas.width / 4) * 3, y + h - 15);
+        }
+
+        function drawPlayer() {
+            const displayRadius = player.baseRadius + (Math.log(tropas + 1) * 8);
+
+            ctx.shadowBlur = 20; ctx.shadowColor = 'var(--primary)';
+            ctx.fillStyle = 'rgba(0, 255, 204, 0.2)'; ctx.beginPath(); ctx.arc(player.x, player.y, displayRadius + 5, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = 'var(--primary)'; ctx.shadowBlur = 0; ctx.beginPath(); ctx.arc(player.x, player.y, displayRadius, 0, Math.PI * 2); ctx.fill();
+
+            ctx.fillStyle = '#0f0f1b'; ctx.font = 'bold 20px "Segoe UI"'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillText(tropas, player.x, player.y);
+        }
+
+        function drawEffects() {
+            particles.forEach(p => { ctx.fillStyle = p.color; ctx.globalAlpha = p.life; ctx.beginPath(); ctx.arc(p.x, p.y, 3, 0, Math.PI * 2); ctx.fill(); });
+            ctx.globalAlpha = 1;
+            floatingTexts.forEach(ft => { ctx.fillStyle = ft.color; ctx.globalAlpha = ft.life; ctx.font = 'bold 24px "Segoe UI"'; ctx.textAlign = 'center'; ctx.fillText(ft.text, ft.x, ft.y); });
+            ctx.globalAlpha = 1;
+        }
+
+        // =========================================
+        // CONTROL DE ESTADOS DEL JUEGO
+        // =========================================
+        function startGame() {
+            document.getElementById('startScreen').classList.add('hidden');
+            tropas = 20; 
+            preguntasCorrectas = 0;
+            currentLevelIndex = 0;
+            document.getElementById('troopCount').innerText = tropas;
+            
+            shuffleAndSelectQuestions(); 
+            
+            gameState = 'PLAYING';
+            spawnGate();
+        }
+
+        function endGame(isVictory, message) {
+            gameState = 'GAMEOVER';
+            document.getElementById('endScreen').classList.remove('hidden');
+            
+            document.getElementById('endTitle').innerText = isVictory ? "¡Misión Cumplida!" : "Misión Fallida";
+            document.getElementById('endTitle').style.color = isVictory ? "var(--primary)" : "var(--danger)";
+            document.getElementById('endMessage').innerText = message;
+            
+            const polipuntos = isVictory ? 100 : 0;
+            document.getElementById('finalScore').innerText = polipuntos;
+        }
+
+        requestAnimationFrame(loop);
+    </script>
+</body>
+</html>
