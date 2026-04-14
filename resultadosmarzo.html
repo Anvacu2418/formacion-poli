@@ -3,16 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Poli - Marzo</title>
+    <title>Dashboard Poli - Resultados Marzo</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap');
+        
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden; /* Evita scroll innecesario en modo App */
+        }
+
         body {
             font-family: 'Montserrat', sans-serif;
-            background-color: #e2e8f0;
+            background-color: #ffffff;
             color: #1b2045;
         }
+
         /* Colores Marca Poli */
         .text-poli-blue { color: #1b2045; }
         .bg-poli-blue { background-color: #1b2045; }
@@ -24,11 +33,10 @@
         .glass-card {
             background: #ffffff;
             border-radius: 12px;
-            box-shadow: 0 8px 24px rgba(27, 32, 69, 0.05);
+            box-shadow: 0 4px 12px rgba(27, 32, 69, 0.05);
             border: 1px solid rgba(226, 232, 240, 0.8);
         }
         
-        /* Contraste elegante reverso */
         .glass-card-back {
             background: linear-gradient(135deg, #1b2045 0%, #0d1024 100%);
             border-radius: 12px;
@@ -70,30 +78,24 @@
         .flip-front, .flip-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; top: 0; left: 0; border-radius: 12px; }
         .flip-back { transform: rotateY(180deg); }
         
-        /* 16:9 Slide Formatter Estricto */
-        .slide-wrapper {
+        /* Ajuste para ocupar toda la pantalla */
+        .dashboard-wrapper {
             width: 100%;
-            max-width: 1280px;
-            aspect-ratio: 16 / 9;
-            background: #ffffff;
-            box-shadow: 0 20px 50px rgba(0,0,0, 0.1);
-            overflow: hidden;
+            height: 100vh;
             display: flex;
             flex-direction: column;
-            padding: 3rem 4rem;
-            margin: 0 auto;
+            padding: 1.5rem 2.5rem;
         }
-        .clickable { cursor: pointer; transition: transform 0.3s ease; }
-        .clickable:hover { transform: translateY(-4px); }
+
         .title-spacing { letter-spacing: -0.02em; }
     </style>
 </head>
-<body class="min-h-screen flex items-center justify-center p-4">
+<body>
 
-    <div class="slide-wrapper relative">
+    <div class="dashboard-wrapper relative">
         
         <!-- Header -->
-        <header class="flex justify-between items-end border-b border-gray-100 pb-3 mb-8 shrink-0">
+        <header class="flex justify-between items-end border-b border-gray-100 pb-3 mb-6 shrink-0">
             <div>
                 <h2 class="text-poli-cyan font-bold tracking-widest uppercase text-[10px] mb-1">Politécnico Grancolombiano</h2>
                 <h1 class="text-3xl font-extrabold text-poli-blue title-spacing">Ecosistema de Servicio & Formación <span class="text-poli-cyan font-light">| Marzo</span></h1>
@@ -105,17 +107,16 @@
         </header>
 
         <!-- Main Grid - 3 Pillars -->
-        <div class="grid grid-cols-3 gap-8 flex-grow mb-8">
+        <div class="grid grid-cols-3 gap-6 flex-grow mb-6">
             
             <!-- Column 1: SABER (Formación) -->
             <div class="perspective clickable" onclick="this.classList.toggle('flipped')">
                 <div class="flip-inner">
-                    <!-- FRONT: Versión Original con colores en botones -->
                     <div class="flip-front glass-card p-6 border-t-4 border-poli-blue flex flex-col justify-between">
                         <div>
                             <div class="flex items-center mb-4">
                                 <i class="fas fa-brain text-xl text-poli-blue mr-3"></i>
-                                <h3 class="text-lg font-bold text-poli-blue">Saber <span class="text-gray-400 font-normal text-base">/ Formación</span></h3>
+                                <h3 class="text-lg font-bold text-poli-blue uppercase">Saber / Formación</h3>
                             </div>
                             <div class="flex justify-between items-center mb-4">
                                 <div class="circle-chart chart-pink shadow-sm mx-auto md:mx-0 relative">
@@ -147,7 +148,6 @@
                             </div>
                         </div>
                     </div>
-                    <!-- BACK: Estrategia Feynman Ajustada -->
                     <div class="flip-back glass-card-back p-6 text-white flex flex-col justify-start relative overflow-hidden">
                         <div class="absolute -right-4 -bottom-4 opacity-5 text-8xl pointer-events-none"><i class="fas fa-chalkboard-teacher"></i></div>
                         <div class="flex items-center border-b border-white/20 pb-3 mb-4 z-10">
@@ -172,7 +172,7 @@
                         <div>
                             <div class="flex items-center mb-4">
                                 <i class="fas fa-headset text-xl text-poli-cyan mr-3"></i>
-                                <h3 class="text-lg font-bold text-poli-blue">Hacer <span class="text-gray-400 font-normal text-base">/ Calidad</span></h3>
+                                <h3 class="text-lg font-bold text-poli-blue uppercase">Hacer / Calidad</h3>
                             </div>
                             <div class="flex justify-between items-center mb-4">
                                 <div class="circle-chart chart-cyan shadow-sm mx-auto md:mx-0 relative">
@@ -223,25 +223,21 @@
                 </div>
             </div>
 
-            <!-- Column 3: ATRIBUTOS / RADIOGRAFÍA (DETALLADA) -->
+            <!-- Column 3: ATRIBUTOS / RADIOGRAFÍA -->
             <div class="perspective clickable" onclick="this.classList.toggle('flipped')">
                 <div class="flip-inner">
-                    <!-- FRONT: Top Fortalezas vs Mayor Afectación -->
                     <div class="flip-front glass-card p-6 border-t-4 border-poli-pink flex flex-col justify-between">
                         <div>
                             <div class="flex items-center mb-4">
                                 <i class="fas fa-microscope text-xl text-poli-pink mr-3"></i>
-                                <h3 class="text-lg font-bold text-poli-blue">Atributos <span class="text-gray-400 font-normal text-base">/ Detalle</span></h3>
+                                <h3 class="text-lg font-bold text-poli-blue uppercase">Atributos / Detalle</h3>
                             </div>
-                            
-                            <!-- Top Fortalezas (Los 3 mejores) -->
                             <div class="mb-4">
-                                <p class="text-[9px] font-bold text-green-600 uppercase mb-2">Top 3 Fortalezas (Adherencia)</p>
+                                <p class="text-[9px] font-bold text-green-600 uppercase mb-2">Top 3 Fortalezas</p>
                                 <div class="space-y-2">
                                     <div class="flex flex-col gap-0.5">
                                         <div class="flex justify-between text-[9px] font-bold text-gray-600 px-0.5">
-                                            <span>Protocolos Apertura/Cierre</span>
-                                            <span>100%</span>
+                                            <span>Apertura/Cierre</span><span>100%</span>
                                         </div>
                                         <div class="w-full bg-gray-100 rounded-full h-1 overflow-hidden">
                                             <div class="bg-green-500 h-full" style="width: 100%"></div>
@@ -249,8 +245,7 @@
                                     </div>
                                     <div class="flex flex-col gap-0.5">
                                         <div class="flex justify-between text-[9px] font-bold text-gray-600 px-0.5">
-                                            <span>Herramientas de Consulta</span>
-                                            <span>98%</span>
+                                            <span>Herramientas Consulta</span><span>98%</span>
                                         </div>
                                         <div class="w-full bg-gray-100 rounded-full h-1 overflow-hidden">
                                             <div class="bg-green-500 h-full" style="width: 98%"></div>
@@ -258,8 +253,7 @@
                                     </div>
                                     <div class="flex flex-col gap-0.5">
                                         <div class="flex justify-between text-[9px] font-bold text-gray-600 px-0.5">
-                                            <span>Registro y Tipificación</span>
-                                            <span>97%</span>
+                                            <span>Tipificación</span><span>97%</span>
                                         </div>
                                         <div class="w-full bg-gray-100 rounded-full h-1 overflow-hidden">
                                             <div class="bg-green-500 h-full" style="width: 97%"></div>
@@ -267,24 +261,19 @@
                                     </div>
                                 </div>
                             </div>
-
-                            <!-- Oportunidad de Mejora (Mayor afectación) -->
                             <div class="border-t border-gray-100 pt-3">
-                                <p class="text-[9px] font-bold text-poli-pink uppercase mb-2">Atributo con Mayor Afectación</p>
+                                <p class="text-[9px] font-bold text-poli-pink uppercase mb-1.5">Mayor Afectación</p>
                                 <div class="flex flex-col gap-0.5">
                                     <div class="flex justify-between text-[10px] font-extrabold text-poli-pink px-0.5">
-                                        <span>Indagación y Escucha Activa</span>
-                                        <span>85%</span>
+                                        <span>Indagación y Escucha</span><span>85%</span>
                                     </div>
                                     <div class="w-full bg-pink-100 rounded-full h-2 overflow-hidden border border-pink-200">
-                                        <div class="bg-poli-pink h-full animate-pulse" style="width: 85%"></div>
+                                        <div class="bg-poli-pink h-full" style="width: 85%"></div>
                                     </div>
-                                    <p class="text-[8px] text-gray-500 mt-1 italic leading-tight">Causa raíz: "Modo Automático" y afán de respuesta inmediata.</p>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <!-- BACK: Refuerzo Individual -->
                     <div class="flip-back glass-card-back p-6 text-white flex flex-col justify-start relative overflow-hidden">
                         <div class="absolute -right-4 -bottom-4 opacity-5 text-8xl pointer-events-none"><i class="fas fa-sync-alt"></i></div>
                         <div class="flex items-center border-b border-white/20 pb-3 mb-4 z-10">
@@ -296,7 +285,7 @@
                         <p class="text-[10px] text-gray-300 leading-relaxed font-light z-10 pr-2">
                             Atacamos las brechas mediante <strong class="text-white font-semibold">Refuerzos Individuales</strong> con los expertos detectados.
                             <br><br>
-                            <strong class="text-poli-cyan">Plan de Acción:</strong> Decodificación de procesos de <span class="text-white font-medium">Reintegros y Novedades de Programa</span>. Buscamos mitigar el error técnico y potenciar la lectura analítica para cerrar casos con precisión.
+                            <strong class="text-poli-cyan">Plan de Acción:</strong> Decodificación de procesos de <span class="text-white font-medium">Reintegros y Novedades de Programa</span>. Buscamos mitigar el error técnico y potenciar la lectura analítica.
                         </p>
                     </div>
                 </div>
@@ -305,7 +294,7 @@
         </div>
 
         <!-- Bottom Row -->
-        <div class="grid grid-cols-3 gap-8 shrink-0 h-44">
+        <div class="grid grid-cols-3 gap-6 shrink-0 h-48">
             
             <!-- Col 1: VENTA CONSULTIVA 2.0 -->
             <div class="glass-card p-5 flex flex-col justify-between border-l-4 border-l-poli-blue">
@@ -322,15 +311,13 @@
             <!-- Col 2: ANÁLISIS ESCALAMIENTOS -->
             <div class="glass-card p-4 flex flex-col justify-start border-l-4 border-l-poli-cyan overflow-hidden bg-white">
                 <h4 class="text-poli-blue font-bold uppercase tracking-wider text-[11px] mb-2"><i class="fas fa-shield-alt text-poli-cyan mr-1"></i> ANÁLISIS ESCALAMIENTOS</h4>
-                
                 <div class="flex justify-between items-center mb-3">
                     <div class="flex items-end gap-2">
                         <p class="text-4xl font-extrabold text-poli-blue leading-none">10</p>
                         <span class="text-[10px] text-gray-500 font-bold mb-0.5 uppercase tracking-wider">Quejas Totales</span>
                     </div>
-                    <span class="bg-green-50 text-green-700 text-[9px] font-extrabold px-3 py-1 rounded-full border border-green-200 shadow-sm">70% NO PROCEDENTES</span>
+                    <span class="bg-green-50 text-green-700 text-[9px] font-extrabold px-3 py-1 rounded-full border border-green-200">70% NO PROCEDENTES</span>
                 </div>
-                
                 <div class="text-[10px] text-gray-700 leading-tight space-y-1.5 border-t border-gray-100 pt-2 font-medium">
                     <p class="flex items-start"><span class="text-poli-pink mr-2">•</span><span><strong class="text-poli-pink">Práctica IV:</strong> Simultaneidad errónea Prácticas V y VI.</span></p>
                     <p class="flex items-start"><span class="text-poli-pink mr-2">•</span><span><strong class="text-poli-pink">Reintegro:</strong> Falta de lectura técnica y escucha activa.</span></p>
@@ -341,29 +328,15 @@
                 </div>
             </div>
 
-            <!-- Col 3: FOCO ESTRATÉGICO MARZO -->
-            <div class="glass-card p-4 flex flex-col justify-start border-l-4 border-l-poli-pink overflow-y-auto">
+            <!-- Col 3: FOCO ESTRATÉGICO MARZO (Ajuste Final) -->
+            <div class="glass-card p-4 flex flex-col justify-start border-l-4 border-l-poli-pink overflow-hidden">
                 <h4 class="text-poli-blue font-bold uppercase tracking-wider text-[11px] mb-3"><i class="fas fa-crosshairs text-poli-pink mr-1"></i> FOCO ESTRATÉGICO MARZO</h4>
-                
-                <div class="space-y-2.5 text-[10.5px] text-gray-700 font-semibold">
-                    <div class="flex items-start">
-                        <i class="fas fa-book-open text-poli-cyan mt-0.5 mr-2 w-4 text-center shrink-0"></i>
-                        <div class="leading-tight"><strong class="text-poli-blue">Académico:</strong> Grados 2026-1, Prácticas, Cursos Profundización.</div>
-                    </div>
-                    
-                    <div class="flex items-start">
-                        <i class="fas fa-wallet text-poli-blue mt-0.5 mr-2 w-4 text-center shrink-0"></i>
-                        <div class="leading-tight"><strong class="text-poli-blue">Financiero:</strong> Nueva Línea CrediPoli 40/60.</div>
-                    </div>
-                    
-                    <div class="flex items-start">
-                        <i class="fas fa-laptop-code text-poli-cyan mt-0.5 mr-2 w-4 text-center shrink-0"></i>
-                        <div class="leading-tight"><strong class="text-poli-blue">Tecnológico:</strong> Códigos de acceso (Consulta alumno).</div>
-                    </div>
-                    
-                    <div class="flex items-start bg-pink-50/70 p-1.5 rounded border border-pink-100">
-                        <i class="fas fa-bullseye text-poli-pink mt-0.5 mr-2 w-4 text-center shrink-0"></i>
-                        <div class="leading-tight"><strong class="text-poli-pink">Comercial:</strong> Cierres comerciales y Tips manejo estudiantes difíciles.</div>
+                <div class="space-y-2.5 text-[10.5px] text-gray-700 font-semibold leading-tight">
+                    <p><strong class="text-poli-blue">Académico:</strong> Grados 2026-1, Cursos Profundización, Licenciaturas, Talleres Saber Pro.</p>
+                    <p><strong class="text-poli-blue">Financiero:</strong> Alivios Financieros, Nueva Línea CrediPoli 40/60.</p>
+                    <p><strong class="text-poli-blue">Tecnológico:</strong> Alertas Tecnología, Nuevo Protocolo de Datos.</p>
+                    <div class="mt-2 bg-pink-50/70 p-2 rounded border border-pink-100">
+                        <p class="text-poli-pink"><i class="fas fa-bullseye mr-2"></i><strong class="uppercase text-[9px]">Comercial:</strong> Cierres y manejo de estudiantes difíciles.</p>
                     </div>
                 </div>
             </div>
