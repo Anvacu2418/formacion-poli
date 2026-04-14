@@ -12,6 +12,18 @@
     <!-- Babel -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     
+    <!-- Polyfill para que el Drag & Drop (Arrastrar) funcione en Celulares -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mobile-drag-drop@2.3.0-rc.2/default.css">
+    <script src="https://cdn.jsdelivr.net/npm/mobile-drag-drop@2.3.0-rc.2/index.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            MobileDragDrop.polyfill({
+                dragImageTranslateOverride: MobileDragDrop.scrollBehaviourDragImageTranslateOverride
+            });
+            window.addEventListener('touchmove', function() {}, {passive: false});
+        });
+    </script>
+    
     <style>
         body { background-color: #121212; color: #ffffff; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
         .animate-fade-in { animation: fadeIn 0.4s ease-out; }
@@ -22,8 +34,10 @@
             background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2300ff88%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
             background-repeat: no-repeat; background-position: right .7rem top 50%; background-size: .65rem auto;
         }
-        /* Para asegurar que el contenido no quede oculto detrás de la barra flotante */
+        /* Espacio para la barra flotante */
         .content-padding { padding-bottom: 120px; }
+        /* Touch action para permitir arrastre en móviles */
+        .draggable-card { touch-action: none; user-select: none; -webkit-user-select: none; }
     </style>
 </head>
 <body>
@@ -37,9 +51,7 @@
         const { useState, useEffect, useCallback } = React;
 
         // ==========================================
-        // 🔴 CONFIGURACIÓN DE FIREBASE AQUÍ 🔴
-        // Reemplaza el null de la línea de abajo con tu objeto de Firebase cuando lo alojes externamente.
-        // Ejemplo: const MI_FIREBASE_CONFIG = { apiKey: "AIzaSy...", authDomain: "...", projectId: "..." };
+        // 🔴 TU CONFIGURACIÓN DE FIREBASE 🔴
         const MI_FIREBASE_CONFIG = {
           apiKey: "AIzaSyAiZ81kyP_rlXTdgCQKFsLdYmYLpkxmCAI",
           authDomain: "proyecto-omnicanal.firebaseapp.com",
@@ -53,18 +65,15 @@
 
         let app, auth, db, isOffline = false;
         try {
-            const firebaseConfig = MI_FIREBASE_CONFIG || (typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null);
-            if (firebaseConfig) {
-                app = initializeApp(firebaseConfig);
-                auth = getAuth(app);
-                db = getFirestore(app);
-            } else {
-                isOffline = true;
-            }
+            app = initializeApp(MI_FIREBASE_CONFIG);
+            auth = getAuth(app);
+            db = getFirestore(app);
         } catch (e) {
             isOffline = true;
+            console.error("Error iniciando Firebase:", e);
         }
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'polipuntos-app';
+        const appId = 'polipuntos-app';
+        const getCollectionPath = () => 'polipuntos_players';
 
         const shuffleArray = (array) => {
             const newArr = [...array];
@@ -120,14 +129,18 @@
             const [score, setScore] = useState(0);
             const [isLocked, setIsLocked] = useState(false);
             const [moduleResult, setModuleResult] = useState(null);
+            const [joinError, setJoinError] = useState('');
 
             // ================= FIREBASE AUTH =================
             useEffect(() => {
                 if (isOffline) return;
                 const initAuth = async () => {
-                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                        await signInWithCustomToken(auth, __initial_auth_token);
-                    } else { await signInAnonymously(auth); }
+                    try {
+                        await signInAnonymously(auth); 
+                    } catch (error) {
+                        console.error("Error de autenticación:", error);
+                        setJoinError("Asegúrate de que el Inicio de Sesión Anónimo esté activado en Firebase.");
+                    }
                 };
                 initAuth();
                 const unsubscribe = onAuthStateChanged(auth, setUser);
@@ -137,25 +150,30 @@
             // ================= HOST LISTENER =================
             useEffect(() => {
                 if (!user || role !== 'host' || isOffline) return;
-                const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'polipuntos_players');
+                const colRef = collection(db, getCollectionPath());
                 const unsub = onSnapshot(colRef, (snapshot) => {
                     const allPlayers = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
                     setRoomPlayers(allPlayers.filter(p => p.pin === pin));
-                }, (err) => console.error(err));
+                }, (err) => console.error("Error leyendo jugadores:", err));
                 return () => unsub();
             }, [user, role, pin]);
 
+            // ================= ACCIONES PRINCIPALES =================
             const syncScore = async (newScore) => {
                 if (isOffline || !playerId) return;
-                const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'polipuntos_players', playerId);
-                await updateDoc(docRef, { score: newScore });
+                try {
+                    const docRef = doc(db, getCollectionPath(), playerId);
+                    await updateDoc(docRef, { score: newScore });
+                } catch (err) { console.error("Error sincronizando puntaje:", err); }
             };
 
             const finishGame = async () => {
                 setCurrentModule('finish');
                 if (isOffline || !playerId) return;
-                const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'polipuntos_players', playerId);
-                await updateDoc(docRef, { status: 'finished', finishedAt: Date.now() });
+                try {
+                    const docRef = doc(db, getCollectionPath(), playerId);
+                    await updateDoc(docRef, { status: 'finished', finishedAt: Date.now() });
+                } catch (err) { console.error("Error finalizando juego:", err); }
             };
 
             const createRoom = () => {
@@ -166,18 +184,40 @@
             const joinRoom = async (e) => {
                 e.preventDefault();
                 if (!pin || !playerName) return;
-                setRole('player');
+                setJoinError('');
+                
                 if (!isOffline && user) {
-                    const newPlayerId = `${pin}_${user.uid}`;
-                    setPlayerId(newPlayerId);
-                    const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'polipuntos_players', newPlayerId);
-                    await setDoc(docRef, { pin, name: playerName, score: 0, status: 'playing', createdAt: Date.now() });
+                    try {
+                        const newPlayerId = `${pin}_${user.uid}`;
+                        setPlayerId(newPlayerId);
+                        const docRef = doc(db, getCollectionPath(), newPlayerId);
+                        await setDoc(docRef, { pin, name: playerName, score: 0, status: 'playing', createdAt: Date.now() });
+                        setRole('player');
+                        setCurrentModule('dnd');
+                    } catch (error) {
+                        console.error("Error al unirse:", error);
+                        setJoinError("Firebase rechazó el permiso. Asegúrate de que las reglas de Firestore estén en Modo Prueba.");
+                    }
+                } else if (isOffline) {
+                    setRole('player'); setCurrentModule('dnd');
+                } else {
+                    setJoinError("Conectando a la base de datos... intenta de nuevo.");
                 }
-                setCurrentModule('dnd');
+            };
+
+            // ¡AQUÍ ESTÁ LA MAGIA QUE ARREGLA EL BUG DEL BOTÓN!
+            const handleNextModule = (nextScreen) => {
+                setIsLocked(false);
+                setModuleResult(null);
+                if (nextScreen === 'finish') {
+                    finishGame();
+                } else {
+                    setCurrentModule(nextScreen);
+                }
             };
 
             // ==========================================
-            // MÓDULO 1: SELECCIONAR Y ASIGNAR (Adaptado Móvil)
+            // MÓDULO 1: ARRASTRAR Y SOLTAR (DND)
             // ==========================================
             const [cards, setCards] = useState([
                 { id: 'c1', text: '75 segundos para tipificar', type: 'genesys', zone: 'pool' },
@@ -189,21 +229,24 @@
                 { id: 'c7', text: 'Time out si no tipificas', type: 'genesys', zone: 'pool' },
                 { id: 'c8', text: 'Dejar resumen en notas', type: 'live', zone: 'pool' }
             ]);
-            const [selectedCard, setSelectedCard] = useState(null);
 
-            const handleCardClick = (id) => {
-                if (isLocked) return;
-                setSelectedCard(selectedCard === id ? null : id);
+            const dndDragStart = (e, id) => {
+                if (isLocked) { e.preventDefault(); return; }
+                e.dataTransfer.setData('cardId', id);
+                e.dataTransfer.effectAllowed = 'move';
             };
 
-            const handleZoneClick = (zone) => {
-                if (isLocked || !selectedCard) return;
-                setCards(cards.map(c => c.id === selectedCard ? { ...c, zone } : c));
-                setSelectedCard(null);
+            const dndDrop = (e, zone) => {
+                e.preventDefault();
+                if (isLocked) return;
+                const id = e.dataTransfer.getData('cardId');
+                if (id) {
+                    setCards(prevCards => prevCards.map(c => c.id === id ? { ...c, zone } : c));
+                }
             };
             
             const validateDnd = useCallback(() => {
-                setIsLocked(true); setSelectedCard(null);
+                setIsLocked(true);
                 let correct = 0;
                 cards.forEach(c => { if (c.zone === c.type) correct++; });
                 
@@ -285,14 +328,14 @@
 
 
             // ==========================================
-            // RENDERERS
+            // RENDERERS DE PANTALLAS
             // ==========================================
             
             if (currentModule === 'menu') return (
                 <div className="flex flex-col items-center justify-center min-h-screen p-6 animate-fade-in w-full max-w-lg mx-auto">
                     {isOffline && (
                         <div className="bg-orange-900/40 border border-orange-500 p-4 rounded-xl mb-6 text-center text-orange-200 text-sm">
-                            ⚠️ <b>Modo Local:</b> Si ves esto y quieres usar el modo multijugador desde celulares, necesitas configurar Firebase en el código HTML.
+                            ⚠️ <b>Modo Local:</b> Si ves esto, Firebase no logró iniciar. Verifica tu conexión.
                         </div>
                     )}
                     <div className="text-center mb-10">
@@ -313,6 +356,13 @@
             if (currentModule === 'join') return (
                 <div className="flex flex-col items-center justify-center min-h-screen p-6 animate-fade-in w-full max-w-md mx-auto">
                     <h2 className="text-3xl font-black mb-6 text-[#00ff88]">Únete a la Sala</h2>
+                    
+                    {joinError && (
+                        <div className="w-full bg-red-900/40 border border-red-500 text-red-200 p-4 rounded-xl mb-6 text-sm text-center shadow-lg">
+                            ⚠️ {joinError}
+                        </div>
+                    )}
+
                     <form onSubmit={joinRoom} className="w-full space-y-4">
                         <div>
                             <label className="block text-gray-400 mb-2 font-bold">PIN de la Sala:</label>
@@ -324,6 +374,9 @@
                         </div>
                         <button type="submit" className="w-full bg-[#00ff88] text-black font-black p-4 rounded-xl text-xl hover:scale-105 transition mt-6 shadow-[0_0_15px_rgba(0,255,136,0.5)]">
                             Entrar al Juego
+                        </button>
+                        <button type="button" onClick={() => setCurrentModule('menu')} className="w-full text-gray-500 font-bold p-4 mt-2 hover:text-white transition">
+                            ← Volver
                         </button>
                     </form>
                 </div>
@@ -351,7 +404,7 @@
                                     {sortedPlayers.map((p, idx) => {
                                         const isFinished = p.status === 'finished';
                                         const isTop5 = isFinished && idx < 5 && p.score > 0;
-                                        const displayScore = isTop5 ? 50 : p.score; // Bono TOP 5 de 50 puntos
+                                        const displayScore = isTop5 ? 50 : p.score; // Bono TOP 5
                                         
                                         return (
                                             <div key={p.id} className={`flex items-center justify-between p-4 rounded-xl border ${isTop5 ? 'bg-green-900/30 border-[#00ff88]' : 'bg-gray-800 border-gray-600'}`}>
@@ -400,7 +453,7 @@
             );
 
             // ==========================================
-            // HEADER COMÚN & WRAPPER RESPONSIVO
+            // HEADER DEL JUEGO
             // ==========================================
             const GameHeader = ({ title, moduleNum, onExpire }) => (
                 <div className="flex flex-row flex-wrap justify-between items-center mb-6 bg-gray-800 p-4 md:p-6 rounded-2xl border border-gray-700 shadow-md">
@@ -418,43 +471,49 @@
                 </div>
             );
 
-            // RENDER MÓDULO 1
+            // RENDER MÓDULO 1 (DND)
             if (currentModule === 'dnd') return (
                 <div className="w-full max-w-5xl animate-fade-in p-4 md:p-6 mx-auto min-h-screen content-padding">
                     <GameHeader title="Genesys vs Live" moduleNum={1} onExpire={validateDnd} />
-                    <p className="text-gray-400 text-sm md:text-base mb-4 text-center">Toca una tarjeta para seleccionarla y luego toca la plataforma (Genesys o Live) para asignarla.</p>
+                    <p className="text-gray-400 text-sm md:text-base mb-4 text-center">Arrastra las tarjetas a la plataforma (Genesys o Live) donde correspondan.</p>
                     
-                    {/* Pool de Tarjetas */}
-                    <div className={`bg-gray-800/50 min-h-[100px] rounded-2xl p-3 md:p-4 mb-6 flex flex-wrap gap-2 md:gap-3 border transition-colors ${isLocked ? 'border-gray-800 opacity-50' : 'border-gray-600'}`}>
+                    <div className={`bg-gray-800/50 min-h-[120px] rounded-2xl p-4 mb-6 flex flex-wrap gap-2 md:gap-3 border transition-colors ${isLocked ? 'border-gray-800 opacity-50' : 'border-gray-600'}`} 
+                         onDragOver={e => e.preventDefault()} onDrop={e => dndDrop(e, 'pool')}>
                         {cards.filter(c => c.zone === 'pool').map(card => (
-                            <button key={card.id} onClick={() => handleCardClick(card.id)} disabled={isLocked} 
-                                className={`text-left text-white px-3 py-2 md:px-4 md:py-2 rounded-xl text-xs md:text-sm font-medium transition-all shadow-md ${selectedCard === card.id ? 'bg-[#00ff88] text-black scale-105 shadow-[0_0_10px_rgba(0,255,136,0.5)]' : 'bg-gray-700 hover:bg-gray-600 border border-gray-500'}`}>
-                                {card.text}
-                            </button>
+                            <div key={card.id} draggable={!isLocked} onDragStart={e => dndDragStart(e, card.id)} 
+                                 className="draggable-card bg-gray-700 text-white px-3 py-2 md:px-4 md:py-3 rounded-xl text-xs md:text-sm font-medium shadow-lg hover:bg-gray-600 border border-gray-500 cursor-grab active:cursor-grabbing flex items-center">
+                                <span className="mr-2 text-gray-400 font-bold text-lg">⋮⋮</span> {card.text}
+                            </div>
                         ))}
                         {cards.filter(c => c.zone === 'pool').length === 0 && <div className="w-full text-center text-gray-500 py-2 italic text-sm">Todas clasificadas</div>}
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-                        {/* Zona Genesys */}
-                        <button onClick={() => handleZoneClick('genesys')} disabled={isLocked} className={`bg-[#1a2332] rounded-3xl p-4 md:p-5 border-2 border-dashed text-left transition-all ${isLocked ? 'border-gray-700 opacity-80' : selectedCard ? 'border-[#3b82f6] shadow-[0_0_15px_rgba(59,130,246,0.3)] bg-[#1a2332]/80' : 'border-[#3b82f6]/50'}`}>
+                        <div className={`bg-[#1a2332] rounded-3xl p-4 md:p-5 border-2 border-dashed transition-all ${isLocked ? 'border-gray-700 opacity-80' : 'border-[#3b82f6]/50'}`}
+                             onDragOver={e => e.preventDefault()} onDrop={e => dndDrop(e, 'genesys')}>
                             <h3 className="text-lg md:text-xl font-bold text-white mb-3 md:mb-4 border-b border-[#3b82f6]/30 pb-2"><span className="text-[#3b82f6] mr-2">●</span>GENESYS</h3>
                             <div className="min-h-[120px] md:min-h-[150px] space-y-2">
                                 {cards.filter(c => c.zone === 'genesys').map(card => (
-                                    <div key={card.id} onClick={(e) => { e.stopPropagation(); handleCardClick(card.id); }} className={`px-3 py-2 rounded-lg text-xs md:text-sm transition-all border ${selectedCard === card.id ? 'bg-[#00ff88] text-black border-[#00ff88]' : 'bg-[#1e293b] text-white border-[#3b82f6]/50'}`}>{card.text}</div>
+                                    <div key={card.id} draggable={!isLocked} onDragStart={e => dndDragStart(e, card.id)} 
+                                         className="draggable-card px-3 py-2 md:px-4 md:py-3 rounded-lg text-xs md:text-sm transition-all border bg-[#1e293b] text-white border-[#3b82f6]/50 cursor-grab flex items-center">
+                                        <span className="mr-2 text-[#3b82f6] font-bold text-lg">⋮⋮</span> {card.text}
+                                    </div>
                                 ))}
                             </div>
-                        </button>
+                        </div>
                         
-                        {/* Zona Live */}
-                        <button onClick={() => handleZoneClick('live')} disabled={isLocked} className={`bg-[#321a28] rounded-3xl p-4 md:p-5 border-2 border-dashed text-left transition-all ${isLocked ? 'border-gray-700 opacity-80' : selectedCard ? 'border-[#ec4899] shadow-[0_0_15px_rgba(236,72,153,0.3)] bg-[#321a28]/80' : 'border-[#ec4899]/50'}`}>
+                        <div className={`bg-[#321a28] rounded-3xl p-4 md:p-5 border-2 border-dashed transition-all ${isLocked ? 'border-gray-700 opacity-80' : 'border-[#ec4899]/50'}`}
+                             onDragOver={e => e.preventDefault()} onDrop={e => dndDrop(e, 'live')}>
                             <h3 className="text-lg md:text-xl font-bold text-white mb-3 md:mb-4 border-b border-[#ec4899]/30 pb-2"><span className="text-[#ec4899] mr-2">●</span>LIVE</h3>
                             <div className="min-h-[120px] md:min-h-[150px] space-y-2">
                                 {cards.filter(c => c.zone === 'live').map(card => (
-                                    <div key={card.id} onClick={(e) => { e.stopPropagation(); handleCardClick(card.id); }} className={`px-3 py-2 rounded-lg text-xs md:text-sm transition-all border ${selectedCard === card.id ? 'bg-[#00ff88] text-black border-[#00ff88]' : 'bg-[#3b1525] text-white border-[#ec4899]/50'}`}>{card.text}</div>
+                                    <div key={card.id} draggable={!isLocked} onDragStart={e => dndDragStart(e, card.id)} 
+                                         className="draggable-card px-3 py-2 md:px-4 md:py-3 rounded-lg text-xs md:text-sm transition-all border bg-[#3b1525] text-white border-[#ec4899]/50 cursor-grab flex items-center">
+                                        <span className="mr-2 text-[#ec4899] font-bold text-lg">⋮⋮</span> {card.text}
+                                    </div>
                                 ))}
                             </div>
-                        </button>
+                        </div>
                     </div>
                     
                     <FixedBottomBar buttonText={isLocked ? "Siguiente Módulo ➔" : "Validar Módulo 1"} onClick={isLocked ? () => handleNextModule('match') : validateDnd} resultText={moduleResult} isLocked={isLocked} />
@@ -465,7 +524,7 @@
             if (currentModule === 'match') return (
                 <div className="w-full max-w-4xl animate-fade-in p-4 md:p-6 mx-auto min-h-screen content-padding">
                     <GameHeader title="Relacionar Tiempos" moduleNum={2} onExpire={validateMatch} />
-                    <p className="text-gray-400 text-sm md:text-base mb-6 text-center">Selecciona un tiempo a la izquierda y luego toca su acción correspondiente a la derecha.</p>
+                    <p className="text-gray-400 text-sm md:text-base mb-6 text-center">Toca un tiempo a la izquierda y luego toca su acción correspondiente a la derecha.</p>
                     
                     <div className="flex flex-col md:flex-row gap-4 md:gap-6">
                         <div className="w-full md:w-1/2 space-y-2 md:space-y-3">
