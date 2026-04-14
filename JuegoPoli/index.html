@@ -12,7 +12,7 @@
     <!-- Babel -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     
-    <!-- Polyfill para que el Drag & Drop (Arrastrar) funcione en Celulares -->
+    <!-- Polyfill para que el Drag & Drop funcione en Celulares táctiles -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mobile-drag-drop@2.3.0-rc.2/default.css">
     <script src="https://cdn.jsdelivr.net/npm/mobile-drag-drop@2.3.0-rc.2/index.min.js"></script>
     <script>
@@ -28,15 +28,18 @@
         body { background-color: #121212; color: #ffffff; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
         .animate-fade-in { animation: fadeIn 0.4s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .glow-hover:hover:not(:disabled) { box-shadow: 0 0 15px rgba(0, 255, 136, 0.4); border-color: #00ff88; }
         select {
             appearance: none; background-color: #374151;
             background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2300ff88%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
             background-repeat: no-repeat; background-position: right .7rem top 50%; background-size: .65rem auto;
         }
-        /* Espacio para la barra flotante */
-        .content-padding { padding-bottom: 120px; }
-        /* Touch action para permitir arrastre en móviles */
+        
+        /* Ajuste de scroll visual y responsive */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #1f2937; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #00ff88; border-radius: 4px; }
+        
+        .content-padding { padding-bottom: 90px; } /* Evita que la barra tape contenido en portátiles */
         .draggable-card { touch-action: none; user-select: none; -webkit-user-select: none; }
     </style>
 </head>
@@ -45,13 +48,13 @@
 
     <script type="text/babel" data-type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, onSnapshot, doc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const { useState, useEffect, useCallback } = React;
 
         // ==========================================
-        // 🔴 TU CONFIGURACIÓN DE FIREBASE 🔴
+        // 🔴 CONFIGURACIÓN DE FIREBASE 🔴
         const MI_FIREBASE_CONFIG = {
           apiKey: "AIzaSyAiZ81kyP_rlXTdgCQKFsLdYmYLpkxmCAI",
           authDomain: "proyecto-omnicanal.firebaseapp.com",
@@ -72,7 +75,7 @@
             isOffline = true;
             console.error("Error iniciando Firebase:", e);
         }
-        const appId = 'polipuntos-app';
+        
         const getCollectionPath = () => 'polipuntos_players';
 
         const shuffleArray = (array) => {
@@ -97,7 +100,7 @@
             const mins = Math.floor(timeLeft / 60);
             const secs = timeLeft % 60;
             return (
-                <div className={`text-xl md:text-3xl font-mono font-bold bg-gray-800 px-4 py-2 rounded-xl border-2 ${timeLeft <= 10 && !isLocked ? 'text-red-500 border-red-500 animate-pulse' : 'text-[#00ff88] border-gray-600'}`}>
+                <div className={`text-lg md:text-2xl font-mono font-bold bg-gray-800 px-3 py-1 md:px-4 md:py-2 rounded-xl border-2 ${timeLeft <= 10 && !isLocked ? 'text-red-500 border-red-500 animate-pulse' : 'text-[#00ff88] border-gray-600'}`}>
                     ⏱️ {mins}:{secs.toString().padStart(2, '0')}
                 </div>
             );
@@ -105,19 +108,20 @@
 
         // --- COMPONENTE BARRA INFERIOR FLOTANTE ---
         const FixedBottomBar = ({ buttonText, onClick, resultText, isLocked }) => (
-            <div className="fixed bottom-0 left-0 w-full bg-[#121212]/95 backdrop-blur-md border-t border-gray-800 p-4 z-50 flex flex-col md:flex-row items-center justify-center gap-4 shadow-[0_-10px_30px_rgba(0,0,0,0.5)]">
+            <div className="fixed bottom-0 left-0 w-full bg-[#121212]/95 backdrop-blur-md border-t border-gray-800 p-3 md:p-4 z-50 flex flex-col md:flex-row items-center justify-center gap-3 shadow-[0_-10px_30px_rgba(0,0,0,0.5)]">
                 {resultText && (
-                    <div className={`px-6 py-2 rounded-full font-bold text-sm md:text-lg text-center ${resultText.includes('Perfecto') ? 'bg-green-900/50 text-[#00ff88] border border-[#00ff88]' : 'bg-red-900/50 text-red-400 border border-red-500'}`}>
+                    <div className={`px-4 py-2 rounded-full font-bold text-xs md:text-sm text-center ${resultText.includes('Perfecto') ? 'bg-green-900/50 text-[#00ff88] border border-[#00ff88]' : 'bg-red-900/50 text-red-400 border border-red-500'}`}>
                         {resultText.includes('Perfecto') ? '✅ ' : '❌ '} {resultText}
                     </div>
                 )}
-                <button onClick={onClick} className={`w-full md:w-auto px-8 py-3 rounded-full font-black text-lg md:text-xl transition-all transform hover:scale-105 active:scale-95 ${isLocked ? 'bg-[#00ff88] text-black shadow-[0_0_20px_rgba(0,255,136,0.5)]' : 'bg-white text-black hover:bg-gray-200'}`}>
+                <button onClick={onClick} className={`w-full md:w-auto px-6 py-2 md:py-3 rounded-full font-black text-base md:text-lg transition-all transform hover:scale-105 active:scale-95 ${isLocked ? 'bg-[#00ff88] text-black shadow-[0_0_20px_rgba(0,255,136,0.5)]' : 'bg-white text-black hover:bg-gray-200'}`}>
                     {buttonText}
                 </button>
             </div>
         );
 
         function App() {
+            // ESTADOS GLOBALES
             const [user, setUser] = useState(null);
             const [role, setRole] = useState(null);
             const [pin, setPin] = useState('');
@@ -135,12 +139,8 @@
             useEffect(() => {
                 if (isOffline) return;
                 const initAuth = async () => {
-                    try {
-                        await signInAnonymously(auth); 
-                    } catch (error) {
-                        console.error("Error de autenticación:", error);
-                        setJoinError("Asegúrate de que el Inicio de Sesión Anónimo esté activado en Firebase.");
-                    }
+                    try { await signInAnonymously(auth); } 
+                    catch (error) { console.error("Error Auth:", error); }
                 };
                 initAuth();
                 const unsubscribe = onAuthStateChanged(auth, setUser);
@@ -154,17 +154,17 @@
                 const unsub = onSnapshot(colRef, (snapshot) => {
                     const allPlayers = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
                     setRoomPlayers(allPlayers.filter(p => p.pin === pin));
-                }, (err) => console.error("Error leyendo jugadores:", err));
+                });
                 return () => unsub();
             }, [user, role, pin]);
 
-            // ================= ACCIONES PRINCIPALES =================
+            // ================= FUNCIONES DE FLUJO =================
             const syncScore = async (newScore) => {
                 if (isOffline || !playerId) return;
                 try {
                     const docRef = doc(db, getCollectionPath(), playerId);
                     await updateDoc(docRef, { score: newScore });
-                } catch (err) { console.error("Error sincronizando puntaje:", err); }
+                } catch (err) { console.error("Error Score:", err); }
             };
 
             const finishGame = async () => {
@@ -173,7 +173,7 @@
                 try {
                     const docRef = doc(db, getCollectionPath(), playerId);
                     await updateDoc(docRef, { status: 'finished', finishedAt: Date.now() });
-                } catch (err) { console.error("Error finalizando juego:", err); }
+                } catch (err) { console.error("Error Final:", err); }
             };
 
             const createRoom = () => {
@@ -188,24 +188,24 @@
                 
                 if (!isOffline && user) {
                     try {
-                        const newPlayerId = `${pin}_${user.uid}`;
+                        // AQUÍ ESTÁ LA MAGIA: ID 100% ÚNICO PARA QUE NO SE SOBREESCRIBAN
+                        const randomString = Math.random().toString(36).substring(2, 8);
+                        const newPlayerId = `${pin}_${Date.now()}_${randomString}`;
+                        
                         setPlayerId(newPlayerId);
                         const docRef = doc(db, getCollectionPath(), newPlayerId);
                         await setDoc(docRef, { pin, name: playerName, score: 0, status: 'playing', createdAt: Date.now() });
                         setRole('player');
                         setCurrentModule('dnd');
                     } catch (error) {
-                        console.error("Error al unirse:", error);
-                        setJoinError("Firebase rechazó el permiso. Asegúrate de que las reglas de Firestore estén en Modo Prueba.");
+                        setJoinError("Error de permisos en Firebase. Revisa las reglas.");
                     }
                 } else if (isOffline) {
                     setRole('player'); setCurrentModule('dnd');
-                } else {
-                    setJoinError("Conectando a la base de datos... intenta de nuevo.");
                 }
             };
 
-            // ¡AQUÍ ESTÁ LA MAGIA QUE ARREGLA EL BUG DEL BOTÓN!
+            // NAVEGACIÓN ENTRE MÓDULOS (Flujo Limpio)
             const handleNextModule = (nextScreen) => {
                 setIsLocked(false);
                 setModuleResult(null);
@@ -220,14 +220,14 @@
             // MÓDULO 1: ARRASTRAR Y SOLTAR (DND)
             // ==========================================
             const [cards, setCards] = useState([
-                { id: 'c1', text: '75 segundos para tipificar', type: 'genesys', zone: 'pool' },
-                { id: 'c2', text: '10 interacciones simultáneas', type: 'live', zone: 'pool' },
-                { id: 'c3', text: 'Botón azul "Listo" para guardar', type: 'genesys', zone: 'pool' },
-                { id: 'c4', text: 'Etiqueta con Clase + Título', type: 'live', zone: 'pool' },
-                { id: 'c5', text: 'Código de conclusión', type: 'genesys', zone: 'pool' },
-                { id: 'c6', text: '10 min de tiempo de manejo', type: 'live', zone: 'pool' },
+                { id: 'c1', text: '75 segundos tipificar', type: 'genesys', zone: 'pool' },
+                { id: 'c2', text: '10 chats a la vez', type: 'live', zone: 'pool' },
+                { id: 'c3', text: 'Botón azul "Listo"', type: 'genesys', zone: 'pool' },
+                { id: 'c4', text: 'Etiqueta con Título', type: 'live', zone: 'pool' },
+                { id: 'c5', text: 'Código conclusión', type: 'genesys', zone: 'pool' },
+                { id: 'c6', text: '10 min tiempo manejo', type: 'live', zone: 'pool' },
                 { id: 'c7', text: 'Time out si no tipificas', type: 'genesys', zone: 'pool' },
-                { id: 'c8', text: 'Dejar resumen en notas', type: 'live', zone: 'pool' }
+                { id: 'c8', text: 'Resumen en notas', type: 'live', zone: 'pool' }
             ]);
 
             const dndDragStart = (e, id) => {
@@ -253,7 +253,7 @@
                 if (correct === cards.length) {
                     setModuleResult('¡Perfecto! +10 Puntos');
                     const newS = score + 10; setScore(newS); syncScore(newS);
-                } else setModuleResult(`Tiempo agotado o incorrecto. (${cards.length - correct} errores). +0 Pts`);
+                } else setModuleResult(`Faltan o hay errores. (${correct}/${cards.length} bien) +0 Pts`);
             }, [cards, score]);
 
             // ==========================================
@@ -264,8 +264,8 @@
                 { id: 't3', text: '2 Minutos', icon: '⏱️' }, { id: 't4', text: '5.5 Horas', icon: '💻' }
             ];
             const rightItems = [
-                { id: 'a1', text: 'Tiempo de conexión al turno', match: 't4' }, { id: 'a2', text: 'Tiempo máximo en espera', match: 't3' },
-                { id: 'a3', text: 'Responder la llamada', match: 't1' }, { id: 'a4', text: 'Trabajo tras llamada', match: 't2' }
+                { id: 'a1', text: 'Conexión al turno', match: 't4' }, { id: 'a2', text: 'Tiempo en espera', match: 't3' },
+                { id: 'a3', text: 'Responder llamada', match: 't1' }, { id: 'a4', text: 'Trabajo tras llamada', match: 't2' }
             ];
             const [matches, setMatches] = useState({});
             const [selectedLeft, setSelectedLeft] = useState(null);
@@ -284,16 +284,16 @@
                 if (Object.keys(matches).length === leftItems.length) {
                     setModuleResult('¡Perfecto! +10 Puntos');
                     const newS = score + 10; setScore(newS); syncScore(newS);
-                } else setModuleResult('Faltaron respuestas o te equivocaste. +0 Pts');
+                } else setModuleResult('Incompleto o incorrecto. +0 Pts');
             }, [matches, score]);
 
             // ==========================================
             // MÓDULO 3: ORDER (PASO A PASO)
             // ==========================================
             const [orderedItems, setOrderedItems] = useState(() => shuffleArray([
-                { id: 1, text: 'Iniciar sesión en Genesys y Live.' }, { id: 2, text: 'Ponerse "En línea" para recibir interacciones.' },
-                { id: 3, text: 'Saludar y confirmar datos (Cédula/Celular).' }, { id: 4, text: 'Aplicar Venta Consultiva y resolver.' },
-                { id: 5, text: 'Tipificar en HubSpot (Ticket o Nota).' }, { id: 6, text: 'Bajar Código de Conclusión o Etiqueta.' }
+                { id: 1, text: 'Iniciar sesión (Genesys/Live).' }, { id: 2, text: 'Ponerse "En línea".' },
+                { id: 3, text: 'Saludar y confirmar datos.' }, { id: 4, text: 'Aplicar Venta Consultiva.' },
+                { id: 5, text: 'Tipificar en HubSpot.' }, { id: 6, text: 'Bajar Código o Etiqueta.' }
             ]));
 
             const moveItem = (index, direction) => {
@@ -328,56 +328,59 @@
 
 
             // ==========================================
-            // RENDERERS DE PANTALLAS
+            // RENDERERS (VISTAS DE PANTALLA COMPACTADAS)
             // ==========================================
             
-            if (currentModule === 'menu') return (
-                <div className="flex flex-col items-center justify-center min-h-screen p-6 animate-fade-in w-full max-w-lg mx-auto">
-                    {isOffline && (
-                        <div className="bg-orange-900/40 border border-orange-500 p-4 rounded-xl mb-6 text-center text-orange-200 text-sm">
-                            ⚠️ <b>Modo Local:</b> Si ves esto, Firebase no logró iniciar. Verifica tu conexión.
+            const GameHeader = ({ title, moduleNum, onExpire }) => (
+                <div className="flex flex-row justify-between items-center mb-3 md:mb-5 bg-gray-800 p-3 md:p-5 rounded-2xl border border-gray-700 shadow-sm">
+                    <div>
+                        <div className="text-[#00ff88] font-bold text-[10px] md:text-xs tracking-widest uppercase">Módulo {moduleNum}/4</div>
+                        <h2 className="text-sm md:text-xl font-bold text-white uppercase">{title}</h2>
+                    </div>
+                    <div className="flex items-center gap-3 md:gap-5">
+                        <div className="text-right">
+                            <div className="text-[10px] md:text-xs text-gray-400 uppercase font-bold">Puntos</div>
+                            <div className="font-mono text-base md:text-xl font-bold text-white">{score}<span className="text-gray-500 text-xs">/40</span></div>
                         </div>
-                    )}
-                    <div className="text-center mb-10">
-                        <h1 className="text-5xl md:text-6xl font-black mb-2 tracking-tighter text-white">POLI<span className="text-[#00ff88]">PUNTOS</span></h1>
-                        <p className="text-gray-400 text-lg md:text-xl">Simulador Omnicanal Interactivo</p>
+                        <CountdownTimer initialSeconds={90} onExpire={onExpire} isLocked={isLocked} />
+                    </div>
+                </div>
+            );
+
+            if (currentModule === 'menu') return (
+                <div className="flex flex-col items-center justify-center min-h-screen p-4 animate-fade-in w-full max-w-lg mx-auto">
+                    <div className="text-center mb-8">
+                        <h1 className="text-4xl md:text-5xl font-black mb-1 tracking-tighter text-white">POLI<span className="text-[#00ff88]">PUNTOS</span></h1>
+                        <p className="text-gray-400 text-sm md:text-base">Simulador Omnicanal Interactivo</p>
                     </div>
                     <div className="w-full space-y-4">
-                        <button onClick={createRoom} className="w-full bg-gray-800 border-2 border-[#00ff88] text-[#00ff88] p-5 rounded-2xl font-bold text-xl hover:scale-105 transition shadow-[0_0_15px_rgba(0,255,136,0.2)]">
-                            👑 Soy Formadora (Crear Sala)
+                        <button onClick={createRoom} className="w-full bg-gray-800 border-2 border-[#00ff88] text-[#00ff88] p-4 rounded-2xl font-bold text-lg md:text-xl hover:scale-105 transition shadow-[0_0_15px_rgba(0,255,136,0.2)]">
+                            👑 Formadora (Crear Sala)
                         </button>
-                        <button onClick={() => setCurrentModule('join')} className="w-full bg-gray-800 border-2 border-gray-600 text-white p-5 rounded-2xl font-bold text-xl hover:scale-105 transition">
-                            🎓 Soy Estudiante (Unirme)
+                        <button onClick={() => setCurrentModule('join')} className="w-full bg-gray-800 border-2 border-gray-600 text-white p-4 rounded-2xl font-bold text-lg md:text-xl hover:scale-105 transition">
+                            🎓 Estudiante (Unirme)
                         </button>
                     </div>
                 </div>
             );
 
             if (currentModule === 'join') return (
-                <div className="flex flex-col items-center justify-center min-h-screen p-6 animate-fade-in w-full max-w-md mx-auto">
-                    <h2 className="text-3xl font-black mb-6 text-[#00ff88]">Únete a la Sala</h2>
-                    
-                    {joinError && (
-                        <div className="w-full bg-red-900/40 border border-red-500 text-red-200 p-4 rounded-xl mb-6 text-sm text-center shadow-lg">
-                            ⚠️ {joinError}
-                        </div>
-                    )}
-
-                    <form onSubmit={joinRoom} className="w-full space-y-4">
+                <div className="flex flex-col items-center justify-center min-h-screen p-4 animate-fade-in w-full max-w-sm mx-auto">
+                    <h2 className="text-2xl font-black mb-6 text-[#00ff88]">Únete a la Sala</h2>
+                    {joinError && <div className="w-full bg-red-900/40 border border-red-500 text-red-200 p-3 rounded-lg mb-4 text-xs text-center">{joinError}</div>}
+                    <form onSubmit={joinRoom} className="w-full space-y-3">
                         <div>
-                            <label className="block text-gray-400 mb-2 font-bold">PIN de la Sala:</label>
-                            <input type="text" required value={pin} onChange={e=>setPin(e.target.value)} maxLength={4} className="w-full bg-gray-800 border-2 border-gray-600 text-white px-4 py-3 rounded-xl font-mono text-center text-3xl focus:border-[#00ff88] focus:outline-none" placeholder="1234" />
+                            <label className="block text-gray-400 mb-1 font-bold text-sm">PIN de la Sala:</label>
+                            <input type="text" required value={pin} onChange={e=>setPin(e.target.value)} maxLength={4} className="w-full bg-gray-800 border-2 border-gray-600 text-white px-3 py-2 rounded-xl font-mono text-center text-xl focus:border-[#00ff88] focus:outline-none" placeholder="1234" />
                         </div>
                         <div>
-                            <label className="block text-gray-400 mb-2 font-bold">Tu Nombre (o Apodo):</label>
-                            <input type="text" required value={playerName} onChange={e=>setPlayerName(e.target.value)} className="w-full bg-gray-800 border-2 border-gray-600 text-white px-4 py-3 rounded-xl text-center text-xl focus:border-[#00ff88] focus:outline-none" placeholder="Ej. Carlos S." />
+                            <label className="block text-gray-400 mb-1 font-bold text-sm">Tu Nombre:</label>
+                            <input type="text" required value={playerName} onChange={e=>setPlayerName(e.target.value)} className="w-full bg-gray-800 border-2 border-gray-600 text-white px-3 py-2 rounded-xl text-center text-lg focus:border-[#00ff88] focus:outline-none" placeholder="Ej. Carlos S." />
                         </div>
-                        <button type="submit" className="w-full bg-[#00ff88] text-black font-black p-4 rounded-xl text-xl hover:scale-105 transition mt-6 shadow-[0_0_15px_rgba(0,255,136,0.5)]">
+                        <button type="submit" className="w-full bg-[#00ff88] text-black font-black p-3 rounded-xl text-lg hover:scale-105 transition mt-4 shadow-[0_0_10px_rgba(0,255,136,0.5)]">
                             Entrar al Juego
                         </button>
-                        <button type="button" onClick={() => setCurrentModule('menu')} className="w-full text-gray-500 font-bold p-4 mt-2 hover:text-white transition">
-                            ← Volver
-                        </button>
+                        <button type="button" onClick={() => setCurrentModule('menu')} className="w-full text-gray-500 font-bold p-3 text-sm hover:text-white transition">← Volver</button>
                     </form>
                 </div>
             );
@@ -385,131 +388,109 @@
             if (currentModule === 'host') {
                 const sortedPlayers = [...roomPlayers].sort((a, b) => b.score - a.score || a.finishedAt - b.finishedAt);
                 return (
-                    <div className="min-h-screen p-4 md:p-8 animate-fade-in w-full max-w-4xl mx-auto">
-                        <div className="bg-gray-800 p-6 md:p-8 rounded-3xl border border-[#00ff88] text-center mb-8 shadow-[0_0_20px_rgba(0,255,136,0.1)]">
-                            <h2 className="text-gray-400 font-bold mb-2 tracking-widest uppercase">PIN DE LA SALA</h2>
-                            <div className="text-7xl md:text-8xl font-black text-[#00ff88] tracking-widest">{pin}</div>
+                    <div className="h-screen flex flex-col p-4 animate-fade-in w-full max-w-4xl mx-auto overflow-hidden">
+                        <div className="bg-gray-800 p-4 md:p-6 rounded-2xl border border-[#00ff88] text-center mb-4 shrink-0">
+                            <h2 className="text-gray-400 font-bold text-xs tracking-widest uppercase">PIN DE LA SALA</h2>
+                            <div className="text-5xl md:text-7xl font-black text-[#00ff88] tracking-widest">{pin}</div>
                         </div>
 
-                        <div className="bg-gray-800/50 p-4 md:p-6 rounded-2xl border border-gray-700">
-                            <h3 className="text-xl md:text-2xl font-bold mb-6 flex justify-between items-center border-b border-gray-700 pb-4">
+                        <div className="bg-gray-800/50 p-4 rounded-2xl border border-gray-700 flex-1 flex flex-col min-h-0">
+                            <h3 className="text-lg md:text-xl font-bold mb-4 flex justify-between items-center border-b border-gray-700 pb-2 shrink-0">
                                 <span>Ranking en Vivo</span>
-                                <span className="text-[#00ff88] text-sm md:text-base bg-green-900/30 px-4 py-1 rounded-full">{sortedPlayers.length} Conectados</span>
+                                <span className="text-[#00ff88] text-xs bg-green-900/30 px-3 py-1 rounded-full">{sortedPlayers.length} Conectados</span>
                             </h3>
                             
-                            {sortedPlayers.length === 0 ? (
-                                <div className="text-center text-gray-500 py-10 italic">Esperando jugadores...</div>
-                            ) : (
-                                <div className="space-y-3">
-                                    {sortedPlayers.map((p, idx) => {
+                            <div className="overflow-y-auto pr-2 custom-scrollbar flex-1 space-y-2">
+                                {sortedPlayers.length === 0 ? (
+                                    <div className="text-center text-gray-500 py-6 italic text-sm">Esperando jugadores...</div>
+                                ) : (
+                                    sortedPlayers.map((p, idx) => {
                                         const isFinished = p.status === 'finished';
                                         const isTop5 = isFinished && idx < 5 && p.score > 0;
-                                        const displayScore = isTop5 ? 50 : p.score; // Bono TOP 5
-                                        
+                                        const displayScore = isTop5 ? 50 : p.score; 
                                         return (
-                                            <div key={p.id} className={`flex items-center justify-between p-4 rounded-xl border ${isTop5 ? 'bg-green-900/30 border-[#00ff88]' : 'bg-gray-800 border-gray-600'}`}>
+                                            <div key={p.id} className={`flex items-center justify-between p-3 rounded-xl border ${isTop5 ? 'bg-green-900/30 border-[#00ff88]' : 'bg-gray-800 border-gray-600'}`}>
                                                 <div className="flex items-center">
-                                                    <span className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center font-bold text-lg mr-4 shrink-0 ${isTop5 ? 'bg-[#00ff88] text-black shadow-[0_0_10px_rgba(0,255,136,0.5)]' : 'bg-gray-700 text-gray-400'}`}>
+                                                    <span className={`w-6 h-6 md:w-8 md:h-8 rounded-full flex items-center justify-center font-bold text-sm mr-3 shrink-0 ${isTop5 ? 'bg-[#00ff88] text-black' : 'bg-gray-700 text-gray-400'}`}>
                                                         {idx + 1}
                                                     </span>
                                                     <div>
-                                                        <div className="font-bold text-base md:text-lg">{p.name}</div>
-                                                        <div className="text-xs md:text-sm text-gray-400">{isFinished ? 'Terminó la gestión' : 'Jugando...'}</div>
+                                                        <div className="font-bold text-sm md:text-base">{p.name}</div>
+                                                        <div className="text-[10px] md:text-xs text-gray-400">{isFinished ? 'Terminó' : 'Jugando...'}</div>
                                                     </div>
                                                 </div>
                                                 <div className="text-right">
-                                                    <div className={`text-2xl md:text-3xl font-black ${isTop5 ? 'text-[#00ff88]' : 'text-white'}`}>
-                                                        {displayScore} <span className="text-sm font-normal text-gray-500">pts</span>
+                                                    <div className={`text-lg md:text-2xl font-black ${isTop5 ? 'text-[#00ff88]' : 'text-white'}`}>
+                                                        {displayScore} <span className="text-[10px] font-normal text-gray-500">pts</span>
                                                     </div>
-                                                    {isTop5 && <div className="text-[10px] md:text-xs text-[#00ff88] uppercase font-bold tracking-widest mt-1">Bono Top 5 🏆</div>}
+                                                    {isTop5 && <div className="text-[8px] md:text-[10px] text-[#00ff88] uppercase font-bold tracking-widest">Top 5 🏆</div>}
                                                 </div>
                                             </div>
                                         );
-                                    })}
-                                </div>
-                            )}
+                                    })
+                                )}
+                            </div>
                         </div>
                     </div>
                 );
             }
 
             if (currentModule === 'finish') return (
-                <div className="flex flex-col items-center justify-center min-h-screen p-6 animate-fade-in w-full max-w-lg mx-auto text-center">
-                    <div className="bg-gray-800 p-8 md:p-10 rounded-3xl border-2 border-[#00ff88] shadow-[0_0_30px_rgba(0,255,136,0.3)] w-full">
-                        <div className="text-6xl mb-4">🏆</div>
-                        <h2 className="text-3xl md:text-4xl font-black text-white mb-2">¡Misión Cumplida!</h2>
-                        <p className="text-gray-400 mb-8 text-sm md:text-base">Has completado tu entrenamiento en Omnicanalidad.</p>
+                <div className="flex flex-col items-center justify-center min-h-screen p-4 animate-fade-in w-full max-w-sm mx-auto text-center">
+                    <div className="bg-gray-800 p-6 md:p-8 rounded-3xl border-2 border-[#00ff88] w-full">
+                        <div className="text-4xl mb-3">🏆</div>
+                        <h2 className="text-2xl md:text-3xl font-black text-white mb-2">¡Misión Cumplida!</h2>
                         
-                        <div className="bg-gray-900 rounded-2xl p-6 mb-6">
-                            <div className="text-xs text-gray-500 uppercase tracking-widest font-bold mb-2">Puntaje Base Obtenido</div>
-                            <div className="text-6xl md:text-7xl font-black text-[#00ff88]">{score}<span className="text-3xl text-gray-600">/40</span></div>
+                        <div className="bg-gray-900 rounded-2xl p-4 md:p-5 my-6">
+                            <div className="text-[10px] text-gray-500 uppercase tracking-widest font-bold mb-1">Puntaje Base</div>
+                            <div className="text-5xl md:text-6xl font-black text-[#00ff88]">{score}<span className="text-2xl text-gray-600">/40</span></div>
                         </div>
                         
-                        <p className="text-gray-300 text-sm md:text-base leading-relaxed">
-                            Observa la pantalla de tu formadora.<br/>Si quedaste en el <b>TOP 5</b> más rápido y preciso, obtendrás automáticamente los <b>50 PUNTOS</b> ganadores.
+                        <p className="text-gray-300 text-xs md:text-sm leading-relaxed">
+                            Observa la pantalla de tu formadora. Si estás en el <b>TOP 5</b>, obtendrás <b>50 PUNTOS</b> ganadores.
                         </p>
-                    </div>
-                </div>
-            );
-
-            // ==========================================
-            // HEADER DEL JUEGO
-            // ==========================================
-            const GameHeader = ({ title, moduleNum, onExpire }) => (
-                <div className="flex flex-row flex-wrap justify-between items-center mb-6 bg-gray-800 p-4 md:p-6 rounded-2xl border border-gray-700 shadow-md">
-                    <div className="w-full md:w-auto mb-4 md:mb-0 text-center md:text-left">
-                        <div className="text-[#00ff88] font-bold text-xs tracking-widest uppercase mb-1">Módulo {moduleNum} de 4</div>
-                        <h2 className="text-xl md:text-2xl font-bold text-white uppercase">{title}</h2>
-                    </div>
-                    <div className="flex w-full md:w-auto items-center justify-between md:justify-end gap-4 md:gap-6">
-                        <div className="text-left md:text-right">
-                            <div className="text-[10px] md:text-xs text-gray-400 uppercase font-bold">Puntos</div>
-                            <div className="font-mono text-xl md:text-2xl font-bold text-white">{score}<span className="text-gray-500 text-sm">/40</span></div>
-                        </div>
-                        <CountdownTimer initialSeconds={90} onExpire={onExpire} isLocked={isLocked} />
                     </div>
                 </div>
             );
 
             // RENDER MÓDULO 1 (DND)
             if (currentModule === 'dnd') return (
-                <div className="w-full max-w-5xl animate-fade-in p-4 md:p-6 mx-auto min-h-screen content-padding">
+                <div className="w-full max-w-4xl animate-fade-in p-3 md:p-4 mx-auto min-h-screen content-padding">
                     <GameHeader title="Genesys vs Live" moduleNum={1} onExpire={validateDnd} />
-                    <p className="text-gray-400 text-sm md:text-base mb-4 text-center">Arrastra las tarjetas a la plataforma (Genesys o Live) donde correspondan.</p>
+                    <p className="text-gray-400 text-xs md:text-sm mb-3 text-center">Arrastra las tarjetas a la plataforma correcta.</p>
                     
-                    <div className={`bg-gray-800/50 min-h-[120px] rounded-2xl p-4 mb-6 flex flex-wrap gap-2 md:gap-3 border transition-colors ${isLocked ? 'border-gray-800 opacity-50' : 'border-gray-600'}`} 
+                    <div className={`bg-gray-800/50 min-h-[80px] rounded-2xl p-2 md:p-3 mb-4 flex flex-wrap gap-2 border ${isLocked ? 'border-gray-800 opacity-50' : 'border-gray-600'}`} 
                          onDragOver={e => e.preventDefault()} onDrop={e => dndDrop(e, 'pool')}>
                         {cards.filter(c => c.zone === 'pool').map(card => (
                             <div key={card.id} draggable={!isLocked} onDragStart={e => dndDragStart(e, card.id)} 
-                                 className="draggable-card bg-gray-700 text-white px-3 py-2 md:px-4 md:py-3 rounded-xl text-xs md:text-sm font-medium shadow-lg hover:bg-gray-600 border border-gray-500 cursor-grab active:cursor-grabbing flex items-center">
-                                <span className="mr-2 text-gray-400 font-bold text-lg">⋮⋮</span> {card.text}
+                                 className="draggable-card bg-gray-700 text-white px-2 py-1 md:px-3 md:py-2 rounded-lg text-[11px] md:text-xs font-medium shadow-sm hover:bg-gray-600 border border-gray-500 cursor-grab active:cursor-grabbing flex items-center">
+                                <span className="mr-1 text-gray-400 font-bold">⋮</span> {card.text}
                             </div>
                         ))}
-                        {cards.filter(c => c.zone === 'pool').length === 0 && <div className="w-full text-center text-gray-500 py-2 italic text-sm">Todas clasificadas</div>}
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-                        <div className={`bg-[#1a2332] rounded-3xl p-4 md:p-5 border-2 border-dashed transition-all ${isLocked ? 'border-gray-700 opacity-80' : 'border-[#3b82f6]/50'}`}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+                        <div className={`bg-[#1a2332] rounded-2xl p-3 border-2 border-dashed ${isLocked ? 'border-gray-700 opacity-80' : 'border-[#3b82f6]/50'}`}
                              onDragOver={e => e.preventDefault()} onDrop={e => dndDrop(e, 'genesys')}>
-                            <h3 className="text-lg md:text-xl font-bold text-white mb-3 md:mb-4 border-b border-[#3b82f6]/30 pb-2"><span className="text-[#3b82f6] mr-2">●</span>GENESYS</h3>
-                            <div className="min-h-[120px] md:min-h-[150px] space-y-2">
+                            <h3 className="text-sm md:text-base font-bold text-white mb-2 border-b border-[#3b82f6]/30 pb-1"><span className="text-[#3b82f6] mr-1">●</span>GENESYS</h3>
+                            <div className="min-h-[100px] space-y-1">
                                 {cards.filter(c => c.zone === 'genesys').map(card => (
                                     <div key={card.id} draggable={!isLocked} onDragStart={e => dndDragStart(e, card.id)} 
-                                         className="draggable-card px-3 py-2 md:px-4 md:py-3 rounded-lg text-xs md:text-sm transition-all border bg-[#1e293b] text-white border-[#3b82f6]/50 cursor-grab flex items-center">
-                                        <span className="mr-2 text-[#3b82f6] font-bold text-lg">⋮⋮</span> {card.text}
+                                         className="draggable-card px-2 py-1 md:px-3 md:py-2 rounded-md text-[11px] md:text-xs border bg-[#1e293b] text-white border-[#3b82f6]/50 cursor-grab flex items-center">
+                                        <span className="mr-1 text-[#3b82f6] font-bold">⋮</span> {card.text}
                                     </div>
                                 ))}
                             </div>
                         </div>
                         
-                        <div className={`bg-[#321a28] rounded-3xl p-4 md:p-5 border-2 border-dashed transition-all ${isLocked ? 'border-gray-700 opacity-80' : 'border-[#ec4899]/50'}`}
+                        <div className={`bg-[#321a28] rounded-2xl p-3 border-2 border-dashed ${isLocked ? 'border-gray-700 opacity-80' : 'border-[#ec4899]/50'}`}
                              onDragOver={e => e.preventDefault()} onDrop={e => dndDrop(e, 'live')}>
-                            <h3 className="text-lg md:text-xl font-bold text-white mb-3 md:mb-4 border-b border-[#ec4899]/30 pb-2"><span className="text-[#ec4899] mr-2">●</span>LIVE</h3>
-                            <div className="min-h-[120px] md:min-h-[150px] space-y-2">
+                            <h3 className="text-sm md:text-base font-bold text-white mb-2 border-b border-[#ec4899]/30 pb-1"><span className="text-[#ec4899] mr-1">●</span>LIVE</h3>
+                            <div className="min-h-[100px] space-y-1">
                                 {cards.filter(c => c.zone === 'live').map(card => (
                                     <div key={card.id} draggable={!isLocked} onDragStart={e => dndDragStart(e, card.id)} 
-                                         className="draggable-card px-3 py-2 md:px-4 md:py-3 rounded-lg text-xs md:text-sm transition-all border bg-[#3b1525] text-white border-[#ec4899]/50 cursor-grab flex items-center">
-                                        <span className="mr-2 text-[#ec4899] font-bold text-lg">⋮⋮</span> {card.text}
+                                         className="draggable-card px-2 py-1 md:px-3 md:py-2 rounded-md text-[11px] md:text-xs border bg-[#3b1525] text-white border-[#ec4899]/50 cursor-grab flex items-center">
+                                        <span className="mr-1 text-[#ec4899] font-bold">⋮</span> {card.text}
                                     </div>
                                 ))}
                             </div>
@@ -522,27 +503,27 @@
 
             // RENDER MÓDULO 2
             if (currentModule === 'match') return (
-                <div className="w-full max-w-4xl animate-fade-in p-4 md:p-6 mx-auto min-h-screen content-padding">
+                <div className="w-full max-w-4xl animate-fade-in p-3 md:p-4 mx-auto min-h-screen content-padding">
                     <GameHeader title="Relacionar Tiempos" moduleNum={2} onExpire={validateMatch} />
-                    <p className="text-gray-400 text-sm md:text-base mb-6 text-center">Toca un tiempo a la izquierda y luego toca su acción correspondiente a la derecha.</p>
+                    <p className="text-gray-400 text-xs md:text-sm mb-4 text-center">Toca un tiempo a la izquierda y luego toca su acción correspondiente a la derecha.</p>
                     
-                    <div className="flex flex-col md:flex-row gap-4 md:gap-6">
-                        <div className="w-full md:w-1/2 space-y-2 md:space-y-3">
+                    <div className="flex flex-col md:flex-row gap-3 md:gap-4">
+                        <div className="w-full md:w-1/2 space-y-2">
                             {leftItems.map(item => (
                                 <button key={item.id} onClick={() => matchLeftClick(item.id)} disabled={isLocked || !!matches[item.id]} 
-                                    className={`w-full flex items-center p-3 md:p-4 rounded-xl border-2 transition ${matches[item.id] ? 'border-[#00ff88] bg-green-900/20 text-[#00ff88] opacity-70' : selectedLeft === item.id ? 'border-white bg-gray-700 scale-105' : 'border-gray-700 bg-gray-800'}`}>
-                                    <div className="mr-3 text-xl md:text-2xl">{item.icon}</div>
-                                    <span className="text-base md:text-lg font-bold">{item.text}</span>
+                                    className={`w-full flex items-center p-2 md:p-3 rounded-lg border-2 transition ${matches[item.id] ? 'border-[#00ff88] bg-green-900/20 text-[#00ff88] opacity-70' : selectedLeft === item.id ? 'border-white bg-gray-700 scale-[1.02]' : 'border-gray-700 bg-gray-800'}`}>
+                                    <div className="mr-2 text-lg md:text-xl">{item.icon}</div>
+                                    <span className="text-[13px] md:text-sm font-bold">{item.text}</span>
                                 </button>
                             ))}
                         </div>
-                        <div className="w-full md:w-1/2 space-y-2 md:space-y-3">
+                        <div className="w-full md:w-1/2 space-y-2">
                             {rightItems.map(item => {
                                 const isMatched = Object.values(matches).includes(item.id);
                                 return (
                                     <button key={item.id} onClick={() => matchRightClick(item.id, item.match)} disabled={isLocked || isMatched || !selectedLeft} 
-                                        className={`w-full text-left p-4 md:p-5 rounded-xl border-2 transition ${isMatched ? 'border-[#00ff88] bg-green-900/20 text-[#00ff88] opacity-70' : selectedLeft ? 'border-gray-400 bg-gray-700 cursor-pointer shadow-[0_0_10px_rgba(255,255,255,0.1)]' : 'border-gray-800 bg-gray-800/40 opacity-50'}`}>
-                                        <span className="text-sm md:text-base font-medium">{item.text}</span>
+                                        className={`w-full text-left p-3 md:p-4 rounded-lg border-2 transition ${isMatched ? 'border-[#00ff88] bg-green-900/20 text-[#00ff88] opacity-70' : selectedLeft ? 'border-gray-400 bg-gray-700 cursor-pointer shadow-sm' : 'border-gray-800 bg-gray-800/40 opacity-50'}`}>
+                                        <span className="text-[11px] md:text-xs font-medium">{item.text}</span>
                                     </button>
                                 );
                             })}
@@ -555,19 +536,19 @@
 
             // RENDER MÓDULO 3
             if (currentModule === 'order') return (
-                <div className="w-full max-w-4xl animate-fade-in p-4 md:p-6 mx-auto min-h-screen content-padding">
+                <div className="w-full max-w-4xl animate-fade-in p-3 md:p-4 mx-auto min-h-screen content-padding">
                     <GameHeader title="Orden de Gestión" moduleNum={3} onExpire={validateOrder} />
-                    <p className="text-gray-400 text-sm md:text-base mb-6 text-center">Usa las flechas para ordenar paso a paso cómo debe ser la atención de un estudiante.</p>
+                    <p className="text-gray-400 text-xs md:text-sm mb-4 text-center">Usa las flechas para ordenar paso a paso la atención de un estudiante.</p>
                     
-                    <div className={`space-y-2 md:space-y-3 bg-gray-800 p-4 md:p-6 rounded-3xl border ${isLocked ? 'border-gray-800 opacity-80' : 'border-gray-700'}`}>
+                    <div className={`space-y-2 bg-gray-800 p-3 md:p-4 rounded-2xl border ${isLocked ? 'border-gray-800 opacity-80' : 'border-gray-700'}`}>
                         {orderedItems.map((item, index) => (
-                            <div key={item.id} className="flex items-center bg-gray-700 p-2 md:p-3 rounded-xl shadow-sm">
-                                <div className="flex flex-col mr-3 gap-1">
-                                    <button onClick={() => moveItem(index, 'up')} disabled={isLocked || index === 0} className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-gray-600 hover:bg-[#00ff88] hover:text-black flex items-center justify-center disabled:opacity-30 active:scale-95 transition text-xs md:text-sm">▲</button>
-                                    <button onClick={() => moveItem(index, 'down')} disabled={isLocked || index === orderedItems.length - 1} className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-gray-600 hover:bg-[#00ff88] hover:text-black flex items-center justify-center disabled:opacity-30 active:scale-95 transition text-xs md:text-sm">▼</button>
+                            <div key={item.id} className="flex items-center bg-gray-700 p-2 rounded-lg shadow-sm">
+                                <div className="flex flex-col mr-2 gap-1">
+                                    <button onClick={() => moveItem(index, 'up')} disabled={isLocked || index === 0} className="w-6 h-6 rounded bg-gray-600 hover:bg-[#00ff88] hover:text-black flex items-center justify-center disabled:opacity-30 text-[10px]">▲</button>
+                                    <button onClick={() => moveItem(index, 'down')} disabled={isLocked || index === orderedItems.length - 1} className="w-6 h-6 rounded bg-gray-600 hover:bg-[#00ff88] hover:text-black flex items-center justify-center disabled:opacity-30 text-[10px]">▼</button>
                                 </div>
-                                <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-gray-800 border border-gray-500 text-gray-300 flex items-center justify-center font-bold mr-3 shrink-0 text-sm md:text-base">{index + 1}</div>
-                                <span className="text-sm md:text-base font-medium leading-tight">{item.text}</span>
+                                <div className="w-6 h-6 md:w-8 md:h-8 rounded-full bg-gray-800 border border-gray-500 text-gray-300 flex items-center justify-center font-bold mr-2 shrink-0 text-xs">{index + 1}</div>
+                                <span className="text-xs md:text-sm font-medium leading-tight">{item.text}</span>
                             </div>
                         ))}
                     </div>
@@ -578,34 +559,34 @@
 
             // RENDER MÓDULO 4
             if (currentModule === 'fill') return (
-                <div className="w-full max-w-4xl animate-fade-in p-4 md:p-6 mx-auto min-h-screen content-padding">
+                <div className="w-full max-w-4xl animate-fade-in p-3 md:p-4 mx-auto min-h-screen content-padding">
                     <GameHeader title="Reglas de Oro" moduleNum={4} onExpire={validateFill} />
-                    <p className="text-gray-400 text-sm md:text-base mb-6 text-center">Toca los espacios oscuros para seleccionar el concepto correcto que completa cada frase.</p>
+                    <p className="text-gray-400 text-xs md:text-sm mb-4 text-center">Selecciona el concepto correcto que completa cada frase operativa.</p>
                     
-                    <div className="space-y-4 md:space-y-6">
-                        <div className="bg-gray-800 p-4 md:p-6 rounded-2xl border border-gray-600 leading-loose text-sm md:text-lg">
-                            <span className="font-bold text-[#00ff88] mr-2">1.</span> En NINGUNA circunstancia se debe utilizar el código 
-                            <select disabled={isLocked} value={blankAnswers.q1} onChange={(e) => handleBlankChange('q1', e.target.value)} className="mx-1 my-1 px-3 py-2 rounded-lg font-bold border-2 focus:border-[#00ff88] text-sm md:text-base w-full md:w-auto">
+                    <div className="space-y-3 md:space-y-4">
+                        <div className="bg-gray-800 p-4 md:p-5 rounded-xl border border-gray-600 leading-relaxed text-xs md:text-sm">
+                            <span className="font-bold text-[#00ff88] mr-1">1.</span> NUNCA utilices el código
+                            <select disabled={isLocked} value={blankAnswers.q1} onChange={(e) => handleBlankChange('q1', e.target.value)} className="mx-1 px-2 py-1 rounded bg-gray-700 font-bold border focus:border-[#00ff88] w-full md:w-auto mt-1 md:mt-0">
                                 <option>Selecciona...</option><option>Llamada muda</option><option>No volver a llamar</option><option>Incidencia técnica</option>
                             </select>
-                            en Genesys, ya que afecta el seguimiento.
+                            en Genesys, afecta el seguimiento.
                         </div>
-                        <div className="bg-gray-800 p-4 md:p-6 rounded-2xl border border-gray-600 leading-loose text-sm md:text-lg">
-                            <span className="font-bold text-[#00ff88] mr-2">2.</span> Si se corta la llamada en el saludo sin pedir datos, en HubSpot 
-                            <select disabled={isLocked} value={blankAnswers.q2_1} onChange={(e) => handleBlankChange('q2_1', e.target.value)} className="mx-1 my-1 px-3 py-2 rounded-lg font-bold border-2 focus:border-[#00ff88] text-sm md:text-base w-full md:w-auto">
+                        <div className="bg-gray-800 p-4 md:p-5 rounded-xl border border-gray-600 leading-relaxed text-xs md:text-sm">
+                            <span className="font-bold text-[#00ff88] mr-1">2.</span> Si se corta en el saludo sin pedir datos, en HubSpot
+                            <select disabled={isLocked} value={blankAnswers.q2_1} onChange={(e) => handleBlankChange('q2_1', e.target.value)} className="mx-1 px-2 py-1 rounded bg-gray-700 font-bold border focus:border-[#00ff88] w-full md:w-auto my-1">
                                 <option>Selecciona...</option><option>se crea Ticket</option><option>NO se crea Ticket</option>
                             </select>
-                            y en Genesys tipificas como 
-                            <select disabled={isLocked} value={blankAnswers.q2_2} onChange={(e) => handleBlankChange('q2_2', e.target.value)} className="mx-1 my-1 px-3 py-2 rounded-lg font-bold border-2 focus:border-[#00ff88] text-sm md:text-base w-full md:w-auto">
+                            y en Genesys tipificas
+                            <select disabled={isLocked} value={blankAnswers.q2_2} onChange={(e) => handleBlankChange('q2_2', e.target.value)} className="mx-1 px-2 py-1 rounded bg-gray-700 font-bold border focus:border-[#00ff88] w-full md:w-auto mt-1 md:mt-0">
                                 <option>Selecciona...</option><option>Llamada muda</option><option>Llamada cortada</option>
                             </select>.
                         </div>
-                        <div className="bg-gray-800 p-4 md:p-6 rounded-2xl border border-gray-600 leading-loose text-sm md:text-lg">
-                            <span className="font-bold text-[#00ff88] mr-2">3.</span> En la gestión de Call Me Back, aplico la 
-                            <select disabled={isLocked} value={blankAnswers.q3} onChange={(e) => handleBlankChange('q3', e.target.value)} className="mx-1 my-1 px-3 py-2 rounded-lg font-bold border-2 focus:border-[#00ff88] text-sm md:text-base w-full md:w-auto">
+                        <div className="bg-gray-800 p-4 md:p-5 rounded-xl border border-gray-600 leading-relaxed text-xs md:text-sm">
+                            <span className="font-bold text-[#00ff88] mr-1">3.</span> En un Call Me Back, uso la
+                            <select disabled={isLocked} value={blankAnswers.q3} onChange={(e) => handleBlankChange('q3', e.target.value)} className="mx-1 px-2 py-1 rounded bg-gray-700 font-bold border focus:border-[#00ff88] w-full md:w-auto mt-1 md:mt-0">
                                 <option>Selecciona...</option><option>Transferencia rápida</option><option>Venta Consultiva</option>
                             </select>
-                            para indagar, incluso si dice que ya resolvió su duda.
+                            para indagar, aunque digan que ya resolvieron.
                         </div>
                     </div>
                     
