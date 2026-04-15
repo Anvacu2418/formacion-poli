@@ -153,7 +153,7 @@
                             <h3 class="text-xl font-bold text-slate-800 mb-4">"No tengo dinero"</h3>
                             <div class="bg-slate-50 p-4 rounded-xl w-full border border-slate-200">
                                 <p class="text-slate-700 text-sm mb-2"><strong class="text-slate-900">👤 Estudiante:</strong> No puedo ingresar, no tengo dinero.</p>
-                                <p class="text-slate-700 text-sm"><strong class="text-slate-900">👩‍💼 Experto:</strong> ¿Y con alguna financiación podrías continuar? (Acepta el "no" rápido).</p>
+                                <p class="text-slate-700 text-sm leading-tight"><strong class="text-slate-900">👩‍💼 Experto:</strong> "No te preocupes, vamos a hacer la financiación de tu matrícula por Letra de Cambio para que puedas continuar". <br><span class="text-xs text-red-500 font-bold">(Ofrece la herramienta automática sin indagar).</span></p>
                             </div>
                         </div>
                         <div class="flip-card-back text-left">
@@ -162,12 +162,12 @@
                             </div>
                             <h3 class="text-xl font-bold mb-3">Indagación Estratégica</h3>
                             <p class="text-sm text-blue-50 mb-3 font-medium italic">"Te entiendo... ¿qué presupuesto tenías contemplado?"</p>
-                            <ul class="text-sm space-y-2 mb-4 text-white">
-                                <li><i class="fa-solid fa-chevron-right mr-2 text-yellow-300"></i> Financiación de matrícula y materias en <strong>4 cuotas</strong>.</li>
-                                <li><i class="fa-solid fa-chevron-right mr-2 text-yellow-300"></i> Fechas de pago exactas: <strong>los 15 de cada mes</strong>.</li>
-                                <li><i class="fa-solid fa-chevron-right mr-2 text-yellow-300"></i> Todo el proceso se maneja por <strong>Letra de Cambio</strong>.</li>
+                            <ul class="text-sm space-y-2 mb-4 text-white leading-tight">
+                                <li><i class="fa-solid fa-chevron-right mr-2 text-yellow-300"></i> Si el presupuesto es bajo, ofrécele llevar <strong>2 o 3 materias</strong> en lugar del bloque completo.</li>
+                                <li><i class="fa-solid fa-chevron-right mr-2 text-yellow-300"></i> Háblale siempre en positivo: <em>"Acomodemos el plan a tu bolsillo para asegurar tu continuidad"</em>.</li>
+                                <li><i class="fa-solid fa-chevron-right mr-2 text-yellow-300"></i> La Letra de Cambio es el medio, <strong>no el único argumento</strong>.</li>
                             </ul>
-                            <p class="text-sm font-bold mt-auto bg-black/20 p-3 rounded-xl text-center">Acompaña desde la solución.</p>
+                            <p class="text-sm font-bold mt-auto bg-black/20 p-3 rounded-xl text-center">Adapta el plan de estudios a su realidad.</p>
                         </div>
                     </div>
                 </div>
@@ -242,7 +242,7 @@
                 <div class="space-y-4">
                     <div class="border border-slate-200 rounded-2xl overflow-hidden accordion">
                         <button class="w-full px-6 py-4 text-left bg-slate-50 hover:bg-slate-100 transition-colors flex justify-between items-center font-bold text-slate-700" onclick="toggleAccordion(this)">
-                            <span><i class="fa-solid fa-people-group text-purple-500 mr-2 text-lg"></i> Trabajo en Equipo: El Contexto es el Rey</span>
+                            <span><i class="fa-solid fa-handshake text-purple-500 mr-2 text-lg"></i> Trabajo en Equipo: El Contexto es el Rey</span>
                             <i class="fa-solid fa-chevron-down text-slate-400 transition-transform"></i>
                         </button>
                         <div class="accordion-content bg-white">
@@ -275,7 +275,6 @@
                         </div>
                     </div>
                     
-                    <!-- NUEVO 4: Pagos, Convenios y Plan Anual -->
                     <div class="border border-slate-200 rounded-2xl overflow-hidden accordion">
                         <button class="w-full px-6 py-4 text-left bg-slate-50 hover:bg-slate-100 transition-colors flex justify-between items-center font-bold text-slate-700" onclick="toggleAccordion(this)">
                             <span><i class="fa-solid fa-file-invoice-dollar text-green-500 mr-2 text-lg"></i> Pagos, Convenios y Plan Anual</span>
@@ -290,7 +289,6 @@
                         </div>
                     </div>
 
-                    <!-- NUEVO 5: Convalidaciones y Homologaciones -->
                     <div class="border border-slate-200 rounded-2xl overflow-hidden accordion">
                         <button class="w-full px-6 py-4 text-left bg-slate-50 hover:bg-slate-100 transition-colors flex justify-between items-center font-bold text-slate-700" onclick="toggleAccordion(this)">
                             <span><i class="fa-solid fa-file-signature text-teal-500 mr-2 text-lg"></i> Convalidaciones y Homologaciones</span>
@@ -391,11 +389,11 @@
                     <div class="space-y-4" id="colActions">
                         <div class="game-card bg-white text-slate-700 p-4 rounded-xl flex items-center shadow-md" data-match="4" onclick="selectCard(this, 'B')">
                             <div class="h-8 w-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold mr-4 shrink-0">A</div>
-                            <p class="text-sm font-medium">Lo asesoro para matricular <strong>2 o 3 materias</strong> y asegurar su avance.</p>
+                            <p class="text-sm font-medium">Armo un bloque estratégico con las materias habilitadas para asegurar su avance.</p>
                         </div>
                         <div class="game-card bg-white text-slate-700 p-4 rounded-xl flex items-center shadow-md" data-match="1" onclick="selectCard(this, 'B')">
                             <div class="h-8 w-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold mr-4 shrink-0">B</div>
-                            <p class="text-sm font-medium">Ofrezco financiación por <strong>Letra de Cambio en 4 cuotas</strong>, a pagar los 15 de cada mes.</p>
+                            <p class="text-sm font-medium">Indago el presupuesto real y le ofrezco acomodar su plan llevando menos materias.</p>
                         </div>
                         <div class="game-card bg-white text-slate-700 p-4 rounded-xl flex items-center shadow-md" data-match="3" onclick="selectCard(this, 'B')">
                             <div class="h-8 w-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold mr-4 shrink-0">C</div>
@@ -472,12 +470,12 @@
                         <i class="fa-solid fa-arrow-down-1-9 text-3xl text-purple-500"></i>
                         <div>
                             <h4 class="text-xl font-bold text-slate-800">El "Pase Gol" Perfecto</h4>
-                            <p class="text-sm text-slate-500">Arrastra (o usa los botones) para ordenar los pasos de creación de ticket a la Universidad.</p>
+                            <p class="text-sm text-slate-500">Arrastra (o usa los botones) para ordenar los pasos de creación de un ticket a la Universidad.</p>
                         </div>
                     </div>
                     
                     <ul id="sortableList" class="space-y-3">
-                        <!-- Elementos desordenados -->
+                        <!-- Elementos desordenados con los textos genéricos nuevos -->
                         <li class="sortable-item" draggable="true" data-correct="5">
                             <i class="fa-solid fa-bars drag-handle"></i> 
                             <span class="flex-grow">Enviar el ticket a la Universidad para que ejecuten rápidamente.</span>
@@ -485,17 +483,17 @@
                         </li>
                         <li class="sortable-item" draggable="true" data-correct="3">
                             <i class="fa-solid fa-bars drag-handle"></i> 
-                            <span class="flex-grow">Identificar el área específica a la que debe llegar (Ej: Admisiones).</span>
+                            <span class="flex-grow">Identificar el área específica a la que debe llegar.</span>
                             <div class="flex flex-col gap-1 ml-4"><button onclick="moveUp(this)" class="text-slate-400 hover:text-blue-600"><i class="fa-solid fa-caret-up"></i></button><button onclick="moveDown(this)" class="text-slate-400 hover:text-blue-600"><i class="fa-solid fa-caret-down"></i></button></div>
                         </li>
                         <li class="sortable-item" draggable="true" data-correct="1">
                             <i class="fa-solid fa-bars drag-handle"></i> 
-                            <span class="flex-grow">Validar que el estudiante ya dio el "SÍ" definitivo para el proceso.</span>
+                            <span class="flex-grow">Validar y entender realmente cuál es la solicitud o consulta puntual del estudiante.</span>
                             <div class="flex flex-col gap-1 ml-4"><button onclick="moveUp(this)" class="text-slate-400 hover:text-blue-600"><i class="fa-solid fa-caret-up"></i></button><button onclick="moveDown(this)" class="text-slate-400 hover:text-blue-600"><i class="fa-solid fa-caret-down"></i></button></div>
                         </li>
                         <li class="sortable-item" draggable="true" data-correct="4">
                             <i class="fa-solid fa-bars drag-handle"></i> 
-                            <span class="flex-grow">Adjuntar correos o documentos soporte al caso de HubSpot.</span>
+                            <span class="flex-grow">Adjuntar correos o documentos soportes al caso.</span>
                             <div class="flex flex-col gap-1 ml-4"><button onclick="moveUp(this)" class="text-slate-400 hover:text-blue-600"><i class="fa-solid fa-caret-up"></i></button><button onclick="moveDown(this)" class="text-slate-400 hover:text-blue-600"><i class="fa-solid fa-caret-down"></i></button></div>
                         </li>
                         <li class="sortable-item" draggable="true" data-correct="2">
