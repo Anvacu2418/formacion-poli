@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador Poli-Retención | Sales Academy</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Estilos base y variables */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #1e3a8a 0%, #047857 100%);
+            background-attachment: fixed;
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+        }
+
+        /* Glassmorphism Effect */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+            border-radius: 24px;
+        }
+
+        .glass-btn {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .glass-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .glass-btn.selected {
+            background: rgba(52, 211, 153, 0.6); /* Verde Poli */
+            border-color: #34d399;
+        }
+
+        /* Chat bubbles */
+        .chat-bubble-student {
+            background: rgba(255, 255, 255, 0.9);
+            color: #1f2937;
+            border-radius: 20px 20px 20px 0;
+            padding: 1.2rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        .chat-bubble-student::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: -10px;
+            width: 20px;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            clip-path: polygon(100% 0, 0% 100%, 100% 100%);
+        }
+
+        /* Animaciones */
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .hidden-view {
+            display: none !important;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div class="max-w-4xl w-full mx-auto glass-panel p-8 md:p-12 fade-in" id="app-container">
+        
+        <!-- PANTALLA DE INICIO -->
+        <div id="screen-start" class="text-center">
+            <div class="inline-block p-4 rounded-full bg-emerald-500/20 mb-6">
+                <i class="fa-solid fa-headset text-5xl text-emerald-400"></i>
+            </div>
+            <h1 class="text-4xl md:text-5xl font-extrabold mb-4 tracking-tight">
+                Simulador <span class="text-emerald-400">Poli-Retención</span>
+            </h1>
+            <p class="text-lg md:text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
+                Demuestra tu dominio en los Tipos de Cierre y la Fórmula Experta de Rematrícula. 
+                Recuerda: <span class="font-bold">No es un trámite administrativo, es proteger su permanencia.</span>
+            </p>
+            
+            <div class="grid md:grid-cols-3 gap-4 mb-10 text-sm text-left">
+                <div class="glass-panel p-4 flex items-start gap-3">
+                    <i class="fa-solid fa-user-shield text-2xl text-emerald-400 mt-1"></i>
+                    <div>
+                        <h3 class="font-bold mb-1">Tu Rol</h3>
+                        <p class="text-gray-200">Consultor experto de permanencia académica.</p>
+                    </div>
+                </div>
+                <div class="glass-panel p-4 flex items-start gap-3">
+                    <i class="fa-solid fa-brain text-2xl text-purple-400 mt-1"></i>
+                    <div>
+                        <h3 class="font-bold mb-1">El Reto</h3>
+                        <p class="text-gray-200">Analizar 5 casos complejos. 20 Polipuntos por acierto (Max 100).</p>
+                    </div>
+                </div>
+                <div class="glass-panel p-4 flex items-start gap-3">
+                    <i class="fa-solid fa-eye-slash text-2xl text-blue-400 mt-1"></i>
+                    <div>
+                        <h3 class="font-bold mb-1">Diagnóstico Ciego</h3>
+                        <p class="text-gray-200">No sabrás en cuál fallas hasta el reporte integral final.</p>
+                    </div>
+                </div>
+            </div>
+
+            <button onclick="startGame()" class="bg-emerald-500 hover:bg-emerald-400 text-white font-bold py-4 px-10 rounded-full shadow-lg transform transition hover:scale-105 text-lg">
+                <i class="fa-solid fa-play mr-2"></i> Iniciar Simulación
+            </button>
+        </div>
+
+        <!-- PANTALLA DE JUEGO -->
+        <div id="screen-game" class="hidden-view">
+            <div class="flex justify-between items-center mb-8 border-b border-white/20 pb-4">
+                <div>
+                    <span class="text-sm font-bold tracking-wider text-emerald-400 uppercase">Caso Práctico</span>
+                    <h2 class="text-2xl font-bold" id="question-counter">1 / 5</h2>
+                </div>
+                <div class="text-right">
+                    <span class="text-sm font-bold tracking-wider text-blue-300 uppercase">Recompensa Potencial</span>
+                    <div class="text-xl font-bold"><i class="fa-solid fa-gem text-emerald-400"></i> +20 Polipuntos</div>
+                </div>
+            </div>
+
+            <div class="w-full bg-white/20 rounded-full h-2.5 mb-8">
+                <div class="bg-emerald-400 h-2.5 rounded-full transition-all duration-500" id="progress-bar" style="width: 20%"></div>
+            </div>
+
+            <!-- Chat Context -->
+            <div class="mb-10 fade-in" id="scenario-container">
+                <div class="flex items-start gap-4 mb-6">
+                    <div class="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center text-gray-700 font-bold text-xl flex-shrink-0" id="student-avatar">
+                        C
+                    </div>
+                    <div>
+                        <p class="text-sm text-emerald-300 mb-1 font-bold" id="student-info">Camila | 6to Semestre | Psicología</p>
+                        <div class="chat-bubble-student">
+                            <p class="text-lg leading-relaxed" id="student-dialogue">
+                                "He estado muy estresada con el trabajo y creo que lo mejor es parar este semestre para respirar. Retomo el otro año."
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Opciones -->
+            <h3 class="font-bold mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-comment-dots"></i> Selecciona tu respuesta estratégica:
+            </h3>
+            <div class="space-y-3" id="options-container">
+                <!-- Buttons injected via JS -->
+            </div>
+
+            <div class="mt-8 flex justify-end">
+                <button onclick="nextQuestion()" id="btn-next" class="bg-blue-600/50 hover:bg-blue-500 text-white font-bold py-3 px-8 rounded-full shadow-lg transition opacity-50 cursor-not-allowed" disabled>
+                    Siguiente Caso <i class="fa-solid fa-arrow-right ml-2"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- PANTALLA DE RESULTADOS -->
+        <div id="screen-result" class="hidden-view text-center fade-in">
+            <div class="inline-block p-6 rounded-full bg-white/10 mb-6 relative">
+                <i class="fa-solid fa-trophy text-6xl text-yellow-400"></i>
+                <div class="absolute -bottom-2 -right-2 bg-emerald-500 rounded-full p-2 border-2 border-[#1e3a8a]">
+                    <i class="fa-solid fa-check text-white"></i>
+                </div>
+            </div>
+            
+            <h2 class="text-3xl md:text-4xl font-extrabold mb-2">Simulación Completada</h2>
+            <p class="text-xl text-blue-200 mb-8">Has obtenido un total de:</p>
+            
+            <div class="text-6xl font-black text-emerald-400 mb-2" id="final-score">0</div>
+            <p class="text-sm tracking-widest uppercase mb-10 text-gray-300">Polipuntos Acumulados</p>
+
+            <div class="glass-panel p-8 text-left mb-8">
+                <h3 class="text-xl font-bold mb-4 text-emerald-300 border-b border-emerald-400/30 pb-2">
+                    <i class="fa-solid fa-chart-radar mr-2"></i> Diagnóstico de Habilidades Comerciales
+                </h3>
+                <p id="diagnostic-text" class="text-lg leading-relaxed text-gray-100 mb-4">
+                    <!-- Diagnostic text injected here -->
+                </p>
+                <div id="improvement-areas" class="mt-4 p-4 bg-red-500/10 border border-red-400/30 rounded-lg text-sm">
+                    <!-- Improvement tips injected here -->
+                </div>
+            </div>
+
+            <button onclick="resetGame()" class="bg-white text-[#1e3a8a] font-bold py-3 px-8 rounded-full shadow-lg transform transition hover:scale-105">
+                <i class="fa-solid fa-rotate-right mr-2"></i> Intentar Nuevamente
+            </button>
+        </div>
+
+    </div>
+
+    <script>
+        // DATA: Base de datos de preguntas aplicando Venta Consultiva y la Fórmula Experta.
+        const questions = [
+            {
+                student: "Camila",
+                info: "6to Semestre | Psicología Virtual",
+                initial: "C",
+                dialogue: "He estado muy estresada con el trabajo y creo que lo mejor es parar este semestre para respirar. Retomo el otro año de manera segura, lo prometo.",
+                options: [
+                    {
+                        text: "Recuerda que si aplazas pierdes la continuidad y los precios del otro año subirán. Deberías pensarlo bien por el tema financiero.",
+                        isCorrect: false
+                    },
+                    {
+                        text: "Entiendo que estés agotada, Camila. Ya estás a más de la mitad de tu carrera. Podemos revisar llevar media matrícula para aligerar tu carga. ¿Te ayudo a solicitar de una vez el ajuste en la orden de matrícula y revisamos qué materias puedes llevar en este semestre para darle prioridad a los pre-requisitos?",
+                        isCorrect: true
+                    },
+                    {
+                        text: "Comprendo, el descanso es vital. De igual forma no es necesario hacer ningún proceso formal, el sistema te toma el cese académico. Eso sí, recuerda que para el próximo año deberás hacer la solicitud de reintegro para poder retomar tus estudios y te acoges a la resolución rectoral vigente y a posibles cambios en el plan de estudios, y a que se incremente el valor de tu matrícula. ¡Nos vemos el otro año!",
+                        isCorrect: false
+                    },
+                    {
+                        text: "Camila, no te detengas. Los ganadores no se rinden, si paras ahora vas a perder todo el ritmo de estudio que llevas. ¡Vamos a matricular de una vez, yo sé que tú puedes!",
+                        isCorrect: false
+                    }
+                ]
+            },
+            {
+                student: "Andrés",
+                info: "3er Semestre | Administración de Empresas Virtual",
+                initial: "A",
+                dialogue: "Me quedé sin empleo este mes y la liquidación no me alcanza. Es imposible pagar la matrícula completa ahora mismo, me toca aplazar definitivamente.",
+                options: [
+                    {
+                        text: "Andrés, si tu meta es graduarte en 2029, no puedes detenerte por esto. Trata de pedir prestado a un familiar, pero asegura tu matrícula, tu futuro profesional es la prioridad.",
+                        isCorrect: false
+                    },
+                    {
+                        text: "Es una lástima, Andrés. Entiendo perfectamente. Ojalá consigas empleo pronto. Fíjate que en el Poli contamos con un portal de empleabilidad donde puedes registrar tu hoja de vida e incluso te hacen acompañamiento. Avísame cuando tengas el dinero y retomamos el proceso de matrícula.",
+                        isCorrect: false
+                    },
+                    {
+                        text: "Sé que es una situación muy angustiante, Andrés. Sin embargo, has hecho un gran esfuerzo para llegar al tercer semestre. Tenemos una muy buena opción para este periodo y es la posibilidad de realizar una financiación 40/60. Durante la etapa de estudio pagas el 40% del semestre como capital más los intereses sobre el total del crédito y al finalizar la carrera pagas el 60% restante junto con los intereses generados según el plazo elegido, máximo 60 meses. Revisemos juntos las condiciones para que puedas hacer de una vez la solicitud.",
+                        isCorrect: true
+                    },
+                    {
+                        text: "No te preocupes Andrés, en la página web en la sección de 'Apoyo Financiero' están todas las entidades con las que tenemos convenio. Revísalas, aplica a una y me cuentas si te aprueban.",
+                        isCorrect: false
+                    }
+                ]
+            },
+            {
+                student: "Valentina",
+                info: "7mo Semestre | Derecho Presencial",
+                initial: "V",
+                dialogue: "Acabo de tener a mi bebé hace un mes y el tiempo literal no me da para nada. Siento que no voy a rendir en la universidad y no quiero perder materias.",
+                options: [
+                    {
+                        text: "Felicidades por tu bebé, Valentina. Entiendo que ahora tu tiempo es muy limitado. Tu meta de ser abogada sigue intacta y llevas un gran porcentaje avanzado. Veo acá en el sistema que puedes realizar el pago de media matrícula y llevar 3 materias. Al ser presencial, el sistema te permite escoger 2 materias virtuales, y podemos revisar a través de un caso con la facultad si te dan autorización de llevar la tercera también de forma virtual. Así te conectas 24/7, las distribuimos en los dos bloques, y aunque los encuentros sincrónicos son una vez a la semana, si no te puedes conectar puedes ver la grabación. ¿Te ayudo a tramitarlo?",
+                        isCorrect: true
+                    },
+                    {
+                        text: "Claro Valentina, ser mamá es muy demandante. Tómate el semestre con tu bebé, es lo más lógico y responsable. Quedamos atentos para que más adelante puedas retomar cuando las cosas ya estén un poco mejor con tu bebé. Aquí te vamos a estar esperando y tienes las puertas abiertas.",
+                        isCorrect: false
+                    },
+                    {
+                        text: "Valentina, muchísimas mamás estudian y trabajan al mismo tiempo. Es cuestión de organización y manejo del tiempo. Si de verdad quieres ser abogada, debes matricular. ¿Procedemos con el pago?",
+                        isCorrect: false
+                    },
+                    {
+                        text: "Te entiendo Valentina. Recuerda que debido al aplazamiento, cuando quieras regresar deberás pedir un reintegro más adelante y esto implica que te acoges a la resolución rectoral vigente. Es decir, posibles cambios en el plan de estudios y el valor que tengamos vigente en el momento que decidas regresar, además de que te vas a atrasar en tu plan de estudios. Piénsalo.",
+                        isCorrect: false
+                    }
+                ]
+            },
+            {
+                student: "Mateo",
+                info: "4to Semestre | Ingeniería de Software Virtual",
+                initial: "M",
+                dialogue: "Siento que el pénsum no está tan actualizado en tecnologías nuevas. Un amigo me recomendó otra universidad y estoy pensando seriamente en cambiarme.",
+                options: [
+                    {
+                        text: "Mateo, somos líderes en la modalidad virtual y una de las mejores universidades del país, avalados por el Ministerio de Educación. Ten en cuenta que si te cambias, hay un riesgo alto de que no te homologuen todas las asignaturas y te atrases. Es mejor que continúes acá con la universidad y asegures tu título.",
+                        isCorrect: false
+                    },
+                    {
+                        text: "Entiendo tu preocupación por estar a la vanguardia, Mateo. Sin embargo, llevas un ritmo excelente y cambiarte implica retrasar tu fecha de grado proyectada. Igual recuerda que a través de los énfasis y las electivas puedes matricular asignaturas que van surgiendo con las últimas novedades tecnológicas. ¿Tienes pensado pagar en línea o en efectivo para que podamos ayudarte con tu proceso? Igual podemos revisar cuáles podrían ser las asignaturas que puedas inscribir.",
+                        isCorrect: true
+                    },
+                    {
+                        text: "Bueno Mateo, es tu decisión como profesional. Si deseas no continuar, simplemente el sistema te va a tomar un cese académico al no realizar el pago de tus próximas matrículas. Igual, si en algún momento llegas a cambiar de opinión, puedes hacer la solicitud de reintegro para retomar otra vez tu carrera con nosotros y continuar con el proceso.",
+                        isCorrect: false
+                    },
+                    {
+                        text: "Es normal dudar Mateo. Pero mira, tu propósito es graduarte pronto y recibir tu título. Ya llevas 4 semestres de esfuerzo y dedicación con nosotros. Tienes que pensar en todo lo que has avanzado y no dejarte llevar por comentarios externos. ¡Anímate y matriculemos de una vez para que no pierdas el ritmo!",
+                        isCorrect: false
+                    }
+                ]
+            },
+            {
+                student: "Laura",
+                info: "2do Semestre | Diseño Digital Virtual",
+                initial: "L",
+                dialogue: "Ay, es que no sé... la verdad estoy como desmotivada con la carrera. Siento que no estoy avanzando. Por eso no he hecho el pago de la rematrícula.",
+                options: [
+                    {
+                        text: "Laura, recuerda que la fecha límite de pago es este viernes. Si no pagas para esa fecha, se te va a incrementar un 5% adicional en la orden de matrícula, lo que te va a generar más gastos. Te sugiero que hagas el pago ahorita para que no tengas inconvenientes mientras decides bien qué hacer.",
+                        isCorrect: false
+                    },
+                    {
+                        text: "Comprendo ese sentimiento, Laura, a veces hay retos. Pero recuerda por qué escogiste esta carrera la primera vez y ese sueño que quieres cumplir. ¡Lo podemos lograr juntos! La universidad cuenta con estrategias como la caja de herramientas, asesorías extra clases y el área de permanencia con workshops para ser un estudiante exitoso. Además, tenemos el CREA con talleres, simuladores y laboratorios. La idea es que no te desanimes. ¿Qué te parece si te genero la orden de pago y te la envío a tu correo para que realices el proceso y sigamos adelante?",
+                        isCorrect: true
+                    },
+                    {
+                        text: "¡Anímate Laura! El Diseño Digital es una carrera hermosa y súper creativa, ¡tienes que meterle ganas! Vamos, te genero de una vez la orden de pago por media matrícula para que puedas continuar. Así retomas la motivación y las ganas de seguir.",
+                        isCorrect: false
+                    },
+                    {
+                        text: "Entiendo, Laura. Si te has dado cuenta de que esta no es la carrera que te apasiona, podemos realizar un proceso de cambio de programa. Es muy sencillo, aprovechamos que aún no has pagado tu matrícula y yo te explico el paso a paso por el Smart Campus. Cuéntame, ¿qué otro programa te llama la atención? Te envío el plan de estudios al correo para que lo revises. Igual se te hace una homologación interna de las materias que tengan en común.",
+                        isCorrect: false
+                    }
+                ]
+            }
+        ];
+
+        // Mezclar opciones para evitar que la correcta siempre esté en la misma posición
+        questions.forEach(q => {
+            q.options.sort(() => Math.random() - 0.5);
+        });
+
+        // Game State Variables
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let selectedOptionIndex = null;
+        let currentOptions = [];
+
+        // DOM Elements
+        const screenStart = document.getElementById('screen-start');
+        const screenGame = document.getElementById('screen-game');
+        const screenResult = document.getElementById('screen-result');
+        const optionsContainer = document.getElementById('options-container');
+        const btnNext = document.getElementById('btn-next');
+
+        function startGame() {
+            score = 0;
+            currentQuestionIndex = 0;
+            screenStart.classList.add('hidden-view');
+            screenGame.classList.remove('hidden-view');
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            // Reset state
+            selectedOptionIndex = null;
+            btnNext.disabled = true;
+            btnNext.classList.add('opacity-50', 'cursor-not-allowed');
+            btnNext.classList.remove('bg-emerald-600', 'hover:bg-emerald-50');
+
+            const q = questions[currentQuestionIndex];
+            currentOptions = q.options;
+
+            // Update UI
+            document.getElementById('question-counter').innerText = `${currentQuestionIndex + 1} / ${questions.length}`;
+            document.getElementById('progress-bar').style.width = `${((currentQuestionIndex) / questions.length) * 100}%`;
+            
+            document.getElementById('student-avatar').innerText = q.initial;
+            document.getElementById('student-info').innerText = `${q.student} | ${q.info}`;
+            document.getElementById('student-dialogue').innerText = `"${q.dialogue}"`;
+
+            // Render options
+            optionsContainer.innerHTML = '';
+            q.options.forEach((opt, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'glass-btn w-full text-left p-4 rounded-xl text-md text-white font-medium flex items-start gap-3';
+                btn.onclick = () => selectOption(index, btn);
+                
+                btn.innerHTML = `
+                    <div class="mt-1 w-5 h-5 rounded-full border-2 border-white/50 flex-shrink-0 flex items-center justify-center option-indicator"></div>
+                    <span>${opt.text}</span>
+                `;
+                optionsContainer.appendChild(btn);
+            });
+
+            // Re-trigger animation
+            const container = document.getElementById('scenario-container');
+            container.classList.remove('fade-in');
+            void container.offsetWidth; // trigger reflow
+            container.classList.add('fade-in');
+        }
+
+        function selectOption(index, btnElement) {
+            selectedOptionIndex = index;
+            
+            // Remove selection from all
+            const buttons = optionsContainer.children;
+            for (let i = 0; i < buttons.length; i++) {
+                buttons[i].classList.remove('selected');
+                buttons[i].querySelector('.option-indicator').innerHTML = '';
+                buttons[i].querySelector('.option-indicator').classList.remove('border-emerald-400', 'bg-emerald-400');
+            }
+
+            // Add selection to clicked
+            btnElement.classList.add('selected');
+            const indicator = btnElement.querySelector('.option-indicator');
+            indicator.classList.add('border-emerald-400', 'bg-emerald-400');
+            indicator.innerHTML = '<i class="fa-solid fa-check text-xs text-[#1e3a8a]"></i>';
+
+            // Enable next button
+            btnNext.disabled = false;
+            btnNext.classList.remove('opacity-50', 'cursor-not-allowed', 'bg-blue-600/50');
+            btnNext.classList.add('bg-emerald-500', 'hover:bg-emerald-400');
+        }
+
+        function nextQuestion() {
+            if (selectedOptionIndex === null) return;
+
+            // Check if correct (Silent check)
+            if (currentOptions[selectedOptionIndex].isCorrect) {
+                score += 20;
+            }
+
+            currentQuestionIndex++;
+
+            if (currentQuestionIndex < questions.length) {
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            screenGame.classList.add('hidden-view');
+            screenResult.classList.remove('hidden-view');
+            
+            document.getElementById('final-score').innerText = score;
+            document.getElementById('progress-bar').style.width = '100%';
+
+            generateDiagnostic(score);
+        }
+
+        function generateDiagnostic(finalScore) {
+            const diagText = document.getElementById('diagnostic-text');
+            const improvements = document.getElementById('improvement-areas');
+            
+            improvements.classList.remove('hidden-view');
+            improvements.className = "mt-6 p-5 rounded-lg text-sm border";
+
+            if (finalScore === 100) {
+                diagText.innerHTML = "<strong>¡Excepcional! Nivel: Maestro de la Retención.</strong><br>Tienes un dominio impecable de la Venta Consultiva. Entiendes que rematricular no es un trámite, sino acompañar el propósito del estudiante. Lograste articular la Empatía con el Avance Logrado y la Acción (Siguiente Paso) en todos los escenarios.";
+                improvements.classList.add('bg-emerald-500/10', 'border-emerald-400/30', 'text-emerald-100');
+                improvements.innerHTML = `<h4 class="font-bold mb-2"><i class="fa-solid fa-star text-yellow-400 mr-2"></i>Siguiente paso en tu desarrollo:</h4><ul class="list-disc pl-5 space-y-1"><li>Comparte tus técnicas de indagación y cierre ('Fórmula Experta') con tus compañeros.</li><li>Sigue conectando las facilidades de pago o modificaciones de carga académica con el 'Sueño de graduación'.</li></ul>`;
+            } 
+            else if (finalScore >= 60) {
+                diagText.innerHTML = "<strong>Nivel: Asesor Estratégico.</strong><br>Tienes buenas bases de empatía y logras identificar riesgos. Sin embargo, en algunas objeciones difíciles pierdes el foco de la 'Fórmula Experta', cayendo levemente en un enfoque administrativo o transaccional, perdiendo la oportunidad de hacer un Cierre por Continuidad.";
+                improvements.classList.add('bg-yellow-500/10', 'border-yellow-400/30', 'text-yellow-100');
+                improvements.innerHTML = `<h4 class="font-bold mb-2"><i class="fa-solid fa-triangle-exclamation text-yellow-400 mr-2"></i>Áreas de refuerzo:</h4><ul class="list-disc pl-5 space-y-1"><li><strong>Cuidado con la empatía vacía:</strong> Decir 'Te entiendo' no basta si no propones una SOLUCIÓN estructurada (ej. revisar flexibilidad de materias).</li><li>Recuerda siempre aplicar: <em>Empatía + Reafirmación (Avance/Meta) + Solución + Cierre.</em> No te saltes pasos.</li></ul>`;
+            } 
+            else {
+                diagText.innerHTML = "<strong>Nivel: Gestor Operativo (En Desarrollo).</strong><br>Tu enfoque actual es muy procedimental (hablar de fechas, pagos, trámites, o dejar que el estudiante asuma toda la responsabilidad). Al no aplicar venta consultiva, tu riesgo de permitir la 'deserción silenciosa' es altísimo. Debemos cambiar la mentalidad de cobranza a consultoría.";
+                improvements.classList.add('bg-red-500/10', 'border-red-400/30', 'text-red-100');
+                improvements.innerHTML = `<h4 class="font-bold mb-2"><i class="fa-solid fa-circle-exclamation text-red-400 mr-2"></i>Acciones correctivas urgentes:</h4><ul class="list-disc pl-5 space-y-1"><li><strong>Cambia la conversación:</strong> No hables de precios de inmediato, habla de la <em>inversión ya realizada</em> (Avance Logrado).</li><li><strong>Evita soltar al estudiante:</strong> Enviar un link o decirle que vuelva el otro año es perderlo. Debes agendar citas, ofrecer alternativas académicas o plantear el Cierre por Siguiente Paso.</li><li>Te invitamos a releer el manual de 'Tipos de Cierre' de la Sales Academy.</li></ul>`;
+            }
+        }
+
+        function resetGame() {
+            screenResult.classList.add('hidden-view');
+            
+            // Mezclar preguntas y opciones nuevamente para que no memoricen el orden
+            questions.sort(() => Math.random() - 0.5);
+            questions.forEach(q => {
+                q.options.sort(() => Math.random() - 0.5);
+            });
+            
+            startGame();
+        }
+    </script>
+</body>
+</html>
