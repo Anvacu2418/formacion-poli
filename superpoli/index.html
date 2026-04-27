@@ -132,9 +132,19 @@ class GameScene extends Phaser.Scene {
         // =====================================================================
         // CARGA DE ASSETS (LISTO PARA PRODUCCIÓN)
         // =====================================================================
-        this.load.image('tiles', 'assets/campus_tileset.png');
-        this.load.spritesheet('leo_sprite', 'assets/player1_sprite.png', { frameWidth: 32, frameHeight: 32 });
-        this.load.spritesheet('lea_sprite', 'assets/player2_sprite.png', { frameWidth: 32, frameHeight: 32 });
+        
+        // Para el escenario (imagen única)
+        this.load.image('mapa', 'assets/campus_tileset.png');
+
+        // Para los personajes (hojas de poses)
+        this.load.spritesheet('estudiante_leo', 'assets/player1_sprite.png', { 
+            frameWidth: 32,  // Ancho de una pose
+            frameHeight: 32  // Alto de una pose
+        });
+        this.load.spritesheet('estudiante_lea', 'assets/player2_sprite.png', { 
+            frameWidth: 32,  
+            frameHeight: 32  
+        });
 
         // Caja de preguntas (Generada por código para que siempre funcione)
         let boxCv = document.createElement('canvas'); boxCv.width = 32; boxCv.height = 32;
@@ -146,7 +156,7 @@ class GameScene extends Phaser.Scene {
 
     create() {
         // Asignar el sprite seleccionado
-        const playerKey = chosenAvatar === 'leo' ? 'leo_sprite' : 'lea_sprite';
+        const playerKey = chosenAvatar === 'leo' ? 'estudiante_leo' : 'estudiante_lea';
 
         this.cameras.main.setBackgroundColor('#87CEEB'); // Cielo clásico
 
@@ -166,7 +176,7 @@ class GameScene extends Phaser.Scene {
         addPlat(6, 15, 4);   // Plat 5
 
         const map = this.make.tilemap({ data: levelData, tileWidth: 32, tileHeight: 32 });
-        const tileset = map.addTilesetImage('tiles');
+        const tileset = map.addTilesetImage('mapa'); // Actualizado a 'mapa'
         
         this.platformLayer = map.createLayer(0, tileset, 0, 0);
         this.platformLayer.setCollisionBetween(1, 100); 
