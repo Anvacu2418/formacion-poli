@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Poli-Expert: Misión Rematrícula - Versión Final</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/phaser/3.60.0/phaser.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { margin: 0; background: #0f172a; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; font-family: 'Segoe UI', sans-serif; }
+        canvas { border-radius: 12px; box-shadow: 0 0 50px rgba(0,0,0,0.8); image-rendering: pixelated; /* Crucial para que el pixel art se vea nítido */ }
+        .modal { pointer-events: all; display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); padding: 2rem; border-radius: 1.5rem; width: 90%; max-width: 550px; box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1); z-index: 100; border: 4px solid #3b82f6; }
+        .btn-option { width: 100%; text-align: left; padding: 1rem; margin: 0.5rem 0; border: 2px solid #e2e8f0; border-radius: 0.75rem; transition: all 0.2s; cursor: pointer; font-size: 0.9rem; line-height: 1.25; }
+        .btn-option:hover { background: #eff6ff; border-color: #3b82f6; transform: translateX(5px); }
+        #feedback-bar { position: absolute; top: 20px; right: 20px; color: white; background: rgba(0,0,0,0.5); padding: 10px 20px; border-radius: 20px; font-weight: bold; pointer-events: none; z-index: 50; }
+        
+        /* Estilos para selección de personaje */
+        .avatar-card { border: 3px solid transparent; transition: all 0.3s; cursor: pointer; }
+        .avatar-card:hover { transform: translateY(-5px); }
+        .avatar-card.selected { border-color: #3b82f6; background-color: #eff6ff; box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.3); }
+    </style>
+</head>
+<body>
+
+    <div id="game-container"></div>
+    <div id="feedback-bar" style="display:none;">PROGRESO: <span id="ui-progress">0</span>/10 CASOS</div>
+    
+    <div id="ui-layer">
+        <!-- Pantalla de Inicio -->
+        <div id="start-screen" class="modal" style="display: block;">
+            <h1 class="text-4xl font-black text-blue-700 mb-2 text-center uppercase italic">Poli-Expert</h1>
+            <p class="text-slate-600 mb-4 text-center font-medium text-sm">
+                Supera 10 casos comerciales aleatorios basados en Perfilamiento, LAER y Generación de Valor.
+            </p>
+
+            <!-- Selección de Personaje -->
+            <div class="mb-6">
+                <h3 class="text-center font-bold text-slate-800 mb-3 uppercase tracking-wide text-sm">Selecciona tu Agente</h3>
+                <div class="flex justify-center gap-4">
+                    <div id="card-leo" class="avatar-card selected bg-slate-50 p-4 rounded-xl text-center w-32" onclick="selectAvatar('leo')">
+                        <div class="w-16 h-16 bg-blue-500 rounded-full mx-auto mb-2 border-4 border-blue-200"></div>
+                        <h4 class="font-bold text-slate-800">LEO</h4>
+                    </div>
+                    <div id="card-lea" class="avatar-card bg-slate-50 p-4 rounded-xl text-center w-32" onclick="selectAvatar('lea')">
+                        <div class="w-16 h-16 bg-purple-500 rounded-full mx-auto mb-2 border-4 border-purple-200"></div>
+                        <h4 class="font-bold text-slate-800">LEA</h4>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-blue-50 border border-blue-100 p-4 rounded-lg mb-6 text-sm text-blue-800">
+                <h3 class="font-bold mb-2">🎮 Controles:</h3>
+                <ul class="list-disc pl-5">
+                    <li>Usa <kbd class="bg-white px-1 rounded shadow">◀</kbd> <kbd class="bg-white px-1 rounded shadow">▶</kbd> para correr.</li>
+                    <li>Mantén presionado <kbd class="bg-white px-1 rounded shadow">▲</kbd> para un <strong>salto alto</strong>. Suelta rápido para un <strong>salto corto</strong>.</li>
+                </ul>
+            </div>
+
+            <button onclick="startGame()" class="w-full bg-blue-600 text-white font-black py-4 rounded-xl hover:bg-blue-700 transition transform hover:scale-105 shadow-lg shadow-blue-200">INICIAR OPERACIÓN</button>
+        </div>
+
+        <!-- Modal de Pregunta -->
+        <div id="question-modal" class="modal">
+            <div class="flex justify-between items-center mb-4">
+                <span id="question-category" class="text-[10px] font-black uppercase tracking-widest text-white bg-blue-600 px-3 py-1 rounded-full">ESTRATEGIA</span>
+            </div>
+            <h2 id="question-text" class="text-lg font-bold text-slate-800 mb-4 leading-tight"></h2>
+            <div id="options-container"></div>
+        </div>
+
+        <!-- Pantalla Final -->
+        <div id="end-screen" class="modal">
+            <h1 id="end-title" class="text-3xl font-black text-center mb-4"></h1>
+            <div class="flex justify-around items-center bg-slate-50 p-6 rounded-2xl mb-6">
+                <div class="text-center">
+                    <div class="text-4xl font-black text-blue-600" id="final-score">0</div>
+                    <p class="text-[10px] uppercase font-bold text-slate-400">Puntaje</p>
+                </div>
+                <div class="text-center">
+                    <div class="text-4xl font-black text-green-600" id="correct-count">0/10</div>
+                    <p class="text-[10px] uppercase font-bold text-slate-400">Aciertos</p>
+                </div>
+            </div>
+            <div id="end-feedback" class="text-slate-600 mb-6 text-sm text-center leading-relaxed font-medium"></div>
+            
+            <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
+                <p class="text-sm text-yellow-800 font-bold">📢 Reto del Miércoles:</p>
+                <p class="text-xs text-yellow-700 mt-1">Con base al repaso de este jueves, deberás crear tu propio <strong>Elevator Pitch</strong> para la próxima rematrícula.</p>
+            </div>
+
+            <button onclick="location.reload()" class="w-full bg-slate-900 text-white font-bold py-4 rounded-xl mb-3 shadow-lg">REINTENTAR RETO</button>
+        </div>
+    </div>
+
+<script>
+// UI de Selección de Personaje
+let chosenAvatar = 'leo'; // Por defecto
+
+function selectAvatar(avatar) {
+    chosenAvatar = avatar;
+    document.getElementById('card-leo').classList.remove('selected');
+    document.getElementById('card-lea').classList.remove('selected');
+    document.getElementById('card-' + avatar).classList.add('selected');
+}
+
+// Base de datos de Preguntas
+const questionBank = [
+    { cat: "PERFILAMIENTO", q: "¿Por qué el diagnóstico claro es el primer paso en el perfilamiento?", options: ["Para saber cuánto dinero tiene el estudiante exactamente.", "Para adaptar la información a lo que de verdad mueve al estudiante.", "Para llenar los campos obligatorios del CRM.", "Para terminar la llamada lo más rápido posible."], correct: 1 },
+    { cat: "LAER", q: "En el paso de RECONOCER del modelo LAER, ¿qué acción es la correcta?", options: ["Discutir con el estudiante si su queja no es válida.", "Validar la preocupación del cliente, incluso si no estás de acuerdo.", "Saltar directamente a ofrecer el descuento.", "Pedirle que hable con soporte técnico de inmediato."], correct: 1 },
+    { cat: "VALOR", q: "Al hablar de convenios, ¿cómo se genera valor real?", options: ["Mencionando que tenemos más de 50 convenios.", "Diciendo que son los mejores convenios del país.", "Conectando los convenios con mejores oportunidades laborales futuras para el estudiante.", "Enviando el PDF con la lista de convenios por correo."], correct: 2 },
+    { cat: "PERFILAMIENTO", q: "¿Cuál es una métrica que mejora con un buen perfilamiento?", options: ["La velocidad de conexión a internet.", "La métrica del embudo (7 de cada 10 reciben propuesta alineada).", "La cantidad de llamadas perdidas.", "El tiempo de descanso del experto."], correct: 1 },
+    { cat: "DIFÍCILES", q: "El estudiante dice: 'No me gustó el profesor pasado'. ¿Cómo rediriges a la solución?", options: ["'Tiene razón, ese profesor era malo'.", "'Cuéntame un poco más sobre lo que ocurrió para revisar qué podemos hacer y ayudarte'.", "'Eso ya pasó, hay que enfocarse en lo que viene'.", "'Si no le gusta, puede cambiarse de universidad'."], correct: 1 },
+    { cat: "LAER", q: "¿Qué pregunta usarías en la fase de EXPLORAR ante una duda financiera?", options: ["'¿Va a pagar con tarjeta o efectivo?'", "'¿Qué es lo que más te preocupa de esta situación?'", "'¿No cree que su futuro vale la inversión?'", "'¿Por qué no ahorró para el semestre?'"], correct: 1 },
+    { cat: "VALOR", q: "En la venta consultiva, ¿qué diferencia a una Ventaja de un Beneficio?", options: ["No hay diferencia, son sinónimos.", "La ventaja es lo que el producto tiene, el beneficio es el valor real que el cliente obtiene.", "La ventaja es el precio, el beneficio es el descuento.", "El beneficio es para la universidad, la ventaja es para el experto."], correct: 1 },
+    { cat: "PERSUASIÓN", q: "Tip de persuasión: ¿Por qué es mejor hablar de avance que de pagos?", options: ["Porque a nadie le gusta pagar.", "Porque aumenta el sentido de inversión sobre el de gasto.", "Porque el sistema no ha cargado los recibos.", "Para distraer al estudiante de la deuda."], correct: 1 },
+    { cat: "PERFILAMIENTO", q: "¿Cómo ayuda el perfilamiento a reducir objeciones?", options: ["Haciendo que el estudiante no tenga tiempo de hablar.", "Previniendo dudas al preguntar por tiempo, dinero y apoyo antes de la propuesta.", "Prometiendo cosas que no están en el programa.", "Ignorando las dudas personales del estudiante."], correct: 1 },
+    { cat: "PERSUASIÓN", q: "¿Qué haces si un estudiante pide hablar con el supervisor?", options: ["Cuelgas la llamada.", "Lo transfieres sin decir nada.", "Usas una frase de contención para escuchar su caso y buscar una solución primero.", "Le dices que el supervisor no está disponible hoy."], correct: 2 }
+];
+
+let gameInstance;
+
+class GameScene extends Phaser.Scene {
+    constructor() {
+        super({ key: 'GameScene' });
+        this.score = 0;
+        this.correctAnswers = 0;
+        this.answeredCount = 0;
+        this.shuffledQuestions = [];
+    }
+
+    preload() {
+        // =====================================================================
+        // CARGA DE ASSETS (LISTO PARA PRODUCCIÓN)
+        // =====================================================================
+        this.load.image('tiles', 'assets/campus_tileset.png');
+        this.load.spritesheet('leo_sprite', 'assets/player1_sprite.png', { frameWidth: 32, frameHeight: 32 });
+        this.load.spritesheet('lea_sprite', 'assets/player2_sprite.png', { frameWidth: 32, frameHeight: 32 });
+
+        // Caja de preguntas (Generada por código para que siempre funcione)
+        let boxCv = document.createElement('canvas'); boxCv.width = 32; boxCv.height = 32;
+        let ctxB = boxCv.getContext('2d');
+        ctxB.fillStyle = '#fde047'; ctxB.fillRect(0,0,32,32);
+        ctxB.fillStyle = '#854d0e'; ctxB.font = 'bold 20px Arial'; ctxB.fillText('?', 10, 24);
+        this.textures.addCanvas('question_box', boxCv);
+    }
+
+    create() {
+        // Asignar el sprite seleccionado
+        const playerKey = chosenAvatar === 'leo' ? 'leo_sprite' : 'lea_sprite';
+
+        this.cameras.main.setBackgroundColor('#87CEEB'); // Cielo clásico
+
+        // 1. CONSTRUCCIÓN DEL MUNDO (Tilemap)
+        const levelData = [];
+        for(let y=0; y<19; y++) {
+            let row = [];
+            for(let x=0; x<25; x++) { row.push(y >= 17 ? 1 : 0); }
+            levelData.push(row);
+        }
+        
+        const addPlat = (r, c, len) => { for(let i=0; i<len; i++) levelData[r][c+i] = 1; };
+        addPlat(13, 3, 4);   // Plat 1
+        addPlat(10, 10, 5);  // Plat 2
+        addPlat(13, 18, 4);  // Plat 3
+        addPlat(6, 5, 4);    // Plat 4
+        addPlat(6, 15, 4);   // Plat 5
+
+        const map = this.make.tilemap({ data: levelData, tileWidth: 32, tileHeight: 32 });
+        const tileset = map.addTilesetImage('tiles');
+        
+        this.platformLayer = map.createLayer(0, tileset, 0, 0);
+        this.platformLayer.setCollisionBetween(1, 100); 
+
+        // 2. CONFIGURACIÓN DEL JUGADOR (Sprite y Físicas)
+        this.player = this.physics.add.sprite(100, 450, playerKey);
+        this.player.setCollideWorldBounds(true);
+        this.player.body.setSize(20, 30); // Ajuste de hitbox (más preciso)
+        this.player.body.setOffset(6, 2);
+
+        // GRAVEDAD Y FRICCIÓN 
+        this.player.body.setGravityY(700); 
+        this.player.body.setDragX(800);    
+
+        // 3. DEFINICIÓN DE ANIMACIONES 
+        this.anims.create({ key: 'idle', frames: [{ key: playerKey, frame: 0 }], frameRate: 10 });
+        this.anims.create({ key: 'walk', frames: this.anims.generateFrameNumbers(playerKey, { start: 1, end: 3 }), frameRate: 12, repeat: -1 });
+        this.anims.create({ key: 'jump', frames: [{ key: playerKey, frame: 4 }], frameRate: 10 });
+        this.anims.create({ key: 'fall', frames: [{ key: playerKey, frame: 5 }], frameRate: 10 });
+
+        // Cajas de preguntas
+        this.boxes = this.physics.add.staticGroup();
+        const boxPositions = [[4, 11], [12, 8], [20, 11], [6, 4], [17, 4], [12, 15]];
+        boxPositions.forEach(pos => {
+            this.boxes.create(pos[0] * 32, pos[1] * 32, 'question_box');
+        });
+
+        // 4. SINCRONIZACIÓN Y COLISIONES
+        this.physics.add.collider(this.player, this.platformLayer);
+        this.physics.add.overlap(this.player, this.boxes, this.hitBox, null, this);
+
+        this.cursors = this.input.keyboard.createCursorKeys();
+        this.shuffledQuestions = questionBank.sort(() => Math.random() - 0.5);
+        this.physics.pause();
+    }
+
+    update() {
+        // Movimiento Horizontal Rígido y Preciso
+        if (this.cursors.left.isDown) {
+            this.player.setVelocityX(-160); 
+            this.player.anims.play('walk', true);
+            this.player.flipX = true; // Girar el sprite
+        } else if (this.cursors.right.isDown) {
+            this.player.setVelocityX(160);
+            this.player.anims.play('walk', true);
+            this.player.flipX = false;
+        } else {
+            this.player.setVelocityX(0); // Frenado en seco
+            this.player.anims.play('idle', true);
+        }
+
+        // LOGICA DE SALTO VERTICAL (Estilo Clásico)
+        const isGrounded = this.player.body.onFloor() || this.player.body.blocked.down;
+        
+        if (this.cursors.up.isDown && isGrounded) {
+            this.player.setVelocityY(-430); // Salto inicial potente
+        }
+
+        // Lógica para saltos de altura variable
+        if (this.cursors.up.isUp && this.player.body.velocity.y < -200) {
+            // Si suelta el botón rápido, reduce la velocidad vertical (salto corto)
+            this.player.setVelocityY(-200); 
+        }
+
+        // Reproducir animación de salto si no está en el suelo
+        if (!isGrounded) {
+            this.player.anims.play('jump', true);
+        }
+    }
+
+    hitBox(player, box) {
+        box.destroy();
+        this.showQuestionUI();
+    }
+
+    showQuestionUI() {
+        if(this.answeredCount >= 10) return;
+        
+        this.physics.pause();
+        const activeQuestion = this.shuffledQuestions[this.answeredCount];
+        
+        document.getElementById('question-modal').style.display = 'block';
+        document.getElementById('question-text').innerText = activeQuestion.q;
+        document.getElementById('question-category').innerText = activeQuestion.cat;
+        
+        const container = document.getElementById('options-container');
+        container.innerHTML = '';
+        
+        activeQuestion.options.forEach((opt, idx) => {
+            const btn = document.createElement('button');
+            btn.className = 'btn-option';
+            btn.innerText = opt;
+            btn.onclick = () => this.selectOption(idx, activeQuestion.correct);
+            container.appendChild(btn);
+        });
+    }
+
+    selectOption(idx, correctIdx) {
+        if(idx === correctIdx) {
+            this.score += 10;
+            this.correctAnswers++;
+        }
+        
+        this.answeredCount++;
+        document.getElementById('ui-progress').innerText = this.answeredCount;
+        document.getElementById('question-modal').style.display = 'none';
+        this.physics.resume();
+        
+        if(this.answeredCount >= 10 || this.boxes.countActive() === 0) {
+            if (this.answeredCount < 10 && this.boxes.countActive() === 0) {
+                 const boxPositions = [[4, 11], [12, 8], [20, 11], [6, 4], [17, 4], [12, 15]];
+                 boxPositions.forEach(pos => { this.boxes.create(pos[0] * 32, pos[1] * 32, 'question_box'); });
+            } else {
+                setTimeout(() => this.endGameUI(), 800);
+            }
+        }
+    }
+
+    endGameUI() {
+        document.getElementById('end-screen').style.display = 'block';
+        document.getElementById('final-score').innerText = this.score;
+        document.getElementById('correct-count').innerText = this.correctAnswers + "/10";
+        
+        const title = document.getElementById('end-title');
+        const feedback = document.getElementById('end-feedback');
+        
+        if (this.score >= 90) {
+            title.innerText = "¡LEYENDA COMERCIAL!";
+            title.className = "text-3xl font-black text-center mb-4 text-green-600 italic";
+            feedback.innerText = "Dominas el perfilamiento, la persuasión y el modelo LAER a la perfección. Estás listo para liderar la próxima rematricula.";
+        } else if (this.score >= 70) {
+            title.innerText = "EXPERTO EN CAMINO";
+            title.className = "text-3xl font-black text-center mb-4 text-blue-600";
+            feedback.innerText = "Buen desempeño, pero un experto siempre busca la excelencia. Repasa los tips de 'Generación de Valor'.";
+        } else {
+            title.innerText = "CAPACITACIÓN NECESARIA";
+            title.className = "text-3xl font-black text-center mb-4 text-orange-600";
+            feedback.innerText = "Tu convicción necesita refuerzos. ¡Vuelve a estudiar los PDFs y regresa por la revancha!";
+        }
+    }
+}
+
+function startGame() {
+    document.getElementById('start-screen').style.display = 'none';
+    document.getElementById('feedback-bar').style.display = 'block';
+    
+    const config = {
+        type: Phaser.AUTO,
+        width: 800,
+        height: 600,
+        parent: 'game-container',
+        physics: {
+            default: 'arcade',
+            arcade: { 
+                gravity: { y: 800 }, 
+                debug: false 
+            }
+        },
+        scene: [GameScene] 
+    };
+    
+    gameInstance = new Phaser.Game(config);
+}
+</script>
+</body>
+</html>
