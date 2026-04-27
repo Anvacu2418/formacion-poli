@@ -196,7 +196,8 @@ class GameScene extends Phaser.Scene {
         this.player.body.setOffset(78, 212);
 
         this.player.body.setGravityY(700); 
-        this.player.body.setDragX(800);    
+        this.player.body.setDragX(1000); // Aumento un poco la fricción para que el frenado sea más "Mario"
+        this.player.body.setMaxVelocityX(300); // LÍMITE DE VELOCIDAD: crucial para que la aceleración no descontrole al jugador
 
         // 3. DEFINICIÓN DE ANIMACIONES BASADAS EN TU SPRITESHEET
         // VALIDACIÓN: Solo crea animaciones si las texturas existen
@@ -247,33 +248,65 @@ class GameScene extends Phaser.Scene {
         // RED DE SEGURIDAD: Si el jugador no existe o falló la carga, no intentes hacer nada
         if (!this.player || !this.player.anims) return;
 
-        // Movimiento Horizontal Rígido y Preciso
-        if (this.cursors.left.isDown) {
-            this.player.setVelocityX(-160); 
-            if (this.player.anims.exists('walk')) this.player.anims.play('walk', true);
-            this.player.flipX = true;
-        } else if (this.cursors.right.isDown) {
-            this.player.setVelocityX(160);
-            if (this.player.anims.exists('walk')) this.player.anims.play('walk', true);
-            this.player.flipX = false;
-        } else {
-            this.player.setVelocityX(0); 
-            if (this.player.anims.exists('idle')) this.player.anims.play('idle', true);
-        }
-
-        // LÓGICA DE SALTO VERTICAL
         const isGrounded = this.player.body.onFloor() || this.player.body.blocked.down;
-        
-        if (this.cursors.up.isDown && isGrounded) {
-            this.player.setVelocityY(-430); 
+        const accelRate = 800; // Tasa de aceleración al presionar las teclas
+
+        // ==========================================
+        // 1. MOVIMIENTO HORIZONTAL CON ACELERACIÓN
+        // ==========================================
+        if (this.cursors.left.isDown) {
+            this.player.setAccelerationX(-accelRate); // Acelera hacia la izquierda
+            this.player.flipX = true; // Gira hacia la izquierda
+            
+            // Solo reproducimos walk si está tocando el suelo
+            if (isGrounded && this.player.anims.exists('walk')) {
+                this.player.anims.play('walk', true);
+            }
+        } else if (this.cursors.right.isDown) {
+            this.player.setAccelerationX(accelRate); // Acelera hacia la derecha
+            this.player.flipX = false; // Gira hacia la derecha
+            
+            if (isGrounded && this.player.anims.exists('walk')) {
+                this.player.anims.play('walk', true);
+            }
+        } else {
+            // Fricción: al soltar la tecla, la aceleración es 0 y el setDragX frena al jugador
+            this.player.setAccelerationX(0); 
+            
+            // Volvemos a idle solo cuando ya casi se ha detenido en el suelo
+            if (isGrounded && Math.abs(this.player.body.velocity.x) < 20) {
+                if (this.player.anims.exists('idle')) {
+                    this.player.anims.play('idle', true);
+                }
+            } else if (isGrounded && this.player.anims.exists('walk')) {
+                // Sigue mostrando animacion walk mientras derrapa por la fricción
+                this.player.anims.play('walk', true);
+            }
         }
 
+        // ==========================================
+        // 2. LÓGICA DE SALTO VERTICAL VARIABLE (Mario-feel)
+        // ==========================================
+        
+        // Paso 1 (Inicio): Se presiona Arriba y está en el suelo.
+        // Usamos JustDown para evitar que el jugador rebote automáticamente al mantener presionada la tecla
+        if (Phaser.Input.Keyboard.JustDown(this.cursors.up) && isGrounded) {
+            this.player.setVelocityY(-550); // Velocidad potente inicial para el salto
+        }
+
+        // Paso 2 (Control de Altura): Suelta la tecla mientras sigue subiendo
         if (this.cursors.up.isUp && this.player.body.velocity.y < -200) {
+            // Corta la fuerza del salto drásticamente, creando el efecto de "salto corto"
             this.player.setVelocityY(-200); 
         }
 
+        // ==========================================
+        // 3. ANIMACIONES EN EL AIRE
+        // ==========================================
         if (!isGrounded) {
-            if (this.player.anims.exists('jump')) this.player.anims.play('jump', true);
+            if (this.player.anims.exists('jump')) {
+                this.player.anims.play('jump', true);
+            }
         }
     }
 
