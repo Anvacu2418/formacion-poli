@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>USAM Clínic - Taller de Optimización</title>
+    
+    <!-- Carga de Tailwind CSS para los estilos -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Carga de React, ReactDOM y Babel para ejecutar el código JSX en el navegador -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Carga de Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Estilos CSS personalizados para el efecto de voltear (Flip Cards) -->
+    <style>
+        body { margin: 0; padding: 0; }
+        .perspective { perspective: 1000px; }
+        .preserve-3d { transform-style: preserve-3d; transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1); }
+        .backface-hidden { backface-visibility: hidden; }
+        .rotate-y-180 { transform: rotateY(180deg); }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-slate-100">
+
+    <!-- Contenedor donde React inyectará la aplicación -->
+    <div id="root"></div>
+
+    <!-- Código de la aplicación en React -->
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // ------------------------------------------------------------------
+        // Componente Auxiliar: Renderiza los íconos de Lucide de forma segura
+        // ------------------------------------------------------------------
+        const Icon = ({ name, size = 24, className = '', strokeWidth = 2 }) => {
+            const spanRef = useRef(null);
+            
+            useEffect(() => {
+                if (spanRef.current && window.lucide) {
+                    window.lucide.createIcons({
+                        root: spanRef.current,
+                        nameAttr: 'data-lucide'
+                    });
+                }
+            }, [name]);
+
+            return (
+                <span 
+                    ref={spanRef} 
+                    className={`inline-flex items-center justify-center ${className}`}
+                    dangerouslySetInnerHTML={{
+                        __html: `<i data-lucide="${name}" style="width: ${size}px; height: ${size}px; stroke-width: ${strokeWidth};"></i>`
+                    }}
+                />
+            );
+        };
+
+        // ------------------------------------------------------------------
+        // Componente Auxiliar: Tarjeta Giratoria (Flip Card)
+        // ------------------------------------------------------------------
+        const FlipCard = ({ title, frontContent, backTitle, backContent, iconName, color = "blue" }) => {
+            const [isFlipped, setIsFlipped] = useState(false);
+            
+            const colorMap = {
+                blue: { bg: "bg-blue-50", text: "text-blue-600", backBg: "bg-blue-600" },
+                teal: { bg: "bg-teal-50", text: "text-teal-600", backBg: "bg-teal-600" },
+                slate: { bg: "bg-slate-50", text: "text-slate-600", backBg: "bg-slate-700" }
+            };
+
+            const theme = colorMap[color];
+
+            return (
+                <div 
+                    className="perspective w-full h-full min-h-[220px] cursor-pointer"
+                    onClick={() => setIsFlipped(!isFlipped)}
+                >
+                    <div className={`relative w-full h-full preserve-3d shadow-sm hover:shadow-md rounded-2xl ${isFlipped ? 'rotate-y-180' : ''}`}>
+                        
+                        {/* Frente de la Tarjeta */}
+                        <div className="absolute w-full h-full backface-hidden bg-white border border-slate-100 rounded-2xl p-6 flex flex-col items-center justify-center text-center">
+                            <div className={`w-12 h-12 ${theme.bg} ${theme.text} rounded-full flex items-center justify-center mb-4 shrink-0`}>
+                                <Icon name={iconName} size={24} />
+                            </div>
+                            <h3 className="font-semibold text-slate-800 mb-2">{title}</h3>
+                            <p className="text-sm text-slate-500 italic overflow-hidden line-clamp-3">"{frontContent}"</p>
+                            <p className={`text-xs ${theme.text} mt-auto pt-4 font-medium animate-pulse opacity-70`}>Clic para voltear</p>
+                        </div>
+
+                        {/* Reverso de la Tarjeta */}
+                        <div className={`absolute w-full h-full backface-hidden ${theme.backBg} rounded-2xl p-6 flex flex-col items-center justify-center text-center rotate-y-180 text-white overflow-y-auto scrollbar-hide`}>
+                            <Icon name="check-circle" size={28} className="mb-2 text-white/70 shrink-0" />
+                            <h3 className="font-bold text-base mb-2">{backTitle}</h3>
+                            <p className="text-sm text-white/90 leading-relaxed">{backContent}</p>
+                        </div>
+
+                    </div>
+                </div>
+            );
+        };
+
+        // ------------------------------------------------------------------
+        // Componente Principal de la Presentación
+        // ------------------------------------------------------------------
+        function App() {
+            const [currentSlide, setCurrentSlide] = useState(0);
+
+            const slides = [
+                // Slide 0: Portada
+                (
+                    <div className="flex flex-col items-center justify-center h-full space-y-6 animate-fade-in text-center">
+                        <div className="w-28 h-28 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mb-4 shadow-inner">
+                            <Icon name="heart-pulse" size={56} strokeWidth={1.5} />
+                        </div>
+                        <h1 className="text-5xl font-light text-slate-800 tracking-tight">
+                            Chequeo Clínico de <span className="font-semibold text-blue-600">Optimización</span>
+                        </h1>
+                        <p className="text-slate-500 text-xl uppercase tracking-widest font-medium mt-4">Paciente Experto: Julián</p>
+                    </div>
+                ),
+
+                // Slide 1: Triaje (Contexto)
+                (
+                    <div className="flex flex-col h-full justify-center px-16 animate-fade-in">
+                        <div className="flex items-center gap-4 mb-10">
+                            <Icon name="stethoscope" size={36} className="text-blue-500" />
+                            <h2 className="text-4xl font-light text-slate-800">Fase 1: <span className="font-semibold">Triaje y Contexto</span></h2>
+                        </div>
+                        <div className="bg-white p-10 rounded-[2rem] shadow-sm border border-slate-100 flex gap-8 items-start">
+                            <div className="bg-blue-50 p-5 rounded-2xl text-blue-600 shrink-0">
+                                <Icon name="user-check" size={40} />
+                            </div>
+                            <div>
+                                <h3 className="text-2xl font-semibold text-slate-800 mb-4">Un diagnóstico entre especialistas</h3>
+                                <p className="text-slate-600 leading-relaxed text-xl">
+                                    Julián, como experto, tu experiencia y conocimiento son vitales para la gestión que desarrollas. 
+                                    Hoy <strong>NO</strong> estamos aquí para poner en tela de juicio lo que realizas, porque tienes el conocimiento y las bases que te hacen un experto.
+                                    <br/><br/>
+                                    Sino que queremos hacer un <strong>chequeo preventivo</strong> para afinar tu atención al detalle, llevarte a tu versión más pro y evitar reprocesos.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                ),
+
+                // Slide 2: Radiografía (Síntomas con casos reales)
+                (
+                    <div className="flex flex-col h-full justify-center px-16 animate-fade-in">
+                        <div className="flex items-center gap-4 mb-6">
+                            <Icon name="activity" size={36} className="text-blue-500" />
+                            <h2 className="text-4xl font-light text-slate-800">Fase 2: <span className="font-semibold">Radiografía del Escenario</span></h2>
+                        </div>
+                        <p className="text-slate-500 text-lg mb-8">Hicimos unas "placas" a tu gestión reciente. Selecciona cada área inflamada para ver el hallazgo clínico:</p>
+                        
+                        <div className="grid grid-cols-4 gap-6 flex-1 min-h-[250px] pb-6">
+                            <FlipCard 
+                                iconName="search"
+                                color="slate"
+                                title="1. Omisión de Historial"
+                                frontContent="No revisar los síntomas previos del paciente antes de hablar."
+                                backTitle="Hallazgo (20/Abr)"
+                                backContent="Estudiante pide fechas a las 12:34. A las 13:00 tomas el chat y en lugar de darle el dato, vuelves a preguntar: '¿En qué te puedo ayudar?'"
+                            />
+                            <FlipCard 
+                                iconName="message-square"
+                                color="slate"
+                                title="2. Cierre Prematuro"
+                                frontContent="Dar de alta al paciente ante el primer síntoma de duda."
+                                backTitle="Hallazgo (07/Abr)"
+                                backContent="Estudiante dice 'solo deseo validar precios'. La llamada finaliza entregando el valor, sin indagar presupuesto o buscar opciones."
+                            />
+                            <FlipCard 
+                                iconName="database"
+                                color="slate"
+                                title="3. Inconsistencia"
+                                frontContent="Registrar la enfermedad con nombres distintos en diferentes sistemas."
+                                backTitle="Hallazgo (06/Abr)"
+                                backContent="Tipificas en Aivo como 'Registro de matrícula', pero en HubSpot utilizas 'Registro de Pago Materias'. Falla en la trazabilidad."
+                            />
+                            <FlipCard 
+                                iconName="file-digit"
+                                color="slate"
+                                title="4. Datos Inexactos"
+                                frontContent="Entregar resultados de laboratorio erróneos."
+                                backTitle="Hallazgo (10/Mar)"
+                                backContent="Se brindó un dato erróneo al equiparar el costo de una asignatura individual ($86.300) con el de una matrícula completa."
+                            />
+                        </div>
+                    </div>
+                ),
+
+                // Slide 3: Diagnóstico de Raíz
+                (
+                    <div className="flex flex-col items-center justify-center h-full text-center px-16 animate-fade-in">
+                        <Icon name="brain-circuit" size={80} className="text-blue-400 mb-8" />
+                        <h2 className="text-4xl font-light text-slate-800 mb-6">Diagnóstico Principal: <br/><span className="font-bold text-blue-600 mt-2 block">El Síndrome del Piloto Automático</span></h2>
+                        <p className="text-2xl text-slate-600 max-w-3xl leading-relaxed">
+                            Cuando somos muy buenos en algo y tenemos un alto volumen de casos, el cerebro automatiza tareas para ahorrar energía. 
+                        </p>
+                        <div className="mt-10 bg-blue-50 text-blue-800 p-8 rounded-3xl max-w-2xl border border-blue-100 shadow-sm">
+                            <p className="text-xl">El principal efecto secundario de esta condición es la <span className="font-bold">Pérdida de la Atención al Detalle.</span></p>
+                        </div>
+                    </div>
+                ),
+
+                // Slide 4: Auditor del futuro (El Reto)
+                (
+                    <div className="flex flex-col h-full justify-center px-16 animate-fade-in">
+                        <div className="flex items-center gap-4 mb-6">
+                            <Icon name="microscope" size={36} className="text-blue-500" />
+                            <h2 className="text-4xl font-light text-slate-800">Fase 3: <span className="font-semibold">Intervención Quirúrgica</span></h2>
+                        </div>
+                        <p className="text-slate-500 text-lg mb-8">Analiza las siguientes muestras (basadas en hechos reales). ¿Cuál es el error y cómo lo hubieras abordado?</p>
+                        
+                        <div className="grid grid-cols-2 gap-10 flex-1 min-h-[300px] pb-6">
+                            <FlipCard 
+                                iconName="alert-circle"
+                                color="blue"
+                                title="Muestra 1: El Chat"
+                                frontContent="[Estudiante]: Quiero saber las fechas de las graduaciones 2026. (Mensaje de las 12:34). ... [Experto a las 13:00]: ¡Hola! ¿En qué te puedo ayudar hoy?"
+                                backTitle="El bisturí (Solución)"
+                                backContent="El error es hacer que el estudiante repita su solicitud. Acción correctiva: Leer el historial de bot y responder: 'Hola, veo que nos consultas por fechas de graduación, te confirmo que...'"
+                            />
+                            <FlipCard 
+                                iconName="alert-circle"
+                                color="blue"
+                                title="Muestra 2: El Chat de Objeción"
+                                frontContent="[Estudiante]: Aún no voy a matricular porque estoy corto de presupuesto. ... [Experto]: Entiendo, las fechas límite son X y los valores Y. Quedo atento a cualquier duda."
+                                backTitle="El bisturí (Solución)"
+                                backContent="El error es aceptar la objeción financiera como un cierre. Acción correctiva (Venta Consultiva): 'Entiendo, ¿has contemplado la opción de tomar menos materias o aplicar a un descuento?'"
+                            />
+                        </div>
+                    </div>
+                ),
+
+                // Slide 5: La Receta (Tips interactivos)
+                (
+                    <div className="flex flex-col h-full justify-center px-16 animate-fade-in">
+                        <div className="flex items-center gap-4 mb-8">
+                            <Icon name="pill" size={36} className="text-blue-500" />
+                            <h2 className="text-4xl font-light text-slate-800">Fase 4: <span className="font-semibold">Receta Médica (Tips)</span></h2>
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-6 flex-1 min-h-[300px] pb-6">
+                            <FlipCard 
+                                iconName="stethoscope"
+                                color="teal"
+                                title="1 Cápsula de 'Regla 10 Segundos'"
+                                frontContent="Antes de dar el saludo inicial, escanea siempre el historial."
+                                backTitle="Aplicación Práctica"
+                                backContent="Si ves que ya interactuó con el bot, salúdalo validando su necesidad: 'Hola Julián, veo que nos escribes para validar tu grado...'"
+                            />
+                            <FlipCard 
+                                iconName="activity"
+                                color="teal"
+                                title="1 Dosis de 'Indagación Activa'"
+                                frontContent="Nunca dejes que un 'NO' por presupuesto o tiempo cierre la gestión."
+                                backTitle="Aplicación Práctica"
+                                backContent="Pregunta siempre el motivo real: '¿Tienes un presupuesto en mente? Podemos ajustar la carga académica para que no te atrases'."
+                            />
+                            <FlipCard 
+                                iconName="file-box"
+                                color="teal"
+                                title="2 Gotas de 'Copy/Paste Consciente'"
+                                frontContent="Verifica montos, nombres y plataformas antes de dar Enter."
+                                backTitle="Aplicación Práctica"
+                                backContent="Revisar dos veces si 86.300 colones es el valor de UNA materia o de TODA la matrícula para evitar quejas por mala información."
+                            />
+                            <FlipCard 
+                                iconName="check-circle"
+                                color="teal"
+                                title="Cero 'Placebos' Operativos"
+                                frontContent="No abras TKTs innecesarios si la solución ya se dio o se sincronizó."
+                                backTitle="Aplicación Práctica"
+                                backContent="Si un pago ya se legalizó en el sistema de manera automática, no crees un ticket de legalización solo para tener 'soporte'. Afecta tus métricas."
+                            />
+                        </div>
+                    </div>
+                ),
+
+                // Slide 6: Exámenes de Laboratorio (Evaluación)
+                (
+                    <div className="flex flex-col items-center justify-center h-full text-center px-16 animate-fade-in">
+                        <Icon name="file-box" size={80} className="text-blue-600 mb-8" />
+                        <h2 className="text-4xl font-light text-slate-800 mb-6">Fase 5: <span className="font-semibold">Exámenes de Laboratorio</span></h2>
+                        <p className="text-xl text-slate-600 max-w-2xl mb-10 leading-relaxed">
+                            Para darte de alta de esta optimización preventiva, necesitamos realizar una pequeña evaluación de resolución clínica basada en tu experiencia.
+                        </p>
+                        <a 
+                            href="https://ilumno.instructure.com/courses/2441/quizzes/15218" 
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="bg-blue-600 text-white px-10 py-4 rounded-full text-lg font-semibold hover:bg-blue-700 transition shadow-lg flex items-center gap-3 hover:-translate-y-1"
+                        >
+                            Abrir Evaluación Clínica <Icon name="chevron-right" size={24} />
+                        </a>
+                    </div>
+                )
+            ];
+
+            const nextSlide = () => setCurrentSlide((prev) => Math.min(prev + 1, slides.length - 1));
+            const prevSlide = () => setCurrentSlide((prev) => Math.max(prev - 1, 0));
+
+            return (
+                <div className="min-h-screen bg-slate-100 flex items-center justify-center p-4 md:p-8 font-sans">
+                    
+                    {/* Contenedor principal ajustado */}
+                    <div className="w-full max-w-[1400px] h-[90vh] min-h-[600px] bg-white rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col border border-slate-200">
+                        
+                        {/* Header / Barra superior */}
+                        <div className="flex justify-between items-center px-10 py-5 border-b border-slate-100 bg-white/80 backdrop-blur-md z-10 shrink-0">
+                            <div className="flex items-center gap-3 text-blue-600 font-bold tracking-tight text-lg">
+                                <Icon name="heart-pulse" size={24} strokeWidth={2.5} />
+                                USAM Clínic
+                            </div>
+                            <div className="text-sm font-semibold text-slate-400 bg-slate-100 px-4 py-1.5 rounded-full">
+                                Placa {currentSlide + 1} de {slides.length}
+                            </div>
+                        </div>
+
+                        {/* Contenido de la Diapositiva */}
+                        <div className="flex-1 overflow-hidden bg-slate-50/50 relative">
+                            {slides[currentSlide]}
+                        </div>
+
+                        {/* Footer / Controles */}
+                        <div className="flex justify-between items-center px-10 py-6 border-t border-slate-100 bg-white z-10">
+                            <button 
+                                onClick={prevSlide}
+                                disabled={currentSlide === 0}
+                                className={`flex items-center gap-2 px-6 py-3 rounded-full font-medium transition ${currentSlide === 0 ? 'text-slate-300 cursor-not-allowed' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-800'}`}
+                            >
+                                <Icon name="chevron-left" size={20} /> Anterior
+                            </button>
+                            
+                            {/* Indicadores de progreso */}
+                            <div className="flex gap-3">
+                                {slides.map((_, idx) => (
+                                    <div 
+                                        key={idx} 
+                                        onClick={() => setCurrentSlide(idx)}
+                                        className={`h-2.5 rounded-full transition-all duration-500 cursor-pointer ${currentSlide === idx ? 'w-12 bg-blue-600 shadow-md' : 'w-3 bg-slate-200 hover:bg-slate-300'}`}
+                                    />
+                                ))}
+                            </div>
+
+                            <button 
+                                onClick={nextSlide}
+                                disabled={currentSlide === slides.length - 1}
+                                className={`flex items-center gap-2 px-6 py-3 rounded-full font-medium transition ${currentSlide === slides.length - 1 ? 'text-slate-300 cursor-not-allowed' : 'text-blue-600 bg-blue-50 hover:bg-blue-100'}`}
+                            >
+                                Siguiente <Icon name="chevron-right" size={20} />
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+            );
+        }
+
+        // Renderizar la app en el div con id "root"
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
