@@ -127,23 +127,20 @@ class GameScene extends Phaser.Scene {
     }
 
     preload() {
-        // =====================================================================
-        // CARGA EXCLUSIVA DE TUS ASSETS REALES 
-        // =====================================================================
-        // 1. Carga el Tileset de la Universidad:
-        this.load.image('campus_tiles', 'assets/campus_tileset.png');
+        // Añadimos './' al inicio para que GitHub encuentre la carpeta correctamente
+        this.load.image('campus_tiles', './assets/campus_tileset.png');
 
-        // 2. Carga el Spritesheet del Jugador (Para Leo y Lea) con medidas exactas:
-        this.load.spritesheet('estudiante_leo', 'assets/player1_sprite.png', { 
+        // Cargamos los spritesheets con las medidas que calculamos (256x512)
+        this.load.spritesheet('estudiante_leo', './assets/player1_sprite.png', { 
             frameWidth: 256,
             frameHeight: 512
         });
-        this.load.spritesheet('estudiante_lea', 'assets/player2_sprite.png', { 
+        this.load.spritesheet('estudiante_lea', './assets/player2_sprite.png', { 
             frameWidth: 256,  
             frameHeight: 512  
         });
 
-        // Caja de preguntas (Generada por código ya que no es parte del spritesheet del jugador)
+        // Caja de preguntas (Esto se queda igual)
         let boxCv = document.createElement('canvas'); boxCv.width = 32; boxCv.height = 32;
         let ctxB = boxCv.getContext('2d');
         ctxB.fillStyle = '#fde047'; ctxB.fillRect(0,0,32,32);
@@ -177,8 +174,10 @@ class GameScene extends Phaser.Scene {
         addPlat(9, 42, 4);
 
         const map = this.make.tilemap({ data: levelData, tileWidth: 32, tileHeight: 32 });
-        // Implementación de Assets en el mundo (Tileset)
-        const tileset = map.addTilesetImage('campus_tiles', 'campus_tiles'); 
+        
+        // El primer parámetro es el nombre interno (puedes poner cualquiera)
+        // El segundo es la LLAVE que usamos en preload ('campus_tiles')
+        const tileset = map.addTilesetImage('estilo_universidad', 'campus_tiles'); 
         
         this.platformLayer = map.createLayer(0, tileset, 0, 0);
         this.platformLayer.setCollisionBetween(1, 100); 
@@ -240,6 +239,10 @@ class GameScene extends Phaser.Scene {
     }
 
     update() {
+        // RED DE SEGURIDAD: Si el personaje no se creó bien por falta de imagen, 
+        // detenemos el update para que no salga el error de 'duration'.
+        if (!this.player || !this.player.anims) return;
+
         // Movimiento Horizontal Rígido y Preciso
         if (this.cursors.left.isDown) {
             this.player.setVelocityX(-160); 
