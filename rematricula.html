@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reto Rematrícula - Sales Academy</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in { animation: fadeIn 0.6s ease-out forwards; }
+        .animate-slide-up { animation: slideUp 0.6s ease-out forwards; }
+        
+        /* Ocultar barra de scroll para un look más limpio */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(168, 85, 247, 0.5);
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-[conic-gradient(at_bottom_left,_var(--tw-gradient-stops))] from-slate-900 via-indigo-900 to-slate-900 flex items-center justify-center p-4 font-sans selection:bg-purple-500/30 text-white">
+
+    <div id="app-container" class="w-full flex justify-center">
+        <!-- El contenido se renderizará aquí dinámicamente mediante JS -->
+    </div>
+
+    <script>
+        // --- BASE DE DATOS DE PREGUNTAS (POOL) ---
+        const QUESTION_POOL = {
+            Conectar: [
+                {
+                    q: "Recibes una llamada de un estudiante que el semestre pasado dejó una queja fuerte en el sistema. Aplicando Inteligencia Emocional, ¿qué debes hacer antes de contestar o en los primeros segundos de la llamada?",
+                    options: [
+                        "Repasar rápidamente los argumentos de defensa de la universidad para ganarle el debate si vuelve a quejarse.",
+                        "Aplicar la respiración 4-2-4 y usar un 'pensamiento de anclaje' para recordar que tu rol es orientar, no juzgar.",
+                        "Transferir la llamada inmediatamente al área de servicio al cliente en cuanto escuches su voz.",
+                        "Contestar con un tono extremadamente entusiasta y festivo para cambiarle el ánimo rápidamente."
+                    ],
+                    correct: 1
+                },
+                {
+                    q: "Un estudiante 'Desconectado' de pregrado (19 años) te escribe por el chat de servicio: 'Hola, vi un correo de matrícula pero no sé si seguir'. ¿Cuál es tu primera respuesta para conectar?",
+                    options: [
+                        "Hola, claro. Te informo que el plazo vence mañana, ¿necesitas ayuda con el recibo?",
+                        "Hola. Bueno, si no estás seguro es tu decisión, la universidad no te puede obligar.",
+                        "¡Hola [Nombre]! Qué bueno que nos escribes. Viendo tu perfil, has avanzado súper bien. Cuéntame, ¿qué te tiene dudando?",
+                        "Hola. Te sugiero que hables con tus padres primero antes de tomar una decisión."
+                    ],
+                    correct: 2
+                },
+                {
+                    q: "Te entra una llamada de un estudiante de Posgrado (35 años) preguntando por su proceso de continuidad. Según la adaptabilidad al perfil, ¿cómo debe ser tu tono de conexión?",
+                    options: [
+                        "Extremadamente cercano, preguntándole por su familia y usando jerga juvenil para entrar en confianza.",
+                        "Estructurado y directo, validando su tiempo y enfocándote en la eficiencia y el retorno de su inversión educativa.",
+                        "Informativo y cortante: darle las fechas de pago y despedirse rápido para no quitarle tiempo.",
+                        "Emocional y reflexivo, haciendo una pausa larga antes de hablar de trámites."
+                    ],
+                    correct: 1
+                },
+                {
+                    q: "Un estudiante te llama y lo primero que dice es: 'La verdad llamo para cancelar, no me siento animado para continuar'. Para generar Rapport sin presionar, ¿qué respondes?",
+                    options: [
+                        "¿Y eso por qué? Si la carrera es muy buena y ya casi terminas.",
+                        "Te entiendo, [Nombre]. Quiero felicitarte primero por lo que has logrado hasta hoy. Cuéntame, ¿qué está pasando?",
+                        "Anímate, si no cancelas te puedo ofrecer un 10% de descuento hoy mismo.",
+                        "De acuerdo, te dicto los pasos para el proceso de cancelación oficial."
+                    ],
+                    correct: 1
+                }
+            ],
+            Dialogar: [
+                {
+                    q: "Un estudiante 'Indeciso' te escribe: 'Quiero pausar porque este semestre fue muy pesado por mi trabajo'. ¿Qué pregunta abierta utilizas para mapear su necesidad real?",
+                    options: [
+                        "¿Entonces confirmo que vas a cancelar el semestre?",
+                        "Pero la educación es primero, ¿no crees que deberías esforzarte un poco más?",
+                        "Entiendo. ¿Qué fue exactamente lo que sentiste más pesado? ¿Fue el tiempo de conexión o la carga de trabajos?",
+                        "¿Te gustaría que te comunique con el área financiera para un descuento?"
+                    ],
+                    correct: 2
+                },
+                {
+                    q: "Atiendes a un 'Comparador' que te dice: 'Llamo porque vi otra universidad virtual más barata'. Según la diferencia entre 'Informar' y 'Persuadir', ¿cómo procedes?",
+                    options: [
+                        "Le leo nuestro listado de precios actualizado para que él compare.",
+                        "Le pregunto: 'Además del precio, ¿qué otros aspectos son fundamentales para ti en tu formación profesional?'",
+                        "Le digo directamente que las otras universidades son de menor calidad y por eso son baratas.",
+                        "Le informo que si no paga hoy, perderá su cupo y el beneficio de estudiante antiguo."
+                    ],
+                    correct: 1
+                },
+                {
+                    q: "Al practicar la Escucha Activa durante una llamada, el estudiante se queja largamente de un trámite administrativo. ¿Cuál es tu rol como experto consultivo en esta fase?",
+                    options: [
+                        "Interrumpirlo amablemente para aclarar que tu área no maneja esos trámites.",
+                        "Escuchar para entender, no para responder. Tomar nota de sus dolores reales sin juzgar.",
+                        "Darle la razón en todo y prometerle que cambiarán al personal implicado.",
+                        "Hacerle preguntas cerradas (Sí/No) constantemente para forzarlo a terminar rápido."
+                    ],
+                    correct: 1
+                },
+                {
+                    q: "En el diálogo inicial con el estudiante, ¿por qué es crucial identificar sus verdaderos 'dolores' antes de ofrecer cualquier solución?",
+                    options: [
+                        "Porque así sabes rápido si vale la pena o no gastar tiempo con él.",
+                        "Para poder llenar correctamente la tipificación en el sistema CRM.",
+                        "Porque apresurarse a vender una solución que no ataca su necesidad real genera indiferencia y resistencia.",
+                        "Para saber desde el principio qué porcentaje de descuento máximo le puedes ofrecer."
+                    ],
+                    correct: 2
+                }
+            ],
+            Solucionar: [
+                {
+                    q: "El estudiante te llama preocupado porque no tiene tiempo por su nuevo trabajo. Usando la técnica (Característica -> Ventaja -> Beneficio), ¿cómo presentas la plataforma virtual como solución?",
+                    options: [
+                        "Nuestra plataforma está abierta 24/7 (Característica), lo que te permite acceder a cualquier hora (Ventaja), dándote el control de tu tiempo sin descuidar tu trabajo (Beneficio).",
+                        "Nuestra plataforma es virtual (Característica), así que no tienes que venir a la sede física (Ventaja) y te sale mucho más barato (Beneficio).",
+                        "Tienes que entrar a la plataforma (Característica) para ver las clases grabadas (Ventaja) y así aseguras que no pierdes el semestre (Beneficio).",
+                        "Te ofrezco una beca especial (Característica) para que te animes (Ventaja) y pagues hoy mismo (Beneficio)."
+                    ],
+                    correct: 0
+                },
+                {
+                    q: "Un estudiante 'Inconforme' te escribe pidiendo la cancelación por un mal docente del semestre pasado. ¿Cómo aplicas la Venta desde la Convicción para solucionar esto?",
+                    options: [
+                        "Le justificas que el profesor es estricto porque el nivel de la universidad es alto.",
+                        "Validas su frustración, explicas cómo la U toma esos reportes para mejorar y le recuerdas el prestigio general y empleabilidad del programa que ya inició.",
+                        "Le das la razón, admites que el profesor es malo, pero le dices que ya le falta poco para graduarse.",
+                        "Le ofreces un cambio inmediato de programa académico para que no vuelva a cruzarse con ese docente."
+                    ],
+                    correct: 1
+                },
+                {
+                    q: "Atiendes a un estudiante 'Financiero' que pregunta si puede cancelar porque se quedó sin ahorros. Tú sabes que hay opciones. ¿Cómo lo presentas de forma consultiva?",
+                    options: [
+                        "Si no tienes dinero, no te preocupes, aquí te prestamos a cuotas.",
+                        "Entiendo la situación. Justamente contamos con métodos de fraccionamiento diseñados para que este bache económico no detenga tu meta profesional.",
+                        "Deberías pedirle prestado a un familiar, recuerda que la educación es la mejor inversión.",
+                        "Te puedo hacer un descuento extraordinario, pero el sistema solo me deja si pagas de contado hoy."
+                    ],
+                    correct: 1
+                },
+                {
+                    q: "El estudiante te llama dudando porque siente que su carrera no le está dando opciones laborales rápidas. ¿Qué elemento de marca institucional debes integrar en tu solución?",
+                    options: [
+                        "El bajo costo del semestre en comparación con la competencia.",
+                        "La flexibilidad de los horarios para que pueda buscar trabajo.",
+                        "La empleabilidad de los egresados, conectando su formación con resultados reales y la red comunitaria del Poli.",
+                        "La promesa de que si se gradúa rápido, conseguirá trabajo de inmediato."
+                    ],
+                    correct: 2
+                }
+            ],
+            Negociar: [
+                {
+                    q: "El estudiante te dice en la llamada: 'No sé si renovar, la plataforma se cayó mucho en parciales'. Según el Modelo LAER, ¿cuál es el paso de 'Reconocer' (Acknowledge) que debes aplicar primero?",
+                    options: [
+                        "Ya actualizamos los servidores, te aseguro que no volverá a pasar.",
+                        "Es completamente válido que te sientas frustrado si la tecnología te falló en un momento clave, entiendo tu molestia.",
+                        "¿Qué tipo de error te salía exactamente en la pantalla?",
+                        "Te escucho, pero recuerda que fue una caída general de internet en el país, no fue nuestra culpa."
+                    ],
+                    correct: 1
+                },
+                {
+                    q: "Ante la objeción por chat: 'No tengo la plata completa para pagar hoy'. Aplicas la fórmula (Empatía + Validación + Propuesta). ¿Cuál es la respuesta experta?",
+                    options: [
+                        "Entiendo que estés evaluando la inversión (Empatía/Val). Revisemos juntos las opciones de fraccionamiento que tenemos para que no te descapitalices (Propuesta).",
+                        "Sé que no tienes dinero (Empatía), es difícil (Val). Te sugiero que consigas un crédito externo (Propuesta).",
+                        "Tranquilo (Empatía). Mejor cancela el semestre (Val) para que no te endeudes innecesariamente (Propuesta).",
+                        "Te entiendo (Empatía). Pero la U vale cada peso (Val). Paga lo que tengas con tarjeta de crédito (Propuesta)."
+                    ],
+                    correct: 0
+                },
+                {
+                    q: "¿Cuál es un error crítico al manejar objeciones desde la inteligencia emocional durante una llamada?",
+                    options: [
+                        "Hacer pausas para escuchar activamente antes de formular una respuesta.",
+                        "Anticiparse a las objeciones comunes dando información clara desde el inicio.",
+                        "Reencuadrar la objeción conectándola con el valor a largo plazo.",
+                        "Defender a la institución justificando los errores y entrando en un debate de quién tiene la razón."
+                    ],
+                    correct: 3
+                },
+                {
+                    q: "El estudiante te dice: 'Quiero aplazar un semestre para descansar'. Usando LAER, llegas al paso 'Responder'. ¿Qué alternativa le ofreces?",
+                    options: [
+                        "Si pausas ahora puede ser más difícil retomar el ritmo. ¿Qué te parece si revisamos una carga académica más ligera para que descanses pero no te detengas?",
+                        "Está muy bien, la salud mental es primero. Nos vemos en seis meses, te envío el formato.",
+                        "Si aplazas, el próximo semestre vas a perder el precio actual y te saldrá más caro.",
+                        "Por políticas de la universidad, no puedes aplazar si tienes beneficios activos."
+                    ],
+                    correct: 0
+                }
+            ],
+            Fidelizar: [
+                {
+                    q: "Estás terminando la llamada con un estudiante 'Comprometido' que lleva el 60% de su carrera y resolvió sus dudas. ¿Qué técnica de cierre aplicas?",
+                    options: [
+                        "Cierre por facilidad: 'Te mando el link de pago a cuotas por si acaso'.",
+                        "Cierre por miedo: 'Paga ya o pierdes el cupo y todo lo que has hecho'.",
+                        "Cierre por Avance Logrado: 'Ya llevas más de la mitad de tu carrera, lo mejor es continuar sin pausa. ¿Confirmamos tu inscripción de una vez?'",
+                        "Cierre administrativo: 'Listo, recuerda que tu fecha límite es el viernes'."
+                    ],
+                    correct: 2
+                },
+                {
+                    q: "Según el modelo consultivo, ¿qué acción diferencia a un asesor transaccional de un experto en retención tras recibir el pago de rematrícula?",
+                    options: [
+                        "Ofrecerle inmediatamente un curso o diplomado adicional.",
+                        "Realizar un seguimiento post-venta: verificar que su proceso esté correcto y mostrar disposición continua para acompañarlo.",
+                        "Cerrar el ticket y no volver a contactarlo hasta el próximo periodo de matrícula.",
+                        "Pedirle números de amigos para ingresarlos como referidos comerciales."
+                    ],
+                    correct: 1
+                },
+                {
+                    q: "Atiendes por chat a un estudiante de posgrado que ya aclaró sus dudas sobre el horario. ¿Cuál es el cierre más efectivo para su perfil?",
+                    options: [
+                        "Cierre por Propósito Profesional: 'Tu meta es especializarte para ascender. Cada semestre cuenta. ¿Dejamos tu proceso listo?'",
+                        "Cierre por urgencia: 'Si no pagas en las próximas 2 horas, el sistema te saca del grupo'.",
+                        "Cierre emocional: 'Por favor no te vayas, tu presencia es súper importante para nosotros'.",
+                        "Cierre silencioso: Simplemente enviarle el link de pago y esperar a que él tome la iniciativa."
+                    ],
+                    correct: 0
+                },
+                {
+                    q: "Recuerda el Punto Clave: El cierre en rematrícula NO debe sentirse como una presión para cobrar, sino como...",
+                    options: [
+                        "Un recordatorio estricto de multas y recargos por mora.",
+                        "Un compromiso claro hacia su continuidad, donde guías con seguridad su próximo paso.",
+                        "Una charla amistosa que queda abierta para que el estudiante decida 'cuando quiera'.",
+                        "Un debate persuasivo sobre por qué nuestra universidad es mejor que las demás."
+                    ],
+                    correct: 1
+                }
+            ]
+        };
+
+        // --- ESTADO DEL JUEGO ---
+        let questions = [];
+        let currentIdx = 0;
+        let answers = [];
+        let selectedOption = null;
+
+        const appContainer = document.getElementById('app-container');
+
+        // --- INICIALIZAR LA SIMULACIÓN ---
+        function startSimulation() {
+            let selectedQuestions = [];
+            
+            // Seleccionar 2 preguntas aleatorias por fase
+            Object.keys(QUESTION_POOL).forEach(phase => {
+                const shuffledPhase = [...QUESTION_POOL[phase]].sort(() => 0.5 - Math.random());
+                const selected = shuffledPhase.slice(0, 2).map(q => ({ ...q, phase }));
+                selectedQuestions = [...selectedQuestions, ...selected];
+            });
+
+            questions = selectedQuestions;
+            answers = [];
+            currentIdx = 0;
+            selectedOption = null;
+            
+            renderPlaying();
+        }
+
+        // --- MANEJO DE OPCIONES Y SIGUIENTE ---
+        function selectOption(idx) {
+            selectedOption = idx;
+            renderOptions(); // Solo actualizamos las opciones para evitar parpadeos
+        }
+
+        function handleNext() {
+            if (selectedOption === null) return;
+            
+            answers.push({
+                question: questions[currentIdx],
+                selected: selectedOption,
+                isCorrect: selectedOption === questions[currentIdx].correct
+            });
+
+            selectedOption = null;
+
+            if (currentIdx + 1 < questions.length) {
+                currentIdx++;
+                renderPlaying();
+            } else {
+                renderResults();
+            }
+        }
+
+        // --- VISTAS DEL COMPONENTE ---
+
+        // 1. Pantalla de Inicio
+        function renderStart() {
+            appContainer.innerHTML = `
+                <div class="animate-fade-in w-full max-w-2xl text-center bg-white/5 backdrop-blur-md border border-white/10 p-12 rounded-3xl shadow-2xl relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-400 via-purple-500 to-emerald-400"></div>
+                    
+                    <i data-lucide="shield-check" class="mx-auto text-purple-400 mb-6 drop-shadow-[0_0_15px_rgba(168,85,247,0.5)] w-20 h-20"></i>
+                    
+                    <h1 class="text-5xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400 mb-8 tracking-tight">
+                        Reto <span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400">Rematrícula</span>
+                    </h1>
+
+                    <div class="bg-indigo-900/40 border border-indigo-400/30 rounded-xl p-4 mb-6 text-left flex items-start gap-3 shadow-lg">
+                        <i data-lucide="lightbulb" class="text-yellow-400 shrink-0 mt-0.5 w-6 h-6"></i>
+                        <p class="text-sm text-indigo-100 leading-relaxed">
+                            <strong class="text-yellow-400">Pista experta:</strong> Recuerda que en cada caso tu objetivo no es presionar ni dar información operativa, sino acompañar desde la inteligencia emocional. ¡Confía en tu criterio!
+                        </p>
+                    </div>
+
+                    <p class="text-lg text-gray-300 mb-8 leading-relaxed">
+                        Bienvenido al entorno de simulación comercial. Aquí pondrás a prueba tu capacidad de respuesta ante situaciones reales planteadas por los estudiantes.
+                        <br/><br/>
+                        Analiza cada caso con detenimiento y elige la respuesta que mejor refleje el modelo de venta consultiva. Obtendrás un diagnóstico de tus habilidades al finalizar.
+                    </p>
+                    
+                    <button onclick="startSimulation()" class="group relative inline-flex items-center justify-center px-8 py-4 font-bold text-white transition-all duration-300 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-full hover:scale-105 hover:shadow-[0_0_30px_rgba(147,51,234,0.4)]">
+                        <i data-lucide="play" class="mr-2 w-5 h-5 group-hover:animate-pulse"></i> Iniciar Evaluación
+                    </button>
+                </div>
+            `;
+            lucide.createIcons();
+        }
+
+        // 2. Pantalla de Juego (Estructura Base)
+        function renderPlaying() {
+            const progress = (currentIdx / 10) * 100;
+            const currentQuestion = questions[currentIdx];
+
+            appContainer.innerHTML = `
+                <div class="w-full max-w-3xl animate-slide-up">
+                    <!-- Header Progress -->
+                    <div class="flex justify-between items-end mb-4 px-2">
+                        <div>
+                            <span class="text-xs font-bold uppercase tracking-widest text-indigo-300">
+                                Fase Evaluada: ${currentQuestion.phase}
+                            </span>
+                            <h2 class="text-white font-bold text-xl">Caso Clínico ${currentIdx + 1} de 10</h2>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-sm font-medium text-gray-400">${Math.round(progress)}% Completado</span>
+                        </div>
+                    </div>
+                    
+                    <div class="w-full h-2 bg-gray-800 rounded-full mb-8 overflow-hidden">
+                        <div class="h-full bg-gradient-to-r from-cyan-400 to-purple-500 transition-all duration-500 ease-out" style="width: ${progress}%"></div>
+                    </div>
+
+                    <!-- Question Card -->
+                    <div class="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-6 md:p-10 shadow-2xl relative">
+                        <div class="absolute top-6 right-6 opacity-20">
+                            <i data-lucide="message-square" class="w-24 h-24"></i>
+                        </div>
+                        
+                        <p class="text-xl md:text-2xl text-white font-medium mb-8 leading-snug relative z-10">
+                            ${currentQuestion.q}
+                        </p>
+
+                        <div id="options-container" class="space-y-4 relative z-10">
+                            <!-- Las opciones se renderizan aquí -->
+                        </div>
+
+                        <div class="mt-8 flex justify-end">
+                            <button id="next-button" onclick="handleNext()" disabled class="flex items-center gap-2 px-8 py-3 rounded-xl font-bold transition-all duration-300 bg-white/10 text-white/30 cursor-not-allowed">
+                                ${currentIdx === 9 ? 'Generar Diagnóstico' : 'Siguiente Caso'} 
+                                <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            renderOptions();
+        }
+
+        // 2.1 Renderizado de Opciones
+        function renderOptions() {
+            const container = document.getElementById('options-container');
+            const btn = document.getElementById('next-button');
+            const currentQuestion = questions[currentIdx];
+
+            container.innerHTML = currentQuestion.options.map((opt, idx) => {
+                const isSelected = selectedOption === idx;
+                const baseClasses = "w-full text-left p-5 rounded-2xl border transition-all duration-200 flex items-start gap-4";
+                const selectedClasses = "bg-purple-600/40 border-purple-400 shadow-[0_0_20px_rgba(168,85,247,0.3)] text-white";
+                const unselectedClasses = "bg-black/20 border-white/10 text-gray-300 hover:bg-white/10 hover:border-white/30";
+                
+                const circleBase = "mt-0.5 min-w-[20px] h-5 rounded-full border flex items-center justify-center transition-colors";
+                const circleSelected = "border-purple-300 bg-purple-500";
+                const circleUnselected = "border-gray-500";
+
+                return `
+                    <button onclick="selectOption(${idx})" class="${baseClasses} ${isSelected ? selectedClasses : unselectedClasses}">
+                        <div class="${circleBase} ${isSelected ? circleSelected : circleUnselected}">
+                            ${isSelected ? '<div class="w-2 h-2 bg-white rounded-full"></div>' : ''}
+                        </div>
+                        <span class="leading-relaxed">${opt}</span>
+                    </button>
+                `;
+            }).join('');
+
+            // Actualizar botón de siguiente
+            if (selectedOption !== null) {
+                btn.disabled = false;
+                btn.className = "flex items-center gap-2 px-8 py-3 rounded-xl font-bold transition-all duration-300 bg-white text-indigo-900 hover:bg-indigo-100 hover:scale-105 shadow-[0_0_20px_rgba(255,255,255,0.3)]";
+            } else {
+                btn.disabled = true;
+                btn.className = "flex items-center gap-2 px-8 py-3 rounded-xl font-bold transition-all duration-300 bg-white/10 text-white/30 cursor-not-allowed";
+            }
+
+            lucide.createIcons();
+        }
+
+        // 3. Pantalla de Resultados
+        function renderResults() {
+            const totalCorrect = answers.filter(a => a.isCorrect).length;
+            const isSuccess = totalCorrect >= 8;
+
+            // Calcular métricas por fase
+            const phaseMetrics = {};
+            Object.keys(QUESTION_POOL).forEach(phase => {
+                const phaseAnswers = answers.filter(a => a.question.phase === phase);
+                const correct = phaseAnswers.filter(a => a.isCorrect).length;
+                phaseMetrics[phase] = (correct / 2) * 100;
+            });
+
+            const getFeedbackMessage = (phase, score) => {
+                if (score === 100) return `
+                    <div class="flex items-start gap-2 text-emerald-400 mt-2 bg-emerald-400/10 p-2 rounded-lg border border-emerald-400/20">
+                        <i data-lucide="lightbulb" class="w-4 h-4 mt-0.5 shrink-0"></i>
+                        <span class="text-sm">¡Excelente! Dominas esta etapa. Mantén la seguridad en tu discurso.</span>
+                    </div>`;
+                if (score === 50) return `
+                    <div class="flex items-start gap-2 text-yellow-400 mt-2 bg-yellow-400/10 p-2 rounded-lg border border-yellow-400/20">
+                        <i data-lucide="lightbulb" class="w-4 h-4 mt-0.5 shrink-0"></i>
+                        <span class="text-sm">Vas por buen camino. Tip: Revisa los conceptos clave de esta fase para no dejar dudas.</span>
+                    </div>`;
+                
+                switch(phase) {
+                    case 'Conectar': return `
+                        <div class="flex items-start gap-2 text-rose-400 mt-2 bg-rose-400/10 p-2 rounded-lg border border-rose-400/20">
+                            <i data-lucide="lightbulb" class="w-4 h-4 mt-0.5 shrink-0"></i>
+                            <span class="text-sm">Atención: Puedes estar perdiendo el rapport. Tip: Aplica la respiración 4-2-4 y adapta tu tono al perfil del estudiante.</span>
+                        </div>`;
+                    case 'Dialogar': return `
+                        <div class="flex items-start gap-2 text-rose-400 mt-2 bg-rose-400/10 p-2 rounded-lg border border-rose-400/20">
+                            <i data-lucide="lightbulb" class="w-4 h-4 mt-0.5 shrink-0"></i>
+                            <span class="text-sm">Atención: Estás asumiendo en lugar de indagar. Tip: Usa preguntas abiertas para encontrar el verdadero "dolor".</span>
+                        </div>`;
+                    case 'Solucionar': return `
+                        <div class="flex items-start gap-2 text-rose-400 mt-2 bg-rose-400/10 p-2 rounded-lg border border-rose-400/20">
+                            <i data-lucide="lightbulb" class="w-4 h-4 mt-0.5 shrink-0"></i>
+                            <span class="text-sm">Atención: Das características, no beneficios. Tip: Conecta lo que ofreces con la tranquilidad y la meta del estudiante.</span>
+                        </div>`;
+                    case 'Negociar': return `
+                        <div class="flex items-start gap-2 text-rose-400 mt-2 bg-rose-400/10 p-2 rounded-lg border border-rose-400/20">
+                            <i data-lucide="lightbulb" class="w-4 h-4 mt-0.5 shrink-0"></i>
+                            <span class="text-sm">Atención: Te estás defendiendo ante las quejas. Tip: Aplica el modelo LAER (Escuchar y Reconocer primero).</span>
+                        </div>`;
+                    case 'Fidelizar': return `
+                        <div class="flex items-start gap-2 text-rose-400 mt-2 bg-rose-400/10 p-2 rounded-lg border border-rose-400/20">
+                            <i data-lucide="lightbulb" class="w-4 h-4 mt-0.5 shrink-0"></i>
+                            <span class="text-sm">Atención: Cierres débiles o transaccionales. Tip: Protege la permanencia usando el "Cierre por Avance Logrado".</span>
+                        </div>`;
+                    default: return '';
+                }
+            };
+
+            let metricsHtml = Object.keys(phaseMetrics).map(phase => {
+                const score = phaseMetrics[phase];
+                const barColor = score === 100 ? 'bg-emerald-400' : score === 50 ? 'bg-yellow-400' : 'bg-rose-400';
+                return `
+                    <div class="border-b border-white/10 pb-4 last:border-0">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="font-medium text-gray-200">${phase}</span>
+                            <span class="text-sm font-bold">${score}%</span>
+                        </div>
+                        <div class="w-full bg-gray-700 h-2 rounded-full mb-2">
+                            <div class="h-2 rounded-full ${barColor}" style="width: ${score}%"></div>
+                        </div>
+                        ${getFeedbackMessage(phase, score)}
+                    </div>
+                `;
+            }).join('');
+
+            appContainer.innerHTML = `
+                <div class="animate-fade-in w-full max-w-4xl mx-auto bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-8 shadow-2xl text-white">
+                    <div class="text-center mb-8">
+                        ${isSuccess ? `
+                            <div class="inline-block p-4 bg-emerald-500/20 rounded-full mb-4">
+                                <i data-lucide="award" class="text-emerald-400 w-16 h-16"></i>
+                            </div>
+                        ` : `
+                            <div class="inline-block p-4 bg-yellow-500/20 rounded-full mb-4">
+                                <i data-lucide="refresh-cw" class="text-yellow-400 w-16 h-16"></i>
+                            </div>
+                        `}
+                        
+                        <h2 class="text-3xl font-bold mb-2">
+                            ${isSuccess ? '¡Simulación Superada!' : 'Diagnóstico Completado'}
+                        </h2>
+                        <p class="text-xl text-indigo-200">
+                            Aciertos: <span class="font-bold text-white">${totalCorrect} / 10</span>
+                        </p>
+                        
+                        ${isSuccess ? `
+                            <div class="mt-4 p-4 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-xl border border-purple-400 shadow-lg inline-block">
+                                <p class="text-2xl font-black text-white drop-shadow-md">+ 100 POLIPUNTOS OBTENIDOS</p>
+                                <p class="text-sm text-purple-200">Recompensa desbloqueada por excelencia comercial</p>
+                            </div>
+                        ` : ''}
+                    </div>
+
+                    <div class="grid md:grid-cols-2 gap-8">
+                        <div class="bg-black/30 p-6 rounded-2xl border border-white/10">
+                            <h3 class="text-xl font-semibold mb-4 flex items-center gap-2">
+                                <i data-lucide="brain-circuit" class="text-indigo-400 w-6 h-6"></i> Diagnóstico por Fases
+                            </h3>
+                            <div class="space-y-4">
+                                ${metricsHtml}
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col justify-between">
+                            <div class="bg-indigo-900/40 p-6 rounded-2xl border border-indigo-400/30">
+                                <h3 class="text-xl font-semibold mb-3 flex items-center gap-2 text-indigo-300">
+                                    <i data-lucide="target" class="w-6 h-6"></i> Preparación Continua
+                                </h3>
+                                <p class="text-gray-300 mb-4 leading-relaxed">
+                                    Este diagnóstico te sirve como termómetro de tus habilidades consultivas. Analiza las fases donde obtuviste menor puntaje; ahí están tus oportunidades de mejora.
+                                </p>
+                                <div class="bg-black/40 p-5 rounded-xl border-l-4 border-emerald-400">
+                                    <p class="font-bold text-white mb-2 flex items-center gap-2">
+                                        <i data-lucide="lightbulb" class="text-emerald-400 w-[18px] h-[18px]"></i> Material de Apoyo
+                                    </p>
+                                    <p class="text-sm text-gray-300 mb-3">
+                                        Te invitamos a repasar los conceptos clave en nuestro repositorio. Esta preparación te será muy útil para las próximas actividades de la semana.
+                                    </p>
+                                    <a href="#" onclick="event.preventDefault()" class="inline-block text-sm font-bold text-emerald-400 hover:text-emerald-300 underline underline-offset-2 transition-colors">
+                                        Acceder a la Sales Academy →
+                                    </a>
+                                </div>
+                            </div>
+
+                            <button onclick="startSimulation()" class="mt-6 w-full py-4 bg-white/10 hover:bg-white/20 border border-white/30 rounded-xl font-bold transition-all duration-300 flex items-center justify-center gap-2">
+                                <i data-lucide="refresh-cw" class="w-5 h-5"></i> Entrenar Nuevamente (Casos Aleatorios)
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            lucide.createIcons();
+        }
+
+        // --- INICIALIZAR APP ---
+        document.addEventListener('DOMContentLoaded', () => {
+            renderStart();
+        });
+
+    </script>
+</body>
+</html>
