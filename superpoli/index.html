@@ -7,8 +7,13 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/phaser/3.60.0/phaser.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { margin: 0; background: #0f172a; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; font-family: 'Segoe UI', sans-serif; }
-        canvas { border-radius: 12px; box-shadow: 0 0 50px rgba(0,0,0,0.8); image-rendering: pixelated; /* Crucial para que el pixel art se vea nítido */ }
+        /* Aseguramos que el fondo ocupe el 100% de la pantalla sin scroll */
+        body { margin: 0; background: #0f172a; display: flex; justify-content: center; align-items: center; width: 100vw; height: 100vh; overflow: hidden; font-family: 'Segoe UI', sans-serif; }
+        
+        /* Contenedor del juego a pantalla completa */
+        #game-container { width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; }
+        canvas { box-shadow: 0 0 50px rgba(0,0,0,0.8); }
+
         .modal { pointer-events: all; display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); padding: 2rem; border-radius: 1.5rem; width: 90%; max-width: 550px; box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1); z-index: 100; border: 4px solid #3b82f6; }
         .btn-option { width: 100%; text-align: left; padding: 1rem; margin: 0.5rem 0; border: 2px solid #e2e8f0; border-radius: 0.75rem; transition: all 0.2s; cursor: pointer; font-size: 0.9rem; line-height: 1.25; }
         .btn-option:hover { background: #eff6ff; border-color: #3b82f6; transform: translateX(5px); }
@@ -130,13 +135,38 @@ class GameScene extends Phaser.Scene {
 
     preload() {
         // =====================================================================
-        // CARGA DE ASSETS (LISTO PARA PRODUCCIÓN)
+        // 1. SISTEMA ANTI-CRASH (PREVIENE LA PANTALLA NEGRA)
         // =====================================================================
-        
-        // Para el escenario (imagen única)
+        // Crea bloques base por si el navegador bloquea tus assets
+        let tileCv = document.createElement('canvas'); tileCv.width = 64; tileCv.height = 32;
+        let ctxT = tileCv.getContext('2d'); ctxT.fillStyle = '#b45f06'; ctxT.fillRect(32,0,32,32);
+        this.textures.addCanvas('seguro_mapa', tileCv);
+
+        let genAv = (key, color) => {
+            let cv = document.createElement('canvas'); cv.width = 192; cv.height = 32;
+            let ctx = cv.getContext('2d');
+            for(let i=0; i<6; i++) {
+                ctx.fillStyle = color; ctx.fillRect(i*32 + 8, 8, 16, 24);
+                ctx.fillStyle = '#ffe4e1'; ctx.fillRect(i*32 + 8, 4, 16, 12);
+            }
+            this.textures.addCanvas(key, cv);
+        };
+        genAv('seguro_leo', '#3b82f6'); // Azul para Leo
+        genAv('seguro_lea', '#a855f7'); // Morado para Lea
+
+        // Caja de preguntas
+        let boxCv = document.createElement('canvas'); boxCv.width = 32; boxCv.height = 32;
+        let ctxB = boxCv.getContext('2d');
+        ctxB.fillStyle = '#fde047'; ctxB.fillRect(0,0,32,32);
+        ctxB.fillStyle = '#854d0e'; ctxB.font = 'bold 20px Arial'; ctxB.fillText('?', 10, 24);
+        this.textures.addCanvas('question_box', boxCv);
+
+        // =====================================================================
+        // 2. CARGA DE TUS ASSETS REALES
+        // =====================================================================
+        // Phaser intentará cargar esto. Si fallan, usará los de arriba.
         this.load.image('mapa', 'assets/campus_tileset.png');
 
-        // Para los personajes (hojas de poses)
         this.load.spritesheet('estudiante_leo', 'assets/player1_sprite.png', { 
             frameWidth: 32,  // Ancho de una pose
             frameHeight: 32  // Alto de una pose
@@ -145,18 +175,16 @@ class GameScene extends Phaser.Scene {
             frameWidth: 32,  
             frameHeight: 32  
         });
-
-        // Caja de preguntas (Generada por código para que siempre funcione)
-        let boxCv = document.createElement('canvas'); boxCv.width = 32; boxCv.height = 32;
-        let ctxB = boxCv.getContext('2d');
-        ctxB.fillStyle = '#fde047'; ctxB.fillRect(0,0,32,32);
-        ctxB.fillStyle = '#854d0e'; ctxB.font = 'bold 20px Arial'; ctxB.fillText('?', 10, 24);
-        this.textures.addCanvas('question_box', boxCv);
     }
 
     create() {
-        // Asignar el sprite seleccionado
-        const playerKey = chosenAvatar === 'leo' ? 'estudiante_leo' : 'estudiante_lea';
+        // Validación de carga: Si Phaser no encontró tus imágenes, usa el anti-crash
+        const finalTileKey = this.textures.exists('mapa') ? 'mapa' : 'seguro_mapa';
+        
+        const finalLeoKey = this.textures.exists('estudiante_leo') ? 'estudiante_leo' : 'seguro_leo';
+        const finalLeaKey = this.textures.exists('estudiante_lea') ? 'estudiante_lea' : 'seguro_lea';
+        
+        const playerKey = chosenAvatar === 'leo' ? finalLeoKey : finalLeaKey;
 
         this.cameras.main.setBackgroundColor('#87CEEB'); // Cielo clásico
 
@@ -176,7 +204,8 @@ class GameScene extends Phaser.Scene {
         addPlat(6, 15, 4);   // Plat 5
 
         const map = this.make.tilemap({ data: levelData, tileWidth: 32, tileHeight: 32 });
-        const tileset = map.addTilesetImage('mapa'); // Actualizado a 'mapa'
+        // Usamos la variable validada para que nunca colapse
+        const tileset = map.addTilesetImage(finalTileKey, finalTileKey); 
         
         this.platformLayer = map.createLayer(0, tileset, 0, 0);
         this.platformLayer.setCollisionBetween(1, 100); 
@@ -325,9 +354,15 @@ function startGame() {
     
     const config = {
         type: Phaser.AUTO,
-        width: 800,
-        height: 600,
-        parent: 'game-container',
+        // CONFIGURACIÓN DE PANTALLA COMPLETA
+        scale: {
+            mode: Phaser.Scale.FIT, // Escala dinámicamente según el monitor
+            parent: 'game-container',
+            autoCenter: Phaser.Scale.CENTER_BOTH,
+            width: 800,
+            height: 600
+        },
+        pixelArt: true, // Optimización especial para que los Sprites se vean súper nítidos
         physics: {
             default: 'arcade',
             arcade: { 
