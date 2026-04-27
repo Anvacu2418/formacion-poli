@@ -172,9 +172,8 @@ class GameScene extends Phaser.Scene {
 
         const map = this.make.tilemap({ data: levelData, tileWidth: 32, tileHeight: 32 });
         
-        // El primer parámetro es el nombre interno (puedes poner cualquiera)
-        // El segundo es la LLAVE que usamos en preload ('campus_tiles')
-        const tileset = map.addTilesetImage('estilo_universidad', 'campus_tiles'); 
+        // Mapeo corregido exacto como lo solicitaste
+        const tileset = map.addTilesetImage('campus_tiles', 'campus_tiles'); 
         
         // Verificación de seguridad para la capa del mapa por si falla la textura
         if (tileset) {
@@ -185,16 +184,16 @@ class GameScene extends Phaser.Scene {
         // 2. CONFIGURACIÓN DEL JUGADOR REAL CON FÍSICAS
         this.player = this.physics.add.sprite(100, 450, playerKey);
         
-        // Ajuste de escala: Como 256x512 es gigantesco, lo escalamos a un 15% 
-        // para que se vea bien frente a los tiles de 32x32.
-        this.player.setScale(0.15); 
+        // Ajuste de escala a 0.6 para un tamaño realista
+        this.player.setScale(0.6); 
 
         this.physics.world.setBounds(0, 0, 50 * 32, 19 * 32);
         this.player.setCollideWorldBounds(true);
         
-        // Hitbox ajustada al nuevo tamaño escalado (aprox)
-        this.player.body.setSize(160, 480);
-        this.player.body.setOffset(48, 32);
+        // Ajustamos el Hitbox considerando el nuevo tamaño de 256x512
+        this.player.body.setSize(100, 300);
+        // Centramos el hitbox (256/2 = 128 - 50 = 78 en X, 512 - 300 = 212 en Y)
+        this.player.body.setOffset(78, 212);
 
         this.player.body.setGravityY(700); 
         this.player.body.setDragX(800);    
@@ -237,6 +236,9 @@ class GameScene extends Phaser.Scene {
         // Cámara
         this.cameras.main.setBounds(0, 0, 50 * 32, 19 * 32); 
         this.cameras.main.startFollow(this.player, true, 0.08, 0.08); 
+        
+        // Zoom incorporado para darle un aire más inmersivo
+        this.cameras.main.setZoom(1.2);
 
         this.physics.pause();
     }
