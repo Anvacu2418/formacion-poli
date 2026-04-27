@@ -3,23 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Poli-Expert: Misión Rematrícula - Versión Final</title>
+    <title>Poli-Expert: Misión Rematrícula - Producción</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/phaser/3.60.0/phaser.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Aseguramos que el fondo ocupe el 100% de la pantalla sin scroll */
-        body { margin: 0; background: #0f172a; display: flex; justify-content: center; align-items: center; width: 100vw; height: 100vh; overflow: hidden; font-family: 'Segoe UI', sans-serif; }
-        
-        /* Contenedor del juego a pantalla completa */
-        #game-container { width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; }
-        canvas { box-shadow: 0 0 50px rgba(0,0,0,0.8); }
+        /* Fondo integrado y contenedor 100% de pantalla */
+        body { margin: 0; background: #87CEEB; display: flex; justify-content: center; align-items: center; width: 100vw; height: 100vh; overflow: hidden; font-family: 'Segoe UI', sans-serif; }
+        #game-container { width: 100%; height: 100%; }
+        canvas { image-rendering: pixelated; /* Nitidez perfecta para el Pixel Art */ }
 
         .modal { pointer-events: all; display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); padding: 2rem; border-radius: 1.5rem; width: 90%; max-width: 550px; box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1); z-index: 100; border: 4px solid #3b82f6; }
         .btn-option { width: 100%; text-align: left; padding: 1rem; margin: 0.5rem 0; border: 2px solid #e2e8f0; border-radius: 0.75rem; transition: all 0.2s; cursor: pointer; font-size: 0.9rem; line-height: 1.25; }
         .btn-option:hover { background: #eff6ff; border-color: #3b82f6; transform: translateX(5px); }
         #feedback-bar { position: absolute; top: 20px; right: 20px; color: white; background: rgba(0,0,0,0.5); padding: 10px 20px; border-radius: 20px; font-weight: bold; pointer-events: none; z-index: 50; }
         
-        /* Estilos para selección de personaje */
         .avatar-card { border: 3px solid transparent; transition: all 0.3s; cursor: pointer; }
         .avatar-card:hover { transform: translateY(-5px); }
         .avatar-card.selected { border-color: #3b82f6; background-color: #eff6ff; box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.3); }
@@ -43,12 +40,10 @@
                 <h3 class="text-center font-bold text-slate-800 mb-3 uppercase tracking-wide text-sm">Selecciona tu Agente</h3>
                 <div class="flex justify-center gap-4">
                     <div id="card-leo" class="avatar-card selected bg-slate-50 p-4 rounded-xl text-center w-32" onclick="selectAvatar('leo')">
-                        <div class="w-16 h-16 bg-blue-500 rounded-full mx-auto mb-2 border-4 border-blue-200"></div>
-                        <h4 class="font-bold text-slate-800">LEO</h4>
+                        <div class="w-16 h-16 bg-blue-500 rounded-full mx-auto mb-2 border-4 border-blue-200 overflow-hidden flex justify-center items-center font-black text-white">LEO</div>
                     </div>
                     <div id="card-lea" class="avatar-card bg-slate-50 p-4 rounded-xl text-center w-32" onclick="selectAvatar('lea')">
-                        <div class="w-16 h-16 bg-purple-500 rounded-full mx-auto mb-2 border-4 border-purple-200"></div>
-                        <h4 class="font-bold text-slate-800">LEA</h4>
+                        <div class="w-16 h-16 bg-purple-500 rounded-full mx-auto mb-2 border-4 border-purple-200 overflow-hidden flex justify-center items-center font-black text-white">LEA</div>
                     </div>
                 </div>
             </div>
@@ -56,7 +51,7 @@
             <div class="bg-blue-50 border border-blue-100 p-4 rounded-lg mb-6 text-sm text-blue-800">
                 <h3 class="font-bold mb-2">🎮 Controles:</h3>
                 <ul class="list-disc pl-5">
-                    <li>Usa <kbd class="bg-white px-1 rounded shadow">◀</kbd> <kbd class="bg-white px-1 rounded shadow">▶</kbd> para correr.</li>
+                    <li>Usa <kbd class="bg-white px-1 rounded shadow">◀</kbd> <kbd class="bg-white px-1 rounded shadow">▶</kbd> para correr por el campus.</li>
                     <li>Mantén presionado <kbd class="bg-white px-1 rounded shadow">▲</kbd> para un <strong>salto alto</strong>. Suelta rápido para un <strong>salto corto</strong>.</li>
                 </ul>
             </div>
@@ -99,7 +94,7 @@
 
 <script>
 // UI de Selección de Personaje
-let chosenAvatar = 'leo'; // Por defecto
+let chosenAvatar = 'leo'; 
 
 function selectAvatar(avatar) {
     chosenAvatar = avatar;
@@ -122,8 +117,6 @@ const questionBank = [
     { cat: "PERSUASIÓN", q: "¿Qué haces si un estudiante pide hablar con el supervisor?", options: ["Cuelgas la llamada.", "Lo transfieres sin decir nada.", "Usas una frase de contención para escuchar su caso y buscar una solución primero.", "Le dices que el supervisor no está disponible hoy."], correct: 2 }
 ];
 
-let gameInstance;
-
 class GameScene extends Phaser.Scene {
     constructor() {
         super({ key: 'GameScene' });
@@ -135,110 +128,114 @@ class GameScene extends Phaser.Scene {
 
     preload() {
         // =====================================================================
-        // 1. SISTEMA ANTI-CRASH (PREVIENE LA PANTALLA NEGRA)
+        // CARGA EXCLUSIVA DE TUS ASSETS REALES 
         // =====================================================================
-        // Crea bloques base por si el navegador bloquea tus assets
-        let tileCv = document.createElement('canvas'); tileCv.width = 64; tileCv.height = 32;
-        let ctxT = tileCv.getContext('2d'); ctxT.fillStyle = '#b45f06'; ctxT.fillRect(32,0,32,32);
-        this.textures.addCanvas('seguro_mapa', tileCv);
+        // 1. Carga el Tileset de la Universidad:
+        this.load.image('campus_tiles', 'assets/campus_tileset.png');
 
-        let genAv = (key, color) => {
-            let cv = document.createElement('canvas'); cv.width = 192; cv.height = 32;
-            let ctx = cv.getContext('2d');
-            for(let i=0; i<6; i++) {
-                ctx.fillStyle = color; ctx.fillRect(i*32 + 8, 8, 16, 24);
-                ctx.fillStyle = '#ffe4e1'; ctx.fillRect(i*32 + 8, 4, 16, 12);
-            }
-            this.textures.addCanvas(key, cv);
-        };
-        genAv('seguro_leo', '#3b82f6'); // Azul para Leo
-        genAv('seguro_lea', '#a855f7'); // Morado para Lea
+        // 2. Carga el Spritesheet del Jugador (Para Leo y Lea) con medidas exactas:
+        this.load.spritesheet('estudiante_leo', 'assets/player1_sprite.png', { 
+            frameWidth: 256,
+            frameHeight: 512
+        });
+        this.load.spritesheet('estudiante_lea', 'assets/player2_sprite.png', { 
+            frameWidth: 256,  
+            frameHeight: 512  
+        });
 
-        // Caja de preguntas
+        // Caja de preguntas (Generada por código ya que no es parte del spritesheet del jugador)
         let boxCv = document.createElement('canvas'); boxCv.width = 32; boxCv.height = 32;
         let ctxB = boxCv.getContext('2d');
         ctxB.fillStyle = '#fde047'; ctxB.fillRect(0,0,32,32);
         ctxB.fillStyle = '#854d0e'; ctxB.font = 'bold 20px Arial'; ctxB.fillText('?', 10, 24);
         this.textures.addCanvas('question_box', boxCv);
-
-        // =====================================================================
-        // 2. CARGA DE TUS ASSETS REALES
-        // =====================================================================
-        // Phaser intentará cargar esto. Si fallan, usará los de arriba.
-        this.load.image('mapa', 'assets/campus_tileset.png');
-
-        this.load.spritesheet('estudiante_leo', 'assets/player1_sprite.png', { 
-            frameWidth: 32,  // Ancho de una pose
-            frameHeight: 32  // Alto de una pose
-        });
-        this.load.spritesheet('estudiante_lea', 'assets/player2_sprite.png', { 
-            frameWidth: 32,  
-            frameHeight: 32  
-        });
     }
 
     create() {
-        // Validación de carga: Si Phaser no encontró tus imágenes, usa el anti-crash
-        const finalTileKey = this.textures.exists('mapa') ? 'mapa' : 'seguro_mapa';
-        
-        const finalLeoKey = this.textures.exists('estudiante_leo') ? 'estudiante_leo' : 'seguro_leo';
-        const finalLeaKey = this.textures.exists('estudiante_lea') ? 'estudiante_lea' : 'seguro_lea';
-        
-        const playerKey = chosenAvatar === 'leo' ? finalLeoKey : finalLeaKey;
+        // SOLUCIONAR EL GLITCH DE RENDERIZADO (Fondo limpio en cada frame)
+        this.cameras.main.setBackgroundColor('#87CEEB');
 
-        this.cameras.main.setBackgroundColor('#87CEEB'); // Cielo clásico
+        const playerKey = chosenAvatar === 'leo' ? 'estudiante_leo' : 'estudiante_lea';
 
-        // 1. CONSTRUCCIÓN DEL MUNDO (Tilemap)
+        // 1. CONSTRUCCIÓN DEL MUNDO EXPANDIDO (Nivel de 50 columnas = 1600px de largo)
         const levelData = [];
-        for(let y=0; y<19; y++) {
+        for(let y=0; y<19; y++) { 
             let row = [];
-            for(let x=0; x<25; x++) { row.push(y >= 17 ? 1 : 0); }
+            for(let x=0; x<50; x++) { row.push(y >= 17 ? 1 : 0); } // Piso en las últimas 2 filas (Index 1)
             levelData.push(row);
         }
         
+        // Función para crear plataformas flotantes a lo largo del mundo
         const addPlat = (r, c, len) => { for(let i=0; i<len; i++) levelData[r][c+i] = 1; };
-        addPlat(13, 3, 4);   // Plat 1
-        addPlat(10, 10, 5);  // Plat 2
-        addPlat(13, 18, 4);  // Plat 3
-        addPlat(6, 5, 4);    // Plat 4
-        addPlat(6, 15, 4);   // Plat 5
+        
+        // Distribuimos las plataformas
+        addPlat(13, 5, 4);   
+        addPlat(10, 12, 5);  
+        addPlat(13, 20, 4);  
+        addPlat(8, 27, 4);    
+        addPlat(12, 34, 5);   
+        addPlat(9, 42, 4);
 
         const map = this.make.tilemap({ data: levelData, tileWidth: 32, tileHeight: 32 });
-        // Usamos la variable validada para que nunca colapse
-        const tileset = map.addTilesetImage(finalTileKey, finalTileKey); 
+        // Implementación de Assets en el mundo (Tileset)
+        const tileset = map.addTilesetImage('campus_tiles', 'campus_tiles'); 
         
         this.platformLayer = map.createLayer(0, tileset, 0, 0);
         this.platformLayer.setCollisionBetween(1, 100); 
 
-        // 2. CONFIGURACIÓN DEL JUGADOR (Sprite y Físicas)
+        // 2. CONFIGURACIÓN DEL JUGADOR REAL CON FÍSICAS
         this.player = this.physics.add.sprite(100, 450, playerKey);
-        this.player.setCollideWorldBounds(true);
-        this.player.body.setSize(20, 30); // Ajuste de hitbox (más preciso)
-        this.player.body.setOffset(6, 2);
+        
+        // Ajuste de escala: Como 256x512 es gigantesco, lo escalamos a un 15% 
+        // para que se vea bien frente a los tiles de 32x32.
+        this.player.setScale(0.15); 
 
-        // GRAVEDAD Y FRICCIÓN 
+        this.physics.world.setBounds(0, 0, 50 * 32, 19 * 32);
+        this.player.setCollideWorldBounds(true);
+        
+        // Hitbox ajustada al nuevo tamaño escalado (aprox)
+        this.player.body.setSize(160, 480);
+        this.player.body.setOffset(48, 32);
+
         this.player.body.setGravityY(700); 
         this.player.body.setDragX(800);    
 
-        // 3. DEFINICIÓN DE ANIMACIONES 
+        // 3. DEFINICIÓN DE ANIMACIONES BASADAS EN TU SPRITESHEET
+        // Asumiendo 8 columnas: 
+        // Fila 0 (frames 0-7) -> Idle
+        // Fila 1 (frames 8-15) -> Walk
+        // Fila 2 (frames 16-23) -> Jump
         this.anims.create({ key: 'idle', frames: [{ key: playerKey, frame: 0 }], frameRate: 10 });
-        this.anims.create({ key: 'walk', frames: this.anims.generateFrameNumbers(playerKey, { start: 1, end: 3 }), frameRate: 12, repeat: -1 });
-        this.anims.create({ key: 'jump', frames: [{ key: playerKey, frame: 4 }], frameRate: 10 });
-        this.anims.create({ key: 'fall', frames: [{ key: playerKey, frame: 5 }], frameRate: 10 });
+        this.anims.create({ 
+            key: 'walk', 
+            frames: this.anims.generateFrameNumbers(playerKey, { start: 8, end: 15 }), 
+            frameRate: 15, 
+            repeat: -1 
+        });
+        this.anims.create({ 
+            key: 'jump', 
+            frames: this.anims.generateFrameNumbers(playerKey, { start: 16, end: 23 }), 
+            frameRate: 10 
+        });
 
         // Cajas de preguntas
         this.boxes = this.physics.add.staticGroup();
-        const boxPositions = [[4, 11], [12, 8], [20, 11], [6, 4], [17, 4], [12, 15]];
+        const boxPositions = [[6, 11], [14, 8], [22, 11], [28, 6], [36, 10], [44, 7]];
         boxPositions.forEach(pos => {
             this.boxes.create(pos[0] * 32, pos[1] * 32, 'question_box');
         });
 
-        // 4. SINCRONIZACIÓN Y COLISIONES
+        // 4. SINCRONIZACIÓN Y CÁMARA MÓVIL
         this.physics.add.collider(this.player, this.platformLayer);
         this.physics.add.overlap(this.player, this.boxes, this.hitBox, null, this);
 
         this.cursors = this.input.keyboard.createCursorKeys();
         this.shuffledQuestions = questionBank.sort(() => Math.random() - 0.5);
+
+        // Cámara
+        this.cameras.main.setBounds(0, 0, 50 * 32, 19 * 32); 
+        this.cameras.main.startFollow(this.player, true, 0.08, 0.08); 
+
         this.physics.pause();
     }
 
@@ -247,30 +244,27 @@ class GameScene extends Phaser.Scene {
         if (this.cursors.left.isDown) {
             this.player.setVelocityX(-160); 
             this.player.anims.play('walk', true);
-            this.player.flipX = true; // Girar el sprite
+            this.player.flipX = true;
         } else if (this.cursors.right.isDown) {
             this.player.setVelocityX(160);
             this.player.anims.play('walk', true);
             this.player.flipX = false;
         } else {
-            this.player.setVelocityX(0); // Frenado en seco
+            this.player.setVelocityX(0); 
             this.player.anims.play('idle', true);
         }
 
-        // LOGICA DE SALTO VERTICAL (Estilo Clásico)
+        // LÓGICA DE SALTO VERTICAL
         const isGrounded = this.player.body.onFloor() || this.player.body.blocked.down;
         
         if (this.cursors.up.isDown && isGrounded) {
-            this.player.setVelocityY(-430); // Salto inicial potente
+            this.player.setVelocityY(-430); 
         }
 
-        // Lógica para saltos de altura variable
         if (this.cursors.up.isUp && this.player.body.velocity.y < -200) {
-            // Si suelta el botón rápido, reduce la velocidad vertical (salto corto)
             this.player.setVelocityY(-200); 
         }
 
-        // Reproducir animación de salto si no está en el suelo
         if (!isGrounded) {
             this.player.anims.play('jump', true);
         }
@@ -316,7 +310,7 @@ class GameScene extends Phaser.Scene {
         
         if(this.answeredCount >= 10 || this.boxes.countActive() === 0) {
             if (this.answeredCount < 10 && this.boxes.countActive() === 0) {
-                 const boxPositions = [[4, 11], [12, 8], [20, 11], [6, 4], [17, 4], [12, 15]];
+                 const boxPositions = [[6, 11], [14, 8], [22, 11], [28, 6], [36, 10], [44, 7]];
                  boxPositions.forEach(pos => { this.boxes.create(pos[0] * 32, pos[1] * 32, 'question_box'); });
             } else {
                 setTimeout(() => this.endGameUI(), 800);
@@ -354,15 +348,13 @@ function startGame() {
     
     const config = {
         type: Phaser.AUTO,
-        // CONFIGURACIÓN DE PANTALLA COMPLETA
         scale: {
-            mode: Phaser.Scale.FIT, // Escala dinámicamente según el monitor
+            mode: Phaser.Scale.RESIZE, // Escala responsive que abarca toda tu pantalla
             parent: 'game-container',
-            autoCenter: Phaser.Scale.CENTER_BOTH,
-            width: 800,
-            height: 600
+            width: '100%',
+            height: '100%'
         },
-        pixelArt: true, // Optimización especial para que los Sprites se vean súper nítidos
+        pixelArt: true, 
         physics: {
             default: 'arcade',
             arcade: { 
@@ -373,7 +365,7 @@ function startGame() {
         scene: [GameScene] 
     };
     
-    gameInstance = new Phaser.Game(config);
+    new Phaser.Game(config);
 }
 </script>
 </body>
