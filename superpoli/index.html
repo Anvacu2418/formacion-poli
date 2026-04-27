@@ -127,17 +127,14 @@ class GameScene extends Phaser.Scene {
     }
 
     preload() {
-        // Añadimos './' al inicio para que GitHub encuentre la carpeta correctamente
+        // Intentamos cargar con rutas relativas limpias
         this.load.image('campus_tiles', './assets/campus_tileset.png');
+        this.load.spritesheet('estudiante_leo', './assets/player1_sprite.png', { frameWidth: 256, frameHeight: 512 });
+        this.load.spritesheet('estudiante_lea', './assets/player2_sprite.png', { frameWidth: 256, frameHeight: 512 });
 
-        // Cargamos los spritesheets con las medidas que calculamos (256x512)
-        this.load.spritesheet('estudiante_leo', './assets/player1_sprite.png', { 
-            frameWidth: 256,
-            frameHeight: 512
-        });
-        this.load.spritesheet('estudiante_lea', './assets/player2_sprite.png', { 
-            frameWidth: 256,  
-            frameHeight: 512  
+        // Esto nos avisará en la consola si el archivo falló
+        this.load.on('loaderror', (file) => {
+            console.error('❌ Error cargando:', file.src);
         });
 
         // Caja de preguntas (Esto se queda igual)
@@ -150,7 +147,7 @@ class GameScene extends Phaser.Scene {
 
     create() {
         // SOLUCIONAR EL GLITCH DE RENDERIZADO (Fondo limpio en cada frame)
-        this.cameras.main.setBackgroundColor('#87CEEB');
+        this.cameras.main.setBackgroundColor('#87CEEB'); // Cielo azul por defecto
 
         const playerKey = chosenAvatar === 'leo' ? 'estudiante_leo' : 'estudiante_lea';
 
@@ -179,8 +176,11 @@ class GameScene extends Phaser.Scene {
         // El segundo es la LLAVE que usamos en preload ('campus_tiles')
         const tileset = map.addTilesetImage('estilo_universidad', 'campus_tiles'); 
         
-        this.platformLayer = map.createLayer(0, tileset, 0, 0);
-        this.platformLayer.setCollisionBetween(1, 100); 
+        // Verificación de seguridad para la capa del mapa por si falla la textura
+        if (tileset) {
+            this.platformLayer = map.createLayer(0, tileset, 0, 0);
+            this.platformLayer.setCollisionBetween(1, 100); 
+        }
 
         // 2. CONFIGURACIÓN DEL JUGADOR REAL CON FÍSICAS
         this.player = this.physics.add.sprite(100, 450, playerKey);
@@ -200,22 +200,23 @@ class GameScene extends Phaser.Scene {
         this.player.body.setDragX(800);    
 
         // 3. DEFINICIÓN DE ANIMACIONES BASADAS EN TU SPRITESHEET
-        // Asumiendo 8 columnas: 
-        // Fila 0 (frames 0-7) -> Idle
-        // Fila 1 (frames 8-15) -> Walk
-        // Fila 2 (frames 16-23) -> Jump
-        this.anims.create({ key: 'idle', frames: [{ key: playerKey, frame: 0 }], frameRate: 10 });
-        this.anims.create({ 
-            key: 'walk', 
-            frames: this.anims.generateFrameNumbers(playerKey, { start: 8, end: 15 }), 
-            frameRate: 15, 
-            repeat: -1 
-        });
-        this.anims.create({ 
-            key: 'jump', 
-            frames: this.anims.generateFrameNumbers(playerKey, { start: 16, end: 23 }), 
-            frameRate: 10 
-        });
+        // VALIDACIÓN: Solo crea animaciones si las texturas existen
+        if (this.textures.exists(playerKey)) {
+            this.anims.create({ key: 'idle', frames: [{ key: playerKey, frame: 0 }], frameRate: 10 });
+            this.anims.create({ 
+                key: 'walk', 
+                frames: this.anims.generateFrameNumbers(playerKey, { start: 8, end: 15 }), 
+                frameRate: 15, 
+                repeat: -1 
+            });
+            this.anims.create({ 
+                key: 'jump', 
+                frames: this.anims.generateFrameNumbers(playerKey, { start: 16, end: 23 }), 
+                frameRate: 10 
+            });
+        } else {
+            console.warn("⚠️ Las texturas del jugador no cargaron. Se usarán cuadros de color/resplado por defecto.");
+        }
 
         // Cajas de preguntas
         this.boxes = this.physics.add.staticGroup();
@@ -225,7 +226,9 @@ class GameScene extends Phaser.Scene {
         });
 
         // 4. SINCRONIZACIÓN Y CÁMARA MÓVIL
-        this.physics.add.collider(this.player, this.platformLayer);
+        if (this.platformLayer) {
+            this.physics.add.collider(this.player, this.platformLayer);
+        }
         this.physics.add.overlap(this.player, this.boxes, this.hitBox, null, this);
 
         this.cursors = this.input.keyboard.createCursorKeys();
@@ -239,22 +242,21 @@ class GameScene extends Phaser.Scene {
     }
 
     update() {
-        // RED DE SEGURIDAD: Si el personaje no se creó bien por falta de imagen, 
-        // detenemos el update para que no salga el error de 'duration'.
+        // RED DE SEGURIDAD: Si el jugador no existe o falló la carga, no intentes hacer nada
         if (!this.player || !this.player.anims) return;
 
         // Movimiento Horizontal Rígido y Preciso
         if (this.cursors.left.isDown) {
             this.player.setVelocityX(-160); 
-            this.player.anims.play('walk', true);
+            if (this.player.anims.exists('walk')) this.player.anims.play('walk', true);
             this.player.flipX = true;
         } else if (this.cursors.right.isDown) {
             this.player.setVelocityX(160);
-            this.player.anims.play('walk', true);
+            if (this.player.anims.exists('walk')) this.player.anims.play('walk', true);
             this.player.flipX = false;
         } else {
             this.player.setVelocityX(0); 
-            this.player.anims.play('idle', true);
+            if (this.player.anims.exists('idle')) this.player.anims.play('idle', true);
         }
 
         // LÓGICA DE SALTO VERTICAL
@@ -269,7 +271,7 @@ class GameScene extends Phaser.Scene {
         }
 
         if (!isGrounded) {
-            this.player.anims.play('jump', true);
+            if (this.player.anims.exists('jump')) this.player.anims.play('jump', true);
         }
     }
 
