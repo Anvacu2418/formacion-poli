@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Analytics POLI - Simulador Master v9.0</title>
+    <style>
+        /* --- ESTILOS VISUALES 100% REALES --- */
+        body { font-family: Arial, sans-serif; font-size: 11px; margin: 0; padding: 10px; background-color: #fff; color: #000; }
+        
+        /* HEADER */
+        .top-bar { border: 1px solid #a4c2f4; padding: 5px; margin-bottom: 5px; background: white; display: flex; align-items: center; }
+        .logo-img { font-size: 24px; font-weight: bold; color: #003366; margin-right: 15px; font-family: sans-serif; border-right: 1px solid #ccc; padding-right: 10px; }
+        .search-container { display: flex; align-items: center; gap: 5px; }
+        .search-input { border: 1px solid #7f9db9; padding: 2px; width: 120px; font-size: 11px; }
+        .btn-std { border: 1px solid #7f9db9; background: #e6e6e6; cursor: pointer; padding: 1px 8px; font-size: 11px; color: #000; }
+        .user-info { margin-left: auto; font-size: 11px; }
+
+        /* LAYOUT */
+        .layout-table { width: 100%; border-collapse: collapse; border: none; }
+        .layout-td-content { vertical-align: top; padding-right: 10px; }
+        .layout-td-menu { width: 160px; vertical-align: top; border-left: 1px solid #a4c2f4; padding-left: 5px; }
+
+        /* MENÚ */
+        .menu-link { display: block; color: blue; text-decoration: underline; cursor: pointer; margin-bottom: 3px; font-size: 12px; }
+        .menu-link:hover { color: darkblue; }
+
+        /* ESTILOS DE TABLAS Y BARRAS */
+        .analytics-header {
+            background-color: #ADD8E6; 
+            padding: 3px 5px;
+            font-weight: normal;
+            border-bottom: 1px solid #fff;
+            margin-top: 15px;
+            margin-bottom: 2px;
+            width: 100%;
+            font-size: 11px;
+            display: flex; align-items: center;
+        }
+        .q-icon {
+            color: orange; font-weight: bold; cursor: help; font-size: 10px;
+            vertical-align: super; margin-left: 2px; text-decoration: none;
+        }
+        .data-table { width: 100%; border-collapse: collapse; font-size: 10px; margin-bottom: 5px; }
+        .data-table th, .data-table td { border: 1px solid #a4c2f4; padding: 2px 4px; text-align: left; vertical-align: top; }
+        .data-table th { background-color: #fff; font-weight: bold; text-transform: uppercase; white-space: nowrap; }
+
+        /* UTILIDADES */
+        .view-section { display: none; }
+        .active { display: block; }
+        .scroll-x { overflow-x: auto; width: 100%; border: 1px solid #a4c2f4; margin-bottom: 10px; }
+        .scroll-y { overflow-y: auto; max-height: 300px; border: 1px solid #a4c2f4; }
+        .txt-red { color: red; font-weight: bold; } .txt-green { color: green; font-weight: bold; }
+        .clickable { color: blue; text-decoration: underline; cursor: pointer; }
+        .photo-box { border: 1px solid #ccc; width: 80px; height: 100px; background: #eee; margin-right: 10px; }
+        
+        /* Estilos específicos CAPP */
+        .capp-sub { font-weight: bold; color: #444; margin: 10px 0 2px 0; font-size: 10px; }
+    </style>
+</head>
+<body>
+
+    <div class="top-bar">
+        <div class="logo-img">POLI</div>
+        <div class="search-container">
+            <select style="font-size:11px;"><option>ID</option></select>
+            <input type="text" value="100228961" class="search-input">
+            <button class="btn-std">Buscar!</button>
+        </div>
+        <div class="user-info">
+            angie.cuellar@ilumno.com <button class="btn-std">Salir!</button>
+        </div>
+    </div>
+
+    <table class="layout-table">
+        <tr>
+            <td class="layout-td-content">
+                
+                <div class="scroll-x" style="border:none; margin-bottom:0;">
+                    <table class="data-table">
+                        <thead>
+                            <tr><th>PIDM<span class="q-icon">?</span></th><th>ID<span class="q-icon">?</span></th><th>APELLIDOS<span class="q-icon">?</span></th><th>NOMBRES<span class="q-icon">?</span></th><th>SSN<span class="q-icon">?</span></th><th>CORREO<span class="q-icon">?</span></th></tr>
+                        </thead>
+                        <tbody><tr><td>248964</td><td>100228961</td><td>GUTIERREZ</td><td>HAYLEN NASLEDY</td><td>1037370392</td><td>hagutierrez1@poligran.edu.co</td></tr></tbody>
+                    </table>
+                </div>
+
+                <div id="view-persona" class="view-section active">
+                    <div class="analytics-header">Persona<span class="q-icon">?</span></div>
+                    <table class="data-table">
+                        <thead><tr><th>ID<span class="q-icon">?</span></th><th>APELLIDOS<span class="q-icon">?</span></th><th>NOMBRES<span class="q-icon">?</span></th><th>INDICADOR DE CAMBIO<span class="q-icon">?</span></th><th>NACIMIENTO<span class="q-icon">?</span></th></tr></thead>
+                        <tbody><tr><td>100228961</td><td>GUTIERREZ</td><td>HAYLEN NASLEDY</td><td></td><td>12/01/1998</td></tr></tbody>
+                    </table>
+                    <div class="analytics-header">CAMBIAR FOTO<span class="q-icon">?</span></div>
+                    <div style="display:flex; align-items:flex-end; margin-bottom:5px;">
+                        <img src="https://via.placeholder.com/80x100?text=FOTO" class="photo-box">
+                        <div><input type="file" style="font-size:10px;"><button class="btn-std">Cambiar Foto</button></div>
+                    </div>
+                    <div class="analytics-header">Correos<span class="q-icon">?</span></div>
+                    <table class="data-table">
+                        <thead><tr><th>CÓDIGO<span class="q-icon">?</span></th><th>DESCRIPCIÓN<span class="q-icon">?</span></th><th>CORREO<span class="q-icon">?</span></th><th>ESTADO<span class="q-icon">?</span></th><th>PREFERIDO<span class="q-icon">?</span></th><th>MOSTRAR WEB<span class="q-icon">?</span></th></tr></thead>
+                        <tbody>
+                            <tr><td>CEIN</td><td>CORREO INSTITUCIONAL</td><td>hagutierrez1@poligran.edu.co</td><td>A</td><td>Y</td><td>Y</td></tr>
+                            <tr><td>CEPR</td><td>CORREO PERSONAL</td><td>haylengu@gmail.com</td><td>A</td><td>N</td><td>Y</td></tr>
+                        </tbody>
+                    </table>
+                    <div class="analytics-header">Teléfonos<span class="q-icon">?</span></div>
+                    <table class="data-table" style="width:auto;">
+                        <thead><tr><th>CÓDIGO<span class="q-icon">?</span></th><th>DESCRIPCIÓN<span class="q-icon">?</span></th><th>INDICATIVO<span class="q-icon">?</span></th><th>NÚMERO<span class="q-icon">?</span></th></tr></thead>
+                        <tbody><tr><td>CE</td><td>CELULAR</td><td>57</td><td>3024331083</td></tr></tbody>
+                    </table>
+                    <div class="analytics-header">Bloqueos<span class="q-icon">?</span></div>
+                    <table class="data-table">
+                        <thead><tr><th>CÓDIGO<span class="q-icon">?</span></th><th>USUARIO<span class="q-icon">?</span></th><th>DESDE<span class="q-icon">?</span></th><th>HASTA<span class="q-icon">?</span></th><th>LIBERADO<span class="q-icon">?</span></th><th>COMENTARIO<span class="q-icon">?</span></th></tr></thead>
+                        <tbody><tr><td>RI</td><td>RBAQUERO</td><td>5/16/2022 2:11:06 AM</td><td>8/8/2022 12:00:00 AM</td><td>N</td><td>NO PAGO DE MATRICULA</td></tr></tbody>
+                    </table>
+                    <div class="analytics-header">Documentos<span class="q-icon">?</span></div>
+                    <table class="data-table" style="width:auto;">
+                        <thead><tr><th>TIPO<span class="q-icon">?</span></th><th>NÚMERO<span class="q-icon">?</span></th><th>CIUDAD<span class="q-icon">?</span></th><th>ACTUAL<span class="q-icon">?</span></th></tr></thead>
+                        <tbody><tr><td>CC</td><td>1037370392</td><td>MACEO</td><td>Y</td></tr></tbody>
+                    </table>
+                    <div class="analytics-header">OTROS DOCUMENTOS<span class="q-icon">?</span></div>
+                    <table class="data-table" style="width:auto;">
+                        <thead><tr><th>CÓDIGO<span class="q-icon">?</span></th><th>NÚMERO<span class="q-icon">?</span></th></tr></thead>
+                        <tbody><tr><td>CC</td><td>1037370392</td></tr><tr><td>LMS</td><td>111042</td></tr></tbody>
+                    </table>
+                </div>
+
+                <div id="view-academico" class="view-section">
+                    <div class="analytics-header">Admisiones<span class="q-icon">?</span></div>
+                    <div class="scroll-x"><table class="data-table"><thead><tr><th>PERIODO</th><th>APLICACIÓN</th><th>FECHA</th><th>CAMPUS</th><th>PROGRAMA</th><th>JORNADA</th><th>CÓDIGO ADMISIÓN</th></tr></thead><tbody><tr><td>202010</td><td>1</td><td>10/3/2019</td><td>MDE</td><td>PGCOPME4IND</td><td>JNOC</td><td>TA</td></tr></tbody></table></div>
+                    
+                    <div class="analytics-header">Resumen<span class="q-icon">?</span></div>
+                    <div class="scroll-x"><table class="data-table"><thead><tr><th>PERIODO</th><th>ESTADO</th><th>NIVEL</th><th>TIPO</th><th>PROGRAMA 1</th><th>TIPO ADMISIÓN 1</th></tr></thead><tbody><tr><td>202010</td><td>AS</td><td>UG</td><td>I</td><td>PGCOPME4IND</td><td>TA</td></tr><tr><td>202460</td><td>AS</td><td>UG</td><td>A</td><td>PGCOPME4IND</td><td>TA</td></tr></tbody></table></div>
+
+                    <div class="analytics-header">Atributos<span class="q-icon">?</span></div>
+                    <div class="scroll-y" style="height:80px;"><table class="data-table" style="width:auto;"><thead><tr><th>PERIODO</th><th>CÓDIGO</th><th>PLAN DE ESTUDIO</th></tr></thead><tbody><tr><td>202510</td><td>F001</td><td>1</td></tr></tbody></table></div>
+
+                    <div class="analytics-header">Planes estudio<span class="q-icon">?</span></div>
+                    <table class="data-table"><thead><tr><th>PERIODO</th><th>CÓDIGO</th><th>ESTADO</th><th>PROGRAMA</th><th>NOMBRE</th></tr></thead><tbody><tr><td>202410</td><td>1</td><td>AS</td><td>PGCOPME4IND</td><td>MDE INGENIERIA INDUSTRIAL</td></tr></tbody></table>
+
+                    <div class="analytics-header">Cohortes<span class="q-icon">?</span></div>
+                    <table class="data-table"><thead><tr><th>PLAN DE ESTUDIO</th><th>PERIODO</th><th>COHORTE</th><th>DESCRIPCIÓN</th></tr></thead><tbody><tr><td>1</td><td>202560</td><td>UGP-00-A-1</td><td>PREG PRES ANTG 1ER INGR</td></tr></tbody></table>
+
+                    <div class="analytics-header">Semestre<span class="q-icon">?</span></div>
+                    <table class="data-table"><thead><tr><th>PROGRMA</th><th>TIPO_MATERIAS</th><th>TOTAL_MATERIAS</th><th>MATERIAS_APROBADAS</th><th>SEMESTRE_MALLA</th><th>SEMESTRE</th></tr></thead><tbody><tr><td>PGCOPME4IND</td><td>Y</td><td>38</td><td>38</td><td>9</td><td>9</td></tr></tbody></table>
+
+                    <div class="analytics-header">Curriculos<span class="q-icon">?</span></div>
+                    <div class="scroll-x"><table class="data-table"><thead><tr><th>CÓDIGO</th><th>PLAN</th><th>PERIODO</th><th>PROGRAMA</th><th>ACTUAL</th><th>CATÁLOGO</th><th>ESTADO 1 CE</th><th>CÓDIGO CE</th><th>JORNADA</th></tr></thead><tbody><tr><td>11</td><td>1</td><td>202460</td><td>PGCOPME4IND</td><td>Y</td><td>202460</td><td>INPROGRESS</td><td>4IND</td><td>JNOC</td></tr></tbody></table></div>
+
+                    <div class="analytics-header">NO CURSOS<span class="q-icon">?</span></div>
+                    <table class="data-table" style="width:auto;"><thead><tr><th>NOMBRE</th><th>ESTADO</th></tr></thead><tbody><tr><td>RECONOCIMIENTO DE CREDITOS</td><td>AP</td></tr></tbody></table>
+
+                    <div class="analytics-header">Grados<span class="q-icon">?</span></div>
+                    <table class="data-table"><thead><tr><th>CÓDIGO</th><th>GRADO</th><th>ESTADO</th><th>JORNADA</th><th>PROGRAMA</th><th>PLAN ESTUDIO</th></tr></thead><tbody><tr><td>1</td><td>IINDUS</td><td>SO</td><td>JNOC</td><td>PGCOPME4IND</td><td>1</td></tr></tbody></table>
+
+                    <div class="analytics-header">Parciales - periodos<span class="q-icon">?</span></div>
+                    <table class="data-table" style="width:auto;"><thead><tr><th>PERIODO</th><th>ESTADO</th><th>REGISTRO</th><th>MAX CRÉDITOS</th><th>MIN CRÉDITOS</th></tr></thead><tbody><tr><td>202510</td><td>EL</td><td></td><td>10</td><td>4</td></tr><tr><td>202560</td><td>EL</td><td></td><td>9</td><td>0</td></tr></tbody></table>
+
+                    <div class="analytics-header">Materias Inscritas<span class="q-icon">?</span></div>
+                    <div class="scroll-x"><table class="data-table"><thead><tr><th>PERIODO</th><th>NRC</th><th>ESTADO REGISTRO</th><th>FINAL</th><th>ÁREA</th><th>CÓDIGO</th><th>#SECCIÓN</th><th>TIPO</th><th>CAMPUS</th><th>NOMBRE</th></tr></thead><tbody><tr><td>202510</td><td>11165</td><td>RW</td><td>3.4</td><td>IPA</td><td>42705</td><td>201</td><td>TEP</td><td>MDE</td><td>DISTRIBUCION DE PLANTA</td></tr><tr><td>202510</td><td>13326</td><td>RE</td><td>3.0</td><td>CFI</td><td>41225</td><td>B03</td><td>TCB</td><td>VIR</td><td>FISICA 2</td></tr></tbody></table></div>
+
+                    <div class="analytics-header">Parciales - horarios<span class="q-icon">?</span></div>
+                    <div class="scroll-x"><table class="data-table"><thead><tr><th>PERIODO</th><th>NRC</th><th>BLOQUE</th><th>SALÓN</th><th>INICIO</th><th>FIN</th><th>LU</th><th>MA</th><th>MI</th><th>JU</th><th>VI</th><th>SA</th><th>NOMBRE</th><th>PROFESORES</th></tr></thead><tbody><tr><td>202510</td><td>11165</td><td>LCOLOR</td><td>211</td><td>1840</td><td>2149</td><td></td><td></td><td></td><td></td><td>F</td><td></td><td>DISTRIBUCION DE PLANTA</td><td>ARAQUE GONZÁLEZ</td></tr></tbody></table></div>
+
+                    <div class="analytics-header">Parciales - componentes<span class="q-icon">?</span></div>
+                    <table class="data-table" style="width:auto;"><thead><tr><th>PERIODO</th><th>#CURSO</th><th>DESCRIPCIÓN</th><th>NOTA</th></tr></thead><tbody><tr><td>202510</td><td>11165</td><td>FINAL 40%</td><td>3.5</td></tr></tbody></table>
+
+                    <div class="analytics-header">HISTORIA ACADEMICA_NOTAS DEFINITIVAS<span class="q-icon">?</span></div>
+                    <div class="scroll-y"><table class="data-table"><thead><tr><th>PERIODO</th><th>ÁREA</th><th>CÓDIGO</th><th>NOMBRE</th><th>NOTA</th><th>CRÉDITOS</th><th>PLAN ESTUDIO</th></tr></thead><tbody><tr><td>202010</td><td>SHS</td><td>42799</td><td>SEGURIDAD Y SALUD OCUPACIONAL</td><td>4.5</td><td>3</td><td>1</td></tr><tr><td>202260</td><td>IPA</td><td>42703</td><td>PRODUCCION</td><td class="txt-red">1.0</td><td>4</td><td>1</td></tr><tr><td>202310</td><td>IPA</td><td>42703</td><td>PRODUCCION</td><td>3.4</td><td>4</td><td>1</td></tr></tbody></table></div>
+
+                    <div class="analytics-header">Homologaciones<span class="q-icon">?</span></div>
+                    <div class="scroll-y" style="height:100px;"><table class="data-table"><thead><tr><th>PERIODO</th><th>ÁREA</th><th>CÓDIGO</th><th>NOMBRE</th><th>NOTA</th><th>USUARIO</th></tr></thead><tbody><tr><td>202010</td><td>HUM</td><td>41693</td><td>CATEDRA GRANCOLOMBIANA</td><td>APROBO</td><td>MIGRACION</td></tr></tbody></table></div>
+                    <div class="analytics-header">RECONOCIMIENTO DE CREDITOS<span class="q-icon">?</span></div>
+                </div>
+
+                <div id="view-servicio" class="view-section">
+                    <div class="analytics-header">Solicitudes servicio<span class="q-icon">?</span></div>
+                    <div class="scroll-x">
+                        <table class="data-table" style="min-width:1000px;">
+                            <thead><tr><th>Número</th><th>Secuencia</th><th>Código servicio</th><th>Código estado</th><th>Facturado</th><th>Fecha</th><th>Periodo</th><th>Monto</th><th>Comentario</th><th>Respuesta</th><th>Fecha estado</th></tr></thead>
+                            <tbody><tr><td>329667</td><td>1</td><td>SVREIN</td><td>AP</td><td>N</td><td>12/12/2023 10:35:56 AM</td><td>202380</td><td></td><td>Por favor aplicar alivio...</td><td style="font-size:9px; max-width:300px;">Apreciado estudiante, Se realiza la validación... aprobado el reintegro académico...</td><td>12/12/2023 10:35:56 AM</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="view-financiero" class="view-section">
+                    <div class="analytics-header">Recibos<span class="q-icon">?</span></div>
+                    <div class="scroll-x">
+                        <table class="data-table" style="min-width:1200px;">
+                            <thead><tr><th><span class="q-icon">?</span></th><th>CODIGO</th><th>PROGRAMA</th><th>PERIODO</th><th>TIPO_RECIBO</th><th>NUMERO_DOCUMENTO</th><th>REFERENCIA</th><th>ESTADO_RECIBO</th><th>ESTADO_PAGO</th><th>FECHA_ORDINARIA</th><th>VALOR_ORDINARIO</th></tr></thead>
+                            <tbody>
+                                <tr><td>297608</td><td>100270577</td><td>PGCOVBO4IND2</td><td>202580</td><td>SERV</td><td>501000205015</td><td>0000501000205015</td><td>C</td><td>REVERSION</td><td>10/1/2025</td><td>13000</td></tr>
+                                <tr><td>248964</td><td>100228961</td><td>PGCOPME4IND</td><td>202560</td><td>MATR</td><td>751000228081</td><td>0000751000228081</td><td>A</td><td class="txt-red">NO_PAID</td><td>8/10/2025</td><td>515</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="analytics-header">Exenciones<span class="q-icon">?</span></div>
+                    <table class="data-table" style="width:auto;"><thead><tr><th>Código</th><th>Periodo</th><th>Activo</th><th>Expiración</th><th>Monto</th><th>Plan de estudios</th></tr></thead><tbody><tr><td>20603</td><td>202110</td><td>D</td><td></td><td></td><td>1</td></tr></tbody></table>
+                    
+                    <div class="analytics-header">BECAS<span class="q-icon">?</span></div>
+
+                    <div class="analytics-header">Transacciones<span class="q-icon">?</span></div>
+                    <div style="font-weight:bold; margin-bottom:5px;">SALDO 13,700.00</div>
+                    <div class="scroll-x">
+                        <table class="data-table" style="min-width:1300px;">
+                            <thead><tr><th>TBRACCD_PIDM</th><th>Periodo</th><th>#</th><th>Código detalle</th><th>Descripción Código</th><th>Tipo</th><th>Fecha</th><th>Monto</th><th>Saldo</th><th>Vencimiento</th><th>Descripción</th><th>Paga #</th><th>Plan</th><th>PROGRAMA</th></tr></thead>
+                            <tbody>
+                                <tr><td>297608</td><td>202110</td><td>1</td><td>T101</td><td>MATRICULA PREGRADO VIR</td><td>C</td><td>2/18/2021</td><td>2307000</td><td>0</td><td></td><td>MATRICULA PREGRADO VIR</td><td></td><td>1</td><td>PGCOVBO4IND2</td></tr>
+                                <tr><td>297608</td><td>202630</td><td>22</td><td>I104</td><td>CERTIFICADO DE MATRICULADO</td><td>C</td><td>1/21/2026</td><td>13700</td><td>13700</td><td>1/24/2026</td><td>CERTIFICADO DE MATRICULADO</td><td></td><td>1</td><td>PGCOVBO4IND2</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="view-inscripcion" class="view-section">
+                    <div class="analytics-header">Matricula<span class="q-icon">?</span></div>
+                    <div class="scroll-x">
+                        <table class="data-table">
+                            <thead><tr><th><span class="q-icon">?</span></th><th><span class="q-icon">?</span></th><th>NOMBRES</th><th>APELLIDOS</th><th>CORREO</th><th>CODIGO_PROGRAMA</th><th>PROGRAMA</th><th>PERIODO_CARGO</th><th>ESTADO</th></tr></thead>
+                            <tbody>
+                                <tr><td>100228961</td><td>1037370392</td><td>HAYLEN NASLEDY</td><td>GUTIERREZ</td><td>hagutierrez1@poligran.edu.co</td><td>PGCOPME4IND</td><td>MDE INGENIERIA INDUSTRIAL</td><td>202560</td><td class="txt-red">NO PAGO</td></tr>
+                                <tr><td>100228961</td><td>1037370392</td><td>HAYLEN NASLEDY</td><td>GUTIERREZ</td><td>hagutierrez1@poligran.edu.co</td><td>PGCOPME4IND</td><td>MDE INGENIERIA INDUSTRIAL</td><td>202510</td><td>MATRICULADO</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="analytics-header">Media Matricula<span class="q-icon">?</span></div>
+                    <table class="data-table" style="width:auto;"><thead><tr><th>PERIODO<span class="q-icon">?</span></th><th>CÓDIGO<span class="q-icon">?</span></th><th>CONCEPTO<span class="q-icon">?</span></th><th>PLAN_DE_ESTUDIO<span class="q-icon">?</span></th></tr></thead><tbody><tr><td>202260</td><td>MDMT</td><td>MEDIA MATRICULA</td><td>1</td></tr></tbody></table>
+
+                    <div class="analytics-header">Parciales - periodos<span class="q-icon">?</span></div>
+                    <table class="data-table">
+                        <thead><tr><th>PROGRAMA</th><th>PERIODO</th><th>ESTADO</th><th>REGISTRO</th><th>MAX CRÉDITOS</th><th>MIN CRÉDITOS</th></tr></thead>
+                        <tbody><tr><td>PGCOPME4IND</td><td>202510</td><td>EL</td><td></td><td>10</td><td>4</td></tr><tr><td>PGCOPME4IND</td><td>202560</td><td>EL</td><td></td><td>9</td><td>0</td></tr></tbody>
+                    </table>
+
+                    <div class="analytics-header">Materias Inscritas<span class="q-icon">?</span></div>
+                    <div class="scroll-x">
+                        <table class="data-table">
+                            <thead><tr><th>PERIODO</th><th>NRC</th><th>ESTADO REGISTRO</th><th>FINAL</th><th>CREDITOS</th><th>ÁREA</th><th>CÓDIGO</th><th>#SECCIÓN</th><th>TIPO</th><th>CAMPUS</th><th>NOMBRE</th></tr></thead>
+                            <tbody><tr><td>202560</td><td>13886</td><td>RW</td><td>4.5</td><td>3</td><td>TIC</td><td>42791</td><td>B07</td><td>TTP</td><td>VIR</td><td>PROGRAMACION DE COMPUTADORES</td></tr></tbody>
+                        </table>
+                    </div>
+
+                    <div class="analytics-header">ÚLTIMO CAPP<span class="q-icon">?</span></div>
+                    <table class="data-table"><thead><tr><th>#</th><th>PERIODO</th><th>FECHA</th><th>VALIDACIÓN</th><th>PROGRAMA</th><th>NOMBRE</th><th>CATÁLOGO</th><th>CUMPLE</th><th>CRÉDITOS REQUERIDOS</th><th>CRÉDITOS CURSADOS</th><th>% AVANCE</th></tr></thead><tbody><tr><td>10</td><td>202610</td><td>12/30/2025</td><td>12/31/2025</td><td>PGCOVBO4IND2</td><td>VIR INGENIERIA INDUSTRIAL 2C</td><td>202510</td><td>N</td><td>149</td><td>96</td><td>64.4</td></tr></tbody></table>
+
+                    <div class="analytics-header">Proyección<span class="q-icon">?</span></div>
+                    <div class="scroll-x">
+                        <table class="data-table">
+                            <thead><tr><th>PERIODO</th><th>MATERIA</th><th>CURSO</th><th>NOMBRE</th><th>MAS PROBABLE</th><th>PROGRAMA</th><th>CRÉDITOS</th><th>BLOQUE</th></tr></thead>
+                            <tbody>
+                                <tr><td>202610</td><td>CFI</td><td>41225</td><td>FISICA 2</td><td>Y</td><td>PGCOVBO4IND2</td><td>4</td><td>B2</td></tr>
+                                <tr><td>202610</td><td>ECA</td><td>42840</td><td>COSTOS Y PRESUPUESTOS</td><td>Y</td><td>PGCOVBO4IND2</td><td>3</td><td>B2</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="view-capp" class="view-section">
+                    <div class="analytics-header">OTRAS CONSULTAS<span class="q-icon">?</span></div>
+                    <div style="margin-bottom:10px;"><a href="#" class="clickable">Bloque virtual asignaturas<span class="q-icon">?</span></a> | <a href="#" class="clickable">Avance malla curricular<span class="q-icon">?</span></a></div>
+                    <div class="analytics-header">% de avance curricular por programa<span class="q-icon">?</span></div>
+                    <div class="scroll-x">
+                        <table class="data-table">
+                            <thead><tr><th>#<span class="q-icon">?</span></th><th>PERIODO<span class="q-icon">?</span></th><th>FECHA<span class="q-icon">?</span></th><th>VALIDACIÓN<span class="q-icon">?</span></th><th>PROGRAMA<span class="q-icon">?</span></th><th>NOMBRE<span class="q-icon">?</span></th><th>% avance</th></tr></thead>
+                            <tbody><tr><td><a href="#" onclick="toggleCappDetail(); return false;" class="clickable" style="border:2px solid red; padding:0 2px;">10</a></td><td>202610</td><td>12/30/2025</td><td>12/31/2025</td><td>PGCOVBO4IND2</td><td>VIR INGENIERIA INDUSTRIAL 2C</td><td>64.4</td></tr></tbody>
+                        </table>
+                    </div>
+                    
+                    <div id="capp-detail" style="display:none; margin-top:10px;">
+                        <h4 class="capp-sub">SMRRQCM Compliance Request Management Table.</h4>
+                        <div class="scroll-x"><table class="data-table"><thead><tr><th>#</th><th>PERIODO</th><th>FECHA</th><th>PROGRAMA</th><th>CATÁLOGO</th><th>CUMPLE</th><th>CRÉDITOS REQUERIDOS</th><th>CRÉDITOS CURSADOS</th><th>DURACION(MEN)</th><th>CRÉDITOS(MEN)</th></tr></thead><tbody><tr><td>10</td><td>202610</td><td>12/30/2025</td><td>PGCOVBO4IND2</td><td>202510</td><td>N</td><td>149</td><td>96</td><td>9</td><td>155</td></tr></tbody></table></div>
+                        
+                        <h4 class="capp-sub">SMRPONC Program Non-course Results Table</h4>
+                        <table class="data-table" style="width:auto;"><thead><tr><th>CÓDIGO</th><th>NOMBRE</th><th>CUMPLE</th></tr></thead><tbody><tr><td>0000</td><td>RECONOCIMIENTO DE CREDITOS</td><td>Y</td></tr></tbody></table>
+                        
+                        <div class="analytics-header">SMBAOGN General Area Overall Results Table</div>
+                        <table class="data-table" style="width:auto;"><thead><tr><th>ÁREA</th><th>NOMBRE</th><th>CUMPLE</th><th>CRÉDITOS REQUERIDOS</th><th>CRÉDITOS</th></tr></thead><tbody><tr><td>VIBE4IND2</td><td>BLOQ ELECTIVO 4IND2</td><td>Y</td><td>12</td><td>12</td></tr></tbody></table>
+                        <h4 class="capp-sub">SMRDORQ Detail Area/Group Requirements Table</h4>
+                        <div class="scroll-x"><table class="data-table"><thead><tr><th>REGLA</th><th>NOMBRE</th><th>CUMPLE</th><th>PERIODO</th><th>ÁREA</th><th>CÓDIGO</th><th>NOMBRE</th><th>NOTA</th><th>CRÉDITOS</th><th>FUENTE</th></tr></thead><tbody><tr><td>HUM42770</td><td>ELECTIVA 3</td><td>Y</td><td>202110</td><td>HUM</td><td>42770</td><td>ELECTIVA 3</td><td>APROBO</td><td>3</td><td>T</td></tr><tr><td>HUM42775</td><td>ELECTIVA 4</td><td>Y</td><td>202110</td><td>HUM</td><td>42775</td><td>ELECTIVA 4</td><td>APROBO</td><td>3</td><td>T</td></tr></tbody></table></div>
+
+                        <div class="analytics-header">SMBAOGN General Area Overall Results Table</div>
+                        <table class="data-table" style="width:auto;"><thead><tr><th>ÁREA</th><th>NOMBRE</th><th>CUMPLE</th><th>CRÉDITOS REQUERIDOS</th><th>CRÉDITOS</th></tr></thead><tbody><tr><td>VIBF3TCL</td><td>BLOQ FACULTAD 3TCL</td><td>N</td><td>30</td><td>30</td></tr></tbody></table>
+                        <h4 class="capp-sub">SMRDORQ Detail Area/Group Requirements Table</h4>
+                        <div class="scroll-x"><table class="data-table"><thead><tr><th>REGLA</th><th>NOMBRE</th><th>CUMPLE</th><th>PERIODO</th><th>ÁREA</th><th>CÓDIGO</th><th>NOMBRE</th><th>NOTA</th><th>CRÉDITOS</th><th>FUENTE</th></tr></thead><tbody><tr><td>IPA49019</td><td>PENSAMIENTO ALG</td><td>Y</td><td>202010</td><td>IPA</td><td>49019</td><td>PENSAMIENTO</td><td>3.7</td><td>2</td><td>H</td></tr><tr><td>MYE41220</td><td>ALGEBRA LINEAL</td><td>Y</td><td>202110</td><td>MYE</td><td>41220</td><td>ALGEBRA</td><td>4.0</td><td>3</td><td>H</td></tr><tr><td>CFI41224</td><td>FISICA 1</td><td>Y</td><td>202460</td><td>CFI</td><td>41224</td><td>FISICA 1</td><td>4.7</td><td>4</td><td>H</td></tr><tr><td>IPA41252</td><td>INVESTIGACION OP</td><td>Y</td><td>202160</td><td>IPA</td><td>41252</td><td>INV OP</td><td>3.0</td><td>3</td><td>H</td></tr></tbody></table></div>
+
+                        <div class="analytics-header">SMBAOGN General Area Overall Results Table</div>
+                        <table class="data-table" style="width:auto;"><thead><tr><th>ÁREA</th><th>NOMBRE</th><th>CUMPLE</th><th>CRÉDITOS REQUERIDOS</th><th>CRÉDITOS</th></tr></thead><tbody><tr><td>VIBP3TCL</td><td>BLOQ PROGRAMA 3TCL</td><td>N</td><td>59</td><td>37</td></tr></tbody></table>
+                        <h4 class="capp-sub">SMRDORQ Detail Area/Group Requirements Table</h4>
+                        <div class="scroll-x"><table class="data-table"><thead><tr><th>REGLA</th><th>NOMBRE</th><th>CUMPLE</th></tr></thead><tbody><tr><td>IPA42704</td><td>INTRODUCCION LOGISTICA</td><td>N</td></tr><tr><td>MYE41238</td><td>ESTADISTICA INFERENCIAL</td><td>Y</td></tr><tr><td>ECA41801</td><td>FUNDAMENTOS ECONOMIA</td><td>Y</td></tr><tr><td>IPA41002</td><td>ORGANIZACION METODOS</td><td>Y</td></tr></tbody></table></div>
+
+                        <div class="analytics-header">SMBAOGN General Area Overall Results Table</div>
+                        <table class="data-table" style="width:auto;"><thead><tr><th>ÁREA</th><th>NOMBRE</th><th>CUMPLE</th><th>CRÉDITOS REQUERIDOS</th><th>CRÉDITOS</th></tr></thead><tbody><tr><td>VIEP4IND2</td><td>BLOQ ENFASIS PROFESIONAL</td><td>N</td><td>6</td><td>3</td></tr></tbody></table>
+                        <h4 class="capp-sub">SMRDORQ Detail Area/Group Requirements Table</h4>
+                        <div class="scroll-x"><table class="data-table"><thead><tr><th>REGLA</th><th>NOMBRE</th><th>CUMPLE</th><th>PERIODO</th><th>ÁREA</th><th>CÓDIGO</th><th>NOMBRE</th><th>NOTA</th><th>CRÉDITOS</th></tr></thead><tbody><tr><td>IPA42740</td><td>ENFASIS PROF 1</td><td>Y</td><td>202310</td><td>IPA</td><td>48020</td><td>EMPAQUES</td><td>3.9</td><td>3</td></tr><tr><td>IPA42741</td><td>ENFASIS PROF 2</td><td>N</td><td></td><td></td><td></td><td></td><td></td><td></td></tr></tbody></table></div>
+
+                        <h4 class="capp-sub">SMRDOCN Detail Courses Not Used by Program Table</h4>
+                        <div class="scroll-x"><table class="data-table"><thead><tr><th>ÁREA</th><th>CÓDIGO</th><th>NOMBRE</th><th>PERIODO</th><th>NOTA</th><th>CRÉDITOS</th><th>FUENTE</th></tr></thead><tbody><tr><td>IPA</td><td>49019</td><td>PENSAMIENTO ALGORITMICO</td><td>202110</td><td>0.5</td><td>2</td><td>H</td></tr><tr><td>MYE</td><td>41200</td><td>CALCULO 1</td><td>202110</td><td>0.4</td><td>4</td><td>H</td></tr><tr><td>SHS</td><td>42799</td><td>SEGURIDAD Y SALUD</td><td>202110</td><td>2.9</td><td>3</td><td>H</td></tr></tbody></table></div>
+                    </div>
+                </div>
+
+                <div id="view-bitacora" class="view-section">
+                    <div class="analytics-header">Parciales - Notas<span class="q-icon">?</span></div>
+                    <div class="scroll-y" style="max-height:400px;">
+                        <table class="data-table"><thead><tr><th>PERIODO</th><th>#CURSO</th><th>NIVEL</th><th>CAMPUS</th><th>FECHA</th><th>ESTADO REGISTRO</th><th>CREDITOS</th><th>USUARIO</th><th>PLAN DE ESTUDIO</th></tr></thead><tbody><tr><td>202610</td><td>10544</td><td>UG</td><td>VIR</td><td>1/20/2026 6:24:15 PM</td><td>RW</td><td>3</td><td>BXE:100270577</td><td>1</td></tr><tr><td>202510</td><td>13326</td><td>UG</td><td>VIR</td><td>2/5/2025 11:59:11 AM</td><td>DD</td><td>0</td><td>MGOMEZVA</td><td>1</td></tr></tbody></table>
+                    </div>
+                </div>
+
+                <div id="view-certificados" class="view-section">
+                    <div class="analytics-header">Planes estudio<span class="q-icon">?</span></div>
+                    <div class="scroll-x"><table class="data-table"><thead><tr><th>PERIODO</th><th>CÓDIGO</th><th>ESTADO</th><th>PROGRAMA</th><th>NUMERORESOLUCION</th><th>FECHARESOLUCION</th><th>SNIES</th></tr></thead><tbody><tr><td>202410</td><td>1</td><td>AS</td><td>PGCOPME4IND</td><td>9932</td><td>17-JUN-2020</td><td>102473</td></tr></tbody></table></div>
+                    
+                    <div class="analytics-header">Grados<span class="q-icon">?</span></div>
+                    <div class="analytics-header">Parciales - periodos<span class="q-icon">?</span></div>
+                    <div class="analytics-header">Materias Inscritas<span class="q-icon">?</span></div>
+                    <div class="scroll-x"><table class="data-table"><thead><tr><th>PERIODO</th><th>NRC</th><th>ESTADO REGISTRO</th><th>FINAL</th><th>PARCIAL</th><th>CREDITOS</th><th>ÁREA</th><th>CÓDIGO</th><th>#SECCIÓN</th><th>ESTADO SECCIÓN</th><th>TIPO</th><th>CAMPUS</th><th>INTENSIDAD</th><th>NOMBRE</th></tr></thead><tbody><tr><td>202510</td><td>11165</td><td>RW</td><td>3.4</td><td></td><td>3</td><td>IPA</td><td>42705</td><td>201</td><td>A</td><td>TEP</td><td>MDE</td><td>4</td><td>DISTRIBUCION DE PLANTA</td></tr></tbody></table></div>
+
+                    <div class="analytics-header">HISTORIA ACADEMICA_NOTAS DEFINITIVAS<span class="q-icon">?</span></div>
+                    <div class="scroll-y"><table class="data-table"><thead><tr><th>PERIODO</th><th>ÁREA</th><th>CÓDIGO</th><th>NOMBRE</th><th>NOTA</th><th>CRÉDITOS</th><th>INTENSIDAD</th><th>PLAN ESTUDIO</th></tr></thead><tbody><tr><td>202010</td><td>SHS</td><td>42799</td><td>SEGURIDAD Y SALUD OCUPACIONAL</td><td>4.5</td><td>3</td><td>4</td><td>1</td></tr></tbody></table></div>
+
+                    <div class="analytics-header">Promedios Plan estudio<span class="q-icon">?</span></div>
+                    <div class="scroll-x"><table class="data-table"><thead><tr><th>PLAN ESTUDIO</th><th>PROGRAMA</th><th>NIVEL</th><th>TIPO</th><th>CRÉDITOS TOMADOS</th><th>CRÉDITOS APROBADOS</th><th>CRÉDITOS PROMEDIO</th><th>PROMEDIO</th></tr></thead><tbody><tr><td>1</td><td>PGCOPME4IND</td><td>UG</td><td>I</td><td>106</td><td>78</td><td>106</td><td>3.053773585</td></tr></tbody></table></div>
+
+                    <div class="analytics-header">Promedios Periodo<span class="q-icon">?</span></div>
+                    <table class="data-table" style="width:auto;"><thead><tr><th>PERIODO</th><th>TIPO</th><th>Promedio</th></tr></thead><tbody><tr><td>202110</td><td>I</td><td>1.505882353</td></tr><tr><td>202510</td><td>I</td><td>4.752941176</td></tr></tbody></table>
+
+                    <div class="analytics-header">PUESTO EN PROMOCIÓN DE GRADO<span class="q-icon">?</span></div>
+                </div>
+
+                <div id="view-canvas" class="view-section">
+                    <div class="analytics-header">USUARIO<span class="q-icon">?</span></div>
+                    <table class="data-table"><thead><tr><th>USUARIO</th><th>NOMBRE</th><th>FECHA CREACIÓN</th><th>FECHA ULTIMA CONEXIÓN</th><th>ESTADO</th></tr></thead><tbody><tr><td>hagutierrez1@poligran.edu.co</td><td>Gutierrez Haylen Nasledy</td><td>2/26/2020 8:26:34 PM</td><td>8/16/2024 11:28:10 PM</td><td>Activo</td></tr></tbody></table>
+                    <div id="canvas-list">
+                        <div class="analytics-header">SECCIONES<span class="q-icon">?</span></div>
+                        <div class="scroll-x">
+                            <table class="data-table"><thead><tr><th>CODIGO</th><th>NOMBRE</th><th>INICIO</th><th>FIN</th><th>PUNTAJE</th><th>NOTA</th><th>TUTORES</th><th>ÚLTIMA ACTIVIDAD</th><th>ACTIVIDAD TOTAL HH:MM</th></tr></thead><tbody><tr><td>IPA-42717-202510</td><td>M2510-11169 CONTROL DE CALIDAD</td><td></td><td></td><td>0</td><td>0.0</td><td></td><td>2025-05-30T11:06</td><td>0:47</td></tr><tr><td>IPA-41252</td><td><a href="#" onclick="showCanvasDetail(); return false;" class="clickable">IPA-41252 INVESTIGACIÓN DE OPERACIONES</a></td><td></td><td></td><td>0</td><td>0.0</td><td></td><td></td><td class="txt-red">0:0</td></tr></tbody></table>
+                        </div>
+                    </div>
+                    <div id="canvas-detail" style="display:none;">
+                        <button class="btn-std" onclick="hideCanvasDetail()" style="margin:5px 0;">&lt;&lt; Volver</button>
+                        <div class="analytics-header">ACTIVIDADES<span class="q-icon">?</span></div>
+                        <div style="font-weight:bold; font-size:10px; margin-bottom:5px;">CURSO: IPA-41252 INVESTIGACIÓN DE OPERACIONES-[GRUPO B04]</div>
+                        <table class="data-table">
+                            <thead><tr><th>ACTIVIDAD</th><th>INTENTO</th><th>FECHA ENTREGA</th><th>ENTREGADO</th><th>ESTADO</th><th>PUNTAJE</th><th>DE</th><th>COMENTARIOS</th></tr></thead>
+                            <tbody>
+                                <tr><td>Entrega final - Escenario 7</td><td></td><td>2023-04-26T04:55:59Z</td><td></td><td class="txt-red">unsubmitted</td><td></td><td>125.0</td><td></td></tr>
+                                <tr><td>Entrega previa 1 - Escenario 3</td><td></td><td>2023-04-26T04:55:59Z</td><td></td><td class="txt-red">unsubmitted</td><td></td><td>50.0</td><td></td></tr>
+                                <tr><td>Entrega previa 2 - Escenario 5</td><td></td><td>2023-04-26T04:55:59Z</td><td></td><td class="txt-red">unsubmitted</td><td></td><td>100.0</td><td></td></tr>
+                                <tr><td>Evaluacion final - Escenario 8</td><td></td><td>2023-04-26T04:55:59Z</td><td></td><td class="txt-red">unsubmitted</td><td></td><td>100.0</td><td></td></tr>
+                                <tr><td>Parcial - Escenario 4</td><td></td><td>2023-04-26T04:55:59Z</td><td></td><td class="txt-red">unsubmitted</td><td></td><td>75.0</td><td></td></tr>
+                                <tr><td>Actividad de puntos evaluables - Escenario 2</td><td></td><td>2023-04-26T04:55:59Z</td><td></td><td class="txt-red">unsubmitted</td><td></td><td>50.0</td><td></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="view-notificaciones" class="view-section">
+                    <div class="analytics-header">BETA -- NOTIFICACIONES<span class="q-icon">?</span></div>
+                    <div style="border:1px solid #ccc; padding:10px; margin-top:10px;">
+                        <select class="search-input"><option>Enlace pago</option></select> <button class="btn-std">Generar</button>
+                        <div style="margin-top:10px; border:1px solid #0000ff; padding:5px; font-size:10px;">PERIODO:202560<br>DETALLE:MATRICULA PREGRADO PRE<br>VALOR:515<br><a href="#" class="clickable">https://pasarelapagos.poligran.edu.co/Index/IndexPayment?referencia=0000751...</a></div>
+                    </div>
+                </div>
+
+                <div id="view-grados" class="view-section">
+                    
+                    <div class="analytics-header">ÚLTIMO CAPP<span class="q-icon">?</span></div>
+                    <div class="scroll-x">
+                        <table class="data-table">
+                            <thead><tr><th>#</th><th>PERIODO</th><th>FECHA</th><th>VALIDACIÓN</th><th>PROGRAMA</th><th>NOMBRE</th><th>CATÁLOGO</th><th>CUMPLE</th><th>% AVANCE</th></tr></thead>
+                            <tbody>
+                                <tr>
+                                    <td><a href="#" class="clickable">6</a></td><td>202180</td><td>8/11/2021</td><td>8/11/2021</td><td>PGCOPBO4ISI</td><td>BOG INGENIERIA SISTEMAS</td><td>201860</td><td>N</td><td>79</td>
+                                </tr>
+                                <tr>
+                                    <td><a href="#" class="clickable">65</a></td><td>202630</td><td>1/13/2026</td><td>1/13/2026</td><td>PGCOPBO4ISI</td><td>BOG INGENIERIA SISTEMAS</td><td>202010</td><td>N</td><td>96.4</td>
+                                </tr>
+                                <tr>
+                                    <td><a href="#" class="clickable" style="color:blue; font-weight:bold;">66</a></td><td>202610</td><td>1/14/2026</td><td>1/14/2026</td><td>PGCOPBO3TAS</td><td>BOG TGIA ADMON SISTEMAS</td><td>201860</td><td>Y</td><td>98</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="analytics-header">NO CURSOS CAPP<span class="q-icon">?</span></div>
+                    <table class="data-table" style="width:auto;">
+                        <thead><tr><th>#</th><th>CÓDIGO</th><th>NOMBRE</th><th>CUMPLE</th></tr></thead>
+                        <tbody>
+                            <tr><td>6</td><td>0000</td><td>RECONOCIMIENTO DE CREDITOS</td><td>Y</td></tr>
+                            <tr><td>6</td><td>1403</td><td>REQUISITO INSTITUCIONAL INGLES</td><td>N</td></tr>
+                            <tr><td>65</td><td>0000</td><td>RECONOCIMIENTO DE CREDITOS</td><td>Y</td></tr>
+                            <tr><td>65</td><td>1403</td><td>REQUISITO INSTITUCIONAL INGLES</td><td>N</td></tr>
+                            <tr><td>66</td><td>0000</td><td>RECONOCIMIENTO DE CREDITOS</td><td>Y</td></tr>
+                        </tbody>
+                    </table>
+
+                    <div class="analytics-header">NO CURSOS<span class="q-icon">?</span></div>
+                    <table class="data-table" style="width:auto;">
+                        <thead><tr><th>SHRNCRS_NCRQ_CODE</th><th>ESTADO</th><th>NOMBRE</th></tr></thead>
+                        <tbody><tr><td>0000</td><td>AP</td><td>RECONOCIMIENTO DE CREDITOS</td></tr></tbody>
+                    </table>
+
+                    <div class="analytics-header">RECONOCIMIENTO DE CRÉDITOS<span class="q-icon">?</span></div>
+                    <table class="data-table" style="width:auto;">
+                        <thead><tr><th>COMPONENTE</th><th>HORAS</th><th>CREDITOS</th></tr></thead>
+                        <tbody>
+                            <tr><td>Informática</td><td>40</td><td>2.500000</td></tr>
+                            <tr><td>Optativo</td><td>114</td><td>7.125000</td></tr>
+                        </tbody>
+                    </table>
+
+                    <div class="analytics-header">PROGRAMAS<span class="q-icon">?</span></div>
+                    <table class="data-table">
+                        <thead><tr><th>CÓDIGO</th><th>GRADO</th><th>ESTADO</th><th>FECHA ACTUALIZACIÓN</th><th>FECHA GRADO</th><th>JORNADA</th><th>PROGRAMA</th><th>PLAN ESTUDIO</th></tr></thead>
+                        <tbody>
+                            <tr><td>1</td><td>TASIST</td><td>TM</td><td>06/01/2021</td><td>06/01/2021</td><td>JDIA</td><td>PGCOPBO3TAS</td><td>1</td></tr>
+                            <tr><td>2</td><td>ISISTE</td><td>TM</td><td>13/01/2025</td><td></td><td>JNOC</td><td>PGCOPBO4ISI</td><td>2</td></tr>
+                            <tr><td>3</td><td>ISISTE</td><td>TM</td><td>13/01/2025</td><td></td><td>JNOC</td><td>PGCOPBO4ISI</td><td>3</td></tr>
+                        </tbody>
+                    </table>
+
+                    <div class="analytics-header">SOLICITUDES<span class="q-icon">?</span></div>
+                    <div class="scroll-x">
+                        <table class="data-table" style="min-width:1000px;">
+                            <thead><tr><th>Número</th><th>Secuencia</th><th>Código servicio</th><th>Código estado</th><th>Facturado</th><th>FECHA RECEPCIÓN</th><th>Periodo</th><th>Monto</th><th>DATOS_ADICIONALES</th></tr></thead>
+                            <tbody>
+                                <tr><td>231568</td><td>1</td><td>SVOGRA</td><td>AP</td><td>N</td><td>11/23/2022</td><td>202310</td><td></td><td>Campus: BOG... Opción de Grado: DOCC</td></tr>
+                                <tr><td>329313</td><td>1</td><td>SVREIN</td><td>AP</td><td>N</td><td>12/6/2023</td><td>202380</td><td></td><td>Programa reintegro: PGCOPBO4ISI</td></tr>
+                                <tr><td>493431</td><td>1</td><td>SVREIN</td><td>AP</td><td>N</td><td>7/4/2025</td><td>202580</td><td></td><td>Programa reintegro: PGCOPME4ISI</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="analytics-header">PAZ Y SALVOS<span class="q-icon">?</span></div>
+                    <table class="data-table">
+                        <thead><tr><th>PERIODO</th><th>PROGRAMA</th><th>PAZ Y SALVO</th><th>CUMPLE</th></tr></thead>
+                        <tbody>
+                            <tr><td>202630</td><td>PGCOPBO3TAS</td><td>ENCUESTA</td><td class="txt-red">N</td></tr>
+                            <tr><td>202630</td><td>PGCOPBO3TAS</td><td>FINANCIERO</td><td>Y</td></tr>
+                            <tr><td>202630</td><td>PGCOPBO3TAS</td><td>MULTA DE BIBLIOTECA</td><td>Y</td></tr>
+                            <tr><td>202630</td><td>PGCOPBO3TAS</td><td>MULTA DE CENTRO DE MEDIOS AUDIOVISUALES</td><td>Y</td></tr>
+                            <tr><td>202630</td><td>PGCOPBO3TAS</td><td>REGISTRO Y CONTROL</td><td class="txt-red">N</td></tr>
+                            <tr><td>202630</td><td>PGCOPBO3TAS</td><td>TRABAJO DE GRADO</td><td>Y</td></tr>
+                            <tr><td>202630</td><td>PGCOPBO4ISI</td><td>ENCUESTA</td><td class="txt-red">N</td></tr>
+                            <tr><td>202630</td><td>PGCOPBO4ISI</td><td>FINANCIERO</td><td class="txt-red">N</td></tr>
+                            <tr><td>202630</td><td>PGCOPBO4ISI</td><td>MULTA DE BIBLIOTECA</td><td>Y</td></tr>
+                            <tr><td>202630</td><td>PGCOPBO4ISI</td><td>MULTA DE CENTRO DE MEDIOS AUDIOVISUALES</td><td>Y</td></tr>
+                            <tr><td>202630</td><td>PGCOPBO4ISI</td><td>REGISTRO Y CONTROL</td><td class="txt-red">N</td></tr>
+                            <tr><td>202630</td><td>PGCOPBO4ISI</td><td>TRABAJO DE GRADO</td><td>Y</td></tr>
+                        </tbody>
+                    </table>
+
+                    <div class="analytics-header">DOCUMENTOS<span class="q-icon">?</span></div>
+                    <div class="scroll-x">
+                        <table class="data-table" style="min-width: 800px;">
+                            <thead><tr><th>prog</th><th>nombre</th><th>valido</th><th>observaciones</th><th>estado</th></tr></thead>
+                            <tbody>
+                                <tr><td>PGCOPBO3TAS</td><td>Pruebas Saber Pro</td><td>False</td><td>DEBE CARGAR SABER PRO T&T</td><td>Revisado el 5/23/2023</td></tr>
+                                <tr><td>PGCOPBO3TAS</td><td>Documento de identificación</td><td>False</td><td>DEBE CARGAR DOCUMENTO SOLICITADO</td><td>Pendiente</td></tr>
+                                <tr><td>PGCOPBO3TAS</td><td>Diploma o acta de bachiller</td><td>False</td><td>DEBE CARGAR DIPLOMA DE BACHILLER</td><td>Pendiente</td></tr>
+                                <tr><td>PGCOPBO3TAS</td><td>Resultado pruebas saber 11</td><td>False</td><td>DEBE CARGAR RESULTADOS SABER 11</td><td>Pendiente</td></tr>
+                                <tr><td>PGCOPBO4ISI</td><td>Pruebas Saber Pro</td><td></td><td></td><td>Pendiente</td></tr>
+                                <tr><td>PGCOPBO4ISI</td><td>Documento de identificación</td><td>False</td><td>DEBE CARGAR DOCUMENTO SOLICITADO</td><td>Pendiente</td></tr>
+                                <tr><td>PGCOPBO4ISI</td><td>Diploma o acta de bachiller</td><td>False</td><td>DEBE CARGAR DIPLOMA DE BACHILLER</td><td>Pendiente</td></tr>
+                                <tr><td>PGCOPBO4ISI</td><td>Resultado pruebas saber 11</td><td>False</td><td>DEBE CARGAR RESULTADOS SABER 11</td><td>Pendiente</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="analytics-header">ENCUESTA<span class="q-icon">?</span></div>
+                    <table class="data-table" style="width:auto;">
+                        <thead><tr><th>Nombre</th><th>Valor</th></tr></thead>
+                        <tbody><tr><td>Nombre</td><td>DARWIN GIOVANNI DARWIN GIOVANNI</td></tr></tbody>
+                    </table>
+
+                    <div class="analytics-header">RETENCIONES<span class="q-icon">?</span></div>
+                    <table class="data-table">
+                        <thead><tr><th>CÓDIGO</th><th>USUARIO</th><th>DESDE</th><th>HASTA</th><th>LIBERADO</th><th>COMENTARIO</th></tr></thead>
+                        <tbody><tr><td>RI</td><td>SAISUSR</td><td>12/3/2025 11:03:43 AM</td><td>12/31/2049</td><td>N</td><td>NO PAGO DE MATRICULA</td></tr></tbody>
+                    </table>
+
+                    <div class="analytics-header">CARTERA<span class="q-icon">?</span></div>
+                    <div class="scroll-x">
+                        <table class="data-table">
+                            <thead><tr><th>TBRACCD_PIDM</th><th>Periodo</th><th>#</th><th>Código detalle</th><th>Descripción Código</th><th>Tipo</th><th>Fecha</th><th>Monto</th><th>Saldo</th><th>Efectiva</th><th>Descripción</th><th>Paga #</th><th>Plan</th><th>PROGRAMA</th></tr></thead>
+                            <tbody>
+                                <tr><td>76516</td><td>202610</td><td>60</td><td>T113</td><td>MATRICULA ULTIMA MATERIA PRE</td><td>C</td><td>12/3/2025 8:53:23 AM</td><td>1153900</td><td>1153900</td><td>12/3/2025</td><td>MATRICULA ULTIMA MATERIA PRE</td><td></td><td>3</td><td>PGCOPBO4ISI</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </td>
+
+            <td class="layout-td-menu">
+                <a class="menu-link" onclick="showView('view-home')">Home</a>
+                <a class="menu-link" onclick="showView('view-persona')">Persona</a>
+                <a class="menu-link" onclick="showView('view-academico')">Académico</a>
+                <a class="menu-link" onclick="showView('view-servicio')">Servicio</a>
+                <a class="menu-link" onclick="showView('view-financiero')">Financiero <span style="font-size:9px;">mfin</span></a>
+                <a class="menu-link" onclick="showView('view-inscripcion')">Inscripción Asignaturas</a>
+                <a class="menu-link" onclick="showView('view-capp')">Avance curricular</a>
+                <a class="menu-link" onclick="showView('view-bitacora')">Bitácora</a>
+                <a class="menu-link" onclick="showView('view-certificados')">Certificados</a>
+                <a class="menu-link" onclick="showView('view-canvas')">Canvas</a>
+                <a class="menu-link" onclick="showView('view-notificaciones')">Notificaciones</a>
+                <a class="menu-link" onclick="showView('view-grados')">Proceso Grados</a>
+            </td>
+        </tr>
+    </table>
+
+    <script>
+        function showView(viewId) {
+            var views = document.querySelectorAll('.view-section');
+            views.forEach(function(view) { view.style.display = 'none'; });
+            document.getElementById(viewId).style.display = 'block';
+            document.getElementById('capp-detail').style.display = 'none';
+            document.getElementById('canvas-list').style.display = 'block';
+            document.getElementById('canvas-detail').style.display = 'none';
+        }
+        function toggleCappDetail() { var el = document.getElementById('capp-detail'); el.style.display = (el.style.display === 'none') ? 'block' : 'none'; }
+        function showCanvasDetail() { document.getElementById('canvas-list').style.display = 'none'; document.getElementById('canvas-detail').style.display = 'block'; }
+        function hideCanvasDetail() { document.getElementById('canvas-list').style.display = 'block'; document.getElementById('canvas-detail').style.display = 'none'; }
+    </script>
+
+</body>
+</html>
