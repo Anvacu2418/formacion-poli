@@ -29,7 +29,7 @@
             overflow: hidden;
         }
         .accordion-content.open {
-            max-height: 500px; /* arbitrary max height */
+            max-height: 800px; /* arbitrary max height */
         }
     </style>
 </head>
@@ -118,8 +118,8 @@
                                 <li><i class="fas fa-info-circle text-green-500 mr-2"></i>Materias: ₡345.200</li>
                                 <li class="font-bold text-lg text-green-900 mt-2 border-t pt-2">Total: ₡362.787</li>
                             </ul>
-                            <div class="mt-3 bg-green-200 text-green-800 text-xs p-2 rounded border border-green-300 font-bold">
-                                <i class="fas fa-arrow-down mr-1"></i>Ahorro vs Regular: -₡43.010
+                            <div class="mt-4 bg-green-200 text-green-800 text-sm p-3 rounded-lg border border-green-300 font-bold text-center">
+                                ¡El Convenio ahorra ₡43.010 frente al mercado regular!
                             </div>
                         </div>
                     </div>
@@ -196,7 +196,7 @@
                                 <ul class="list-disc ml-6">
                                     <li><strong>Plan Anual Pregrados:</strong> Aplican los mismos códigos DC3 a DC6.</li>
                                     <li><strong>Técnicos:</strong> DC-TECON26 (20% en materias).</li>
-                                    <li><strong>Posgrados (Maestrías):</strong> DC-POSCO26 (15% en materias). <em>*Este se mantiene por toda la carrera, sin importar la empresa.</em></li>
+                                    <li><strong>Posgrados (Maestrías):</strong> DC-POSCO26 (15% en materias). <em>*Este descuento se mantiene por toda la carrera.</em></li>
                                 </ul>
                             </div>
                         </div>
@@ -229,7 +229,7 @@
             <h2 class="text-3xl font-bold text-blue-900 mb-4 text-center">Clínica de Ventas: El Poder de la Indagación</h2>
             <p class="text-center text-gray-600 mb-10 text-lg">Casos de la vida real. ¿Cómo respondería usted? Haga clic para revelar la estrategia.</p>
             
-            <div class="space-y-6"> <!-- Added more breathing room (gap) between cases -->
+            <div class="space-y-6">
                 
                 <!-- Caso 1 -->
                 <div class="bg-white rounded-xl shadow-md border-l-4 border-orange-400 overflow-hidden">
@@ -290,6 +290,25 @@
     </main>
 
     <footer class="bg-gray-800 text-white text-center py-8 mt-16">
+        <p>Capacitación Formación USAM - Diseñado por Formación Ilumno</p>
+    </footer>
+
+    <!-- JS Script goes completely inside this block -->
+    <script>
+        const accordionBtns = document.querySelectorAll('.accordion-btn');
+
+        accordionBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const content = this.nextElementSibling;
+                const icon = this.querySelector('.fa-chevron-down');
+                
+                // Toggle open class
+                content.classList.toggle('open');
+                
+                // Add padding if open, remove if closed
+                if(content.classList.contains('open')){
+                    content.style.paddingTop = "1rem";
+                    content.style.paddingBottom = "1rem";
                     icon.style.transform = "rotate(180deg)";
                 } else {
                     content.style.paddingTop = "0";
