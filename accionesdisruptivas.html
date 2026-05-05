@@ -49,7 +49,7 @@
             /* NOTA: Se eliminó cualquier border-radius aquí para dejarlo cuadrado */
         }
 
-        /* --- CLASES PARA EFECTO FLIP 3D --- */
+        /* --- CLASES PARA EFECTO FLIP 3D CON CLIC --- */
         .flip-card {
             perspective: 1000px;
             height: 100%; 
@@ -60,8 +60,10 @@
             height: 100%;
             transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
             transform-style: preserve-3d;
+            cursor: pointer; /* Indica que se puede hacer clic */
         }
-        .flip-card:hover .flip-card-inner {
+        /* La clase .is-flipped se añade con JS al hacer clic */
+        .flip-card-inner.is-flipped {
             transform: rotateY(180deg);
         }
         .flip-card-front, .flip-card-back {
@@ -74,7 +76,7 @@
             background-color: white;
             box-shadow: 0 4px 15px rgba(0,0,0,0.03);
         }
-        /* Frente de las tarjetas KPI (Ajustado para formato horizontal) */
+        /* Frente de las tarjetas KPI */
         .flip-card-front {
             display: flex;
             flex-direction: column;
@@ -153,9 +155,9 @@
             <!-- KPIs SECTION (Altura reducida de 140px a 110px. Ícono al lado del número) -->
             <div class="flex gap-6 h-[110px] shrink-0">
                 
-                <!-- KPI 1 FLIP CARD -->
+                <!-- KPI 1 FLIP CARD (CLIC) -->
                 <div class="flex-1 flip-card group">
-                    <div class="flip-card-inner cursor-pointer">
+                    <div class="flip-card-inner" onclick="this.classList.toggle('is-flipped')">
                         <div class="flip-card-front border-b-4 border-b-ilumno-light">
                             <p class="font-sans text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1">Adopción del método</p>
                             <div class="flex items-center gap-3">
@@ -170,9 +172,9 @@
                     </div>
                 </div>
 
-                <!-- KPI 2 FLIP CARD -->
+                <!-- KPI 2 FLIP CARD (CLIC) -->
                 <div class="flex-1 flip-card group">
-                    <div class="flip-card-inner cursor-pointer">
+                    <div class="flip-card-inner" onclick="this.classList.toggle('is-flipped')">
                         <div class="flip-card-front border-b-4 border-b-ilumno-aqua">
                             <p class="font-sans text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1">Retención de aprendizaje</p>
                             <div class="flex items-center gap-3">
@@ -187,9 +189,9 @@
                     </div>
                 </div>
 
-                <!-- KPI 3 FLIP CARD -->
+                <!-- KPI 3 FLIP CARD (CLIC) -->
                 <div class="flex-1 flip-card group">
-                    <div class="flip-card-inner cursor-pointer">
+                    <div class="flip-card-inner" onclick="this.classList.toggle('is-flipped')">
                         <div class="flip-card-front border-b-4 border-b-ilumno-royal">
                             <p class="font-sans text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1">Cumplimiento mensual</p>
                             <div class="flex items-center gap-3">
@@ -229,7 +231,7 @@
                             </p>
                         </div>
                         <a href="#" class="mt-4 w-full text-center py-2.5 rounded-lg text-[12px] font-bold text-ilumno-royal bg-ilumno-royal/10 hover:bg-ilumno-royal hover:text-white transition-all duration-300 flex items-center justify-center gap-2 shrink-0">
-                            <i class="fa-solid fa-link text-[10px]"></i> Ver cápsulas
+                            <i class="fa-solid fa-link text-[10px]"></i> Ver ejemplo
                         </a>
                     </div>
 
@@ -263,7 +265,7 @@
                             </p>
                         </div>
                         <a href="#" class="mt-4 w-full text-center py-2.5 rounded-lg text-[12px] font-bold text-ilumno-teal bg-ilumno-teal/10 hover:bg-ilumno-teal hover:text-white transition-all duration-300 flex items-center justify-center gap-2 shrink-0">
-                            <i class="fa-solid fa-link text-[10px]"></i> Ver módulo
+                            <i class="fa-solid fa-link text-[10px]"></i> Ver ejemplo
                         </a>
                     </div>
 
@@ -280,7 +282,7 @@
                             </p>
                         </div>
                         <a href="#" class="mt-4 w-full text-center py-2.5 rounded-lg text-[12px] font-bold text-ilumno-navy bg-ilumno-navy/10 hover:bg-ilumno-navy hover:text-white transition-all duration-300 flex items-center justify-center gap-2 shrink-0">
-                            <i class="fa-solid fa-link text-[10px]"></i> Ver herramienta
+                            <i class="fa-solid fa-link text-[10px]"></i> Ver ejemplo
                         </a>
                     </div>
 
