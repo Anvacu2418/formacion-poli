@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard de Formación - Alta Definición</title>
+    
+    <!-- Fuentes: Poppins (títulos elegantes), Lato (lectura clara) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;600;700&family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Iconos FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Lato', 'sans-serif'],
+                        poppins: ['Poppins', 'sans-serif'],
+                    },
+                    colors: {
+                        ilumno: {
+                            navy: '#102B4E',      /* Azul oscuro */
+                            royal: '#2A52BE',     /* Azul rey */
+                            light: '#3FA9F5',     /* Azul claro */
+                            aqua: '#6DE3D8',      /* Aguamarina */
+                            teal: '#0D9488',      /* Teal oscuro para contraste */
+                            pale: '#9BB8D3',      /* Azul pálido/grisáceo */
+                            bg: '#F4F7FB'         /* Fondo súper claro y aireado */
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        /* Ajuste estricto 16:9 (1280x720) para encajar en PPT */
+        .slide-canvas {
+            width: 1280px;
+            height: 720px;
+            background-color: var(--ilumno-bg, #F4F7FB);
+            box-shadow: 0 15px 35px rgba(16, 43, 78, 0.08);
+            /* NOTA: Se eliminó cualquier border-radius aquí para dejarlo cuadrado */
+        }
+
+        /* --- CLASES PARA EFECTO FLIP 3D --- */
+        .flip-card {
+            perspective: 1000px;
+            height: 100%; 
+        }
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
+            transform-style: preserve-3d;
+        }
+        .flip-card:hover .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: 12px;
+            background-color: white;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+        }
+        /* Frente de las tarjetas KPI (Ajustado para formato horizontal) */
+        .flip-card-front {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+        /* Atrás de las tarjetas KPI (Sustento para Jackson) */
+        .flip-card-back {
+            transform: rotateY(180deg);
+            background-color: #102B4E;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        /* Hover animado para las tarjetas de acciones con el efecto de luz */
+        .action-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .action-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        /* Efectos específicos de Sombrita/Luz por tarjeta */
+        .card-royal:hover { box-shadow: 0 12px 30px rgba(42, 82, 190, 0.15); }
+        .card-light:hover { box-shadow: 0 12px 30px rgba(63, 169, 245, 0.2); }
+        .card-teal:hover { box-shadow: 0 12px 30px rgba(13, 148, 136, 0.15); }
+        .card-navy:hover { box-shadow: 0 12px 30px rgba(16, 43, 78, 0.15); }
+    </style>
+</head>
+<body class="bg-slate-200 min-h-screen flex items-center justify-center p-4">
+
+    <!-- CONTENEDOR PRINCIPAL CUADRADO (Sin rounded) -->
+    <div class="slide-canvas relative overflow-hidden flex flex-col">
+        
+        <!-- Franja superior colores corporativos -->
+        <div class="flex h-2.5 w-full shrink-0">
+            <div class="flex-1 bg-ilumno-navy"></div>
+            <div class="flex-1 bg-white"></div>
+            <div class="flex-1 bg-ilumno-royal"></div>
+            <div class="flex-1 bg-ilumno-light"></div>
+            <div class="flex-1 bg-ilumno-pale"></div>
+            <div class="flex-1 bg-[#08183A]"></div>
+            <div class="flex-1 bg-ilumno-aqua"></div>
+        </div>
+
+        <!-- CONTENIDO INTERNO (Paddings ajustados para ganar espacio) -->
+        <div class="px-10 py-8 flex flex-col gap-6 h-full z-10 box-border">
+            
+            <!-- HEADER & PROPÓSITO -->
+            <div class="flex justify-between items-center gap-8 shrink-0">
+                <!-- Títulos -->
+                <div class="w-1/3 flex flex-col justify-center">
+                    <h1 class="font-poppins flex flex-col leading-none">
+                        <span class="text-[28px] font-medium text-ilumno-light tracking-wide mb-[-2px]">Acciones</span>
+                        <span class="text-[48px] font-extrabold text-ilumno-navy tracking-tight">Disruptivas</span>
+                    </h1>
+                    <p class="font-sans text-slate-500 font-bold tracking-widest text-[11px] mt-2 uppercase border-l-2 border-ilumno-light pl-2">
+                        Resumen estratégico • Abril
+                    </p>
+                </div>
+                
+                <!-- El Porqué -->
+                <div class="w-2/3 bg-white rounded-2xl p-5 shadow-[0_4px_20px_rgba(0,0,0,0.04)] border border-slate-100 flex items-center relative overflow-hidden">
+                    <div class="absolute left-0 top-0 bottom-0 w-2 bg-gradient-to-b from-ilumno-light to-ilumno-royal"></div>
+                    <p class="text-slate-600 leading-relaxed text-[14.5px] pl-3 m-0">
+                        <span class="font-poppins font-bold text-ilumno-navy text-[15px] block mb-1">Nuestro propósito:</span>
+                        Más allá de procesos, formamos <strong>pensamiento crítico</strong> y <strong>venta consultiva</strong>. Conectamos al equipo con el <em>"porqué"</em> de la operación, desarrollando empatía y análisis para entender al estudiante y garantizar el cumplimiento.
+                    </p>
+                </div>
+            </div>
+
+            <!-- KPIs SECTION (Altura reducida de 140px a 110px. Ícono al lado del número) -->
+            <div class="flex gap-6 h-[110px] shrink-0">
+                
+                <!-- KPI 1 FLIP CARD -->
+                <div class="flex-1 flip-card group">
+                    <div class="flip-card-inner cursor-pointer">
+                        <div class="flip-card-front border-b-4 border-b-ilumno-light">
+                            <p class="font-sans text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1">Adopción del método</p>
+                            <div class="flex items-center gap-3">
+                                <i class="fa-solid fa-chart-line text-ilumno-pale text-[26px] opacity-80"></i>
+                                <h2 class="font-poppins text-[44px] font-bold text-ilumno-navy leading-none tracking-tight">98%</h2>
+                            </div>
+                        </div>
+                        <div class="flip-card-back">
+                            <h4 class="font-poppins text-ilumno-light font-semibold mb-1.5 flex items-center gap-2 text-[14px]"><i class="fa-solid fa-microphone-lines"></i> Sustento:</h4>
+                            <p class="text-[12px] font-sans text-slate-200 leading-relaxed m-0">Medido con QA y monitoreos. El 98% ya no "vende por vender". Aplican el modelo: indagan el dolor, escuchan con empatía y personalizan la solución.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- KPI 2 FLIP CARD -->
+                <div class="flex-1 flip-card group">
+                    <div class="flip-card-inner cursor-pointer">
+                        <div class="flip-card-front border-b-4 border-b-ilumno-aqua">
+                            <p class="font-sans text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1">Retención de aprendizaje</p>
+                            <div class="flex items-center gap-3">
+                                <i class="fa-solid fa-brain text-ilumno-pale text-[26px] opacity-80"></i>
+                                <h2 class="font-poppins text-[44px] font-bold text-ilumno-navy leading-none tracking-tight">+35%</h2>
+                            </div>
+                        </div>
+                        <div class="flip-card-back">
+                            <h4 class="font-poppins text-ilumno-aqua font-semibold mb-1.5 flex items-center gap-2 text-[14px]"><i class="fa-solid fa-microphone-lines"></i> Sustento:</h4>
+                            <p class="text-[12px] font-sans text-slate-200 leading-relaxed m-0">Evaluaciones finales vs diagnósticas. Al enseñarles el "porqué" y no a memorizar, retienen mejor la info y reducimos los errores operativos.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- KPI 3 FLIP CARD -->
+                <div class="flex-1 flip-card group">
+                    <div class="flip-card-inner cursor-pointer">
+                        <div class="flip-card-front border-b-4 border-b-ilumno-royal">
+                            <p class="font-sans text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1">Cumplimiento mensual</p>
+                            <div class="flex items-center gap-3">
+                                <i class="fa-solid fa-bullseye text-ilumno-pale text-[26px] opacity-80"></i>
+                                <h2 class="font-poppins text-[44px] font-bold text-ilumno-navy leading-none tracking-tight">100%</h2>
+                            </div>
+                        </div>
+                        <div class="flip-card-back">
+                            <h4 class="font-poppins text-ilumno-royal font-semibold mb-1.5 flex items-center gap-2 text-[14px]"><i class="fa-solid fa-microphone-lines"></i> Sustento:</h4>
+                            <p class="text-[12px] font-sans text-slate-200 leading-relaxed m-0">Ejecución del 100% del cronograma de formación. Garantizamos que nuestras capacitaciones impacten directamente en la meta de la operación.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ACCIONES DISRUPTIVAS SECTION -->
+            <div class="flex-1 flex flex-col">
+                
+                <div class="flex items-center gap-3 mb-4">
+                    <h2 class="font-poppins text-[18px] font-semibold text-ilumno-navy">Iniciativas extraordinarias</h2>
+                    <!-- Fondito negro -->
+                    <span class="bg-[#102B4E] text-white px-3 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase shadow-sm">Above & Beyond</span>
+                </div>
+
+                <div class="flex gap-5 h-full pb-2">
+                    
+                    <!-- Tarjeta 1: Microlearning -->
+                    <div class="flex-1 bg-white border-2 border-ilumno-royal rounded-[16px] p-5 flex flex-col relative group action-card card-royal shadow-[0_4px_15px_rgba(0,0,0,0.03)]">
+                        <!-- Contenedor centrado dinámico -->
+                        <div class="flex flex-col flex-grow justify-center items-center text-center">
+                            <div class="w-10 h-10 rounded-xl bg-ilumno-royal shadow-[0_6px_12px_rgba(42,82,190,0.35)] flex items-center justify-center text-white text-[18px] mb-3 shrink-0 transition-transform group-hover:scale-110">
+                                <i class="fa-solid fa-gamepad"></i>
+                            </div>
+                            <h3 class="font-poppins text-[15px] font-bold text-ilumno-navy mb-2 leading-tight">Microlearning ágil</h3>
+                            <p class="text-slate-500 text-[13px] leading-relaxed font-sans m-0">
+                                Reemplazamos sesiones teóricas largas por <strong>retos gamificados semanales</strong>. Elevamos el engagement y permitimos aprender sin frenar la operación.
+                            </p>
+                        </div>
+                        <a href="#" class="mt-4 w-full text-center py-2.5 rounded-lg text-[12px] font-bold text-ilumno-royal bg-ilumno-royal/10 hover:bg-ilumno-royal hover:text-white transition-all duration-300 flex items-center justify-center gap-2 shrink-0">
+                            <i class="fa-solid fa-link text-[10px]"></i> Ver cápsulas
+                        </a>
+                    </div>
+
+                    <!-- Tarjeta 2: Juegos y simuladores -->
+                    <div class="flex-1 bg-white border-2 border-ilumno-light rounded-[16px] p-5 flex flex-col relative group action-card card-light shadow-[0_4px_15px_rgba(0,0,0,0.03)]">
+                        <!-- Contenedor centrado dinámico -->
+                        <div class="flex flex-col flex-grow justify-center items-center text-center">
+                            <div class="w-10 h-10 rounded-xl bg-ilumno-light shadow-[0_6px_12px_rgba(63,169,245,0.4)] flex items-center justify-center text-white text-[18px] mb-3 shrink-0 transition-transform group-hover:scale-110">
+                                <i class="fa-solid fa-laptop-code"></i>
+                            </div>
+                            <h3 class="font-poppins text-[15px] font-bold text-ilumno-navy mb-2 leading-tight">Juegos y simuladores</h3>
+                            <p class="text-slate-500 text-[13px] leading-relaxed font-sans tracking-tight m-0">
+                                Entornos seguros. Repositorio de juegos 2D y simuladores donde practican objeciones, consultan <strong>polipuntos</strong> y revisan métricas de meses anteriores.
+                            </p>
+                        </div>
+                        <a href="#" class="mt-4 w-full text-center py-2.5 rounded-lg text-[12px] font-bold text-ilumno-light bg-ilumno-light/10 hover:bg-ilumno-light hover:text-white transition-all duration-300 flex items-center justify-center gap-2 shrink-0">
+                            <i class="fa-solid fa-link text-[10px]"></i> Ver aplicación
+                        </a>
+                    </div>
+
+                    <!-- Tarjeta 3: Inmersión Consultiva -->
+                    <div class="flex-1 bg-white border-2 border-ilumno-teal rounded-[16px] p-5 flex flex-col relative group action-card card-teal shadow-[0_4px_15px_rgba(0,0,0,0.03)]">
+                        <!-- Contenedor centrado dinámico -->
+                        <div class="flex flex-col flex-grow justify-center items-center text-center">
+                            <div class="w-10 h-10 rounded-xl bg-ilumno-teal shadow-[0_6px_12px_rgba(13,148,136,0.35)] flex items-center justify-center text-white text-[18px] mb-3 shrink-0 transition-transform group-hover:scale-110">
+                                <i class="fa-solid fa-handshake-angle"></i>
+                            </div>
+                            <h3 class="font-poppins text-[15px] font-bold text-ilumno-navy mb-2 leading-tight">Inmersión consultiva</h3>
+                            <p class="text-slate-500 text-[13px] leading-relaxed font-sans tracking-tight m-0">
+                                Transición a "no vender, negociar". Integramos <strong>"Speech de Éxito"</strong> como mnemotecnia para darles ejemplos claros de cómo aplicar la empatía y la venta consultiva.
+                            </p>
+                        </div>
+                        <a href="#" class="mt-4 w-full text-center py-2.5 rounded-lg text-[12px] font-bold text-ilumno-teal bg-ilumno-teal/10 hover:bg-ilumno-teal hover:text-white transition-all duration-300 flex items-center justify-center gap-2 shrink-0">
+                            <i class="fa-solid fa-link text-[10px]"></i> Ver módulo
+                        </a>
+                    </div>
+
+                    <!-- Tarjeta 4: Diagnóstico Médico -->
+                    <div class="flex-1 bg-white border-2 border-ilumno-navy rounded-[16px] p-5 flex flex-col relative group action-card card-navy shadow-[0_4px_15px_rgba(0,0,0,0.03)]">
+                        <!-- Contenedor centrado dinámico -->
+                        <div class="flex flex-col flex-grow justify-center items-center text-center">
+                            <div class="w-10 h-10 rounded-xl bg-ilumno-navy shadow-[0_6px_12px_rgba(16,43,78,0.4)] flex items-center justify-center text-white text-[18px] mb-3 shrink-0 transition-transform group-hover:scale-110">
+                                <i class="fa-solid fa-stethoscope"></i>
+                            </div>
+                            <h3 class="font-poppins text-[15px] font-bold text-ilumno-navy mb-2 leading-tight">Diagnóstico médico</h3>
+                            <p class="text-slate-500 text-[13px] leading-relaxed font-sans tracking-tight m-0">
+                                Rompemos la rutina de reincidentes usando <strong>"Fail-Forward"</strong>. Diagnosticamos para potencializar el error, prescribir el tratamiento exacto y sanar la métrica.
+                            </p>
+                        </div>
+                        <a href="#" class="mt-4 w-full text-center py-2.5 rounded-lg text-[12px] font-bold text-ilumno-navy bg-ilumno-navy/10 hover:bg-ilumno-navy hover:text-white transition-all duration-300 flex items-center justify-center gap-2 shrink-0">
+                            <i class="fa-solid fa-link text-[10px]"></i> Ver herramienta
+                        </a>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Firma de la Formadora (Marca de agua flotante) -->
+            <div class="absolute bottom-3 right-10 flex items-center gap-2 opacity-50 hover:opacity-100 transition-opacity duration-300 cursor-default">
+                <i class="fa-solid fa-signature text-ilumno-navy text-[12px]"></i>
+                <p class="font-sans text-[10px] font-bold text-ilumno-navy tracking-widest uppercase m-0">Formadora: Angie Vanessa Cuéllar</p>
+            </div>
+
+        </div>
+    </div>
+
+</body>
+</html>
