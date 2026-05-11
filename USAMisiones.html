@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Misión: El Código de la Tipificación USAM</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .fade-in { animation: fadeIn 0.5s ease-in-out; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .case-card.locked { opacity: 0.5; pointer-events: none; filter: grayscale(100%); }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #1f2937; }
+        ::-webkit-scrollbar-thumb { background: #3b82f6; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #2563eb; }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-100 font-sans antialiased min-h-screen flex flex-col">
+
+    <!-- Header / Navbar -->
+    <header class="bg-gray-800 border-b border-blue-500 shadow-lg sticky top-0 z-50">
+        <div class="max-w-4xl mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <i class="fas fa-headset text-3xl text-blue-400"></i>
+                <div>
+                    <h1 class="text-xl font-bold tracking-tight text-white">Misión: Operación Tipificación (Dual)</h1>
+                    <p class="text-xs text-blue-300">Simulador CRM (HubSpot) + Telefonía (Genesys)</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-4 bg-gray-900 px-4 py-2 rounded-lg border border-gray-700">
+                <div class="text-center">
+                    <p class="text-[10px] text-gray-400 uppercase tracking-widest">Puntos XP</p>
+                    <p id="score-display" class="text-xl font-bold text-yellow-400">0</p>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-4xl mx-auto px-4 py-8 w-full">
+        
+        <!-- Instrucciones Misión -->
+        <div class="bg-blue-900/30 border border-blue-500/50 rounded-xl p-6 mb-8 fade-in relative overflow-hidden">
+            <div class="absolute -right-4 -top-4 opacity-10"><i class="fas fa-network-wired text-9xl text-blue-300"></i></div>
+            <h2 class="text-xl font-bold text-blue-300 mb-2"><i class="fas fa-clipboard-list mr-2"></i> Instrucciones de la Misión</h2>
+            <p class="text-sm text-gray-300 mb-4">Un Experto USAM integral domina sus dos herramientas. Lee el caso del estudiante y elige el <strong class="text-white bg-blue-800 px-1 rounded">COMBO EXACTO</strong> de tipificación: La ruta para solucionar el ticket en <strong>HubSpot/SOPSER</strong> y la disposición correcta de la llamada en <strong>Genesys</strong> para nuestros KPIs.</p>
+        </div>
+
+        <!-- Contenedor de Casos -->
+        <div id="cases-container" class="space-y-6">
+            <!-- Los casos se renderizarán aquí vía JS -->
+        </div>
+
+        <!-- Pantalla Final -->
+        <div id="success-screen" class="hidden text-center py-12 fade-in">
+            <i class="fas fa-trophy text-6xl text-yellow-400 mb-4"></i>
+            <h2 class="text-3xl font-bold text-white mb-2">¡Maestro de la Omnicanalidad!</h2>
+            <p class="text-gray-400 mb-6">Has demostrado un dominio excepcional de HubSpot y Genesys en los 9 expedientes más críticos de USAM.</p>
+            <div class="inline-block bg-gray-800 p-6 rounded-xl border border-yellow-500 mb-6">
+                <p class="text-sm text-gray-400 uppercase tracking-widest mb-1">Puntaje Final</p>
+                <p id="final-score" class="text-5xl font-bold text-yellow-400">0</p>
+            </div>
+            <br>
+            <button onclick="location.reload()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-8 rounded-full transition-colors">
+                Jugar de Nuevo
+            </button>
+        </div>
+
+    </main>
+
+    <script>
+        // Base de datos de la misión con COMBOS CRM + GENESYS
+        const cases = [
+            {
+                id: 1,
+                title: "Expediente 01: El Escape Financiero",
+                audioText: "¡Hola! Estoy muy frustrado. Entré a ver mis notas y no me salen. Y tras de eso, el otro cuatri está carísimo. Mejor quiero darme de baja de la carrera, ya no quiero seguir.",
+                analysisPrompt: "Atención: Si tipificas 'Baja' en Genesys, dañas el KPI de retención. ¿Cuál es el combo de rescate?",
+                options: [
+                    { crm: "Trámite Logístico > Baja de Carrera", genesys: "Deserción > Financiera", isCorrect: false },
+                    { crm: "Evaluaciones > Queja por Notas", genesys: "Quejas > Académicas", isCorrect: false },
+                    { crm: "Financiero > Retención y Congelamiento", genesys: "Retención > Salvamento Financiero", isCorrect: true },
+                    { crm: "Financiero > Pago no registra", genesys: "Pagos > Inconvenientes", isCorrect: false }
+                ],
+                feedbackCorrect: "¡Combo Perfecto! En el CRM dejas registro de la negociación financiera, y en Genesys sumas un punto valioso a nuestro KPI de 'Salvamento Financiero'.",
+                feedbackIncorrect: "Error táctico. Tipificaste el síntoma superficial o aceptaste la 'Baja' sin pelear. Perdimos al estudiante en CRM y arruinamos la métrica en Genesys."
+            },
+            {
+                id: 2,
+                title: "Expediente 02: El Oficinista Apurado (Certificados)",
+                audioText: "Hola, necesito urgente una constancia de notas para un ascenso en mi trabajo. Me están pidiendo probar que ya pasé los tres cuatrimestres pasados con mis promedios de cada materia. ¿Me la mandan hoy?",
+                analysisPrompt: "Pide una 'constancia' pero necesita ver calificaciones. ¿Qué eliges?",
+                options: [
+                    { crm: "Trámites Documentales > Constancia de Alumno Regular", genesys: "Solicitudes > Constancias", isCorrect: false },
+                    { crm: "Evaluaciones > Entrega de Notas", genesys: "Académico > Consulta de Notas", isCorrect: false },
+                    { crm: "Trámites Documentales > Solicitud Certificado de Notas", genesys: "Solicitudes > Certificados Oficiales", isCorrect: true },
+                    { crm: "Trámites Logísticos > Reposición de Título", genesys: "Grados > Títulos", isCorrect: false }
+                ],
+                feedbackCorrect: "¡Precisión impecable! Si le envías una constancia (sin notas) afectas el SLA. Al tipificar 'Certificados Oficiales' activas la ruta de cobro y emisión correcta en ambos sistemas.",
+                feedbackIncorrect: "Fallo. Una constancia no lleva notas. Y derivarlo a la entrega de notas regular del cuatrimestre no le sirve para su trabajo. El combo correcto es Certificado."
+            },
+            {
+                id: 3,
+                title: "Expediente 03: Crisis de Pantalla (Canvas)",
+                audioText: "Llevo tres días intentando entrar a mis clases y la plataforma Canvas me dice 'usuario inválido'. Ya borré cookies y nada. Si esto sigue así no voy a pagar el cuatrimestre porque no me dan servicio.",
+                analysisPrompt: "Hay amenaza de no pago, pero el origen es técnico. ¿Cómo lo escalas?",
+                options: [
+                    { crm: "Financiero > Retención y Bajas", genesys: "Retención > Administrativa", isCorrect: false },
+                    { crm: "Soporte Técnico > Inconvenientes de Acceso Canvas", genesys: "Soporte Técnico > Derivación Plataformas", isCorrect: true },
+                    { crm: "Evaluaciones > Reposición de Exámenes", genesys: "Académico > Exámenes", isCorrect: false },
+                    { crm: "Trámites Logísticos > Cambio de Modalidad", genesys: "Cambios > Operativos", isCorrect: false }
+                ],
+                feedbackCorrect: "¡Muy bien! El dolor real es el bloqueo técnico. Genesys nos ayudará a medir cuántas llamadas están entrando por fallas de Canvas, alertando a TI más rápido.",
+                feedbackIncorrect: "Cuidado. Aunque amenace con no pagar, si tipificas retención o financiero, el ticket jamás llegará a TI y el estudiante seguirá sin poder entrar a Canvas."
+            },
+            {
+                id: 4,
+                title: "Expediente 04: El Muro de Matrícula (Requisitos)",
+                audioText: "¡Auxilio! Fui a matricular 'Finanzas II' y el sistema me bloquea. Dice que me falta el prerrequisito 'Finanzas I', pero yo esa materia la pasé por examen de suficiencia el cuatri pasado. ¡Arréglame esto!",
+                analysisPrompt: "Tiene un 'candado' en el sistema por un requisito ya cumplido. ¿Cuál es la ruta?",
+                options: [
+                    { crm: "Ingreso > Matrícula Extraordinaria", genesys: "Matrícula > Fuera de Fecha", isCorrect: false },
+                    { crm: "Evaluaciones > Examen de Suficiencia", genesys: "Académico > Examen Suficiencia", isCorrect: false },
+                    { crm: "Convalidaciones > Homologación Interna", genesys: "Ingreso > Homologación", isCorrect: false },
+                    { crm: "Trámites Académicos > Levantamiento de Requisitos", genesys: "Académico > Desbloqueo Matrícula", isCorrect: true }
+                ],
+                feedbackCorrect: "¡Misión superada! El levantamiento en CRM le avisa a la Dirección Académica que quite el candado manual. Y en Genesys, medimos los incidentes de bloqueo en matrícula.",
+                feedbackIncorrect: "Ruta incorrecta. Él ya hizo la suficiencia, no necesita hacerla de nuevo. Necesita que le levanten (quiten) el candado para poder matricularse hoy."
+            },
+            {
+                id: 5,
+                title: "Expediente 05: El Desertor Solitario (Modalidad)",
+                audioText: "La verdad me está costando mucho la educación 100% virtual. Siento que no aprendo igual, no hablo con nadie y me desmotivo. Quiero cancelar el cuatrimestre, prefiero ir a una sede física.",
+                analysisPrompt: "Venta consultiva activa: Pide baja por aislamiento. ¿Qué combo usas para salvarlo?",
+                options: [
+                    { crm: "Trámites Logísticos > Baja de Carrera", genesys: "Deserción > Baja Definitiva", isCorrect: false },
+                    { crm: "Financiero > Devoluciones", genesys: "Pagos > Reintegro", isCorrect: false },
+                    { crm: "Trámites Logísticos > Cambio de Modalidad", genesys: "Retención > Salvamento Académico", isCorrect: true },
+                    { crm: "Académico > Retiro de Materias", genesys: "Académico > Modificación Carga", isCorrect: false }
+                ],
+                feedbackCorrect: "¡Brillante! Al tipificar 'Cambio de Modalidad' en CRM, activas su paso a Presencial en USAM. En Genesys, marcas un exitoso 'Salvamento Académico' (Retención).",
+                feedbackIncorrect: "Trampa mortal. Si tipificas la baja en Genesys, perdimos la matrícula y la U pierde ingresos. Debiste ofrecerle el traslado a nuestras sedes presenciales (CSU)."
+            },
+            {
+                id: 6,
+                title: "Expediente 06: El Forastero",
+                audioText: "Buenas tardes. Mira, yo estudié 4 semestres de Administración en la U Latina, pero me voy a pasar con ustedes a San Marcos. ¿Cómo hago el trámite para que me valgan esas materias?",
+                analysisPrompt: "Atención al vocabulario. Viene de AFUERA. ¿Cómo lo tipificas?",
+                options: [
+                    { crm: "Convalidaciones > Solicitud Convalidación Externa", genesys: "Ingreso > Información Convalidación", isCorrect: true },
+                    { crm: "Trámites Logísticos > Homologación Interna", genesys: "Trámites > Homologación Interna", isCorrect: false },
+                    { crm: "Ingreso > Matrícula Extraordinaria", genesys: "Matrícula > Nuevos", isCorrect: false },
+                    { crm: "Grados > Reconocimiento de TCU", genesys: "Grados > TCU", isCorrect: false }
+                ],
+                feedbackCorrect: "¡Regla de oro dominada! Convalidación (externa) vs Homologación (interna). El combo es correcto para gestionar el arancel y la revisión de sus notas de origen.",
+                feedbackIncorrect: "Error de concepto. La Homologación es solo para estudiantes de USAM que se cambian de carrera internamente. Él viene de la U Latina, es una Convalidación."
+            },
+            {
+                id: 7,
+                title: "Expediente 07: El Tropiezo Internacional",
+                audioText: "Perdí el segundo módulo de mi Certificado Internacional. Quiero saber si me pueden hacer un examen extraordinario para pasarlo rápido esta misma semana y seguir con el tercero sin atrasarme.",
+                analysisPrompt: "Los programas internacionales tienen reglas inquebrantables. ¿Qué combo aplica?",
+                options: [
+                    { crm: "Evaluaciones > Examen Extraordinario", genesys: "Académico > Examen Extraordinario", isCorrect: false },
+                    { crm: "Académico > Pérdida Certificado Internacional", genesys: "Académico > Reprobación Módulos", isCorrect: true },
+                    { crm: "Trámites Logísticos > Cambio de Programa", genesys: "Trámites > Cambio Especialidad", isCorrect: false },
+                    { crm: "Financiero > Plan Anual", genesys: "Pagos > Plan Anual", isCorrect: false }
+                ],
+                feedbackCorrect: "¡Exacto! Sabes que USAM NO permite extraordinarios en Certificados Internacionales. El alumno debe pagar de nuevo el módulo reprobado y esperar nueva oferta.",
+                feedbackIncorrect: "Falso. Si tipificas Examen Extraordinario, le estás creando una falsa expectativa. Los Certificados Internacionales exigen recursar y pagar el módulo perdido."
+            },
+            {
+                id: 8,
+                title: "Expediente 08: El Ansioso del Diploma",
+                audioText: "Ya pasé todas mis materias de Licenciatura. Me ofrecen un trabajo y necesito mi título ya. Y te aclaro, no tengo tiempo de hacer ninguna tesis ni proyectos de investigación.",
+                analysisPrompt: "Quiere graduarse sin tesis. ¿Qué ruta le ofreces para solucionar su dolor?",
+                options: [
+                    { crm: "Trámites Documentales > Constancia de Alumno", genesys: "Solicitudes > Constancia Regular", isCorrect: false },
+                    { crm: "Requisitos Grado > Opciones de Grado", genesys: "Grados > Info. Opciones de Grado", isCorrect: true },
+                    { crm: "Evaluaciones > Examen de Suficiencia", genesys: "Académico > Suficiencia", isCorrect: false },
+                    { crm: "Trámites Documentales > Reposición de Título", genesys: "Solicitudes > Duplicado Título", isCorrect: false }
+                ],
+                feedbackCorrect: "¡Excelente! Tipificando en 'Opciones de Grado', le explicas que puede elegir las 'Pruebas de Grado' en lugar del Proyecto, y le ofreces un certificado provisional para su trabajo.",
+                feedbackIncorrect: "No analizó el contexto. El alumno ya no es 'Alumno Regular', ya terminó materias. Y el examen de suficiencia es para materias sueltas, no para graduarse. Debe definir su Opción de Grado."
+            },
+            {
+                id: 9,
+                title: "Expediente 09: El Fantasma del Banco",
+                audioText: "Hice mi pago del cuatri por el banco ayer por la tarde, tengo el recibo, pero entro a mi portal y sigo bloqueado. ¡Voy a perder mis materias, exijo que me devuelvan mi plata si no arreglan esto!",
+                analysisPrompt: "Amenaza con devolución, pero el caso es claramente operativo. ¿Qué tipificas?",
+                options: [
+                    { crm: "Evaluaciones > Examen Extraordinario", genesys: "Académico > Pago Examen", isCorrect: false },
+                    { crm: "Financiero > Devoluciones", genesys: "Finanzas > Devolución de Saldos", isCorrect: false },
+                    { crm: "Financiero > Pago No Registra", genesys: "Pagos > Escalado a Cartera", isCorrect: true },
+                    { crm: "Financiero > Proformas y CONAPE", genesys: "Finanzas > Emisión Proformas", isCorrect: false }
+                ],
+                feedbackCorrect: "¡Misión completada! Al tipificar 'Pago No Registra', puedes pedir el soporte para escalar rápidamente a Cartera. Genesys nos registra la incidencia de pagos con el banco.",
+                feedbackIncorrect: "Si tipificas 'Devolución', estás iniciando un proceso burocrático para devolverle el dinero, lo cual toma semanas y lo hará perder las materias. El pago simplemente no ha cruzado con el sistema."
+            }
+        ];
+
+        let currentCaseIndex = 0;
+        let score = 0;
+
+        function renderCases() {
+            const container = document.getElementById('cases-container');
+            container.innerHTML = '';
+
+            cases.forEach((caseData, index) => {
+                const isLocked = index > currentCaseIndex;
+                const isCompleted = index < currentCaseIndex;
+
+                let cardHTML = `
+                    <div id="case-${index}" class="case-card bg-gray-800 rounded-xl shadow-lg border ${isCompleted ? 'border-green-500' : 'border-gray-700'} p-6 transition-all duration-300 ${isLocked ? 'locked' : 'fade-in'}">
+                        
+                        <div class="flex justify-between items-center mb-4 border-b border-gray-700 pb-3">
+                            <h3 class="text-lg font-bold ${isCompleted ? 'text-green-400' : 'text-blue-400'}">
+                                ${isCompleted ? '<i class="fas fa-check-circle mr-2"></i>' : (isLocked ? '<i class="fas fa-lock mr-2 text-gray-500"></i>' : '<i class="fas fa-unlock-alt mr-2"></i>')}
+                                ${caseData.title}
+                            </h3>
+                            ${!isLocked && !isCompleted ? '<span class="bg-blue-900 text-blue-200 text-xs px-2 py-1 rounded animate-pulse">EN CURSO</span>' : ''}
+                        </div>
+
+                        ${!isLocked ? `
+                            <div class="bg-gray-900 p-4 rounded-lg mb-4 border-l-4 border-yellow-500 relative">
+                                <i class="fas fa-quote-left text-gray-700 absolute top-2 right-4 text-3xl"></i>
+                                <p class="text-gray-300 italic">"${caseData.audioText}"</p>
+                            </div>
+                            
+                            ${!isCompleted ? `
+                                <p class="text-sm font-semibold text-gray-400 mb-4"><i class="fas fa-search text-gray-500 mr-2"></i> ${caseData.analysisPrompt}</p>
+                                <div class="grid grid-cols-1 gap-3" id="options-${index}">
+                                    ${caseData.options.map((opt, i) => `
+                                        <button onclick="checkAnswer(${index}, ${i}, ${opt.isCorrect})" class="w-full text-left px-5 py-3 rounded-lg bg-gray-700 hover:bg-gray-600 border border-gray-600 hover:border-blue-400 transition-colors focus:outline-none flex flex-col md:flex-row md:items-center gap-2">
+                                            <div class="flex-1">
+                                                <span class="block text-blue-300 font-semibold text-xs tracking-wide"><i class="fas fa-desktop mr-1"></i> CRM (HubSpot):</span>
+                                                <span class="block text-gray-200 text-sm mt-1">${opt.crm}</span>
+                                            </div>
+                                            <div class="hidden md:block text-gray-500"><i class="fas fa-plus"></i></div>
+                                            <div class="flex-1 mt-2 md:mt-0 border-t border-gray-600 pt-2 md:border-0 md:pt-0">
+                                                <span class="block text-green-400 font-semibold text-xs tracking-wide"><i class="fas fa-headset mr-1"></i> Teléfono (Genesys):</span>
+                                                <span class="block text-gray-200 text-sm mt-1">${opt.genesys}</span>
+                                            </div>
+                                        </button>
+                                    `).join('')}
+                                </div>
+                                <div id="feedback-${index}" class="mt-4 hidden p-4 rounded-lg text-sm"></div>
+                            ` : `
+                                <div class="bg-green-900/30 border border-green-500/50 p-4 rounded-lg text-sm text-green-300 flex items-center">
+                                    <i class="fas fa-check-double text-2xl mr-3"></i> 
+                                    <div>
+                                        <p class="font-bold">Combo Registrado Exitosamente</p>
+                                        <p class="text-xs opacity-80 mt-1">Sistemas HubSpot y Genesys actualizados.</p>
+                                    </div>
+                                </div>
+                            `}
+                        ` : `
+                            <div class="text-center py-6 text-gray-500">
+                                <i class="fas fa-user-secret text-4xl mb-2 opacity-50"></i>
+                                <p class="text-sm">Supera el expediente anterior para desencriptar este audio.</p>
+                            </div>
+                        `}
+                    </div>
+                `;
+                container.innerHTML += cardHTML;
+            });
+        }
+
+        function checkAnswer(caseIndex, optionIndex, isCorrect) {
+            const feedbackDiv = document.getElementById(`feedback-${caseIndex}`);
+            const optionsContainer = document.getElementById(`options-${caseIndex}`);
+            const currentCase = cases[caseIndex];
+
+            // Deshabilitar botones
+            const buttons = optionsContainer.querySelectorAll('button');
+            buttons.forEach(btn => {
+                btn.disabled = true;
+                btn.classList.replace('hover:bg-gray-600', 'opacity-50');
+                btn.classList.replace('hover:border-blue-400', 'cursor-not-allowed');
+            });
+
+            // Resaltar selección
+            const selectedBtn = buttons[optionIndex];
+            selectedBtn.classList.remove('bg-gray-700', 'border-gray-600');
+            
+            if (isCorrect) {
+                selectedBtn.classList.add('bg-green-800/80', 'border-green-500');
+                feedbackDiv.innerHTML = `<p class="font-bold mb-1 text-green-300"><i class="fas fa-check-circle mr-2"></i> ¡Tipificación Dual Exacta!</p><p class="text-green-100">${currentCase.feedbackCorrect}</p>`;
+                feedbackDiv.classList.add('bg-green-900/40', 'border', 'border-green-500/50');
+                
+                score += 100;
+                document.getElementById('score-display').innerText = score;
+
+                // Avanzar al siguiente caso
+                setTimeout(() => {
+                    currentCaseIndex++;
+                    if (currentCaseIndex < cases.length) {
+                        renderCases();
+                        document.getElementById(`case-${currentCaseIndex}`).scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    } else {
+                        renderCases();
+                        document.getElementById('final-score').innerText = score;
+                        document.getElementById('success-screen').classList.remove('hidden');
+                        document.getElementById('success-screen').scrollIntoView({ behavior: 'smooth' });
+                    }
+                }, 3000);
+
+            } else {
+                selectedBtn.classList.add('bg-red-900/80', 'border-red-500');
+                feedbackDiv.innerHTML = `<p class="font-bold mb-1 text-red-300"><i class="fas fa-times-circle mr-2"></i> Error en el Combo</p><p class="text-red-100">${currentCase.feedbackIncorrect}</p><button onclick="retryCase(${caseIndex})" class="mt-4 bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded text-xs text-white border border-gray-500 transition-colors shadow"><i class="fas fa-redo mr-1"></i> Re-evaluar Expediente</button>`;
+                feedbackDiv.classList.add('bg-red-900/40', 'border', 'border-red-500/50');
+                
+                score = Math.max(0, score - 20); // Penalización
+                document.getElementById('score-display').innerText = score;
+            }
+            
+            feedbackDiv.classList.remove('hidden');
+            feedbackDiv.classList.add('fade-in');
+        }
+
+        function retryCase(caseIndex) {
+            renderCases();
+        }
+
+        // Inicializar
+        renderCases();
+
+    </script>
+</body>
+</html>
