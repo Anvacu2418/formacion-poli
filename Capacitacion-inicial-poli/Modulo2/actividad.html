@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Roleplay 360 - Poli</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        poli: {
+                            blue: '#0033A0',
+                            yellow: '#FFC000',
+                            green: '#00A859',
+                            dark: '#1E293B',
+                            light: '#F8FAFC'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background-color: #F8FAFC; }
+        .tab-active { border-bottom: 4px solid #0033A0; color: #0033A0; font-weight: bold; }
+        .glass-card { background: rgba(255, 255, 255, 0.95); box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07); border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.18); }
+    </style>
+</head>
+<body class="text-slate-800 h-screen flex flex-col">
+
+    <!-- Navbar -->
+    <header class="bg-poli-blue text-white shadow-md p-4">
+        <div class="max-w-6xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <i class="fas fa-headset text-2xl text-poli-yellow"></i>
+                <h1 class="text-xl font-bold">Simulador de Roleplay 360 | Politécnico Grancolombiano</h1>
+            </div>
+            <div class="text-sm bg-white/20 px-3 py-1 rounded-full">
+                <i class="fas fa-users mr-1"></i> Formación Inicial Rematrícula y Servicio
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow overflow-auto p-4 md:p-6">
+        <div class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <!-- Left Column: Instructions & Timer -->
+            <div class="lg:col-span-1 space-y-6">
+                
+                <!-- Instrucciones -->
+                <div class="glass-card p-6 border-t-4 border-poli-yellow">
+                    <h2 class="text-lg font-bold text-poli-dark mb-3"><i class="fas fa-info-circle text-poli-blue mr-2"></i>Misión de la Triada</h2>
+                    <ul class="space-y-3 text-sm text-slate-600">
+                        <li class="flex gap-2"><span class="font-bold text-poli-blue">1.</span> Organícense en grupos de 3.</li>
+                        <li class="flex gap-2"><span class="font-bold text-poli-blue">2.</span> Seleccionen un caso de la derecha.</li>
+                        <li class="flex gap-2"><span class="font-bold text-poli-blue">3.</span> Asignen roles: <b>Asesor</b> (gestiona), <b>Estudiante</b> (actúa el caso), <b>Analista</b> (evalúa).</li>
+                        <li class="flex gap-2"><span class="font-bold text-poli-blue">4.</span> Tienen 8 minutos por caso. Roten los roles al finalizar.</li>
+                    </ul>
+                </div>
+
+                <!-- Timer -->
+                <div class="glass-card p-6 text-center">
+                    <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-2">Cronómetro de Llamada</h3>
+                    <div id="timerDisplay" class="text-5xl font-bold text-poli-blue mb-4 font-mono">08:00</div>
+                    <div class="flex justify-center gap-3">
+                        <button onclick="startTimer()" class="bg-poli-green hover:bg-green-700 text-white px-4 py-2 rounded-lg transition shadow-sm"><i class="fas fa-play"></i> Iniciar</button>
+                        <button onclick="resetTimer()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-4 py-2 rounded-lg transition shadow-sm"><i class="fas fa-redo"></i></button>
+                    </div>
+                </div>
+
+                <!-- Evaluator Form -->
+                <div class="glass-card p-6">
+                    <h2 class="text-lg font-bold text-poli-dark mb-4"><i class="fas fa-clipboard-check text-poli-blue mr-2"></i>Rúbrica del Analista</h2>
+                    <p class="text-xs text-slate-500 mb-4">El analista debe marcar las acciones que el Asesor cumplió exitosamente.</p>
+                    
+                    <form id="evaluationForm" class="space-y-3 text-sm">
+                        <label class="flex items-start gap-2 cursor-pointer hover:bg-slate-50 p-1 rounded">
+                            <input type="checkbox" class="mt-1 accent-poli-blue" value="Saludo y Validación de datos">
+                            <span><b>Protocolo:</b> Saluda adecuadamente, valida datos y pasa política de seguridad.</span>
+                        </label>
+                        <label class="flex items-start gap-2 cursor-pointer hover:bg-slate-50 p-1 rounded">
+                            <input type="checkbox" class="mt-1 accent-poli-blue" value="Indagación y Empatía">
+                            <span><b>Conexión:</b> Genera empatía (aplica ARVI), perfila e indaga la necesidad real.</span>
+                        </label>
+                        <label class="flex items-start gap-2 cursor-pointer hover:bg-slate-50 p-1 rounded">
+                            <input type="checkbox" class="mt-1 accent-poli-blue" value="Manejo de Objeciones">
+                            <span><b>Resolución:</b> Maneja objeciones de forma oportuna usando factores diferenciales del Poli.</span>
+                        </label>
+                        <label class="flex items-start gap-2 cursor-pointer hover:bg-slate-50 p-1 rounded">
+                            <input type="checkbox" class="mt-1 accent-poli-blue" value="Información Correcta">
+                            <span><b>Precisión:</b> Brinda información correcta, clara y completa (rutas, fechas, links).</span>
+                        </label>
+                        <label class="flex items-start gap-2 cursor-pointer hover:bg-slate-50 p-1 rounded">
+                            <input type="checkbox" class="mt-1 accent-poli-blue" value="Cierre y Tipificación">
+                            <span><b>Cierre:</b> Realiza cierre total, indica cómo tipificaría en Genesys/CRM y transfiere a encuesta.</span>
+                        </label>
+                    </form>
+
+                    <button onclick="generateReport()" class="w-full mt-5 bg-poli-blue hover:bg-blue-800 text-white py-2 rounded-lg font-semibold transition shadow-md">
+                        <i class="fas fa-file-export mr-2"></i>Generar Informe
+                    </button>
+                </div>
+            </div>
+
+            <!-- Right Column: Cases -->
+            <div class="lg:col-span-2 glass-card p-2 md:p-6 flex flex-col">
+                
+                <!-- Tabs -->
+                <div class="flex border-b border-slate-200 mb-6 overflow-x-auto">
+                    <button onclick="showCase(1)" id="tab1" class="tab-active flex-1 py-3 px-4 text-center font-medium transition whitespace-nowrap">
+                        <i class="fas fa-file-invoice-dollar mr-2"></i>Caso 1: La Orden
+                    </button>
+                    <button onclick="showCase(2)" id="tab2" class="text-slate-500 hover:text-poli-blue flex-1 py-3 px-4 text-center font-medium transition whitespace-nowrap">
+                        <i class="fas fa-hand-holding-usd mr-2"></i>Caso 2: Sin Dinero
+                    </button>
+                    <button onclick="showCase(3)" id="tab3" class="text-slate-500 hover:text-poli-blue flex-1 py-3 px-4 text-center font-medium transition whitespace-nowrap">
+                        <i class="fas fa-building mr-2"></i>Caso 3: Convenio
+                    </button>
+                </div>
+
+                <!-- Case Content Area -->
+                <div id="case1" class="case-content animate-fade-in flex-grow">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="bg-blue-100 text-poli-blue px-3 py-1 rounded-full text-xs font-bold uppercase">Trámite Financiero</span>
+                        <h2 class="text-2xl font-bold text-poli-dark">"Necesito mi orden de pago urgente"</h2>
+                    </div>
+                    
+                    <div class="grid md:grid-cols-2 gap-6 mt-6">
+                        <div class="bg-slate-50 p-5 rounded-xl border border-slate-200">
+                            <h3 class="font-bold text-poli-dark flex items-center gap-2 mb-3"><i class="fas fa-user-graduate text-slate-400"></i> Rol: Estudiante</h3>
+                            <p class="text-sm text-slate-600 italic">"Hola, estoy intentando descargar mi orden de pago para matricularme en este bloque, pero el portal no me deja o no encuentro por dónde. Necesito pagarla hoy mismo antes de que se venza. Ayúdeme por favor."</p>
+                            <div class="mt-4 text-xs bg-white p-3 rounded border border-slate-100">
+                                <b>Tu actitud:</b> Ansiosa, un poco frustrada por la plataforma.
+                            </div>
+                        </div>
+                        
+                        <div class="bg-blue-50 p-5 rounded-xl border border-blue-100">
+                            <h3 class="font-bold text-poli-blue flex items-center gap-2 mb-3"><i class="fas fa-headset"></i> Rol: Asesor</h3>
+                            <ul class="text-sm text-slate-700 space-y-2 list-disc pl-4">
+                                <li>Genera calma y empatía.</li>
+                                <li>Explica la ruta correcta para descargar la orden de pago (SmartCampus / Portal).</li>
+                                <li>Menciona el enlace oficial de apoyo: <a href="https://www.poli.edu.co/matriculas" target="_blank" class="text-poli-blue underline">Guía de Matrículas</a>.</li>
+                                <li>Asegúrate de recordar las fechas de vencimiento ordinarias.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Case 2 -->
+                <div id="case2" class="case-content hidden animate-fade-in flex-grow">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-xs font-bold uppercase">Retención / Objeción Financiera</span>
+                        <h2 class="text-2xl font-bold text-poli-dark">"No me alcanza el dinero para este semestre"</h2>
+                    </div>
+                    
+                    <div class="grid md:grid-cols-2 gap-6 mt-6">
+                        <div class="bg-slate-50 p-5 rounded-xl border border-slate-200">
+                            <h3 class="font-bold text-poli-dark flex items-center gap-2 mb-3"><i class="fas fa-user-graduate text-slate-400"></i> Rol: Estudiante</h3>
+                            <p class="text-sm text-slate-600 italic">"Señorita/o, llamo para preguntar cómo hago para aplazar el semestre. La verdad me quedé sin empleo y no tengo los 3 millones para pagar el semestre completo de Administración Virtual. Prefiero volver el otro año."</p>
+                            <div class="mt-4 text-xs bg-white p-3 rounded border border-slate-100">
+                                <b>Tu actitud:</b> Triste, resignada, pero dispuesta a escuchar si hay opciones reales.
+                            </div>
+                        </div>
+                        
+                        <div class="bg-yellow-50 p-5 rounded-xl border border-yellow-100">
+                            <h3 class="font-bold text-yellow-800 flex items-center gap-2 mb-3"><i class="fas fa-headset"></i> Rol: Asesor</h3>
+                            <ul class="text-sm text-slate-700 space-y-2 list-disc pl-4">
+                                <li>Aplica venta consultiva: No ofrezcas el aplazamiento de inmediato.</li>
+                                <li>Sondea la situación. Usa el "As bajo la manga" (opciones de pago fraccionado para virtuales, CrediPoli, ICETEX).</li>
+                                <li>Apóyate en: <a href="https://www.poli.edu.co/financiacion-y-pagos" target="_blank" class="text-poli-blue underline">Opciones de Financiación</a>.</li>
+                                <li>Logra un pre-cierre comercial mostrando que SÍ es posible continuar.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Case 3 -->
+                <div id="case3" class="case-content hidden animate-fade-in flex-grow">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-bold uppercase">Convenio Empresarial / Descuentos</span>
+                        <h2 class="text-2xl font-bold text-poli-dark">"Soy empleado de Avianca, ¿tengo descuento?"</h2>
+                    </div>
+                    
+                    <div class="grid md:grid-cols-2 gap-6 mt-6">
+                        <div class="bg-slate-50 p-5 rounded-xl border border-slate-200">
+                            <h3 class="font-bold text-poli-dark flex items-center gap-2 mb-3"><i class="fas fa-user-graduate text-slate-400"></i> Rol: Estudiante</h3>
+                            <p class="text-sm text-slate-600 italic">"Hola, voy a generar mi orden de pago para este semestre, pero un compañero de trabajo me dijo que por ser empleados de Avianca tenemos un descuento especial con el Poli. Quisiera saber si eso es verdad y qué tengo que hacer para que me lo apliquen antes de pagar."</p>
+                            <div class="mt-4 text-xs bg-white p-3 rounded border border-slate-100">
+                                <b>Tu actitud:</b> Expectante, amigable pero muy interesado en obtener el beneficio para pagar.
+                            </div>
+                        </div>
+                        
+                        <div class="bg-green-50 p-5 rounded-xl border border-green-100">
+                            <h3 class="font-bold text-green-800 flex items-center gap-2 mb-3"><i class="fas fa-headset"></i> Rol: Asesor</h3>
+                            <ul class="text-sm text-slate-700 space-y-2 list-disc pl-4">
+                                <li>Aplica empatía (ARVI) y valida la alianza corporativa (Ej: Avianca).</li>
+                                <li>Explica el proceso exacto: presentar certificado laboral vigente / radicar caso en plataforma.</li>
+                                <li>Menciona el enlace oficial de consulta: <a href="https://www.poli.edu.co/becas" target="_blank" class="text-poli-blue underline">Becas y Convenios</a>.</li>
+                                <li>Indica los tiempos de respuesta y advierte sobre no pagar hasta que la orden se actualice con el descuento.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal for Report -->
+    <div id="reportModal" class="fixed inset-0 bg-black/50 hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden">
+            <div class="bg-poli-blue text-white p-4 flex justify-between items-center">
+                <h3 class="font-bold">Informe del Analista</h3>
+                <button onclick="closeReport()" class="hover:text-poli-yellow"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="p-6">
+                <p class="text-sm text-slate-600 mb-2">Copia este texto y envíalo a tu formadora (Angie) por el chat de la sesión:</p>
+                <textarea id="reportOutput" class="w-full h-40 p-3 border border-slate-300 rounded-lg text-sm font-mono focus:outline-none focus:border-poli-blue" readonly></textarea>
+                <button onclick="copyReport()" class="w-full mt-4 bg-poli-yellow hover:bg-yellow-500 text-poli-dark font-bold py-2 rounded-lg transition">
+                    <i class="fas fa-copy mr-2"></i>Copiar al Portapapeles
+                </button>
+                <p id="copySuccess" class="text-green-600 text-xs text-center mt-2 hidden">¡Copiado con éxito!</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab Logic
+        function showCase(caseNumber) {
+            // Hide all
+            document.querySelectorAll('.case-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('button[id^="tab"]').forEach(el => {
+                el.classList.remove('tab-active', 'border-poli-blue', 'text-poli-blue', 'font-bold');
+                el.classList.add('text-slate-500');
+            });
+            
+            // Show selected
+            document.getElementById('case' + caseNumber).classList.remove('hidden');
+            let activeTab = document.getElementById('tab' + caseNumber);
+            activeTab.classList.remove('text-slate-500');
+            activeTab.classList.add('tab-active');
+        }
+
+        // Timer Logic
+        let timerInterval;
+        let timeLeft = 480; // 8 minutes in seconds
+
+        function updateDisplay() {
+            let minutes = Math.floor(timeLeft / 60);
+            let seconds = timeLeft % 60;
+            document.getElementById('timerDisplay').innerText = 
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            
+            if(timeLeft <= 60) {
+                document.getElementById('timerDisplay').classList.add('text-red-500');
+                document.getElementById('timerDisplay').classList.remove('text-poli-blue');
+            } else {
+                document.getElementById('timerDisplay').classList.remove('text-red-500');
+                document.getElementById('timerDisplay').classList.add('text-poli-blue');
+            }
+        }
+
+        function startTimer() {
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                if (timeLeft > 0) {
+                    timeLeft--;
+                    updateDisplay();
+                } else {
+                    clearInterval(timerInterval);
+                    alert("¡Tiempo finalizado! Es hora de evaluar y rotar roles.");
+                }
+            }, 1000);
+        }
+
+        function resetTimer() {
+            clearInterval(timerInterval);
+            timeLeft = 480;
+            updateDisplay();
+        }
+
+        // Report Logic
+        function generateReport() {
+            let checkedItems = [];
+            let totalItems = document.querySelectorAll('#evaluationForm input[type="checkbox"]').length;
+            
+            document.querySelectorAll('#evaluationForm input[type="checkbox"]:checked').forEach(el => {
+                checkedItems.push(el.value);
+            });
+
+            let score = (checkedItems.length / totalItems) * 100;
+            let activeCaseText = document.querySelector('.tab-active').innerText.trim();
+
+            let report = `=== REPORTE DE ROLEPLAY ===\n`;
+            report += `Caso Practicado: ${activeCaseText}\n`;
+            report += `Puntaje de Calidad: ${score}%\n\n`;
+            report += `Criterios Cumplidos:\n`;
+            
+            if(checkedItems.length === 0) {
+                report += `- Ninguno registrado.\n`;
+            } else {
+                checkedItems.forEach(item => {
+                    report += `✅ ${item}\n`;
+                });
+            }
+            
+            report += `\nCriterios por Mejorar:\n`;
+            document.querySelectorAll('#evaluationForm input[type="checkbox"]:not(:checked)').forEach(el => {
+                report += `❌ ${el.value}\n`;
+            });
+
+            report += `\nNota: Evalucación realizada mediante simulador de triadas.`;
+
+            document.getElementById('reportOutput').value = report;
+            document.getElementById('reportModal').classList.remove('hidden');
+        }
+
+        function closeReport() {
+            document.getElementById('reportModal').classList.add('hidden');
+            document.getElementById('copySuccess').classList.add('hidden');
+        }
+
+        function copyReport() {
+            let copyText = document.getElementById("reportOutput");
+            copyText.select();
+            copyText.setSelectionRange(0, 99999); // For mobile devices
+            navigator.clipboard.writeText(copyText.value).then(() => {
+                document.getElementById('copySuccess').classList.remove('hidden');
+                setTimeout(() => {
+                    document.getElementById('copySuccess').classList.add('hidden');
+                }, 3000);
+            });
+        }
+    </script>
+</body>
+</html>
