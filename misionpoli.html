@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Misiones: Arquitecto Académico Poli</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .reveal-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-out, padding 0.5s ease;
+        }
+        .reveal-content.active {
+            max-height: 500px;
+            padding-top: 1rem;
+        }
+        .poli-gradient {
+            background: linear-gradient(135deg, #0033A0 0%, #0055FF 100%);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans antialiased">
+
+    <!-- Header / Hero Section -->
+    <header class="poli-gradient text-white py-12 px-6 shadow-lg">
+        <div class="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between">
+            <div>
+                <h1 class="text-3xl md:text-4xl font-bold mb-2"><i class="fas fa-graduation-cap mr-3"></i>Misión: Arquitecto Académico</h1>
+                <p class="text-lg opacity-90">Domina la autogestión: Inscripciones, Prácticas y Opciones de Grado.</p>
+            </div>
+            <div class="flex flex-col items-end mt-6 md:mt-0 gap-3">
+                <div class="bg-white text-blue-900 px-6 py-3 rounded-full font-bold shadow-md flex items-center">
+                    <i class="fas fa-star text-yellow-500 mr-2"></i>
+                    <span id="score">0</span> / 600 Polipuntos
+                </div>
+                <button onclick="descargarExcel()" class="bg-green-500 hover:bg-green-600 text-white text-sm px-4 py-2 rounded-lg shadow transition font-semibold">
+                    <i class="fas fa-file-excel mr-2"></i>Descargar Respuestas (Excel)
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Base de Conocimiento (Links) -->
+    <section class="max-w-5xl mx-auto mt-8 px-6">
+        <div class="bg-blue-50 border-l-4 border-blue-600 p-4 rounded shadow-sm">
+            <h3 class="font-bold text-blue-800 mb-2"><i class="fas fa-search mr-2"></i>Tu Base de Datos (Fuentes Oficiales)</h3>
+            <p class="text-sm mb-3">Usa estos enlaces para resolver los expedientes de tus estudiantes:</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                <a href="https://www.poli.edu.co/inscripcion-de-asignaturas-pregrado-virtual" target="_blank" class="text-blue-600 hover:underline"><i class="fas fa-link mr-1"></i> Inscripción de Asignaturas</a>
+                <a href="https://www.poli.edu.co/practicas" target="_blank" class="text-blue-600 hover:underline"><i class="fas fa-link mr-1"></i> Reglamento y Prácticas</a>
+                <a href="https://www.poli.edu.co/opcion-de-grado" target="_blank" class="text-blue-600 hover:underline"><i class="fas fa-link mr-1"></i> Opciones de Grado Generales</a>
+                <a href="https://www.poli.edu.co/opcion-de-grado/comunicados-por-programa-modalidad-virtual" target="_blank" class="text-blue-600 hover:underline"><i class="fas fa-link mr-1"></i> Comunicados por Programa (Virtual)</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Misiones Section -->
+    <main class="max-w-5xl mx-auto mt-8 px-6 pb-20">
+        
+        <!-- Misión 1: Inscripción -->
+        <div class="bg-white rounded-xl shadow-md overflow-hidden mb-8 border border-gray-100">
+            <div class="bg-indigo-600 px-6 py-4 flex justify-between items-center text-white">
+                <h2 class="text-xl font-bold"><i class="fas fa-laptop-code mr-2"></i>Misión 1: El Estratega de Créditos</h2>
+                <span class="bg-indigo-800 text-xs px-3 py-1 rounded-full">+100 Puntos</span>
+            </div>
+            <div class="p-6">
+                <h3 class="font-bold text-lg text-gray-800 mb-2">Caso: "El 50% No Rinde"</h3>
+                <p class="text-gray-600 mb-4"><strong>Estudiante Virtual dice:</strong> "Hola, pagué media matrícula para este semestre. Entré a la plataforma para hacer mi autogestión y me inscribí en 5 materias, pero el sistema me bloqueó y me borró 2. La página de preguntas frecuentes dice algo sobre créditos. ¡Ayuda!"</p>
+                
+                <div class="bg-gray-50 p-4 rounded border border-gray-200 mb-4">
+                    <p class="font-semibold text-gray-700 text-sm mb-2">Tu tarea de investigación:</p>
+                    <ul class="list-disc pl-5 text-sm text-gray-600 space-y-1">
+                        <li>Revisa las FAQs del link de <em>Inscripción de asignaturas</em>.</li>
+                        <li>¿Qué le debes explicar sobre el pago de media matrícula vs. cantidad de créditos?</li>
+                        <li>¿Se le borraron por error del sistema o por regla académica?</li>
+                    </ul>
+                </div>
+
+                <div class="mb-4">
+                    <label for="input_ans1" class="block text-sm font-medium text-gray-700 mb-1">Análisis y respuesta del equipo:</label>
+                    <textarea id="input_ans1" rows="3" class="w-full border-gray-300 rounded-md shadow-sm p-3 border focus:ring-indigo-500 focus:border-indigo-500" placeholder="Redacten su respuesta aquí basándose en la información oficial..."></textarea>
+                </div>
+
+                <button onclick="submitAnswer('Misión 1: El Estratega de Créditos', 'ans1', 100, this)" class="bg-indigo-100 hover:bg-indigo-200 text-indigo-700 font-bold py-2 px-4 rounded transition duration-300 w-full md:w-auto">
+                    <i class="fas fa-paper-plane mr-2"></i>Enviar y Ver Retroalimentación
+                </button>
+
+                <div id="ans1" class="reveal-content border-t border-gray-200 mt-4">
+                    <div class="bg-green-50 border-l-4 border-green-500 p-4 rounded">
+                        <h4 class="font-bold text-green-800 mb-2">Resolución Exitosa:</h4>
+                        <p class="text-sm text-gray-700"><strong>Respuesta Consultiva:</strong> "El sistema funcionó correctamente. Al realizar el pago de media matrícula (50%), el reglamento establece que solo tienes habilitado inscribir el equivalente al 50% de los créditos de tu semestre (usualmente entre 7 y 9 créditos, que equivalen a 2 o 3 materias, dependiendo del peso de cada una). Si deseas ver las 5 materias, debes realizar el pago del excedente para habilitar el 100% de los créditos."</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Misión 2: Inscripción (Límites Presenciales) -->
+        <div class="bg-white rounded-xl shadow-md overflow-hidden mb-8 border border-gray-100">
+            <div class="bg-indigo-600 px-6 py-4 flex justify-between items-center text-white">
+                <h2 class="text-xl font-bold"><i class="fas fa-random mr-2"></i>Misión 2: El Presencial Digital</h2>
+                <span class="bg-indigo-800 text-xs px-3 py-1 rounded-full">+100 Puntos</span>
+            </div>
+            <div class="p-6">
+                <h3 class="font-bold text-lg text-gray-800 mb-2">Caso: "Quiero estudiar en pijama"</h3>
+                <p class="text-gray-600 mb-4"><strong>Estudiante Presencial dice:</strong> "Hola, soy de modalidad presencial. Vi que mi programa también tiene materias virtuales en la oferta. Quiero inscribir 4 asignaturas de forma virtual este semestre para no tener que ir tanto a la sede física, pero la plataforma me arroja error al intentar meter la tercera."</p>
+                
+                <div class="bg-gray-50 p-4 rounded border border-gray-200 mb-4">
+                    <p class="font-semibold text-gray-700 text-sm mb-2">Tu tarea de investigación:</p>
+                    <ul class="list-disc pl-5 text-sm text-gray-600 space-y-1">
+                        <li>Revisa los reglamentos y la lógica de modalidades vista en formación.</li>
+                        <li>¿Existe un límite de asignaturas virtuales que puede inscribir un estudiante presencial?</li>
+                    </ul>
+                </div>
+
+                <div class="mb-4">
+                    <label for="input_ans2" class="block text-sm font-medium text-gray-700 mb-1">Análisis y respuesta del equipo:</label>
+                    <textarea id="input_ans2" rows="3" class="w-full border-gray-300 rounded-md shadow-sm p-3 border focus:ring-indigo-500 focus:border-indigo-500" placeholder="Redacten su respuesta aquí basándose en la información oficial..."></textarea>
+                </div>
+
+                <button onclick="submitAnswer('Misión 2: El Presencial Digital', 'ans2', 100, this)" class="bg-indigo-100 hover:bg-indigo-200 text-indigo-700 font-bold py-2 px-4 rounded transition duration-300 w-full md:w-auto">
+                    <i class="fas fa-paper-plane mr-2"></i>Enviar y Ver Retroalimentación
+                </button>
+
+                <div id="ans2" class="reveal-content border-t border-gray-200 mt-4">
+                    <div class="bg-green-50 border-l-4 border-green-500 p-4 rounded">
+                        <h4 class="font-bold text-green-800 mb-2">Resolución Exitosa:</h4>
+                        <p class="text-sm text-gray-700"><strong>Respuesta Consultiva:</strong> "El sistema te genera restricción por tu tipo de modalidad. Al ser estudiante presencial, el reglamento te permite inscribir un máximo de dos (2) asignaturas virtuales por semestre. Si deseas ver 4 o más virtuales, deberías solicitar un cambio de modalidad a 100% Virtual a través de un ticket."</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Misión 3: Prácticas -->
+        <div class="bg-white rounded-xl shadow-md overflow-hidden mb-8 border border-gray-100">
+            <div class="bg-teal-600 px-6 py-4 flex justify-between items-center text-white">
+                <h2 class="text-xl font-bold"><i class="fas fa-briefcase mr-2"></i>Misión 3: El Mundo Laboral</h2>
+                <span class="bg-teal-800 text-xs px-3 py-1 rounded-full">+100 Puntos</span>
+            </div>
+            <div class="p-6">
+                <h3 class="font-bold text-lg text-gray-800 mb-2">Caso: "El Empleado Empedernido"</h3>
+                <p class="text-gray-600 mb-4"><strong>Estudiante de Administración dice:</strong> "Llevo 3 años trabajando como Asistente Administrativo en una empresa. Ya vi en mi malla que tengo habilitada la materia de prácticas. ¿Me toca renunciar a mi trabajo para irme de practicante a otro lado o qué hago?"</p>
+                
+                <div class="bg-gray-50 p-4 rounded border border-gray-200 mb-4">
+                    <p class="font-semibold text-gray-700 text-sm mb-2">Tu tarea de investigación:</p>
+                    <ul class="list-disc pl-5 text-sm text-gray-600 space-y-1">
+                        <li>Entra al link de <em>Prácticas</em>.</li>
+                        <li>¿Bajo qué modalidad específica puede inscribir su práctica este estudiante?</li>
+                        <li>¿Las prácticas son homologables (se pueden saltar)?</li>
+                    </ul>
+                </div>
+
+                <div class="mb-4">
+                    <label for="input_ans3" class="block text-sm font-medium text-gray-700 mb-1">Análisis y respuesta del equipo:</label>
+                    <textarea id="input_ans3" rows="3" class="w-full border-gray-300 rounded-md shadow-sm p-3 border focus:ring-teal-500 focus:border-teal-500" placeholder="Redacten su respuesta aquí basándose en la información oficial..."></textarea>
+                </div>
+
+                <button onclick="submitAnswer('Misión 3: El Mundo Laboral', 'ans3', 100, this)" class="bg-teal-100 hover:bg-teal-200 text-teal-700 font-bold py-2 px-4 rounded transition duration-300 w-full md:w-auto">
+                    <i class="fas fa-paper-plane mr-2"></i>Enviar y Ver Retroalimentación
+                </button>
+
+                <div id="ans3" class="reveal-content border-t border-gray-200 mt-4">
+                    <div class="bg-green-50 border-l-4 border-green-500 p-4 rounded">
+                        <h4 class="font-bold text-green-800 mb-2">Resolución Exitosa:</h4>
+                        <p class="text-sm text-gray-700 mb-2"><strong>Respuesta Consultiva:</strong> "¡No tienes que renunciar! Las prácticas <strong>no son homologables</strong>, pero el Poli piensa en los estudiantes que ya laboran. Debes aplicar a la modalidad <strong>'Validación / Ya tengo trabajo'</strong> (o contrato laboral vigente). Solo debes gestionar los formatos requeridos desde tu empresa para que la universidad valide tus funciones como práctica académica."</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Misión 4: Prácticas (Emprendimiento) -->
+        <div class="bg-white rounded-xl shadow-md overflow-hidden mb-8 border border-gray-100">
+            <div class="bg-teal-600 px-6 py-4 flex justify-between items-center text-white">
+                <h2 class="text-xl font-bold"><i class="fas fa-lightbulb mr-2"></i>Misión 4: El Dueño del Negocio</h2>
+                <span class="bg-teal-800 text-xs px-3 py-1 rounded-full">+100 Puntos</span>
+            </div>
+            <div class="p-6">
+                <h3 class="font-bold text-lg text-gray-800 mb-2">Caso: "El Emprendedor Solitario"</h3>
+                <p class="text-gray-600 mb-4"><strong>Estudiante de Negocios dice:</strong> "Yo no soy empleado, tengo mi propio negocio registrado en Cámara de Comercio hace más de 1 año y medio. Mi malla me exige hacer prácticas. ¿Qué sentido tiene buscar una empresa si yo ya tengo la mía?"</p>
+                
+                <div class="bg-gray-50 p-4 rounded border border-gray-200 mb-4">
+                    <p class="font-semibold text-gray-700 text-sm mb-2">Tu tarea de investigación:</p>
+                    <ul class="list-disc pl-5 text-sm text-gray-600 space-y-1">
+                        <li>Revisa las modalidades en el link de <em>Prácticas</em>.</li>
+                        <li>¿Existe alguna opción para dueños de empresa o emprendedores?</li>
+                        <li>¿Qué documento clave se le debe exigir para probar su caso?</li>
+                    </ul>
+                </div>
+
+                <div class="mb-4">
+                    <label for="input_ans4" class="block text-sm font-medium text-gray-700 mb-1">Análisis y respuesta del equipo:</label>
+                    <textarea id="input_ans4" rows="3" class="w-full border-gray-300 rounded-md shadow-sm p-3 border focus:ring-teal-500 focus:border-teal-500" placeholder="Redacten su respuesta aquí basándose en la información oficial..."></textarea>
+                </div>
+
+                <button onclick="submitAnswer('Misión 4: El Dueño del Negocio', 'ans4', 100, this)" class="bg-teal-100 hover:bg-teal-200 text-teal-700 font-bold py-2 px-4 rounded transition duration-300 w-full md:w-auto">
+                    <i class="fas fa-paper-plane mr-2"></i>Enviar y Ver Retroalimentación
+                </button>
+
+                <div id="ans4" class="reveal-content border-t border-gray-200 mt-4">
+                    <div class="bg-green-50 border-l-4 border-green-500 p-4 rounded">
+                        <h4 class="font-bold text-green-800 mb-2">Resolución Exitosa:</h4>
+                        <p class="text-sm text-gray-700"><strong>Respuesta Consultiva:</strong> "Tienes toda la razón, tu empresa es tu mejor laboratorio. Puedes aplicar a tus prácticas bajo la modalidad de <strong>'Línea de Emprendimiento'</strong>. El requisito principal es que nos aportes el certificado de Cámara de Comercio vigente para validar la existencia formal de tu negocio ante el área de prácticas."</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Misión 5: Opciones de Grado -->
+        <div class="bg-white rounded-xl shadow-md overflow-hidden mb-8 border border-gray-100">
+            <div class="bg-purple-600 px-6 py-4 flex justify-between items-center text-white">
+                <h2 class="text-xl font-bold"><i class="fas fa-award mr-2"></i>Misión 5: La Decisión Final</h2>
+                <span class="bg-purple-800 text-xs px-3 py-1 rounded-full">+100 Puntos</span>
+            </div>
+            <div class="p-6">
+                <h3 class="font-bold text-lg text-gray-800 mb-2">Caso: "El Coterminal Arrepentido"</h3>
+                <p class="text-gray-600 mb-4"><strong>Estudiante Virtual dice:</strong> "Quiero hacer el Semestre Coterminal como opción de grado, pero el semestre pasado perdí una materia (me quedó en 2.8). Y otra cosa, si tomo el diplomado en vez del coterminal, ¿debo pagar la matrícula de la universidad y aparte el diplomado?"</p>
+                
+                <div class="bg-gray-50 p-4 rounded border border-gray-200 mb-4">
+                    <p class="font-semibold text-gray-700 text-sm mb-2">Tu tarea de investigación:</p>
+                    <ul class="list-disc pl-5 text-sm text-gray-600 space-y-1">
+                        <li>Revisa el link de <em>Opción de Grado</em> y <em>Comunicados por programa</em>.</li>
+                        <li>¿Puede tomar el semestre coterminal si perdió una materia recientemente? (Tip: Tema de promedio).</li>
+                        <li>¿Cómo funciona el pago de la opción de grado frente a la matrícula regular?</li>
+                    </ul>
+                </div>
+
+                <div class="mb-4">
+                    <label for="input_ans5" class="block text-sm font-medium text-gray-700 mb-1">Análisis y respuesta del equipo:</label>
+                    <textarea id="input_ans5" rows="3" class="w-full border-gray-300 rounded-md shadow-sm p-3 border focus:ring-purple-500 focus:border-purple-500" placeholder="Redacten su respuesta aquí basándose en la información oficial..."></textarea>
+                </div>
+
+                <button onclick="submitAnswer('Misión 5: La Decisión Final', 'ans5', 100, this)" class="bg-purple-100 hover:bg-purple-200 text-purple-700 font-bold py-2 px-4 rounded transition duration-300 w-full md:w-auto">
+                    <i class="fas fa-paper-plane mr-2"></i>Enviar y Ver Retroalimentación
+                </button>
+
+                <div id="ans5" class="reveal-content border-t border-gray-200 mt-4">
+                    <div class="bg-green-50 border-l-4 border-green-500 p-4 rounded">
+                        <h4 class="font-bold text-green-800 mb-2">Resolución Exitosa:</h4>
+                        <p class="text-sm text-gray-700"><strong>Respuesta Consultiva:</strong> "Para el Semestre Coterminal requieres un promedio exigido (usualmente igual o superior a 3.8 general). Si la pérdida afectó tu promedio, podrías no aplicar. Además, si pierdes un módulo de coterminal, no se puede repetir. Respecto a los costos: La Opción de Grado <strong>reemplaza</strong> el concepto de matrícula de ese periodo; pagas el valor del Diplomado o Coterminal según Derechos Pecuniarios, no pagas 'matrícula + diplomado'."</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Misión 6: Opciones de Grado (Diplomado Cancelado) -->
+        <div class="bg-white rounded-xl shadow-md overflow-hidden mb-8 border border-gray-100">
+            <div class="bg-purple-600 px-6 py-4 flex justify-between items-center text-white">
+                <h2 class="text-xl font-bold"><i class="fas fa-exclamation-triangle mr-2"></i>Misión 6: El Plan B</h2>
+                <span class="bg-purple-800 text-xs px-3 py-1 rounded-full">+100 Puntos</span>
+            </div>
+            <div class="p-6">
+                <h3 class="font-bold text-lg text-gray-800 mb-2">Caso: "Diplomado sin Quórum"</h3>
+                <p class="text-gray-600 mb-4"><strong>Estudiante de Ingeniería dice:</strong> "Me inscribí y pagué mi Diplomado de Opción de Grado. Hoy me mandaron un correo diciendo que el diplomado se cancela porque 'no se alcanzó el cupo mínimo de estudiantes'. ¡Me voy a atrasar un semestre por culpa de ustedes! Devuélvanme la plata o díganme qué hago."</p>
+                
+                <div class="bg-gray-50 p-4 rounded border border-gray-200 mb-4">
+                    <p class="font-semibold text-gray-700 text-sm mb-2">Tu tarea de investigación:</p>
+                    <ul class="list-disc pl-5 text-sm text-gray-600 space-y-1">
+                        <li>Basado en lo aprendido en formación sobre qué pasa si no se apertura un diplomado...</li>
+                        <li>¿El estudiante realmente pierde su semestre?</li>
+                        <li>¿Qué alternativas se le deben ofrecer inmediatamente para mitigar la molestia?</li>
+                    </ul>
+                </div>
+
+                <div class="mb-4">
+                    <label for="input_ans6" class="block text-sm font-medium text-gray-700 mb-1">Análisis y respuesta del equipo:</label>
+                    <textarea id="input_ans6" rows="3" class="w-full border-gray-300 rounded-md shadow-sm p-3 border focus:ring-purple-500 focus:border-purple-500" placeholder="Redacten su respuesta aquí basándose en la información oficial..."></textarea>
+                </div>
+
+                <button onclick="submitAnswer('Misión 6: El Plan B', 'ans6', 100, this)" class="bg-purple-100 hover:bg-purple-200 text-purple-700 font-bold py-2 px-4 rounded transition duration-300 w-full md:w-auto">
+                    <i class="fas fa-paper-plane mr-2"></i>Enviar y Ver Retroalimentación
+                </button>
+
+                <div id="ans6" class="reveal-content border-t border-gray-200 mt-4">
+                    <div class="bg-green-50 border-l-4 border-green-500 p-4 rounded">
+                        <h4 class="font-bold text-green-800 mb-2">Resolución Exitosa:</h4>
+                        <p class="text-sm text-gray-700"><strong>Respuesta Consultiva:</strong> "Entiendo perfectamente tu frustración, pero te aseguro que <strong>no vas a perder el semestre</strong>. Cuando un diplomado no logra el quórum, tienes derecho inmediato a elegir dos caminos: 1) Trasladar tu pago a otro diplomado de tu facultad que sí tenga apertura confirmada, o 2) Si cumples con el promedio, pasar ese saldo para cursar Semestre Coterminal. Vamos a revisar juntos la oferta alterna vigente para que no te atrases."</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        let currentScore = 0;
+        let respuestasEquipos = []; // Array para guardar las respuestas temporalmente
+        
+        function submitAnswer(missionName, id, points, btnElement) {
+            const textarea = document.getElementById('input_' + id);
+            const respuestaTexto = textarea.value.trim();
+
+            if (respuestaTexto === "") {
+                alert("⚠️ ¡Esperen! Deben redactar y debatir la respuesta de su grupo antes de ver la solución oficial.");
+                textarea.focus();
+                return;
+            }
+
+            // Guardar la respuesta en el array
+            respuestasEquipos.push({
+                mision: missionName,
+                respuesta: respuestaTexto
+            });
+
+            // Deshabilitar el textarea para que no la cambien
+            textarea.disabled = true;
+            textarea.classList.add('bg-gray-100', 'text-gray-600');
+
+            // Revelar la respuesta oficial
+            const content = document.getElementById(id);
+            if (!content.classList.contains('active')) {
+                content.classList.add('active');
+                
+                // Actualizar botón
+                btnElement.innerHTML = '<i class="fas fa-check-circle mr-2"></i>Respuesta Enviada y Revisada';
+                btnElement.classList.remove('bg-indigo-100', 'text-indigo-700', 'bg-teal-100', 'text-teal-700', 'bg-purple-100', 'text-purple-700', 'hover:bg-indigo-200', 'hover:bg-teal-200', 'hover:bg-purple-200');
+                btnElement.classList.add('bg-green-100', 'text-green-700', 'pointer-events-none');
+                
+                // Sumar puntos con animación
+                currentScore += points;
+                animateScore(currentScore - points, currentScore);
+            }
+        }
+
+        function descargarExcel() {
+            if (respuestasEquipos.length === 0) {
+                alert("Aún no han completado ninguna misión. ¡Resuelvan casos primero para exportar!");
+                return;
+            }
+
+            // Crear el contenido CSV con BOM para que Excel lea las tildes (UTF-8) correctamente
+            let csvContent = "\uFEFF"; 
+            csvContent += "Misión;Respuesta del Equipo\n"; // Separador de columnas por punto y coma (;)
+            
+            respuestasEquipos.forEach(row => {
+                // Limpiar saltos de línea y comillas para no dañar el formato CSV
+                let textoLimpio = row.respuesta.replace(/"/g, '""').replace(/\n/g, " ");
+                csvContent += `"${row.mision}";"${textoLimpio}"\n`;
+            });
+
+            // Lógica de descarga nativa en el navegador
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            const url = URL.createObjectURL(blob);
+            
+            link.setAttribute("href", url);
+            link.setAttribute("download", "Resultados_Rally_Poli.csv");
+            link.style.visibility = 'hidden';
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function animateScore(start, end) {
+            const scoreElement = document.getElementById('score');
+            let current = start;
+            const timer = setInterval(() => {
+                current += 5;
+                scoreElement.innerText = current;
+                scoreElement.classList.add('text-yellow-300', 'scale-110', 'transition-transform');
+                if (current >= end) {
+                    clearInterval(timer);
+                    scoreElement.innerText = end;
+                    setTimeout(() => {
+                        scoreElement.classList.remove('text-yellow-300', 'scale-110');
+                    }, 200);
+                }
+            }, 20);
+        }
+    </script>
+</body>
+</html>
