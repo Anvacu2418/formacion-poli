@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clínica de Optimización | Taller Poli</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        poli: {
+                            50: '#f0f4f8',
+                            100: '#d9e4f4',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            900: '#1e3a8a',
+                        },
+                        slate: { 50: '#f8fafc', 100: '#f1f5f9', 800: '#1e293b', 900: '#0f172a' }
+                    },
+                    boxShadow: {
+                        'soft': '0 10px 40px -10px rgba(0,0,0,0.08)',
+                        'inner-soft': 'inset 0 2px 4px 0 rgba(0,0,0,0.02)'
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { background-color: #f1f5f9; overflow: hidden; }
+        
+        /* Slide Transitions */
+        .slide { 
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            opacity: 0; 
+            visibility: hidden;
+            transition: opacity 0.5s ease, transform 0.5s ease;
+            transform: translateY(20px);
+            overflow-y: auto;
+            padding-bottom: 2rem;
+        }
+        .slide.active { 
+            opacity: 1; 
+            visibility: visible;
+            transform: translateY(0);
+            z-index: 10;
+        }
+
+        /* Custom Scrollbar for Slides */
+        .slide::-webkit-scrollbar { width: 6px; }
+        .slide::-webkit-scrollbar-track { background: transparent; }
+        .slide::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .slide::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        /* Flip Cards CSS */
+        .flip-card { perspective: 1000px; height: 320px; }
+        .flip-card-inner {
+            position: relative;
+            width: 100%; height: 100%;
+            transition: transform 0.8s cubic-bezier(0.4, 0.2, 0.2, 1);
+            transform-style: preserve-3d;
+        }
+        .flip-card:hover .flip-card-inner { transform: rotateY(180deg); }
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%; height: 100%;
+            backface-visibility: hidden;
+            border-radius: 1.5rem;
+            -webkit-backface-visibility: hidden; /* Safari */
+        }
+        .flip-card-front {
+            background-color: white;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+        .flip-card-back {
+            background-color: #1e3a8a; /* Poli 900 */
+            color: white;
+            transform: rotateY(180deg);
+            padding: 1.5rem;
+            display: flex; flex-direction: column;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+        }
+
+        /* Hide scrollbar on back card but allow scroll if overflow */
+        .flip-card-back-scroll {
+            overflow-y: auto;
+            scrollbar-width: none; /* Firefox */
+        }
+        .flip-card-back-scroll::-webkit-scrollbar { display: none; } /* Safari/Chrome */
+
+        /* Radio Buttons Custom */
+        input[type="radio"]:checked + span { color: #2563eb; font-weight: 600; }
+        
+        .radio-container:hover { background-color: #f8fafc; border-color: #cbd5e1; }
+        .radio-container.selected { background-color: #eff6ff; border-color: #3b82f6; }
+    </style>
+</head>
+
+<body class="flex items-center justify-center min-h-screen p-4 sm:p-6 lg:p-8 font-sans text-slate-800 selection:bg-poli-500 selection:text-white">
+
+    <!-- Tablet/Slide Container -->
+    <div class="bg-white w-full max-w-7xl h-[90vh] rounded-[2rem] shadow-soft border border-slate-200 flex flex-col relative overflow-hidden">
+        
+        <!-- Header -->
+        <header class="flex justify-between items-center px-8 py-5 border-b border-slate-100 bg-white z-20">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-poli-50 flex items-center justify-center text-poli-600 shadow-inner-soft">
+                    <i class="fa-solid fa-heart-pulse text-lg"></i>
+                </div>
+                <h1 class="font-bold text-xl tracking-tight text-slate-900">Poli Clínic <span class="font-normal text-slate-400 mx-1">|</span> <span class="text-poli-600 font-medium text-sm">Optimización</span></h1>
+            </div>
+            <div class="flex items-center gap-4">
+                <span id="slideCounter" class="bg-slate-100 text-slate-500 text-xs font-semibold px-4 py-1.5 rounded-full tracking-wide">Placa 1 de 8</span>
+            </div>
+        </header>
+
+        <main id="slidesContainer" class="flex-grow relative bg-white">
+            
+            <!-- Slide 1: Portada -->
+            <div class="slide active p-8 md:p-16 flex flex-col items-center justify-center h-full text-center" id="slide-1">
+                <div class="w-24 h-24 bg-poli-50 rounded-full flex items-center justify-center mb-8 shadow-inner-soft">
+                    <i class="fa-solid fa-user-doctor text-4xl text-poli-600"></i>
+                </div>
+                <span class="inline-block py-1.5 px-4 rounded-full bg-poli-100 text-poli-700 text-xs font-bold uppercase tracking-wider mb-6">Terapia Grupal de Calidad</span>
+                <h2 class="text-4xl md:text-6xl font-extrabold text-slate-900 mb-6 leading-tight">De Despachadores Automáticos a<br><span class="text-poli-600">Consultores Estratégicos</span></h2>
+                <p class="text-lg md:text-xl text-slate-500 max-w-3xl mx-auto font-light leading-relaxed">
+                    Hoy no venimos a aprender desde cero. Ustedes ya son expertos en lo que hacen.<br>
+                    Venimos a realizar un <strong>chequeo preventivo</strong>, diagnosticar desde el error (Fail-Forward) y sanar nuestras métricas en equipo.
+                </p>
+            </div>
+
+            <!-- Slide 2: Triaje -->
+            <div class="slide p-8 md:p-16 h-full flex flex-col justify-center" id="slide-2">
+                <div class="flex items-center gap-4 mb-10">
+                    <i class="fa-solid fa-stethoscope text-3xl text-poli-600"></i>
+                    <h2 class="text-3xl font-bold text-slate-900">Fase 1: Triaje y Contexto</h2>
+                </div>
+                
+                <div class="bg-slate-50 rounded-3xl p-10 border border-slate-100 shadow-sm relative overflow-hidden">
+                    <div class="absolute -right-10 -top-10 text-slate-100 opacity-50">
+                        <i class="fa-solid fa-microscope text-9xl"></i>
+                    </div>
+                    <div class="relative z-10 max-w-4xl">
+                        <h3 class="text-2xl font-bold text-poli-900 mb-4">Un diagnóstico entre especialistas</h3>
+                        <p class="text-lg text-slate-600 leading-relaxed mb-6">
+                            Equipo, su experiencia y conocimiento son vitales para la gestión que desarrollan a diario con los estudiantes del Poli. Hoy <strong>NO</strong> estamos aquí para poner en tela de juicio su capacidad, porque los altos niveles de cordialidad y manejo de la herramienta que demuestran los hacen expertos.
+                        </p>
+                        <p class="text-lg text-slate-600 leading-relaxed">
+                            Bajo la metodología <em>"Pixar Plussing"</em> (Sí, es bueno... <strong>y además</strong> puede ser excelente), queremos hacer un <strong>chequeo preventivo</strong>. Analizamos la data del trimestre y descubrimos que las afecciones de calidad no nacen del desconocimiento, sino del <strong class="text-poli-600">exceso de confianza y el trabajo en piloto automático</strong>.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 3: Radiografía -->
+            <div class="slide p-8 md:p-12 h-full flex flex-col" id="slide-3">
+                <div class="flex items-center gap-4 mb-6">
+                    <i class="fa-solid fa-x-ray text-3xl text-poli-600"></i>
+                    <div>
+                        <h2 class="text-3xl font-bold text-slate-900">Fase 2: Radiografía del Escenario</h2>
+                        <p class="text-slate-500 mt-1">Pasa el cursor sobre el historial de cada experto para revelar los síntomas (Mínimos y Parciales) detectados.</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 overflow-y-auto pb-10 px-2" style="max-height: 65vh;">
+                    
+                    <!-- Card 1: Andrés -->
+                    <div class="flip-card cursor-pointer group">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front">
+                                <div class="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mb-4 text-slate-400 group-hover:bg-poli-50 group-hover:text-poli-500 transition-colors">
+                                    <i class="fa-solid fa-user-doctor text-2xl"></i>
+                                </div>
+                                <h3 class="text-xl font-bold text-slate-800">Andrés Judex</h3>
+                                <span class="bg-red-50 text-red-600 text-xs font-bold px-3 py-1 rounded-full mt-3 border border-red-100">3 Mínimos detectados</span>
+                            </div>
+                            <div class="flip-card-back flip-card-back-scroll">
+                                <h4 class="font-bold text-poli-100 mb-3 border-b border-poli-700 pb-2 text-sm uppercase tracking-wide"><i class="fa-solid fa-virus mr-2"></i>Patologías Clínicas</h4>
+                                <ul class="text-sm space-y-3 text-poli-50">
+                                    <li><strong class="text-white">Registro (2 Mínimos):</strong> Tipificar "Orden de Matrícula" cuando el caso era de Office 365. Ceguera de sistema.</li>
+                                    <li><strong class="text-white">Cierre (1 Mínimo):</strong> No definir método de pago ni invitar al pago inmediato tras enviar orden.</li>
+                                    <li><strong class="text-white">Solución (1 Mínimo):</strong> Desfase en fechas de MOOCs (informó julio, era junio).</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 2: Tatiana -->
+                    <div class="flip-card cursor-pointer group">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front">
+                                <div class="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mb-4 text-slate-400 group-hover:bg-poli-50 group-hover:text-poli-500 transition-colors">
+                                    <i class="fa-solid fa-user-nurse text-2xl"></i>
+                                </div>
+                                <h3 class="text-xl font-bold text-slate-800">Berti Tatiana Pedroza</h3>
+                                <span class="bg-red-50 text-red-600 text-xs font-bold px-3 py-1 rounded-full mt-3 border border-red-100">5 Mínimos detectados</span>
+                            </div>
+                            <div class="flip-card-back flip-card-back-scroll">
+                                <h4 class="font-bold text-poli-100 mb-3 border-b border-poli-700 pb-2 text-sm uppercase tracking-wide"><i class="fa-solid fa-virus mr-2"></i>Patologías Clínicas</h4>
+                                <ul class="text-sm space-y-2 text-poli-50">
+                                    <li><strong class="text-white">Cierre (2 Min):</strong> Enviar orden sin generar ningún pre-cierre comercial.</li>
+                                    <li><strong class="text-white">Escucha (1 Min):</strong> Redactar el caso "en vivo" (tecleo) ignorando la inconformidad de la alumna.</li>
+                                    <li><strong class="text-white">Solución (1 Min):</strong> Omite orientación sobre materias de 2do bloque.</li>
+                                    <li><strong class="text-white">Dudas (1 Min):</strong> Confirma "matrícula" a alumna con saldo pendiente.</li>
+                                    <li><strong class="text-white">Registro (1 Min):</strong> Error en tipificación.</li>
+                                </ul>
+                                <p class="text-xs text-poli-200 mt-2 border-t border-poli-700 pt-2">* 2 Observaciones Parciales (Apertura y Claridad).</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 3: Clemencia -->
+                    <div class="flip-card cursor-pointer group">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front">
+                                <div class="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mb-4 text-slate-400 group-hover:bg-poli-50 group-hover:text-poli-500 transition-colors">
+                                    <i class="fa-solid fa-user-nurse text-2xl"></i>
+                                </div>
+                                <h3 class="text-xl font-bold text-slate-800">Clemencia Rengifo</h3>
+                                <span class="bg-red-50 text-red-600 text-xs font-bold px-3 py-1 rounded-full mt-3 border border-red-100">8 Mínimos detectados</span>
+                            </div>
+                            <div class="flip-card-back flip-card-back-scroll">
+                                <h4 class="font-bold text-poli-100 mb-3 border-b border-poli-700 pb-2 text-sm uppercase tracking-wide"><i class="fa-solid fa-virus mr-2"></i>Patologías Clínicas</h4>
+                                <ul class="text-sm space-y-2 text-poli-50">
+                                    <li><strong class="text-white">Solución (2 Min):</strong> Dar información errada sobre créditos y horas de grado sin validar página oficial.</li>
+                                    <li><strong class="text-white">Seguimiento (2 Min):</strong> No validar historial/reintegros, cambiando requisitos de grado.</li>
+                                    <li><strong class="text-white">Escucha (1 Min):</strong> Tono tajante ("por eso le digo que no hay hora").</li>
+                                    <li><strong class="text-white">Fluidez (1 Min):</strong> Exceso de muletillas mientras busca ("espérame reviso, miremos acá").</li>
+                                    <li><strong class="text-white">Dudas (1 Min) / Registro (1 Min).</strong></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 4: Jennifer -->
+                    <div class="flip-card cursor-pointer group">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front">
+                                <div class="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mb-4 text-slate-400 group-hover:bg-poli-50 group-hover:text-poli-500 transition-colors">
+                                    <i class="fa-solid fa-user-doctor text-2xl"></i>
+                                </div>
+                                <h3 class="text-xl font-bold text-slate-800">Jennifer Peña</h3>
+                                <span class="bg-red-50 text-red-600 text-xs font-bold px-3 py-1 rounded-full mt-3 border border-red-100">6 Mínimos detectados</span>
+                            </div>
+                            <div class="flip-card-back flip-card-back-scroll">
+                                <h4 class="font-bold text-poli-100 mb-3 border-b border-poli-700 pb-2 text-sm uppercase tracking-wide"><i class="fa-solid fa-virus mr-2"></i>Patologías Clínicas</h4>
+                                <ul class="text-sm space-y-2 text-poli-50">
+                                    <li><strong class="text-white">Registro (2 Min):</strong> Crear ticket en perfil de otro estudiante (Everley en vez de Wilmar). Tipificación errada.</li>
+                                    <li><strong class="text-white">Fluidez (2 Min):</strong> Dejar chat/llamada en silencio absoluto por más de 1 minuto sin pedir espera.</li>
+                                    <li><strong class="text-white">Solución (1 Min):</strong> Confirmar 0.5 créditos errados.</li>
+                                    <li><strong class="text-white">Seguimiento (1 Min):</strong> Negarse a unir capturas de pantalla para un caso de derivación.</li>
+                                    <li><strong class="text-white">Apertura/Cierre (1 Min) / Escucha (1 Parcial).</strong></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 5: Valentina -->
+                    <div class="flip-card cursor-pointer group">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front">
+                                <div class="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mb-4 text-slate-400 group-hover:bg-poli-50 group-hover:text-poli-500 transition-colors">
+                                    <i class="fa-solid fa-user-nurse text-2xl"></i>
+                                </div>
+                                <h3 class="text-xl font-bold text-slate-800">Valentina Cuellar</h3>
+                                <span class="bg-red-50 text-red-600 text-xs font-bold px-3 py-1 rounded-full mt-3 border border-red-100">7 Mínimos detectados</span>
+                            </div>
+                            <div class="flip-card-back flip-card-back-scroll">
+                                <h4 class="font-bold text-poli-100 mb-3 border-b border-poli-700 pb-2 text-sm uppercase tracking-wide"><i class="fa-solid fa-virus mr-2"></i>Patologías Clínicas</h4>
+                                <ul class="text-sm space-y-2 text-poli-50">
+                                    <li><strong class="text-white">Registro (3 Min):</strong> Crear ticket en perfil inactivo de Trabajo Social para alumna de Administración. Tipificaciones erradas.</li>
+                                    <li><strong class="text-white">Tiempos (2 Min):</strong> Baches de hasta 35 minutos sin responder el chat.</li>
+                                    <li><strong class="text-white">Solución (1 Min):</strong> Da fechas de modalidad presencial a estudiante virtual.</li>
+                                    <li><strong class="text-white">Fluidez (1 Min):</strong> Demoras innecesarias solicitando validación a aspirantes.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 6: Diana -->
+                    <div class="flip-card cursor-pointer group">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front">
+                                <div class="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mb-4 text-slate-400 group-hover:bg-poli-50 group-hover:text-poli-500 transition-colors">
+                                    <i class="fa-solid fa-user-doctor text-2xl"></i>
+                                </div>
+                                <h3 class="text-xl font-bold text-slate-800">Diana Diaz</h3>
+                                <span class="bg-red-50 text-red-600 text-xs font-bold px-3 py-1 rounded-full mt-3 border border-red-100">6 Mínimos detectados</span>
+                            </div>
+                            <div class="flip-card-back flip-card-back-scroll">
+                                <h4 class="font-bold text-poli-100 mb-3 border-b border-poli-700 pb-2 text-sm uppercase tracking-wide"><i class="fa-solid fa-virus mr-2"></i>Patologías Clínicas</h4>
+                                <ul class="text-sm space-y-2 text-poli-50">
+                                    <li><strong class="text-white">Registro (2 Min):</strong> No deja nota en el caso a pesar de decirle al estudiante "ya dejé la nota". Falta de actualización.</li>
+                                    <li><strong class="text-white">Necesidades (1 Min):</strong> Hacer preguntas innecesarias ignorando el texto previo del estudiante ("por favor lea mi mensaje").</li>
+                                    <li><strong class="text-white">Adaptación Perfil (1 Min):</strong> Tono procedimental con estudiante en extrema vulnerabilidad.</li>
+                                    <li><strong class="text-white">Cierre (1 Min) / Seguimiento (1 Min).</strong></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Slide 4: Diagnóstico -->
+            <div class="slide p-8 md:p-12 h-full flex flex-col items-center justify-start overflow-y-auto" id="slide-4">
+                <div class="flex items-center gap-4 mb-4 mt-4 shrink-0">
+                    <i class="fa-solid fa-chart-line text-3xl text-poli-600"></i>
+                    <h2 class="text-3xl font-bold text-slate-900">Monitor Clínico General</h2>
+                </div>
+                <p class="text-slate-600 mb-6 text-center max-w-2xl shrink-0">
+                    Al agrupar todos los síntomas del equipo, detectamos dos patologías centrales causadas por el volumen de interacción.
+                </p>
+                
+                <!-- Gráfica de Barras -->
+                <div class="bg-slate-50 p-6 rounded-3xl border border-slate-100 shadow-sm w-full max-w-4xl mb-8 shrink-0">
+                    <h3 class="font-bold text-poli-900 mb-5 text-sm uppercase tracking-wider border-b border-slate-200 pb-2">Frecuencia de Atributos Afectados (Trimestre)</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center text-sm">
+                            <span class="w-1/3 text-right pr-4 font-semibold text-slate-700">Registro Correcto de Info</span>
+                            <div class="w-2/3 bg-slate-200 rounded-full h-5 relative overflow-hidden">
+                                <div class="bg-poli-600 h-5 rounded-full" style="width: 100%"></div>
+                            </div>
+                            <span class="ml-3 font-bold text-poli-700 w-8">12</span>
+                        </div>
+                        <div class="flex items-center text-sm">
+                            <span class="w-1/3 text-right pr-4 font-semibold text-slate-700">Solución Integral</span>
+                            <div class="w-2/3 bg-slate-200 rounded-full h-5 relative overflow-hidden">
+                                <div class="bg-poli-500 h-5 rounded-full" style="width: 50%"></div>
+                            </div>
+                            <span class="ml-3 font-bold text-poli-700 w-8">6</span>
+                        </div>
+                        <div class="flex items-center text-sm">
+                            <span class="w-1/3 text-right pr-4 font-semibold text-slate-700">Cierre Orientado / Seguimiento</span>
+                            <div class="w-2/3 bg-slate-200 rounded-full h-5 relative overflow-hidden">
+                                <div class="bg-poli-400 h-5 rounded-full" style="width: 66%"></div>
+                            </div>
+                            <span class="ml-3 font-bold text-poli-700 w-8">8</span>
+                        </div>
+                        <div class="flex items-center text-sm">
+                            <span class="w-1/3 text-right pr-4 font-semibold text-slate-700">Fluidez / Tiempos</span>
+                            <div class="w-2/3 bg-slate-200 rounded-full h-5 relative overflow-hidden">
+                                <div class="bg-poli-300 h-5 rounded-full" style="width: 58%"></div>
+                            </div>
+                            <span class="ml-3 font-bold text-poli-700 w-8">7</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Causa Raíz (Flip Cards) -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-4xl shrink-0 pb-8">
+                    <div class="flip-card cursor-pointer group h-48">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front">
+                                <i class="fa-solid fa-eye-slash text-3xl text-poli-600 mb-3"></i>
+                                <h3 class="text-lg font-bold text-slate-800">1. Ceguera de Sistema</h3>
+                                <p class="text-xs text-slate-400 mt-2 bg-slate-100 px-3 py-1 rounded-full"><i class="fa-solid fa-arrow-rotate-right mr-1"></i> Clic para revelar diagnóstico</p>
+                            </div>
+                            <div class="flip-card-back justify-center text-left p-6">
+                                <h4 class="font-bold text-poli-100 mb-2 border-b border-poli-700 pb-1 text-sm"><i class="fa-solid fa-clipboard-list mr-2"></i>Impacto en Registro</h4>
+                                <p class="text-xs md:text-sm text-poli-50 leading-relaxed">
+                                    Al automatizar el clic, dejamos de leer el contexto en pantalla. Guardamos tickets en perfiles inactivos, tipificamos todo con motivos generales por inercia y no dejamos nota real de lo gestionado.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flip-card cursor-pointer group h-48">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front">
+                                <i class="fa-solid fa-person-falling text-3xl text-poli-600 mb-3"></i>
+                                <h3 class="text-lg font-bold text-slate-800">2. Confianza Ciega</h3>
+                                <p class="text-xs text-slate-400 mt-2 bg-slate-100 px-3 py-1 rounded-full"><i class="fa-solid fa-arrow-rotate-right mr-1"></i> Clic para revelar diagnóstico</p>
+                            </div>
+                            <div class="flip-card-back justify-center text-left p-6">
+                                <h4 class="font-bold text-poli-100 mb-2 border-b border-poli-700 pb-1 text-sm"><i class="fa-solid fa-comment-medical mr-2"></i>Impacto en Solución</h4>
+                                <p class="text-xs md:text-sm text-poli-50 leading-relaxed">
+                                    Asumimos datos basándonos en la narrativa del estudiante o en nuestra excelente memoria, en lugar de contrastarlos con Analytics, mallas curriculares o instructivos vigentes (MOOCs, Grados).
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 5: Tratamiento -->
+            <div class="slide p-8 md:p-12 h-full flex flex-col" id="slide-5">
+                <div class="flex justify-between items-end mb-6">
+                    <div class="flex items-center gap-4">
+                        <i class="fa-solid fa-pills text-3xl text-poli-600"></i>
+                        <div>
+                            <h2 class="text-3xl font-bold text-slate-900">Fase 4: Receta Médica (Tratamiento)</h2>
+                            <p class="text-slate-500 mt-1">Soluciones consultivas para erradicar el Piloto Automático.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-4 overflow-y-auto pb-8 pr-2" style="max-height: 60vh;">
+                    
+                    <details class="bg-slate-50 rounded-2xl border border-slate-200 group [&_summary::-webkit-details-marker]:hidden cursor-pointer">
+                        <summary class="flex items-center justify-between p-5 font-bold text-slate-800">
+                            <div class="flex items-center gap-3">
+                                <span class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-sm"><i class="fa-solid fa-1"></i></span>
+                                Terapia de Pausa Quirúrgica (Doble Check)
+                            </div>
+                            <i class="fa-solid fa-chevron-down text-slate-400 group-open:rotate-180 transition-transform"></i>
+                        </summary>
+                        <div class="p-5 pt-0 text-sm text-slate-600 border-t border-slate-200 bg-white rounded-b-2xl leading-relaxed mt-2">
+                            <strong>Para erradicar la Ceguera de Sistema:</strong> Institucionalizar una pausa de 3 segundos exactos antes de dar clic en "Guardar" o "Finalizar" en HubSpot/Aivo. <br><br>
+                            Valida en esos 3 segundos: <em>1) ¿El nombre del perfil coincide con quien hablo? 2) ¿La tipificación responde a la causa raíz de hoy y no es heredada por costumbre?</em>
+                        </div>
+                    </details>
+
+                    <details class="bg-slate-50 rounded-2xl border border-slate-200 group [&_summary::-webkit-details-marker]:hidden cursor-pointer">
+                        <summary class="flex items-center justify-between p-5 font-bold text-slate-800">
+                            <div class="flex items-center gap-3">
+                                <span class="w-8 h-8 rounded-full bg-teal-100 text-teal-600 flex items-center justify-center text-sm"><i class="fa-solid fa-2"></i></span>
+                                El Bisturí de Fuentes (Cultura de Confirmación)
+                            </div>
+                            <i class="fa-solid fa-chevron-down text-slate-400 group-open:rotate-180 transition-transform"></i>
+                        </summary>
+                        <div class="p-5 pt-0 text-sm text-slate-600 border-t border-slate-200 bg-white rounded-b-2xl leading-relaxed mt-2">
+                            <strong>Para sanar la Confianza Ciega:</strong> Tener una buena memoria es un gran talento, pero la invitación es a cultivar la <strong>buena costumbre de confirmar la información</strong>.<br><br>
+                            No hay premio por tener una memoria prodigiosa; la meta es la exactitud. Valida fechas en la página oficial o en el calendario operativo (aclarando si son tentativas). Muestra dominio indicando: <em>"Permíteme validar la información oficial en este momento..."</em>. Lo que digan las herramientas es nuestra guía.
+                        </div>
+                    </details>
+
+                    <details class="bg-slate-50 rounded-2xl border border-slate-200 group [&_summary::-webkit-details-marker]:hidden cursor-pointer">
+                        <summary class="flex items-center justify-between p-5 font-bold text-slate-800">
+                            <div class="flex items-center gap-3">
+                                <span class="w-8 h-8 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center text-sm"><i class="fa-solid fa-3"></i></span>
+                                La Lupa de Contexto (Consultoría Real)
+                            </div>
+                            <i class="fa-solid fa-chevron-down text-slate-400 group-open:rotate-180 transition-transform"></i>
+                        </summary>
+                        <div class="p-5 pt-0 text-sm text-slate-600 border-t border-slate-200 bg-white rounded-b-2xl leading-relaxed mt-2">
+                            <strong>Para evitar el reproceso:</strong> Lee el historial <strong>completo</strong> del chat. Entiende qué ha venido hablando el estudiante, incluso con el Bot (Aivo), antes de responder.<br><br>
+                            No se trata de usar una plantilla rápida para despachar el caso, sino de hacerle sentir al usuario: <em>'Te estoy entendiendo'</em>. Muestra dominio de la situación: <em>"Comprendo por sus mensajes anteriores que la situación es X, vamos a validarlo juntos..."</em>
+                        </div>
+                    </details>
+
+                    <details class="bg-slate-50 rounded-2xl border border-slate-200 group [&_summary::-webkit-details-marker]:hidden cursor-pointer">
+                        <summary class="flex items-center justify-between p-5 font-bold text-slate-800">
+                            <div class="flex items-center gap-3">
+                                <span class="w-8 h-8 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center text-sm"><i class="fa-solid fa-4"></i></span>
+                                El Torniquete del Cierre Comercial
+                            </div>
+                            <i class="fa-solid fa-chevron-down text-slate-400 group-open:rotate-180 transition-transform"></i>
+                        </summary>
+                        <div class="p-5 pt-0 text-sm text-slate-600 border-t border-slate-200 bg-white rounded-b-2xl leading-relaxed mt-2">
+                            <strong>Enfoque de Venta Consultiva:</strong> No dejemos los compromisos abiertos o en el aire. Nuestro objetivo, más que vender, es concretar y ayudar al estudiante a encontrar la forma de cerrar su proceso (ya sea pago, rematrícula o retención).<br><br>
+                            Aplica pregunta de doble alternativa: <em>"Ya tienes la orden, ¿este pago lo harás por PSE o en Banco?"</em>. Si el usuario hace silencio, no cierres sin guiarlo a la acción: <em>"Como no recibí respuesta, recuerdo que tu orden vence el XX. Quedo atento a tu pago..."</em>
+                        </div>
+                    </details>
+
+                </div>
+            </div>
+
+            <!-- Slide 6: Intro Examen -->
+            <div class="slide p-8 md:p-16 h-full flex flex-col justify-center items-center text-center" id="slide-6">
+                <div class="w-24 h-24 bg-poli-50 rounded-2xl flex items-center justify-center mb-8 shadow-inner-soft">
+                    <i class="fa-solid fa-file-signature text-5xl text-poli-600"></i>
+                </div>
+                <h2 class="text-3xl md:text-5xl font-extrabold text-slate-900 mb-4">Exámenes de Laboratorio</h2>
+                <p class="text-lg text-slate-500 max-w-2xl leading-relaxed mb-10">
+                    Para darte de alta de esta optimización preventiva, necesitamos realizar una pequeña evaluación clínica basada en tu experiencia.<br>Tienes <strong>10 Minutos</strong> para diagnosticar 5 casos operativos.
+                </p>
+                <button onclick="nextSlide()" class="bg-poli-600 hover:bg-poli-700 text-white font-bold text-lg px-8 py-4 rounded-full shadow-lg shadow-poli-500/30 transition-transform transform hover:-translate-y-1">
+                    Abrir Evaluación Clínica <i class="fa-solid fa-arrow-right ml-2"></i>
+                </button>
+            </div>
+
+            <!-- Slide 7: Examen -->
+            <div class="slide p-8 md:p-10 h-full flex flex-col" id="slide-7">
+                <div class="flex justify-between items-center mb-6 pb-4 border-b border-slate-200 shrink-0">
+                    <h2 class="text-2xl font-bold text-slate-900 flex items-center gap-3">
+                        <i class="fa-solid fa-microscope text-poli-600"></i> Examen Clínico
+                    </h2>
+                    <div class="bg-slate-900 text-white px-5 py-2 rounded-xl flex items-center gap-2 shadow-md">
+                        <i class="fa-regular fa-clock animate-pulse text-poli-400"></i>
+                        <span id="timerDisplay" class="font-mono font-bold tracking-wider text-lg">10:00</span>
+                    </div>
+                </div>
+
+                <div class="overflow-y-auto flex-grow pr-2 pb-10" id="quizContainer">
+                    <form id="quizForm" class="space-y-8">
+                        
+                        <!-- Q1 -->
+                        <div class="bg-slate-50 p-6 rounded-2xl border border-slate-200">
+                            <h3 class="font-bold text-slate-800 mb-4 text-base">1. Atiendes un chat y estás hablando con el estudiante Wilmar, pero te das cuenta que en el CRM (HubSpot) tienes abierto el registro académico de otro estudiante. Al terminar la gestión, ¿qué debes tener en cuenta al momento de dejar una tipificación para evitar errores de calidad?</h3>
+                            <div class="space-y-2">
+                                <label class="radio-container flex items-start gap-3 p-3 rounded-xl cursor-pointer transition border border-transparent">
+                                    <input type="radio" name="q1" value="A" class="mt-1 w-4 h-4 text-poli-600" required>
+                                    <span class="text-sm text-slate-600">A) Guardo rápido el ticket en el perfil que tengo abierto para no afectar mi TMO (Tiempo Medio de Operación), y dejo una nota aclarando que en realidad hablé con Wilmar.</span>
+                                </label>
+                                <label class="radio-container flex items-start gap-3 p-3 rounded-xl cursor-pointer transition border border-transparent">
+                                    <input type="radio" name="q1" value="B" class="mt-1 w-4 h-4 text-poli-600">
+                                    <span class="text-sm text-slate-600">B) Hago un doble check de 3 segundos, detecto la incongruencia, busco el perfil correcto de Wilmar y creo el ticket allí. Además, reviso la matriz de tipificación para elegir el título más asertivo a su consulta real, cuidando la redacción y ortografía.</span>
+                                </label>
+                                <label class="radio-container flex items-start gap-3 p-3 rounded-xl cursor-pointer transition border border-transparent">
+                                    <input type="radio" name="q1" value="C" class="mt-1 w-4 h-4 text-poli-600">
+                                    <span class="text-sm text-slate-600">C) Tipifico como "Información General" en el registro actual porque la consulta fue rápida y lo importante es despachar el caso dentro de los tiempos establecidos.</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Q2 -->
+                        <div class="bg-slate-50 p-6 rounded-2xl border border-slate-200">
+                            <h3 class="font-bold text-slate-800 mb-4 text-base">2. Un estudiante manifiesta que solo le hace falta 0.5 créditos de emprendimiento para graduarse y pregunta la fecha de cargue de los MOOCs. Tú recuerdas que el cargue es en julio. ¿Cuál sería el paso consultivo correcto?</h3>
+                            <div class="space-y-2">
+                                <label class="radio-container flex items-start gap-3 p-3 rounded-xl cursor-pointer transition border border-transparent">
+                                    <input type="radio" name="q2" value="A" class="mt-1 w-4 h-4 text-poli-600" required>
+                                    <span class="text-sm text-slate-600">A) Le indico que el cargue de notas se realizará en julio según recuerdo, y le confirmo los 0.5 créditos faltantes basándome en su seguridad al hablar.</span>
+                                </label>
+                                <label class="radio-container flex items-start gap-3 p-3 rounded-xl cursor-pointer transition border border-transparent">
+                                    <input type="radio" name="q2" value="B" class="mt-1 w-4 h-4 text-poli-600">
+                                    <span class="text-sm text-slate-600">B) Verifico el sistema para confirmar sus créditos reales. Reviso la página de MOOCs para confirmar fechas y le indico que el cargue de notas se realiza una semana después de que él termine el curso en la plataforma.</span>
+                                </label>
+                                <label class="radio-container flex items-start gap-3 p-3 rounded-xl cursor-pointer transition border border-transparent">
+                                    <input type="radio" name="q2" value="C" class="mt-1 w-4 h-4 text-poli-600">
+                                    <span class="text-sm text-slate-600">C) Verifico en el sistema sus créditos exactos. Reviso la página oficial y le informo que las notas se cargan una semana después del cierre de la cohorte (no al terminar el curso), recordando que debe diligenciar el formulario disponible en la página.</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Q3 -->
+                        <div class="bg-slate-50 p-6 rounded-2xl border border-slate-200">
+                            <h3 class="font-bold text-slate-800 mb-4 text-base">3. Acabas de realizar un proceso de reintegro y el estudiante te responde en el chat: "Listo, voy a realizar el pago la otra semana". ¿Cómo aplicas el Torniquete Comercial para concretar?</h3>
+                            <div class="space-y-2">
+                                <label class="radio-container flex items-start gap-3 p-3 rounded-xl cursor-pointer transition border border-transparent">
+                                    <input type="radio" name="q3" value="A" class="mt-1 w-4 h-4 text-poli-600" required>
+                                    <span class="text-sm text-slate-600">A) Respondo: "Perfecto, quedo atenta a tu gestión. ¡Feliz día!" y finalizo el contacto.</span>
+                                </label>
+                                <label class="radio-container flex items-start gap-3 p-3 rounded-xl cursor-pointer transition border border-transparent">
+                                    <input type="radio" name="q3" value="B" class="mt-1 w-4 h-4 text-poli-600">
+                                    <span class="text-sm text-slate-600">B) Respondo: "Recuerda que la fecha de pago es hasta el 19 de julio. La idea es que puedas realizar el pago en estas fechas para evitar recargos o cobros extraordinarios."</span>
+                                </label>
+                                <label class="radio-container flex items-start gap-3 p-3 rounded-xl cursor-pointer transition border border-transparent">
+                                    <input type="radio" name="q3" value="C" class="mt-1 w-4 h-4 text-poli-600">
+                                    <span class="text-sm text-slate-600">C) Respondo: "Cuéntame, ¿qué medio de pago te resulta más cómodo utilizar, efectivo o PSE? Yo te puedo ayudar con el enlace para asegurar que puedas realizar el pago de manera oportuna la próxima semana."</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Q4 -->
+                        <div class="bg-slate-50 p-6 rounded-2xl border border-slate-200">
+                            <h3 class="font-bold text-slate-800 mb-4 text-base">4. Atiendes un chat y el alumno manifiesta en su primer mensaje: "Por favor lea mi mensaje detalladamente, necesito ayuda urgente con mi beca, no me he podido contactar de otra forma". ¿Qué haces?</h3>
+                            <div class="space-y-2">
+                                <label class="radio-container flex items-start gap-3 p-3 rounded-xl cursor-pointer transition border border-transparent">
+                                    <input type="radio" name="q4" value="A" class="mt-1 w-4 h-4 text-poli-600" required>
+                                    <span class="text-sm text-slate-600">A) Lo saludo, me presento con la plantilla oficial y le pido que me cuente desde cero y en detalle en qué le puedo colaborar con su beca.</span>
+                                </label>
+                                <label class="radio-container flex items-start gap-3 p-3 rounded-xl cursor-pointer transition border border-transparent">
+                                    <input type="radio" name="q4" value="B" class="mt-1 w-4 h-4 text-poli-600">
+                                    <span class="text-sm text-slate-600">B) Le comparto de inmediato el enlace del Smart Campus con el instructivo de becas para que haga el proceso él mismo y cumpla los tiempos establecidos.</span>
+                                </label>
+                                <label class="radio-container flex items-start gap-3 p-3 rounded-xl cursor-pointer transition border border-transparent">
+                                    <input type="radio" name="q4" value="C" class="mt-1 w-4 h-4 text-poli-600">
+                                    <span class="text-sm text-slate-600">C) Leo el historial del chat completo, reviso en HubSpot si tiene casos activos y retomo: "Querido estudiante, veo que nos manifiestas preocupación. Estaba revisando el sistema y efectivamente tienes un caso actual donde se manifiesta X...", demostrando conocimiento de causa.</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Q5 -->
+                        <div class="bg-slate-50 p-6 rounded-2xl border border-slate-200">
+                            <h3 class="font-bold text-slate-800 mb-4 text-base">5. Estás validando un proceso de reintegro en Analytics. El sistema está muy lento y ya llevas más de 1 minuto y 30 segundos en silencio total en el chat/llamada. ¿Cómo mantienes la fluidez?</h3>
+                            <div class="space-y-2">
+                                <label class="radio-container flex items-start gap-3 p-3 rounded-xl cursor-pointer transition border border-transparent">
+                                    <input type="radio" name="q5" value="A" class="mt-1 w-4 h-4 text-poli-600" required>
+                                    <span class="text-sm text-slate-600">A) Sigo esperando en silencio; el estudiante debe entender que los sistemas corporativos a veces son lentos o demoran en cargar.</span>
+                                </label>
+                                <label class="radio-container flex items-start gap-3 p-3 rounded-xl cursor-pointer transition border border-transparent">
+                                    <input type="radio" name="q5" value="B" class="mt-1 w-4 h-4 text-poli-600">
+                                    <span class="text-sm text-slate-600">B) Escribo o menciono: "Sigo en línea validando su historial académico, agradezco su paciencia unos segundos más".</span>
+                                </label>
+                                <label class="radio-container flex items-start gap-3 p-3 rounded-xl cursor-pointer transition border border-transparent">
+                                    <input type="radio" name="q5" value="C" class="mt-1 w-4 h-4 text-poli-600">
+                                    <span class="text-sm text-slate-600">C) Le digo "miremos acá, espere qué más dice acá..." para llenar el bache de silencio mientras el sistema carga.</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="text-center pt-6">
+                            <button type="submit" class="bg-poli-600 hover:bg-poli-700 text-white font-bold px-12 py-4 rounded-full shadow-lg shadow-poli-500/30 transition-transform transform hover:-translate-y-1">
+                                Enviar Diagnóstico <i class="fa-solid fa-check-circle ml-2"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- Footer Navigation -->
+        <footer class="flex justify-between items-center px-8 py-4 border-t border-slate-100 bg-white z-20">
+            <button id="prevBtn" onclick="prevSlide()" class="w-12 h-12 rounded-full flex items-center justify-center text-slate-400 hover:text-poli-600 hover:bg-poli-50 transition-all disabled:opacity-30 disabled:cursor-not-allowed">
+                <i class="fa-solid fa-chevron-left text-lg"></i>
+            </button>
+            
+            <div id="dots" class="flex gap-2.5">
+                <!-- Dots generated by JS -->
+            </div>
+            
+            <button id="nextBtn" onclick="nextSlide()" class="w-12 h-12 rounded-full flex items-center justify-center text-slate-400 hover:text-poli-600 hover:bg-poli-50 transition-all disabled:opacity-30 disabled:cursor-not-allowed">
+                <i class="fa-solid fa-chevron-right text-lg"></i>
+            </button>
+        </footer>
+    </div>
+
+    <!-- Modal Resultados -->
+    <div id="resultModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-[2rem] shadow-2xl max-w-sm w-full p-8 text-center transform scale-95 transition-transform duration-300" id="modalContent">
+            <div id="modalIcon" class="w-20 h-20 rounded-full mx-auto mb-5 flex items-center justify-center text-3xl">
+                <!-- Icon injected -->
+            </div>
+            <h2 id="modalTitle" class="text-2xl font-bold text-slate-900 mb-2">Evaluación Clínica</h2>
+            <p id="modalScore" class="text-5xl font-black mb-3"></p>
+            <p id="modalMessage" class="text-slate-600 text-sm leading-relaxed mb-6"></p>
+            <button onclick="closeModal()" class="bg-slate-900 hover:bg-slate-800 text-white font-semibold px-6 py-3 rounded-full transition-colors w-full">
+                Finalizar Chequeo
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Slide Logic
+        let currentSlide = 1;
+        const totalSlides = 7;
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const dotsContainer = document.getElementById('dots');
+        const slideCounter = document.getElementById('slideCounter');
+
+        // Init Dots
+        for(let i=1; i<=totalSlides; i++) {
+            const dot = document.createElement('div');
+            dot.className = `w-2 h-2 rounded-full transition-all duration-300 ${i===1 ? 'bg-poli-600 w-6' : 'bg-slate-200'}`;
+            dotsContainer.appendChild(dot);
+        }
+
+        function updateUI() {
+            // Update Slides
+            document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
+            document.getElementById(`slide-${currentSlide}`).classList.add('active');
+            
+            // Scroll to top of slide
+            document.getElementById(`slide-${currentSlide}`).scrollTop = 0;
+
+            // Update Dots
+            const dots = dotsContainer.children;
+            for(let i=0; i<dots.length; i++) {
+                dots[i].className = `w-2 h-2 rounded-full transition-all duration-300 ${i+1 === currentSlide ? 'bg-poli-600 w-6' : 'bg-slate-200'}`;
+            }
+
+            // Update Header Counter
+            slideCounter.textContent = `Placa ${currentSlide} de ${totalSlides}`;
+
+            // Update Buttons
+            prevBtn.disabled = currentSlide === 1;
+            nextBtn.disabled = currentSlide === totalSlides;
+
+            // Start Timer only on Slide 7 (Examen)
+            if(currentSlide === 7 && !timerStarted) {
+                startTimer();
+            }
+        }
+
+        function nextSlide() { if(currentSlide < totalSlides) { currentSlide++; updateUI(); } }
+        function prevSlide() { if(currentSlide > 1) { currentSlide--; updateUI(); } }
+
+        updateUI(); // Initial call
+
+        // Radio Button Styling Logic
+        document.querySelectorAll('input[type="radio"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                // Remove selected class from all containers in this group
+                const groupName = this.name;
+                document.querySelectorAll(`input[name="${groupName}"]`).forEach(r => {
+                    r.closest('.radio-container').classList.remove('selected');
+                });
+                // Add to checked
+                this.closest('.radio-container').classList.add('selected');
+            });
+        });
+
+        // Quiz & Timer Logic
+        const correctAnswers = { q1: 'B', q2: 'C', q3: 'C', q4: 'C', q5: 'B' };
+        let timeLeft = 600; // 10 mins
+        let timerInterval;
+        let timerStarted = false;
+        const timerDisplay = document.getElementById('timerDisplay');
+        const form = document.getElementById('quizForm');
+
+        function startTimer() {
+            timerStarted = true;
+            timerInterval = setInterval(() => {
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    timerDisplay.textContent = "00:00";
+                    timerDisplay.classList.replace('text-white', 'text-red-500');
+                    evaluateQuiz();
+                } else {
+                    let m = Math.floor(timeLeft / 60);
+                    let s = timeLeft % 60;
+                    timerDisplay.textContent = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+                    if(timeLeft <= 60) timerDisplay.classList.add('text-red-400');
+                    timeLeft--;
+                }
+            }, 1000);
+        }
+
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            clearInterval(timerInterval);
+            evaluateQuiz();
+        });
+
+        function evaluateQuiz() {
+            const formData = new FormData(form);
+            let score = 0;
+            
+            // Check if all answered, if auto-submitted by timer, unanswered = 0
+            for (let [q, a] of Object.entries(correctAnswers)) {
+                if (formData.get(q) === a) score += 20;
+            }
+            showModal(score);
+        }
+
+        function showModal(score) {
+            const modal = document.getElementById('resultModal');
+            const mContent = document.getElementById('modalContent');
+            const mIcon = document.getElementById('modalIcon');
+            const mTitle = document.getElementById('modalTitle');
+            const mScore = document.getElementById('modalScore');
+            const mMessage = document.getElementById('modalMessage');
+
+            modal.classList.remove('hidden');
+            void modal.offsetWidth; // trigger reflow
+            modal.classList.remove('opacity-0');
+            mContent.classList.remove('scale-95');
+
+            mScore.textContent = `${score}%`;
+
+            if (score >= 90) {
+                mIcon.className = "w-20 h-20 rounded-full mx-auto mb-4 flex items-center justify-center text-3xl bg-green-50 text-green-500";
+                mIcon.innerHTML = '<i class="fa-solid fa-check-double"></i>';
+                mTitle.textContent = "¡Alta Médica!";
+                mScore.className = "text-5xl font-black mb-3 text-green-500";
+                mMessage.innerHTML = "Has demostrado gran capacidad para leer el contexto y asegurar la calidad. ¡Eres un Consultor Estratégico!";
+            } else {
+                mIcon.className = "w-20 h-20 rounded-full mx-auto mb-4 flex items-center justify-center text-3xl bg-red-50 text-red-500";
+                mIcon.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>';
+                mTitle.textContent = "Requiere Seguimiento";
+                mScore.className = "text-5xl font-black mb-3 text-red-500";
+                mMessage.innerHTML = "El tratamiento debe reforzarse. Recuerda que la meta es 90%. Repasa la Terapia de Pausa Quirúrgica.";
+            }
+        }
+
+        function closeModal() {
+            location.reload(); // Simple reset for presentation purposes
+        }
+    </script>
+</body>
+</html>
