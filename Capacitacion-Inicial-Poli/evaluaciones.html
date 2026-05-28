@@ -6,13 +6,23 @@ import { getFirestore, collection, addDoc, onSnapshot } from 'firebase/firestore
 
 let app, auth, db, appId;
 try {
-  const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
-  app = initializeApp(firebaseConfig);
-  auth = getAuth(app);
-  db = getFirestore(app);
-  appId = typeof __app_id !== 'undefined' ? __app_id : 'evaluacion-poli-app';
-} catch (error) {
-  console.error("Error inicializando Firebase:", error);
+  // Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyDTfwHBqGnB9axzTj4XzdVkcq6BcY_ZjqM",
+  authDomain: "poli-evaluaciones-360.firebaseapp.com",
+  projectId: "poli-evaluaciones-360",
+  storageBucket: "poli-evaluaciones-360.firebasestorage.app",
+  messagingSenderId: "12426009380",
+  appId: "1:12426009380:web:da9738f10949e7f585f1b1"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
 }
 
 const questionBank = {
