@@ -1,1 +1,823 @@
+import React, { useState, useEffect } from 'react';
+import { ShieldCheck, UserCircle, CheckCircle, AlertCircle, Award, ArrowRight, ArrowLeft, ListChecks, LogOut, Database, ChevronDown, ChevronUp, Lightbulb } from 'lucide-react';
+import { initializeApp } from 'firebase/app';
+import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from 'firebase/auth';
+import { getFirestore, collection, addDoc, onSnapshot } from 'firebase/firestore';
 
+let app, auth, db, appId;
+try {
+  const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+  app = initializeApp(firebaseConfig);
+  auth = getAuth(app);
+  db = getFirestore(app);
+  appId = typeof __app_id !== 'undefined' ? __app_id : 'evaluacion-poli-app';
+} catch (error) {
+  console.error("Error inicializando Firebase:", error);
+}
+
+const questionBank = {
+  fase2: [
+    { 
+      id: 201, 
+      topic: 'Analytics', 
+      text: "¿En qué pestaña y sección de Analytics validas si a un estudiante ya le registraron las materias que inscribió a través del Smart Campus?", 
+      options: ["Pestaña 'Académico' -> Avance Curricular", "Pestaña 'Inscripción de Asignaturas'", "Tabla 'Proceso de Grado'"], 
+      correct: 1 
+    },
+    { 
+      id: 202, 
+      topic: 'Analytics', 
+      text: "Estás diagnosticando a un estudiante para saber si ya puede aplicar para sus derechos de grado. ¿En qué campo de Analytics confirmas si ya está listo para inscribirse?", 
+      options: ["Pestaña 'Académico' -> Notas", "Pestaña 'Proceso de Grado', revisar que le aparezca el cumplimiento en Yes", "Pestaña 'Servicio' -> Trámites"], 
+      correct: 1 
+    },
+    { 
+      id: 203, 
+      topic: 'Analytics', 
+      text: "Necesitas saber si un estudiante virtual tiene el Inglés como 'Materia' o como 'Requisito Institucional'. ¿En qué pestaña buscas esta información?", 
+      options: ["Pestaña 'Avance Curricular'", "Pestaña 'Inscripción de Asignaturas'", "Pestaña 'Bitácora'"], 
+      correct: 0 
+    },
+    { 
+      id: 204, 
+      topic: 'Certificados', 
+      text: "Un estudiante necesita un certificado para pedir un auxilio económico en su empresa y poder pagar la licencia de English Discovery. ¿Qué tipo de certificado de inglés le sirve a este estudiante?", 
+      tip: "💡 Tip: Revisa en el soporte servicio por administrativo certificados.",
+      options: ["Certificado de obligatoriedad", "Certificado de cumplimiento", "Certificado de uso de licencia"], 
+      correct: 2 
+    },
+    { 
+      id: 205, 
+      topic: 'Financiación', 
+      text: "Financiación donde paga la mitad. Y tiene el beneficio o ventaja por inscribir todas sus materias firmando una carta de compromiso con la fecha establecida para poder cancelar la otra mitad una semana antes del inicio de clases.", 
+      options: ["Media Matrícula", "Pago 50/50", "Beca Institucional"], 
+      correct: 1 
+    },
+    { 
+      id: 206, 
+      topic: 'Opciones de Grado', 
+      text: "¿Cuáles son las consideraciones y advertencias consultivas para promover la opción de grado al semestre coterminal?", 
+      options: [
+        "Que se requiere un promedio de 3.5, y al finalizar el semestre coterminal tiene un valor diferencial, además deben cumplir mínimo el 75% de avance curricular para poder aplicar a esta opción que les permite cursar en un primer semestre una especialización o maestría.", 
+        "Requiere promedio de 3.8 y firmar un pagaré.", 
+        "Se puede cursar en cualquier semestre sin importar el avance curricular."
+      ], 
+      correct: 0 
+    },
+    { 
+      id: 207, 
+      topic: 'Financiero', 
+      text: "Un estudiante Virtual quiere realizar un acuerdo de 'Pago por Bloques'. ¿Cuál es el paso OBLIGATORIO en Analytics antes de decirle que sí se puede?", 
+      options: [
+        "Verificar que no tenga deudas en la biblioteca.", 
+        "Verificar en proyecciones que sí tenga material disponibles tanto para primer como segundo bloque.", 
+        "Validar si su admisión fue por convenio."
+      ], 
+      correct: 1 
+    },
+    { 
+      id: 208, 
+      topic: 'Financiero', 
+      text: "Estudiante pagó en efectivo en el banco y no le aparecen materias inmediatamente. ¿Qué verificas?", 
+      options: [
+        "Le digo que el sistema tarda 48 horas en procesarlo.", 
+        "Verifico que el dinero ya haya ingresado a través de Analytics Financiero y le confirmo que ya puede realizar su proceso de inscripción de asignaturas desde el Smart Campus.", 
+        "Que borre caché y cookies."
+      ], 
+      correct: 1 
+    },
+    { 
+      id: 209, 
+      topic: 'Trámites', 
+      text: "Tiempo de respuesta para que se apruebe una solicitud de reintegro cuando nosotros la gestionamos dentro de la llamada.", 
+      options: ["Inmediato", "24 horas hábiles", "De 48 a 72 horas hábiles"], 
+      correct: 2 
+    },
+    { 
+      id: 210, 
+      topic: 'Grados', 
+      text: "Cuando el estudiante genera su orden de pago para los Derechos de Grado, debe elegir el tipo de ceremonia. ¿Qué le debes advertir?", 
+      options: [
+        "Que cuesta más si elige presencial.", 
+        "Es importante que seas consciente del tipo de ceremonia que vas a elegir ya que no se puede cambiar después de que se te genere la orden de pago.", 
+        "Que si no asiste, pierde el derecho al diploma."
+      ], 
+      correct: 1 
+    },
+    { 
+      id: 211, 
+      topic: 'Certificados', 
+      text: "Para un certificado con formato especial de Colpensiones, ¿qué debe pagar en Smart Campus para escalar el ticket?", 
+      tip: "💡 Tip: Revisa en el Soporte Servicio por Administrativo > Certificados.",
+      options: ["Certificado de notas generales", "Certificado de conducta", "Un certificado de créditos aprobados"], 
+      correct: 2 
+    },
+    { 
+      id: 212, 
+      topic: 'Multilingüismo', 
+      text: "Para estudiantes presenciales, ¿en qué convenios específicos SÍ se permite adquirir licencia de English Discoveries?", 
+      options: [
+        "Convenio SENA y Policía Nacional general", 
+        "Derecho – PONAL (TP) en Bogotá y Medellín, Psicología (TD) en Medellín – CESDE, Artes de la Escena en Teatro Nacional, Diseño de Modas en Arturo Tejada", 
+        "Ningún presencial puede tomar English Discoveries"
+      ], 
+      correct: 1 
+    },
+    { 
+      id: 213, 
+      topic: 'Bienestar', 
+      text: "Un estudiante ingresa a talleres deportivos. ¿Cuántas horas se contabilizan?", 
+      options: [
+        "1 hora exacta.", 
+        "Duración máxima hora y media, pero solamente en Bogotá cuando deciden tomar una clase deportiva de hora y media según la regla, se le contabilizan 2 horas.", 
+        "3 horas por clase."
+      ], 
+      correct: 1 
+    },
+    { 
+      id: 214, 
+      topic: 'Opciones de Grado', 
+      text: "[Falso/Verdadero] Si un estudiante aprueba un MOOC de Emprendimiento el 1 de mayo, al día siguiente ya tendrá el crédito cargado.", 
+      options: [
+        "Verdadero", 
+        "Falso. Se carga una semana después del cierre y al finalizar el curso debe llenar el formulario."
+      ], 
+      correct: 1 
+    },
+    { 
+      id: 215, 
+      topic: 'Opciones de Grado', 
+      text: "[Falso/Verdadero] Si un estudiante inscribe en el 202610 la materia de opción de grado y cursa el diplomado en el 202660 o en el siguiente periodo, debe volver a pagar la materia.", 
+      options: ["Verdadero", "Falso"], 
+      correct: 1 
+    },
+    { 
+      id: 216, 
+      topic: 'Lógica Académica', 
+      text: "[Falso/Verdadero] En la metodología por créditos, si el estudiante paga Media Matrícula y le corresponden '7.5 créditos', el sistema redondeará a 8 créditos para no perjudicarlo.", 
+      options: [
+        "Verdadero", 
+        "Falso. El sistema le asigna los 7.5, pero solo va a poder utilizar lo que le alcance con los 7."
+      ], 
+      correct: 1 
+    },
+    { 
+      id: 217, 
+      topic: 'Grados', 
+      text: "¿Cuál de estos medios de pago NO es válido para pagar Derechos de Grado?", 
+      options: [
+        "Pago en línea por PSE o Tarjeta de Crédito", 
+        "Recibo impreso pagado en el Banco de Bogotá", 
+        "Cesantías, Fondo Nacional del Ahorro, ningún tipo de carta crédito ICETEX, transferencias a Nequi o corresponsales bancarios"
+      ], 
+      correct: 2 
+    }
+  ],
+  fase3: [
+    { 
+      id: 301, 
+      topic: 'Tipificación', 
+      text: "Analiza la siguiente situación: si el estudiante dentro de la llamada te hace varias consultas, de las cuales las 3 primeras son de información general que logras resolver en primer contacto, pero después te solicita que le ayudes a derivar o escalar un caso, ¿cuál es la regla?", 
+      options: [
+        "Se crea ticket por primer contacto y ticket por derivación", 
+        "Se crea únicamente ticket de derivación pesa más", 
+        "No se crea ningún ticket"
+      ], 
+      correct: 1 
+    },
+    { 
+      id: 302, 
+      topic: 'HubSpot', 
+      text: "En una llamada con el estudiante le explicas todo el proceso para inscripción a grados, quién tiene pendiente, cuál es el paso a paso, cómo debe hacer la inscripción, costos y fechas, pero el estudiante te manifiesta que hay un error porque ya terminó materias y le están generando el cobro del próximo semestre, ¿qué creas?", 
+      options: [
+        "Ticket de primer contacto por información general del proceso de grados y ticket de derivación por orden de matrícula.", 
+        "Únicamente ticket de derivación por orden de matrícula pesa más.", 
+        "Únicamente ticket de primer contacto por información general del proceso de grados."
+      ], 
+      correct: 1 
+    },
+    { 
+      id: 303, 
+      topic: 'Genesys', 
+      text: "Código para transferencia sin consulta para posgrados en Genesys cuando el estudiante desea comunicarse o desea validar información sobre un posgrado.", 
+      tip: "💡 Tip: Revisa en soporte servicio > procesos de operación > IVR Poli Adm",
+      options: ["1002", "1003", "1004", "1000"], 
+      correct: 0 
+    },
+    { 
+      id: 304, 
+      topic: 'HubSpot', 
+      text: "Información importante o indispensable al momento de crear un ticket:", 
+      options: [
+        "Definir un nombre claro para el ticket.", 
+        "Transcribir literal palabra por palabra de todo lo sucedido en la llamada (lo que preguntó y lo que se respondió).", 
+        "Ser muy detallados en la descripción, colocar la información requerida, asociar el contacto con el ticket y verificar que realmente el ticket esté quedando dentro del contacto del estudiante."
+      ], 
+      correct: 2 
+    },
+    { 
+      id: 305, 
+      topic: 'HubSpot', 
+      text: "[Falso/Verdadero] Si se comunica un estudiante solicitando información de un ticket que tiene creado desde hace una semana el cual sigue activo, ¿debes crear un nuevo ticket de primer contacto notificando por qué llamó y qué fue lo que le dijiste?", 
+      options: ["Verdadero", "Falso"], 
+      correct: 1 
+    },
+    { 
+      id: 306, 
+      topic: 'HubSpot', 
+      text: "[Falso/Verdadero] Si la llamada se corta antes de conocer el motivo de la consulta, pero el estudiante ya te había confirmado los datos, debes crear un ticket.", 
+      options: [
+        "Verdadero, se crea un ticket de queja.", 
+        "Falso, se crea el ticket por información general de la institución indicando que la llamada se cortó antes de conocer el motivo de consulta."
+      ], 
+      correct: 1 
+    },
+    { 
+      id: 307, 
+      topic: 'HubSpot', 
+      text: "[Falso/Verdadero] Para crear un ticket, ya sea en primer contacto o en derivación, es obligatorio que siempre ingreses desde el registro académico del estudiante que se encuentra en la columna de la derecha.", 
+      options: ["Verdadero", "Falso"], 
+      correct: 0 
+    },
+    { 
+      id: 308, 
+      topic: 'Reglas de Servicio', 
+      text: "[Falso/Verdadero] Estás atendiendo a un estudiante nuevo que aún no cuenta con registro académico. El estudiante manifiesta que necesita urgente un certificado de pago. Dejas la nota dentro del contacto del estudiante en la pestaña de actividades y notificas a través de correo a tu jefe comercial con copia a calidad.", 
+      options: ["Verdadero", "Falso"], 
+      correct: 0 
+    }
+  ]
+};
+
+export default function App() {
+  const [user, setUser] = useState(null);
+  const [view, setView] = useState('home'); // home, quiz, result, adminLogin, adminDashboard
+  
+  // Estado del Estudiante
+  const [studentInfo, setStudentInfo] = useState({ name: '', cedula: '', phase: 'fase2' });
+  const [currentQuestions, setCurrentQuestions] = useState([]);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [answers, setAnswers] = useState({});
+  const [finalResult, setFinalResult] = useState(null);
+  const [completedPhases, setCompletedPhases] = useState([]);
+
+  // Estado del Admin
+  const [adminPassword, setAdminPassword] = useState('');
+  const [adminError, setAdminError] = useState('');
+  const [submissions, setSubmissions] = useState([]);
+
+  useEffect(() => {
+    if (!auth) return;
+    const initAuth = async () => {
+      try {
+        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+          await signInWithCustomToken(auth, __initial_auth_token);
+        } else {
+          await signInAnonymously(auth);
+        }
+      } catch (err) {
+        console.error("Auth error:", err);
+      }
+    };
+    initAuth();
+    
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+    });
+
+    // Cargar progreso guardado
+    const savedProgress = localStorage.getItem('poli_progress');
+    if (savedProgress) {
+      const parsed = JSON.parse(savedProgress);
+      if (parsed.answers && Object.keys(parsed.answers).length > 0) {
+        setStudentInfo(parsed.studentInfo);
+        setAnswers(parsed.answers);
+        setCurrentQuestionIndex(parsed.currentIndex || 0);
+        setCurrentQuestions(questionBank[parsed.studentInfo.phase]);
+        setView('quiz');
+      }
+    }
+
+    const savedCompleted = localStorage.getItem('poli_completed');
+    if (savedCompleted) {
+      setCompletedPhases(JSON.parse(savedCompleted));
+    }
+
+    return () => unsubscribe();
+  }, []);
+
+  // Guardar progreso en tiempo real
+  useEffect(() => {
+    if (view === 'quiz') {
+      localStorage.setItem('poli_progress', JSON.stringify({
+        studentInfo,
+        answers,
+        currentIndex: currentQuestionIndex
+      }));
+    } else if (view === 'result') {
+      localStorage.removeItem('poli_progress'); // Limpiar al terminar
+    }
+  }, [answers, currentQuestionIndex, view, studentInfo]);
+
+  const startQuiz = (e) => {
+    e.preventDefault();
+    if (!studentInfo.name || !studentInfo.cedula) return;
+    setCurrentQuestions(questionBank[studentInfo.phase]);
+    setCurrentQuestionIndex(0);
+    setAnswers({});
+    setView('quiz');
+  };
+
+  const handleAnswer = (optionIndex) => {
+    setAnswers({ ...answers, [currentQuestionIndex]: optionIndex });
+  };
+
+  const nextQuestion = () => {
+    if (currentQuestionIndex < currentQuestions.length - 1) {
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
+    }
+  };
+
+  const prevQuestion = () => {
+    if (currentQuestionIndex > 0) {
+      setCurrentQuestionIndex(currentQuestionIndex - 1);
+    }
+  };
+
+  const jumpToQuestion = (index) => {
+    setCurrentQuestionIndex(index);
+  };
+
+  const finishQuiz = async () => {
+    let correctCount = 0;
+    const incorrectAnswers = [];
+
+    currentQuestions.forEach((q, index) => {
+      if (answers[index] === q.correct) {
+        correctCount++;
+      } else {
+        incorrectAnswers.push({
+          question: q.text,
+          selected: q.options[answers[index]] || "No respondida",
+          correctAnswer: q.options[q.correct]
+        });
+      }
+    });
+
+    const scorePercentage = (correctCount / currentQuestions.length) * 100;
+    
+    const resultData = {
+      name: studentInfo.name,
+      cedula: studentInfo.cedula,
+      phase: studentInfo.phase === 'fase2' ? 'Fase 2 (Producto)' : 'Fase 3 (Herramientas)',
+      score: correctCount,
+      total: currentQuestions.length,
+      percentage: scorePercentage,
+      incorrectAnswers,
+      timestamp: new Date().toISOString()
+    };
+
+    setFinalResult(resultData);
+    
+    // Marcar fase como completada
+    const newCompleted = [...completedPhases, studentInfo.phase];
+    const uniqueCompleted = [...new Set(newCompleted)];
+    setCompletedPhases(uniqueCompleted);
+    localStorage.setItem('poli_completed', JSON.stringify(uniqueCompleted));
+
+    setView('result');
+
+    // HÍBRIDO: Guardar siempre en LocalStorage primero
+    try {
+      const localData = JSON.parse(localStorage.getItem('poli_evaluations') || '[]');
+      localData.push({ id: Date.now().toString(), ...resultData });
+      localStorage.setItem('poli_evaluations', JSON.stringify(localData));
+    } catch (e) {
+      console.error("Error guardando en memoria local:", e);
+    }
+
+    // Intentar subir a Firebase
+    if (user && db) {
+      try {
+        const evalCollection = collection(db, 'artifacts', appId, 'public', 'data', 'evaluaciones');
+        await addDoc(evalCollection, resultData);
+      } catch (err) {
+        console.warn("Firebase bloqueado. Se ha guardado en LocalStorage exitosamente.", err);
+      }
+    }
+  };
+
+  const handleAdminLogin = (e) => {
+    e.preventDefault();
+    if (adminPassword === 'Poli2026') {
+      setView('adminDashboard');
+      setAdminError('');
+    } else {
+      setAdminError('Contraseña incorrecta. Intenta de nuevo.');
+    }
+  };
+
+  useEffect(() => {
+    if (view === 'adminDashboard') {
+      // 1. Cargar datos locales como respaldo inmediato
+      try {
+        const localData = JSON.parse(localStorage.getItem('poli_evaluations') || '[]');
+        localData.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        setSubmissions(localData);
+      } catch (e) {
+        console.error("Error leyendo memoria local:", e);
+      }
+
+      // 2. Intentar Firebase
+      if (user && db) {
+        const evalCollection = collection(db, 'artifacts', appId, 'public', 'data', 'evaluaciones');
+        const unsubscribe = onSnapshot(evalCollection, (snapshot) => {
+          const docs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          if(docs.length > 0) {
+            docs.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            setSubmissions(docs);
+          }
+        }, (err) => {
+          console.warn("Firebase snapshot bloqueado. Usando datos locales.");
+        });
+        return () => unsubscribe();
+      }
+    }
+  }, [view, user]);
+
+  const AccordionItem = ({ item, index }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    return (
+      <div className="border border-red-200 rounded-lg mb-3 overflow-hidden bg-white">
+        <button 
+          onClick={() => setIsOpen(!isOpen)} 
+          className="w-full flex justify-between items-center p-4 bg-red-50 hover:bg-red-100 transition-colors text-left"
+        >
+          <div className="flex items-center gap-3">
+            <AlertCircle className="w-5 h-5 text-red-500 shrink-0" />
+            <span className="font-semibold text-red-900 text-sm">Pregunta {index + 1}</span>
+          </div>
+          {isOpen ? <ChevronUp className="w-5 h-5 text-red-500" /> : <ChevronDown className="w-5 h-5 text-red-500" />}
+        </button>
+        {isOpen && (
+          <div className="p-4 bg-white text-sm">
+            <p className="font-medium text-slate-800 mb-3">{item.question}</p>
+            <div className="space-y-2">
+              <div className="p-3 bg-slate-50 rounded-md border border-slate-200">
+                <span className="text-xs font-bold text-slate-500 uppercase">Tu respuesta:</span>
+                <p className="text-slate-600 mt-1">{item.selected}</p>
+              </div>
+              <div className="p-3 bg-green-50 rounded-md border border-green-200">
+                <span className="text-xs font-bold text-green-700 uppercase">Respuesta Correcta:</span>
+                <p className="text-green-800 mt-1 font-medium">{item.correctAnswer}</p>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const renderHome = () => (
+    <div className="max-w-md mx-auto mt-12 bg-white p-8 rounded-2xl shadow-xl border border-slate-100 animate-in fade-in duration-500">
+      <div className="flex justify-center mb-6">
+        <div className="bg-blue-900 p-4 rounded-full shadow-lg">
+          <ShieldCheck className="w-12 h-12 text-yellow-400" />
+        </div>
+      </div>
+      <h1 className="text-2xl font-extrabold text-center text-blue-900 mb-2 cursor-default select-none">
+        Ecosistema de Conocimiento
+      </h1>
+      <p className="text-sm text-center text-slate-500 mb-8">
+        Ingresa tus datos para comenzar.
+      </p>
+
+      <form onSubmit={startQuiz} className="space-y-5">
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-1">Nombre Completo</label>
+          <input 
+            required 
+            type="text" 
+            placeholder="Ej. María Pérez"
+            className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+            value={studentInfo.name}
+            onChange={e => setStudentInfo({...studentInfo, name: e.target.value})}
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-1">Número de Documento</label>
+          <input 
+            required 
+            type="number" 
+            placeholder="Ej. 1020304050"
+            className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+            value={studentInfo.cedula}
+            onChange={e => setStudentInfo({...studentInfo, cedula: e.target.value})}
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-1">Selecciona el módulo</label>
+          <select 
+            className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 outline-none transition-all bg-white"
+            value={studentInfo.phase}
+            onChange={e => setStudentInfo({...studentInfo, phase: e.target.value})}
+          >
+            <option value="fase2">Fase 2: Producto y Procesos</option>
+            <option value="fase3">Fase 3: Herramientas (HubSpot/Genesys)</option>
+          </select>
+        </div>
+        <button type="submit" className="w-full bg-blue-900 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-800 transition-colors flex items-center justify-center gap-2 mt-4">
+          Comenzar <ArrowRight className="w-4 h-4" />
+        </button>
+      </form>
+    </div>
+  );
+
+  const renderQuiz = () => {
+    const question = currentQuestions[currentQuestionIndex];
+    const isAnswered = answers[currentQuestionIndex] !== undefined;
+    const isLastQuestion = currentQuestionIndex === currentQuestions.length - 1;
+
+    return (
+      <div className="max-w-3xl mx-auto mt-8 animate-in fade-in">
+        {/* Grilla de Navegación */}
+        <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-100 mb-6 flex flex-wrap gap-2 justify-center">
+          {currentQuestions.map((_, idx) => (
+            <button
+              key={idx}
+              onClick={() => jumpToQuestion(idx)}
+              className={`w-8 h-8 rounded-md text-xs font-bold transition-colors flex items-center justify-center ${
+                currentQuestionIndex === idx ? 'bg-blue-900 text-white ring-2 ring-blue-300' :
+                answers[idx] !== undefined ? 'bg-green-100 text-green-700 border border-green-200' :
+                'bg-slate-100 text-slate-400 hover:bg-slate-200'
+              }`}
+            >
+              {idx + 1}
+            </button>
+          ))}
+        </div>
+
+        <div className="bg-white p-8 rounded-2xl shadow-lg border border-slate-100">
+          <div className="mb-6">
+            <span className="inline-block bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full font-bold uppercase tracking-wider mb-3">
+              Pregunta {currentQuestionIndex + 1} de {currentQuestions.length}
+            </span>
+            <h3 className="text-xl font-semibold text-slate-800 leading-relaxed">
+              {question.text}
+            </h3>
+            {question.tip && (
+              <div className="mt-4 bg-yellow-50 border border-yellow-200 text-yellow-800 text-sm p-3 rounded-lg flex items-start gap-2">
+                <Lightbulb className="w-5 h-5 text-yellow-500 shrink-0" />
+                <span className="font-medium">{question.tip}</span>
+              </div>
+            )}
+          </div>
+
+          <div className="space-y-3">
+            {question.options.map((opt, idx) => (
+              <button
+                key={idx}
+                onClick={() => handleAnswer(idx)}
+                className={`w-full text-left px-5 py-4 rounded-xl border-2 transition-all ${
+                  answers[currentQuestionIndex] === idx 
+                    ? 'border-blue-600 bg-blue-50 text-blue-900 font-medium shadow-sm' 
+                    : 'border-slate-200 hover:border-blue-300 hover:bg-slate-50 text-slate-700'
+                }`}
+              >
+                {opt}
+              </button>
+            ))}
+          </div>
+          
+          <div className="mt-8 flex justify-between items-center border-t border-slate-100 pt-6">
+            <button 
+              onClick={prevQuestion}
+              disabled={currentQuestionIndex === 0}
+              className={`font-bold py-3 px-6 rounded-lg flex items-center gap-2 transition-colors ${
+                currentQuestionIndex === 0 ? 'bg-transparent text-slate-300 cursor-not-allowed' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              }`}
+            >
+              <ArrowLeft className="w-4 h-4" /> Anterior
+            </button>
+
+            {isLastQuestion ? (
+              <button 
+                onClick={finishQuiz}
+                disabled={Object.keys(answers).length < currentQuestions.length}
+                className={`font-bold py-3 px-8 rounded-lg flex items-center gap-2 transition-colors ${
+                  Object.keys(answers).length === currentQuestions.length ? 'bg-yellow-400 text-blue-900 hover:bg-yellow-500 shadow-md' : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                }`}
+              >
+                Finalizar <CheckCircle className="w-4 h-4" />
+              </button>
+            ) : (
+              <button 
+                onClick={nextQuestion}
+                className="font-bold py-3 px-6 rounded-lg flex items-center gap-2 bg-blue-900 text-white hover:bg-blue-800 transition-colors shadow-md"
+              >
+                Siguiente <ArrowRight className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderResult = () => {
+    const isSuccess = finalResult.percentage >= 60;
+    const otherPhase = finalResult.phase.includes('Fase 2') ? 'fase3' : 'fase2';
+    const hasCompletedBoth = completedPhases.includes('fase2') && completedPhases.includes('fase3');
+    
+    return (
+      <div className="max-w-2xl mx-auto mt-12 bg-white p-8 rounded-2xl shadow-xl text-center border border-slate-100 animate-in zoom-in-95 duration-500">
+        <div className={`mx-auto w-20 h-20 rounded-full flex items-center justify-center mb-6 ${isSuccess ? 'bg-green-100' : 'bg-red-100'}`}>
+          {isSuccess ? <Award className="w-10 h-10 text-green-600" /> : <AlertCircle className="w-10 h-10 text-red-500" />}
+        </div>
+        <h2 className="text-3xl font-extrabold text-blue-900 mb-2">
+          {finalResult.percentage === 100 ? '¡Conocimiento Perfecto!' : isSuccess ? '¡Buen trabajo!' : 'Oportunidad de Mejora'}
+        </h2>
+        <p className="text-slate-500 mb-6">Resultados para: <span className="font-semibold text-slate-800">{finalResult.name}</span></p>
+        
+        <div className="bg-slate-50 rounded-xl p-6 mb-8 flex justify-center items-center gap-6">
+          <div className="text-center">
+            <div className="text-4xl font-black text-blue-900">{finalResult.score}</div>
+            <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mt-1">Aciertos</div>
+          </div>
+          <div className="w-px h-12 bg-slate-300"></div>
+          <div className="text-center">
+            <div className="text-4xl font-black text-blue-900">{finalResult.total}</div>
+            <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mt-1">Total</div>
+          </div>
+        </div>
+
+        {finalResult.incorrectAnswers.length > 0 && (
+          <div className="text-left mb-8">
+            <h3 className="text-lg font-bold text-slate-800 mb-4 border-b pb-2">Repaso Recomendado:</h3>
+            {finalResult.incorrectAnswers.map((item, idx) => (
+              <AccordionItem key={idx} item={item} index={idx} />
+            ))}
+          </div>
+        )}
+
+        <div className="space-y-4">
+          {!hasCompletedBoth ? (
+            <button 
+              onClick={() => {
+                setStudentInfo({ ...studentInfo, phase: otherPhase });
+                setView('home');
+              }}
+              className="bg-blue-900 text-white font-bold py-4 px-8 rounded-xl hover:bg-blue-800 transition-colors w-full shadow-md flex justify-center items-center gap-2"
+            >
+              Continuar con {otherPhase === 'fase2' ? 'Fase 2' : 'Fase 3'} <ArrowRight className="w-5 h-5" />
+            </button>
+          ) : (
+            <a 
+              href="https://anvacu2418.github.io/formacion-poli/encuestasati.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-yellow-400 text-blue-900 font-extrabold py-4 px-8 rounded-xl hover:bg-yellow-500 transition-colors w-full shadow-md flex justify-center items-center gap-2 block"
+            >
+              Ir a Encuesta de Satisfacción <CheckCircle className="w-5 h-5" />
+            </a>
+          )}
+          
+          <button 
+            onClick={() => {
+              setStudentInfo({ name: '', cedula: '', phase: 'fase2' });
+              setView('home');
+            }}
+            className="text-slate-500 font-bold py-3 px-8 rounded-lg hover:bg-slate-100 transition-colors w-full"
+          >
+            Volver al Inicio
+          </button>
+        </div>
+      </div>
+    );
+  };
+
+  const renderAdminLogin = () => (
+    <div className="max-w-sm mx-auto mt-20 bg-white p-8 rounded-2xl shadow-xl border border-slate-100">
+      <div className="flex justify-center mb-6">
+        <ShieldCheck className="w-12 h-12 text-blue-900" />
+      </div>
+      <h2 className="text-xl font-bold text-center text-blue-900 mb-6">Acceso Formadores</h2>
+      <form onSubmit={handleAdminLogin} className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-1">Contraseña de Acceso</label>
+          <input 
+            required 
+            type="password" 
+            className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 outline-none"
+            value={adminPassword}
+            onChange={e => setAdminPassword(e.target.value)}
+            placeholder="••••••••"
+          />
+        </div>
+        {adminError && <p className="text-red-500 text-sm text-center font-medium">{adminError}</p>}
+        <button type="submit" className="w-full bg-blue-900 text-white font-bold py-3 rounded-lg hover:bg-blue-800 transition-colors">
+          Ingresar
+        </button>
+        <button type="button" onClick={() => setView('home')} className="w-full text-slate-500 text-sm hover:text-slate-800 font-medium">
+          Volver al Inicio
+        </button>
+      </form>
+    </div>
+  );
+
+  const renderAdminDashboard = () => (
+    <div className="max-w-6xl mx-auto mt-8 bg-white p-8 rounded-2xl shadow-xl border border-slate-100 animate-in fade-in">
+      <div className="flex justify-between items-center mb-8 pb-6 border-b border-slate-100">
+        <div>
+          <h2 className="text-2xl font-bold text-blue-900 flex items-center gap-2">
+            <Database className="text-yellow-500" /> 
+            Panel de Formadores
+          </h2>
+          <p className="text-slate-500 text-sm mt-1">Supervisión de resultados.</p>
+        </div>
+        <button 
+          onClick={() => { setAdminPassword(''); setView('home'); }}
+          className="flex items-center gap-2 text-slate-500 hover:text-red-600 font-medium transition-colors bg-slate-50 px-4 py-2 rounded-lg"
+        >
+          <LogOut className="w-4 h-4" /> Salir
+        </button>
+      </div>
+
+      {submissions.length === 0 ? (
+        <div className="text-center py-12 text-slate-500">
+          <Database className="w-12 h-12 mx-auto text-slate-300 mb-3" />
+          <p>Aún no hay registros en la base de datos.</p>
+        </div>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-slate-50 text-slate-600 text-sm uppercase tracking-wider">
+                <th className="p-4 rounded-tl-lg">Estudiante</th>
+                <th className="p-4">Documento</th>
+                <th className="p-4">Módulo</th>
+                <th className="p-4 text-center">Puntaje</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {submissions.map((sub) => (
+                <tr key={sub.id} className="hover:bg-slate-50 transition-colors">
+                  <td className="p-4 font-medium text-blue-900">{sub.name}</td>
+                  <td className="p-4 text-slate-600">{sub.cedula}</td>
+                  <td className="p-4 text-slate-600">
+                    <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full font-semibold">
+                      {sub.phase}
+                    </span>
+                  </td>
+                  <td className="p-4 text-center">
+                    <div className={`inline-flex items-center justify-center w-10 h-10 rounded-full font-bold text-sm ${
+                      sub.percentage >= 80 ? 'bg-green-100 text-green-700' :
+                      sub.percentage >= 60 ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'
+                    }`}>
+                      {sub.score}/{sub.total}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+
+  return (
+    <div className="min-h-screen bg-slate-50 font-sans selection:bg-yellow-300 selection:text-blue-900 pb-12">
+      {/* Header Corporativo con Acceso Secreto en la 'P' */}
+      <header className="bg-blue-900 text-white shadow-md">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+          <div className="flex items-center gap-3">
+            <div 
+              onDoubleClick={() => setView('adminLogin')}
+              className="w-10 h-10 bg-yellow-400 rounded-lg flex items-center justify-center font-black text-blue-900 text-xl cursor-default select-none"
+              title="Poli"
+            >
+              P
+            </div>
+            <div>
+              <div className="font-bold tracking-wide leading-none">POLITÉCNICO</div>
+              <div className="text-xs text-yellow-400 font-medium tracking-widest">GRANCOLOMBIANO</div>
+            </div>
+          </div>
+          <div className="text-sm font-medium text-blue-200 hidden sm:block">
+            Formación 360
+          </div>
+        </div>
+      </header>
+
+      {/* Área de Renderizado */}
+      <main className="px-4">
+        {view === 'home' && renderHome()}
+        {view === 'quiz' && renderQuiz()}
+        {view === 'result' && renderResult()}
+        {view === 'adminLogin' && renderAdminLogin()}
+        {view === 'adminDashboard' && renderAdminDashboard()}
+      </main>
+    </div>
+  );
+}
