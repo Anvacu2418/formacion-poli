@@ -72,7 +72,6 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* Scrollbar styling */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); }
         ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
@@ -81,161 +80,143 @@
 </head>
 <body class="h-screen flex flex-col overflow-hidden">
 
-    <!-- Top Navigation -->
     <header class="glass-panel py-4 px-6 flex justify-between items-center z-10">
         <div class="flex items-center gap-3">
             <div class="bg-blue-600 p-2 rounded-lg text-white">
                 <i class="fas fa-headset"></i>
             </div>
             <div>
-                <h1 class="font-bold text-xl tracking-wide text-white">PoliGame <span class="text-blue-400 font-light">Simulador CX</span></h1>
+                <h1 class="font-bold text-xl tracking-wide">PoliGame <span class="text-blue-400 font-light">Simulador CX</span></h1>
                 <p class="text-xs text-gray-400">Entrenamiento de Venta Consultiva</p>
             </div>
         </div>
         <div class="flex items-center gap-6">
             <div class="text-right">
                 <p class="text-sm text-gray-300">Polipuntos Acumulados</p>
-                <p class="text-2xl font-bold text-amber-400" id="headerScore">0 <span class="text-sm text-gray-500">/ 100</span></p>
+                <p class="text-2xl font-bold text-yellow-400" id="headerScore">0 <span class="text-sm text-gray-400">/ 100</span></p>
             </div>
             <button id="resetBtn" class="text-gray-500 hover:text-red-400 text-xs hidden transition-colors"><i class="fas fa-sync-alt"></i> Reset Dev</button>
         </div>
     </header>
 
-    <!-- Welcome Modal -->
-    <div id="welcomeModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm transition-opacity">
-        <div class="bg-white max-w-2xl w-full mx-4 rounded-3xl p-12 relative overflow-hidden shadow-2xl border border-slate-100">
-            <div class="absolute top-0 left-0 w-full h-3 bg-gradient-to-r from-blue-500 to-indigo-500"></div>
-            <h2 class="text-4xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-indigo-700">¡Misión: Cierre Consultivo! 🚀</h2>
-            <p class="text-slate-600 mb-6 text-lg leading-relaxed">
+    <!-- Welcome Modal (Ventanita Blanca y Limpia) -->
+    <div id="welcomeModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm transition-opacity">
+        <div class="bg-white max-w-2xl w-full mx-4 rounded-2xl p-10 relative overflow-hidden shadow-2xl">
+            <div class="absolute top-0 left-0 w-full h-3 bg-gradient-to-r from-blue-500 to-indigo-600"></div>
+            <h2 class="text-3xl font-bold mb-6 text-gray-800 text-center">¡Misión: Cierre Consultivo! 🚀</h2>
+            <p class="text-gray-600 mb-6 leading-relaxed text-center text-lg">
                 Para ganar hasta <strong>100 Polipuntos</strong> hoy, enfrentarás 5 retos reales de gestión de estudiantes. Tu objetivo es demostrar tu dominio del modelo de Venta Consultiva.
             </p>
-            <div class="bg-blue-50 p-5 rounded-2xl border border-blue-100 mb-6">
-                <h3 class="font-semibold text-blue-800 mb-3 text-lg"><i class="fas fa-clipboard-check mr-2"></i> Parámetros de Evaluación:</h3>
-                <ul class="list-disc list-inside text-slate-700 space-y-2">
+            <div class="bg-blue-50 p-6 rounded-xl border border-blue-100 mb-6">
+                <h3 class="font-bold text-blue-800 mb-3"><i class="fas fa-clipboard-check mr-2"></i> Parámetros de Evaluación:</h3>
+                <ul class="list-disc list-inside text-sm text-gray-700 space-y-2">
                     <li><strong>Conexión y Empatía:</strong> Cómo abordas la emoción o situación del estudiante.</li>
-                    <li><strong>Solución Personalizada:</strong> Claridad en procesos, tiempos de respuesta y valores (indagación).</li>
+                    <li><strong>Solución Personalizada:</strong> Claridad en procesos, tiempos de respuesta y valores.</li>
                     <li><strong>Cierre Comercial:</strong> Cómo concretas el compromiso o el pago.</li>
                 </ul>
             </div>
-            <div class="bg-red-50 p-4 rounded-xl border border-red-100 mb-8 flex items-start gap-3">
+            <div class="bg-red-50 p-4 rounded-lg border border-red-100 mb-8 flex items-start gap-3">
                 <i class="fas fa-exclamation-triangle text-red-500 mt-1"></i>
-                <p class="text-sm text-red-800">Atención: Solo tienes <strong>UN INTENTO</strong>. Redacta tu respuesta completa y profesional como si estuvieras en el chat en vivo. Una IA analizará tu gestión al instante.</p>
+                <p class="text-sm text-red-700">Atención: Solo tienes <strong>UN INTENTO</strong>. Redacta tu respuesta completa y profesional como si estuvieras en el chat en vivo. Una IA analizará tu gestión al instante.</p>
             </div>
-            <button onclick="startGame()" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-4 px-6 rounded-xl transition-all transform hover:scale-[1.02] shadow-xl shadow-blue-500/20 text-lg">
+            <button onclick="startGame()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-6 rounded-xl transition-all transform hover:scale-[1.02] shadow-lg shadow-blue-500/30 text-lg">
                 Aceptar el Reto y Comenzar
             </button>
         </div>
     </div>
 
     <!-- Final Dashboard Modal -->
-    <div id="finalModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md hidden opacity-0 transition-opacity duration-500">
-        <div class="bg-white border border-slate-200 max-w-4xl w-full mx-4 rounded-3xl p-10 relative max-h-[90vh] overflow-y-auto shadow-2xl">
+    <div id="finalModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md hidden opacity-0 transition-opacity duration-500">
+        <div class="glass-panel max-w-4xl w-full mx-4 rounded-2xl p-8 relative max-h-[90vh] overflow-y-auto">
             <div class="text-center mb-8">
-                <h2 class="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-500 to-orange-500 mb-2">¡Evaluación Finalizada!</h2>
-                <p class="text-slate-600 text-lg">Aquí está el resumen de tu gestión comercial.</p>
-                <div class="mt-6 inline-block bg-white p-6 rounded-full border border-slate-100 shadow-[0_10px_40px_rgba(245,158,11,0.15)]">
-                    <p class="text-sm text-slate-400 uppercase tracking-widest mb-1 font-semibold">Polipuntos Obtenidos</p>
-                    <p class="text-6xl font-black text-amber-500" id="finalScoreDisplay">0</p>
+                <h2 class="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-yellow-200 mb-2">¡Evaluación Finalizada!</h2>
+                <p class="text-gray-300">Aquí está el resumen de tu gestión comercial.</p>
+                <div class="mt-6 inline-block bg-white/5 p-6 rounded-full border border-white/10 shadow-[0_0_50px_rgba(250,204,21,0.2)]">
+                    <p class="text-sm text-gray-400 uppercase tracking-widest mb-1">Polipuntos Obtenidos</p>
+                    <p class="text-6xl font-black text-yellow-400" id="finalScoreDisplay">0</p>
                 </div>
             </div>
-
-            <h3 class="text-xl font-bold text-slate-800 mb-6 border-b border-slate-200 pb-3">Feedback Detallado por Caso</h3>
-            <div id="feedbackContainer" class="space-y-4">
-                <!-- Feedback items will be injected here -->
-            </div>
+            <h3 class="text-xl font-semibold mb-4 border-b border-white/10 pb-2 text-white">Feedback Detallado por Caso</h3>
+            <div id="feedbackContainer" class="space-y-4"></div>
         </div>
     </div>
 
     <!-- Main App UI -->
     <div class="flex-1 flex overflow-hidden">
         
-        <!-- Sidebar: Cases List -->
-        <aside class="w-full md:w-1/3 lg:w-1/4 glass-panel border-t-0 border-b-0 border-l-0 flex flex-col border-r border-white/10">
-            <div class="p-5 border-b border-white/10">
-                <h2 class="font-bold text-gray-200 text-lg"><i class="fas fa-inbox mr-2 text-blue-400"></i> Casos Asignados</h2>
+        <aside class="w-full md:w-1/3 lg:w-1/4 glass-panel border-t-0 border-b-0 border-l-0 flex flex-col">
+            <div class="p-4 border-b border-white/10 bg-black/20">
+                <h2 class="font-semibold text-gray-200"><i class="fas fa-inbox mr-2"></i> Casos Asignados</h2>
             </div>
-            <div id="caseList" class="flex-1 overflow-y-auto py-2">
-                <!-- Case items injected via JS -->
-            </div>
+            <div id="caseList" class="flex-1 overflow-y-auto py-2"></div>
         </aside>
 
-        <!-- Main Content: Case Details & Input -->
-        <main class="w-full md:w-2/3 lg:w-3/4 flex flex-col relative">
+        <main class="w-full md:w-2/3 lg:w-3/4 flex flex-col relative bg-transparent">
             <div id="mainContent" class="hidden flex-col h-full">
-                <!-- Header -->
-                <div class="p-6 border-b border-white/10 bg-black/20 flex justify-between items-center backdrop-blur-sm">
+                
+                <div class="p-6 border-b border-white/10 bg-black/30 flex justify-between items-center">
                     <div>
                         <h2 id="currentStudentName" class="text-2xl font-bold text-white">Nombre Estudiante</h2>
-                        <p id="currentStudentProfile" class="text-sm text-blue-300 font-medium"><i class="fas fa-user-graduate mr-1"></i> Perfil</p>
+                        <p id="currentStudentProfile" class="text-sm text-blue-300"><i class="fas fa-user-graduate mr-1"></i> Perfil</p>
                     </div>
-                    <div id="caseScoreBadge" class="hidden px-4 py-2 rounded-full font-bold shadow-sm">
+                    <div id="caseScoreBadge" class="hidden glass-panel px-4 py-2 rounded-full border-green-500/50 bg-green-900/20 text-green-400 font-bold">
                         <i class="fas fa-star mr-1"></i> <span id="caseScoreText">15/20</span>
                     </div>
                 </div>
 
-                <!-- Chat Context -->
                 <div class="flex-1 p-6 overflow-y-auto space-y-6">
-                    
-                    <!-- Instructor directive -->
-                    <div class="bg-indigo-900/40 border border-indigo-500/30 rounded-2xl p-5 flex gap-4 shadow-sm">
-                        <div class="mt-1 text-indigo-400"><i class="fas fa-bullseye text-2xl"></i></div>
+                    <div class="bg-indigo-900/40 border border-indigo-500/30 rounded-xl p-4 flex gap-4">
+                        <div class="mt-1 text-indigo-400"><i class="fas fa-bullseye text-xl"></i></div>
                         <div>
-                            <h4 class="font-bold text-indigo-200 mb-1">Objetivo del Caso:</h4>
-                            <p id="currentObjective" class="text-sm text-gray-300 leading-relaxed"></p>
+                            <h4 class="font-semibold text-indigo-200 mb-1">Objetivo del Caso:</h4>
+                            <p id="currentObjective" class="text-sm text-gray-300"></p>
                         </div>
                     </div>
 
-                    <!-- Student Message -->
                     <div class="flex gap-4 max-w-3xl">
-                        <div class="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center flex-shrink-0 font-bold shadow-md shadow-blue-500/30 text-white">
+                        <div class="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center flex-shrink-0 font-bold shadow-lg shadow-blue-500/50 text-white">
                             <i class="fas fa-user"></i>
                         </div>
-                        <div class="chat-bubble-student p-5 shadow-sm text-gray-100">
-                            <p id="currentContext" class="text-sm leading-relaxed font-medium"></p>
+                        <div class="chat-bubble-student p-4 shadow-lg text-white">
+                            <p id="currentContext" class="text-sm leading-relaxed"></p>
                         </div>
                     </div>
 
-                    <!-- User Response (if already completed) -->
                     <div id="completedResponseArea" class="hidden flex-col items-end gap-4 max-w-3xl ml-auto mt-8">
                         <div class="flex gap-4 flex-row-reverse w-full">
-                            <div class="w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0 font-bold shadow-md shadow-emerald-500/30 text-white">
+                            <div class="w-10 h-10 rounded-full bg-emerald-600 flex items-center justify-center flex-shrink-0 font-bold shadow-lg shadow-emerald-500/50 text-white">
                                 <i class="fas fa-headset"></i>
                             </div>
-                            <div class="bg-emerald-900/30 border border-emerald-500/30 rounded-2xl rounded-tr-none p-5 w-full shadow-sm text-gray-100">
-                                <p id="userPastResponse" class="text-sm whitespace-pre-wrap font-medium"></p>
+                            <div class="bg-emerald-900/30 border border-emerald-500/30 rounded-2xl rounded-tr-none p-4 w-full">
+                                <p id="userPastResponse" class="text-sm text-gray-200 whitespace-pre-wrap"></p>
                             </div>
                         </div>
-                        <!-- AI Feedback Box -->
-                        <div class="w-full bg-white/5 border border-white/10 rounded-xl p-5 mt-2 shadow-sm">
-                            <h4 class="text-amber-400 text-sm font-bold mb-2"><i class="fas fa-robot mr-1"></i> Análisis de IA:</h4>
-                            <p id="aiPastFeedback" class="text-sm text-gray-300 leading-relaxed"></p>
+                        <div class="w-full bg-white/5 border border-white/10 rounded-xl p-4 mt-2">
+                            <h4 class="text-yellow-400 text-sm font-bold mb-2"><i class="fas fa-robot mr-1"></i> Análisis de IA:</h4>
+                            <p id="aiPastFeedback" class="text-sm text-gray-300"></p>
                         </div>
                     </div>
                 </div>
 
-                <!-- Input Area -->
-                <div id="inputArea" class="p-6 bg-black/30 border-t border-white/10 backdrop-blur-md">
-                    <label class="block text-xs font-bold text-gray-400 mb-2 uppercase tracking-wider">Tu respuesta al estudiante:</label>
+                <div id="inputArea" class="p-6 bg-black/40 border-t border-white/10">
+                    <label class="block text-xs text-gray-400 mb-2 uppercase tracking-wide">Tu respuesta al estudiante:</label>
                     <textarea id="userResponseInput" rows="4" class="w-full glass-input rounded-xl p-4 text-sm resize-none mb-4" placeholder="Redacta tu mensaje aquí. Recuerda aplicar empatía, dar la solución clara y buscar el cierre comercial..."></textarea>
                     <div class="flex justify-between items-center">
-                        <p class="text-xs text-gray-500 font-medium" id="typingIndicator">Recuerda: Una vez enviado, no podrás editarlo.</p>
-                        <button id="submitBtn" onclick="submitResponse()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold py-2.5 px-6 rounded-xl transition-colors flex items-center gap-2 shadow-md shadow-blue-500/20">
+                        <p class="text-xs text-gray-400" id="typingIndicator">Recuerda: Una vez enviado, no podrás editarlo.</p>
+                        <button id="submitBtn" onclick="submitResponse()" class="bg-blue-600 hover:bg-blue-500 text-white font-medium py-2 px-6 rounded-lg transition-colors flex items-center gap-2">
                             <span>Enviar y Evaluar</span>
                             <i class="fas fa-paper-plane"></i>
                         </button>
                     </div>
                 </div>
                 
-                <!-- Loading overlay for specific case -->
-                <div id="loadingOverlay" class="absolute inset-0 bg-black/60 backdrop-blur-sm z-20 hidden flex-col items-center justify-center">
+                <div id="loadingOverlay" class="absolute inset-0 bg-black/80 backdrop-blur-sm z-20 hidden flex-col items-center justify-center">
                     <div class="loader mb-4"></div>
-                    <p class="text-blue-300 font-bold animate-pulse text-lg">La IA está evaluando tu respuesta...</p>
-                    <p class="text-sm text-gray-400 mt-2 font-medium">Analizando empatía, solución y cierre.</p>
+                    <p class="text-blue-300 font-medium animate-pulse">La IA está evaluando tu respuesta...</p>
+                    <p class="text-xs text-gray-400 mt-2 text-center px-4" id="loadingText">Analizando empatía, solución y cierre.</p>
                 </div>
-
             </div>
 
-            <!-- Empty State -->
             <div id="emptyState" class="h-full flex flex-col items-center justify-center text-gray-500">
                 <i class="fas fa-comments text-7xl mb-6 opacity-30 text-blue-500"></i>
                 <p class="text-xl font-medium text-gray-400">Selecciona un caso del panel lateral para comenzar.</p>
@@ -243,12 +224,10 @@
         </main>
     </div>
 
-    <!-- SCRIPT LOGIC -->
     <script>
-        // API Configuration 
+        // AQUÍ ESTÁ TU LLAVE EXACTA
         const apiKey = "AQ.Ab8RN6JALzU1Cd6ZEl11lMflXXNDYL51Dzi4ImnvoU3pPC7Ogw"; 
 
-        // Database / State
         const rawCases = [
             {
                 id: 'case_1',
@@ -257,37 +236,25 @@
                 profile: 'Ingeniería de Software (Inactivo hace 3 años)',
                 context: '"Hola. Estudié con ustedes hace 3 años pero tuve que salir por problemas personales. Quiero retomar mi carrera ahora que tengo estabilidad, pero no sé cómo funciona eso ni cuánto me cuesta ahora. ¿Me ayudan?"',
                 objective: 'Validar novedades del programa en sistema. Explicar detalladamente el proceso de solicitud de reintegro, tiempos de respuesta, confirmar valores actuales de matrícula y llevarlo a un cierre (compromiso de pago).',
-                maxScore: 20,
-                completed: false,
-                userResponse: '',
-                aiScore: 0,
-                aiFeedback: ''
+                maxScore: 20, completed: false, userResponse: '', aiScore: 0, aiFeedback: ''
             },
             {
                 id: 'case_2',
                 title: 'Descuento Semestre 2',
                 studentName: 'Ana',
                 profile: 'Presencial - 2do Semestre',
-                context: '"Buenas tardes. Vi que ya me generaron la orden de pago de mi segundo semestre. El semestre pasado me dieron 55% de descuento. Quiero saber si me pueden aplicar algún descuento similar para este semestre para poder pagar de una vez."',
-                objective: 'Manejo de expectativas. Ten en cuenta esta revisión de analytics: Al estudiante le aplicaron 50% por admisión o bienvenida en el primer semestre (2026-1) y también le aplicaron un 5% por pronto pago. Explicar cómo funciona el descuento de continuidad o de la situación actual para 2026-2. Indicar cómo realizar la solicitud, tiempos y asegurar el cierre o compromiso con la nueva orden.',
-                maxScore: 20,
-                completed: false,
-                userResponse: '',
-                aiScore: 0,
-                aiFeedback: ''
+                context: '"Buenas tardes. Vi que ya me generaron la orden de pago de mi segundo semestre. Quiero saber si me pueden aplicar algún descuento similar para este semestre para poder pagar de una vez."',
+                objective: 'Manejo de expectativas. Ten en cuenta esta revisión de analytics: Al estudiante le aplicaron 50% por admisión o bienvenida en el primer semestre (2026-1) y también le aplicaron un 5% por pronto pago. Explicar cómo funciona el descuento de continuidad o de la situación actual para 2026-2. Indicar cómo realizar la solicitud, tiempos y asegurar el cierre.',
+                maxScore: 20, completed: false, userResponse: '', aiScore: 0, aiFeedback: ''
             },
             {
                 id: 'case_3',
                 title: 'Cambio Modalidad Pago',
                 studentName: 'Carlos',
                 profile: 'Estudiante Virtual',
-                context: '"Hola, quiero realizar el pago de mi matrícula por bloques ya que siempre lo he realizado de esta manera me ayuda a generar el recibo, por favor"',
+                context: '"Hola, quiero realizar el pago de mi matrícula por bloques ya que siempre lo he realizado de esta manera. ¿Me ayuda a generar el recibo por favor?"',
                 objective: 'Persuasión. Disuadir al estudiante de pagar por bloques y convencerlo de usar la modalidad de pago 50/50. Mostrarle las ventajas y beneficios de esta modalidad y concretar el cierre de la negociación.',
-                maxScore: 20,
-                completed: false,
-                userResponse: '',
-                aiScore: 0,
-                aiFeedback: ''
+                maxScore: 20, completed: false, userResponse: '', aiScore: 0, aiFeedback: ''
             },
             {
                 id: 'case_4',
@@ -296,11 +263,7 @@
                 profile: 'Estudiante (Situación Económica Compleja)',
                 context: '"Estoy muy angustiada. Me quedé sin ahorros y la verdad no tengo el dinero para este semestre. Quería saber si puedo aplicar a una beca para no tener que retirarme, se los suplico."',
                 objective: 'Empatía extrema. Informar que las convocatorias de becas ya cerraron (15 mayo primera vez, 25 mayo renovación). Pivotar y persuadir mostrando los beneficios de la nueva línea de crédito directo iPoli 40/60. Concretar el proceso.',
-                maxScore: 20,
-                completed: false,
-                userResponse: '',
-                aiScore: 0,
-                aiFeedback: ''
+                maxScore: 20, completed: false, userResponse: '', aiScore: 0, aiFeedback: ''
             },
             {
                 id: 'case_5',
@@ -309,22 +272,14 @@
                 profile: 'Derecho Presencial',
                 context: '"Señores, mi matrícula cuesta $6.000.000. La verdad solo he podido conseguir $1.200.000 (que es el 20% creo). Me falta poquito para la mitad pero no alcanzo. ¿Qué opciones tengo o ya me toca cancelar?"',
                 objective: 'Indagación y Persuasión. Hacerle ver que con ese 20% es el candidato ideal para un beneficio específico (facilidad de pago). Explicar qué gana acogiéndose, el proceso a seguir y lograr el cierre inmediato.',
-                maxScore: 20,
-                completed: false,
-                userResponse: '',
-                aiScore: 0,
-                aiFeedback: ''
+                maxScore: 20, completed: false, userResponse: '', aiScore: 0, aiFeedback: ''
             }
         ];
 
         let state = {
-            cases: [],
-            currentCaseId: null,
-            totalScore: 0,
-            isFinished: false
+            cases: [], currentCaseId: null, totalScore: 0, isFinished: false
         };
 
-        // Utility: Shuffle Array
         function shuffleArray(array) {
             for (let i = array.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
@@ -333,33 +288,26 @@
             return array;
         }
 
-        // Initialization
         function initApp() {
-            // Check Anti-Cheat (localStorage)
             const savedState = localStorage.getItem('poliGameState');
             if (savedState) {
                 state = JSON.parse(savedState);
                 if (state.isFinished) {
                     showFinalDashboard();
-                    return; // Block gameplay
+                    return; 
                 }
             } else {
                 state.cases = shuffleArray([...rawCases]);
                 saveState();
             }
 
-            // Dev reset event listener
             document.getElementById('resetBtn').addEventListener('click', () => {
                 localStorage.removeItem('poliGameState');
+                localStorage.removeItem('poliGame_started');
                 location.reload();
             });
-            // Show dev reset if holding 'Alt' key
-            document.addEventListener('keydown', (e) => {
-                if(e.altKey) document.getElementById('resetBtn').classList.remove('hidden');
-            });
-            document.addEventListener('keyup', (e) => {
-                document.getElementById('resetBtn').classList.add('hidden');
-            });
+            document.addEventListener('keydown', (e) => { if(e.altKey) document.getElementById('resetBtn').classList.remove('hidden'); });
+            document.addEventListener('keyup', () => { document.getElementById('resetBtn').classList.add('hidden'); });
 
             if(!state.isFinished && localStorage.getItem('poliGame_started') !== 'true') {
                  document.getElementById('welcomeModal').classList.remove('hidden');
@@ -370,9 +318,7 @@
             }
         }
 
-        function saveState() {
-            localStorage.setItem('poliGameState', JSON.stringify(state));
-        }
+        function saveState() { localStorage.setItem('poliGameState', JSON.stringify(state)); }
 
         function startGame() {
             localStorage.setItem('poliGame_started', 'true');
@@ -387,14 +333,12 @@
         function renderSidebar() {
             const listContainer = document.getElementById('caseList');
             listContainer.innerHTML = '';
-
             let allCompleted = true;
 
             state.cases.forEach((c) => {
                 if (!c.completed) allCompleted = false;
-
-                const icon = c.completed ? '<i class="fas fa-check-circle text-emerald-400 text-lg"></i>' : '<i class="fas fa-circle-notch text-blue-400"></i>';
-                const scoreText = c.completed ? `<span class="text-xs font-bold text-amber-400 mt-1 block bg-amber-900/30 inline-block px-2 py-0.5 rounded border border-amber-500/30">${c.aiScore}/20 pts</span>` : '';
+                const icon = c.completed ? '<i class="fas fa-check-circle text-green-400"></i>' : '<i class="fas fa-circle-notch text-blue-500"></i>';
+                const scoreText = c.completed ? `<span class="text-xs font-bold text-yellow-400 mt-1 block">${c.aiScore}/20 pts</span>` : '';
                 const activeClass = state.currentCaseId === c.id ? 'active' : '';
                 
                 const div = document.createElement('div');
@@ -403,13 +347,11 @@
                 div.innerHTML = `
                     <div class="flex justify-between items-start">
                         <div>
-                            <h3 class="text-sm font-bold text-gray-200">${c.title}</h3>
-                            <p class="text-xs text-gray-400 mt-1 font-medium">${c.studentName} - ${c.profile.split(' ')[0]}</p>
+                            <h3 class="text-sm font-semibold text-gray-200">${c.title}</h3>
+                            <p class="text-xs text-gray-400 mt-1">${c.studentName} - ${c.profile.split(' ')[0]}</p>
                             ${scoreText}
                         </div>
-                        <div class="mt-1">
-                            ${icon}
-                        </div>
+                        <div class="mt-1">${icon}</div>
                     </div>
                 `;
                 listContainer.appendChild(div);
@@ -424,7 +366,7 @@
 
         function selectCase(id) {
             state.currentCaseId = id;
-            renderSidebar(); // Update active class
+            renderSidebar(); 
             renderMainContent();
         }
 
@@ -440,38 +382,31 @@
             document.getElementById('currentStudentProfile').innerHTML = `<i class="fas fa-user-graduate mr-1"></i> ${currentCase.profile}`;
             document.getElementById('currentObjective').textContent = currentCase.objective;
             document.getElementById('currentContext').textContent = currentCase.context;
+            
+            document.getElementById('typingIndicator').innerHTML = 'Recuerda: Una vez enviado, no podrás editarlo.';
 
             const inputArea = document.getElementById('inputArea');
             const completedArea = document.getElementById('completedResponseArea');
             const scoreBadge = document.getElementById('caseScoreBadge');
 
             if (currentCase.completed) {
-                // Show locked state and feedback
                 inputArea.classList.add('hidden');
                 completedArea.classList.remove('hidden');
                 completedArea.classList.add('flex');
-                
                 document.getElementById('userPastResponse').textContent = currentCase.userResponse;
                 document.getElementById('aiPastFeedback').textContent = currentCase.aiFeedback;
                 
                 scoreBadge.classList.remove('hidden');
                 document.getElementById('caseScoreText').textContent = `${currentCase.aiScore}/20`;
                 
-                // Color formatting based on score
-                if(currentCase.aiScore >= 16) {
-                    scoreBadge.className = 'px-4 py-2 rounded-full border border-emerald-500/50 bg-emerald-900/30 text-emerald-400 font-bold';
-                } else if(currentCase.aiScore >= 10) {
-                    scoreBadge.className = 'px-4 py-2 rounded-full border border-amber-500/50 bg-amber-900/30 text-amber-400 font-bold';
-                } else {
-                    scoreBadge.className = 'px-4 py-2 rounded-full border border-red-500/50 bg-red-900/30 text-red-400 font-bold';
-                }
+                if(currentCase.aiScore >= 16) scoreBadge.className = 'glass-panel px-4 py-2 rounded-full border-green-500/50 bg-green-900/20 text-green-400 font-bold';
+                else if(currentCase.aiScore >= 10) scoreBadge.className = 'glass-panel px-4 py-2 rounded-full border-yellow-500/50 bg-yellow-900/20 text-yellow-400 font-bold';
+                else scoreBadge.className = 'glass-panel px-4 py-2 rounded-full border-red-500/50 bg-red-900/20 text-red-400 font-bold';
             } else {
-                // Show input state
                 inputArea.classList.remove('hidden');
                 completedArea.classList.add('hidden');
                 completedArea.classList.remove('flex');
                 scoreBadge.classList.add('hidden');
-                
                 const textArea = document.getElementById('userResponseInput');
                 textArea.value = '';
                 textArea.focus();
@@ -486,59 +421,47 @@
         async function submitResponse() {
             const input = document.getElementById('userResponseInput').value.trim();
             if (!input || input.length < 20) {
-                alert("Por favor, redacta una respuesta más completa (mínimo 20 caracteres) aplicando el modelo consultivo.");
-                return;
-            }
-
-            // Validar si la API Key fue configurada antes de intentar conectar
-            if (!apiKey || apiKey === "TU_API_KEY_AQUI" || apiKey === "") {
-                document.getElementById('typingIndicator').innerHTML = `<span class="text-red-400 font-bold"><i class="fas fa-exclamation-triangle"></i> Error de Sistema: Falta configurar la API Key de Gemini en el código HTML.</span>`;
+                alert("Por favor, redacta una respuesta más completa (mínimo 20 caracteres).");
                 return;
             }
 
             const currentCase = state.cases.find(c => c.id === state.currentCaseId);
             
-            // Show Loading
             document.getElementById('loadingOverlay').classList.remove('hidden');
             document.getElementById('loadingOverlay').classList.add('flex');
 
             try {
-                // Call Gemini API to evaluate
                 const evaluation = await callGeminiAPI(currentCase, input);
                 
-                // Update State
                 currentCase.userResponse = input;
                 currentCase.aiScore = parseInt(evaluation.score) || 0;
-                // Cap score between 0 and 20 just in case
                 currentCase.aiScore = Math.max(0, Math.min(20, currentCase.aiScore)); 
-                currentCase.aiFeedback = evaluation.feedback || "Respuesta registrada.";
+                currentCase.aiFeedback = evaluation.feedback || "Evaluación completada.";
                 currentCase.completed = true;
 
                 saveState();
                 updateHeaderScore();
-                renderSidebar(); // Will trigger check for all completed
+                renderSidebar(); 
                 renderMainContent();
 
             } catch (error) {
-                console.error("Evaluation Error:", error);
-                // Fallback UI error message box (no alert as per rules)
-                document.getElementById('typingIndicator').innerHTML = `<span class="text-red-400"><i class="fas fa-exclamation-circle"></i> Error de conexión con IA. Intenta de nuevo.</span>`;
+                console.error("API Error:", error);
+                // Si falla, mostramos exactamente por qué falló en la pantalla para poder arreglarlo
+                document.getElementById('typingIndicator').innerHTML = `<span class="text-red-400 font-bold"><i class="fas fa-times-circle"></i> Error de API: ${error.message}. Por favor contacta soporte.</span>`;
             } finally {
-                // Hide Loading
                 document.getElementById('loadingOverlay').classList.add('hidden');
                 document.getElementById('loadingOverlay').classList.remove('flex');
             }
         }
 
-        // --- GEMINI API INTEGRATION (With Exponential Backoff) ---
         async function callGeminiAPI(caseData, userText) {
             const prompt = `
 Eres un Evaluador Experto en Calidad y Entrenador de Ventas Consultivas para una Universidad.
-Tu tarea es evaluar la respuesta escrita de un Asesor de Servicio/Ventas a un estudiante, basándote en un caso específico.
+Tu tarea es evaluar la respuesta escrita de un Asesor a un estudiante. Sé estricto. Si la respuesta es mala, genérica o muy corta, dale un puntaje bajo (0 a 10). Si es excelente, dale un puntaje alto (hasta 20).
 
 CONtexto DEL ESTUDIANTE:
 Perfil: ${caseData.profile}
-Mensaje del estudiante: ${caseData.context}
+Mensaje: ${caseData.context}
 
 OBJETIVO QUE DEBÍA CUMPLIR EL ASESOR:
 ${caseData.objective}
@@ -546,96 +469,79 @@ ${caseData.objective}
 RESPUESTA DEL ASESOR:
 "${userText}"
 
-INSTRUCCIONES DE EVALUACIÓN:
-Debes evaluar la respuesta del asesor sobre un máximo de 20 puntos, considerando estos 3 pilares del modelo de Venta Consultiva:
-1. Empatía e Indagación (Conexión humana, entender la situación).
-2. Solución Personalizada (Manejo correcto de la info técnica, procesos, claridad).
-3. Cierre Comercial (Llamado a la acción claro, compromiso de pago, agendamiento).
+EVALÚA:
+1. Empatía e Indagación.
+2. Solución Personalizada (Manejo de procesos).
+3. Cierre Comercial (Compromiso de pago/acción).
 
-IMPORTANTE: Responde ÚNICAMENTE con un objeto JSON válido.
+Responde ÚNICAMENTE con un JSON válido.
 `;
 
             const payload = {
-                contents: [{
-                    parts: [{ text: prompt }]
-                }],
-                systemInstruction: {
-                    parts: [{ text: "Responde siempre en formato JSON respetando el esquema solicitado. Sé estricto pero justo evaluando habilidades blandas y comerciales." }]
-                },
+                contents: [{ parts: [{ text: prompt }] }],
+                systemInstruction: { parts: [{ text: "Responde siempre en formato JSON. Sé exigente." }] },
                 generationConfig: {
                     responseMimeType: "application/json",
                     responseSchema: {
                         type: "OBJECT",
                         properties: {
                             score: { type: "INTEGER", description: "Puntaje otorgado de 0 a 20" },
-                            feedback: { type: "STRING", description: "Feedback constructivo en español. 2-3 oraciones máximo explicando qué hizo bien y qué le faltó según los 3 pilares." }
+                            feedback: { type: "STRING", description: "Feedback constructivo en español. 3 oraciones máximo explicando por qué se sacó ese puntaje." }
                         },
                         required: ["score", "feedback"]
                     }
                 }
             };
 
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            // Cambio CRÍTICO: Modelo actualizado a gemini-1.5-flash
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
 
-            // Exponential Backoff implementation
-            const maxRetries = 5;
-            const baseDelay = 1000;
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
 
-            for (let i = 0; i < maxRetries; i++) {
-                try {
-                    const response = await fetch(url, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
+            const data = await response.json();
 
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
+            if (!response.ok) {
+                // Si la llave no funciona, leeremos el error real aquí
+                throw new Error(data.error?.message || `HTTP ${response.status}`);
+            }
 
-                    const data = await response.json();
-                    const textResult = data.candidates?.[0]?.content?.parts?.[0]?.text;
-                    
-                    if (textResult) {
-                        return JSON.parse(textResult);
-                    } else {
-                        throw new Error("Invalid response structure from API");
-                    }
-                } catch (error) {
-                    if (i === maxRetries - 1) throw error; // Re-throw if last attempt
-                    const delay = baseDelay * Math.pow(2, i);
-                    await new Promise(r => setTimeout(r, delay));
-                }
+            const textResult = data.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (textResult) {
+                return JSON.parse(textResult);
+            } else {
+                throw new Error("Respuesta inválida de la IA");
             }
         }
 
         function showFinalDashboard() {
             const modal = document.getElementById('finalModal');
             modal.classList.remove('hidden');
-            // Small delay to trigger CSS transition
             setTimeout(() => modal.classList.remove('opacity-0'), 50);
-
             document.getElementById('finalScoreDisplay').textContent = state.totalScore;
             
             const container = document.getElementById('feedbackContainer');
             container.innerHTML = '';
 
             state.cases.forEach(c => {
-                let badgeColor = c.aiScore >= 16 ? 'text-emerald-700 bg-emerald-50 border-emerald-200' : 
-                                 c.aiScore >= 10 ? 'text-amber-700 bg-amber-50 border-amber-200' : 
-                                 'text-red-700 bg-red-50 border-red-200';
+                let badgeColor = c.aiScore >= 16 ? 'text-green-400 bg-green-900/30 border-green-500/30' : 
+                                 c.aiScore >= 10 ? 'text-yellow-400 bg-yellow-900/30 border-yellow-500/30' : 
+                                 'text-red-400 bg-red-900/30 border-red-500/30';
 
                 const html = `
-                    <div class="bg-white border border-slate-200 shadow-sm rounded-2xl p-5 flex flex-col md:flex-row gap-5 mb-4">
+                    <div class="bg-white/5 border border-white/10 rounded-xl p-4 flex flex-col md:flex-row gap-4 mb-4">
                         <div class="md:w-1/4">
-                            <h4 class="font-bold text-slate-800 text-lg">${c.title}</h4>
-                            <p class="text-sm font-medium text-slate-500 mb-3">Estudiante: ${c.studentName}</p>
+                            <h4 class="font-bold text-gray-200">${c.title}</h4>
+                            <p class="text-xs text-gray-400 mb-2">Estudiante: ${c.studentName}</p>
                             <span class="inline-block px-3 py-1 rounded-full border text-sm font-bold ${badgeColor}">
                                 ${c.aiScore} / 20 pts
                             </span>
                         </div>
-                        <div class="md:w-3/4 border-l border-slate-100 pl-5">
-                            <p class="text-slate-700 italic leading-relaxed text-sm">" ${c.aiFeedback} "</p>
+                        <div class="md:w-3/4 border-l border-white/10 pl-4">
+                            <p class="text-sm text-gray-300 italic mb-2">" ${c.aiFeedback} "</p>
                         </div>
                     </div>
                 `;
@@ -643,9 +549,7 @@ IMPORTANTE: Responde ÚNICAMENTE con un objeto JSON válido.
             });
         }
 
-        // Run Init
         document.addEventListener('DOMContentLoaded', initApp);
-
     </script>
 </body>
 </html>
