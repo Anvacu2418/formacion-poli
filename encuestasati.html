@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evaluación de Satisfacción - Ilumno</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        poliBlue: '#002E5D',
+                        poliYellow: '#FDB913',
+                        poliPink: '#E91E63',
+                        canvasGray: '#F5F5F5'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-canvasGray p-4 md:p-8 font-sans text-gray-800 min-h-screen flex flex-col">
+
+    <div class="max-w-5xl mx-auto w-full flex-grow flex flex-col">
+
+        <!-- NAVEGACIÓN -->
+        <nav class="mb-6 flex items-center justify-between">
+            <button class="flex items-center gap-2 text-poliBlue hover:text-blue-800 font-semibold text-sm transition bg-white px-4 py-2 rounded-lg shadow-sm border border-gray-200">
+                <i class="fas fa-arrow-left"></i> Volver al Menú Principal
+            </button>
+        </nav>
+
+        <!-- GRAN BANNER DE CELEBRACIÓN -->
+        <div class="bg-gradient-to-r from-poliBlue to-blue-800 rounded-t-3xl shadow-xl p-10 md:p-14 text-center relative overflow-hidden">
+            <!-- Confeti y decoración de fondo -->
+            <i class="fas fa-star absolute top-10 left-10 text-4xl text-poliYellow opacity-20 animate-pulse"></i>
+            <i class="fas fa-star absolute bottom-10 right-20 text-6xl text-poliYellow opacity-20 animate-pulse" style="animation-delay: 1s;"></i>
+            <i class="fas fa-trophy absolute -right-10 -bottom-10 text-9xl text-white opacity-10 transform -rotate-12"></i>
+            
+            <div class="relative z-10">
+                <span class="bg-poliYellow text-poliBlue text-xs font-black px-4 py-1.5 rounded-full uppercase tracking-widest mb-4 inline-block shadow-sm">¡Meta Alcanzada!</span>
+                <h1 class="text-4xl md:text-5xl font-black text-white mb-4 drop-shadow-md">Evaluación de Satisfacción</h1>
+                <p class="text-blue-100 text-lg md:text-xl font-light max-w-2xl mx-auto">
+                    Has completado con éxito tu Formación Inicial. Ahora queremos escucharte: <strong>tu experiencia es el motor que nos impulsa a mejorar cada día.</strong>
+                </p>
+            </div>
+        </div>
+
+        <!-- CONTENIDO PRINCIPAL (INTERACTIVO) -->
+        <div class="bg-white p-8 md:p-12 rounded-b-3xl shadow-xl border border-t-0 border-gray-200 flex-grow flex flex-col items-center justify-center">
+            
+            <h2 class="text-2xl font-bold text-gray-800 mb-8 text-center">¿Cómo calificarías tu viaje de aprendizaje?</h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-10 w-full max-w-4xl">
+                
+                <!-- OPCIÓN 1: LINK DIRECTO -->
+                <div class="bg-gray-50 border-2 border-dashed border-gray-300 rounded-2xl p-8 flex flex-col items-center text-center hover:border-poliPink hover:bg-pink-50 transition duration-300 group">
+                    <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-md mb-6 group-hover:scale-110 transition duration-300">
+                        <i class="fas fa-desktop text-4xl text-poliPink"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-3">Responde desde tu PC</h3>
+                    <p class="text-sm text-gray-600 mb-8 flex-grow">Haz clic en el botón a continuación para abrir el formulario oficial de Microsoft Forms directamente en tu navegador.</p>
+                    
+                    <a href="https://forms.office.com/r/dGzrHaAfr9" target="_blank" class="w-full py-4 bg-poliPink text-white font-bold rounded-xl hover:bg-pink-700 transition shadow-lg flex items-center justify-center gap-3 text-lg group-hover:animate-bounce">
+                        <i class="fas fa-external-link-alt"></i> Ir a la Encuesta
+                    </a>
+                </div>
+
+                <!-- OPCIÓN 2: CÓDIGO QR -->
+                <div class="bg-gray-50 border-2 border-dashed border-gray-300 rounded-2xl p-8 flex flex-col items-center text-center hover:border-poliBlue hover:bg-blue-50 transition duration-300 group">
+                    <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-md mb-6 group-hover:scale-110 transition duration-300">
+                        <i class="fas fa-mobile-alt text-4xl text-poliBlue"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-3">Escanea con tu Celular</h3>
+                    <p class="text-sm text-gray-600 mb-6 flex-grow">Abre la cámara de tu smartphone y escanea el código QR para responder desde la comodidad de tu dispositivo móvil.</p>
+                    
+                    <!-- CONTENEDOR DEL CÓDIGO QR (Instrucción para Canvas) -->
+                    <div class="bg-white p-4 rounded-xl shadow-inner border border-gray-200">
+                        <!-- NOTA AL ADMIN DE CANVAS: Reemplaza este src con el archivo image_7fa1a8.png que se suba a los archivos de Canvas -->
+                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://forms.office.com/r/dGzrHaAfr9" alt="" class="w-40 h-40 object-contain mx-auto transition duration-300 group-hover:scale-105">
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- MENSAJE FINAL DE FELICITACIÓN Y CONFIANZA -->
+            <div class="mt-12 w-full max-w-4xl">
+                <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 p-6 md:p-8 rounded-2xl shadow-sm flex flex-col md:flex-row items-center gap-6 text-center md:text-left">
+                    <div class="bg-white w-20 h-20 rounded-full flex items-center justify-center text-4xl text-poliYellow shadow-md flex-shrink-0 animate-bounce">
+                        <i class="fas fa-award"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-poliBlue text-xl mb-2">¡Felicitaciones por llegar hasta aquí!</h4>
+                        <p class="text-sm text-gray-700 leading-relaxed">
+                            Hoy culminas tu proceso de capacitación y has demostrado un compromiso excepcional. Este es <strong>tu espacio seguro</strong>: queremos que te expreses con total libertad y tranquilidad. Tu opinión honesta y sincera es el regalo más valioso que nos puedes dejar para seguir mejorando. ¡Celebramos tu gran esfuerzo y te deseamos el mayor de los éxitos en la operación!
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- FOOTER -->
+        <div class="mt-8 text-center text-gray-500 text-sm">
+            <p>¡Gracias por tu dedicación, esfuerzo y por ser parte de los Expertos Ilumno!</p>
+        </div>
+
+    </div>
+
+</body>
+</html>
