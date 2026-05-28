@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Poli-Cards: Reintegro Master</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;800&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            /* Clásico verde de tapete de casino/solitario */
+            background-color: #076324;
+            background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 20.5V18H0v-2h20v-2H0v-2h20v-2H0V8h20V6H0V4h20V2H0V0h22v20h2V0h2v20h2V0h2v20h2V0h2v20h2V0h2v20h2v2H20v-1.5zM0 20h2v20H0V20zm4 0h2v20H4V20zm4 0h2v20H8V20zm4 0h2v20h-2V20zm4 0h2v20h-2V20zm4 0h2v20h-2V20zm4 0h2v20h-2V20zm4 0h2v20h-2V20z' fill='%2309792d' fill-opacity='0.5' fill-rule='evenodd'/%3E%3C/svg%3E");
+            color: #ffffff;
+            min-height: 100vh;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        h1, .font-serif {
+            font-family: 'Playfair Display', serif;
+        }
+
+        .mini-card-slot {
+            width: 44px;
+            height: 62px;
+            border: 2px dashed rgba(255, 255, 255, 0.4);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            position: relative;
+            background-color: rgba(0, 0, 0, 0.15);
+        }
+        
+        .mini-card-filled {
+            border: 1px solid #d1d5db;
+            background-color: white;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.5);
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        .mini-card-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            line-height: 1;
+        }
+
+        .status-overlay {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255,255,255,0.7);
+            border-radius: 5px;
+            font-size: 1.5rem;
+        }
+
+        .modern-card-back {
+            background-color: #1e293b;
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0l30 17.32v34.64L30 69.28 0 51.96V17.32z' fill='none' stroke='%23334155' stroke-opacity='0.4' stroke-width='1'/%3E%3Cpath d='M0 17.32L30 34.64l30-17.32M30 34.64v34.64' fill='none' stroke='%23334155' stroke-opacity='0.4' stroke-width='1'/%3E%3C/svg%3E");
+            background-size: 40px 40px;
+            border: 8px solid white;
+            border-radius: 0.75rem;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .mag-glass-container {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: rgba(96, 165, 250, 0.1);
+            border: 2px solid rgba(96, 165, 250, 0.4);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 1.25rem;
+        }
+
+        .card-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 380px;
+            aspect-ratio: 3/4.6;
+            margin: 0 auto;
+            z-index: 20;
+        }
+
+        .card-container {
+            perspective: 1200px;
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            transform-origin: center center;
+        }
+
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
+            transform-style: preserve-3d;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border-radius: 0.75rem;
+        }
+
+        .card-container.flipped .card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .card-front, .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: 0.75rem;
+        }
+
+        .card-front {
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .card-front:hover {
+            transform: scale(1.02);
+            transition: all 0.3s ease;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.6);
+        }
+
+        .card-back {
+            background-color: #ffffff;
+            color: #1a1a1a;
+            transform: rotateY(180deg);
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #d1d5db;
+        }
+
+        .card-index {
+            position: absolute;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 1.5rem;
+            font-weight: 800;
+            font-family: 'Inter', sans-serif;
+            line-height: 1.1;
+        }
+        .index-top-left { top: 12px; left: 12px; }
+        .index-bottom-right { bottom: 12px; right: 12px; transform: rotate(180deg); }
+
+        .card-content-area {
+            flex-grow: 1;
+            padding: 2.5rem 1.5rem 1.5rem 1.5rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .card-content-area::-webkit-scrollbar { width: 6px; }
+        .card-content-area::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+
+        .option-btn {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            color: #334155;
+            transition: all 0.2s ease;
+        }
+        .option-btn:hover:not(:disabled) {
+            background: #e0f2fe;
+            border-color: #7dd3fc;
+            transform: translateX(4px);
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0); opacity: 0; }
+            80% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .animate-pop { animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        
+        .text-red-suit { color: #dc2626; }
+        .text-black-suit { color: #171717; }
+    </style>
+</head>
+<body class="py-6 px-4 relative">
+
+    <header class="w-full max-w-5xl mx-auto flex flex-col items-center mb-8 z-10 relative">
+        <div class="flex justify-between items-center w-full mb-6">
+            <div class="flex items-center gap-3">
+                <div class="bg-white/10 p-3 rounded-lg border border-white/20 shadow-inner">
+                    <i class="fa-solid fa-cards text-2xl text-white"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold text-white tracking-wide drop-shadow-md font-serif">Poli-Cards</h1>
+                    <p class="text-sm text-green-200">Reintegro Master 2026-2</p>
+                </div>
+            </div>
+            <div class="text-right bg-black/40 px-6 py-2 rounded-xl border border-white/20 shadow-lg">
+                <div class="text-xs text-green-300 font-semibold uppercase tracking-wider mb-1">Polipuntos</div>
+                <div class="text-3xl font-black text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.6)] flex items-center gap-2">
+                    <span id="scoreDisplay">0</span>
+                    <i class="fa-solid fa-coins text-lg"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex gap-2 sm:gap-3 justify-center flex-wrap" id="topSlotsContainer">
+            <!-- Slots inyectados por JS -->
+        </div>
+    </header>
+
+    <main class="w-full flex-grow flex flex-col items-center justify-center relative z-10" id="gameArea">
+        
+        <div class="card-wrapper" id="cardWrapper">
+            <div id="cardContainer" class="card-container mt-4">
+                <div class="card-inner" id="cardInner">
+                    <!-- DORSO (Diseño moderno azul con lupa) -->
+                    <div class="card-front modern-card-back" onclick="flipCard()">
+                        <div class="mag-glass-container">
+                            <i class="fa-solid fa-magnifying-glass text-3xl text-blue-400"></i>
+                        </div>
+                        <h2 id="cardBackCaseNumber" class="text-3xl font-black text-white mb-2 font-sans tracking-tight">Caso #1</h2>
+                        <p class="text-[13.5px] text-blue-200 font-medium tracking-wide">Toca la carta para revelar el desafío</p>
+                    </div>
+
+                    <!-- CARA (Pregunta del caso) -->
+                    <div class="card-back relative">
+                        <!-- Índices de la carta (Número y Pinta) -->
+                        <div class="card-index index-top-left" id="cornerTop">
+                            <span id="cardNumberTop">A</span>
+                            <span id="cornerSuitTop" class="text-[1.4rem] leading-none mt-0.5">&spades;</span>
+                        </div>
+                        <div class="card-index index-bottom-right" id="cornerBottom">
+                            <span id="cardNumberBottom">A</span>
+                            <span id="cornerSuitBottom" class="text-[1.4rem] leading-none mt-0.5">&spades;</span>
+                        </div>
+
+                        <!-- Contenido del Caso -->
+                        <div class="card-content-area pt-8">
+                            <div class="text-center mb-3">
+                                <span class="text-[10px] font-bold bg-gray-200 text-gray-600 px-3 py-1 rounded-full uppercase tracking-wider" id="categoryBadge">Categoría</span>
+                            </div>
+                            <h3 class="text-sm sm:text-base font-bold text-gray-800 mb-4 leading-relaxed text-center" id="questionText">¿Pregunta?</h3>
+                            
+                            <div class="flex flex-col gap-2 w-full mt-auto" id="optionsContainer">
+                                <!-- Opciones inyectadas por JS -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <div id="feedbackModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white max-w-md w-full rounded-2xl p-8 text-center transform transition-all scale-95 opacity-0 border-4 shadow-2xl relative overflow-hidden" id="feedbackContent">
+            <div id="feedbackIcon" class="text-6xl mb-4 relative z-10"></div>
+            <h2 id="feedbackTitle" class="text-2xl font-black mb-2 font-serif relative z-10">¡Correcto!</h2>
+            <p id="feedbackExplanation" class="text-gray-600 text-sm mb-6 leading-relaxed relative z-10">Explicación aquí.</p>
+            <div id="pointsEarned" class="hidden text-green-700 font-black text-xl mb-6 bg-green-50 py-3 rounded-xl border border-green-200 shadow-inner relative z-10">
+                +10 Polipuntos <i class="fa-solid fa-coins text-yellow-500"></i>
+            </div>
+            <button onclick="triggerSpiderAnimation()" class="w-full bg-gray-900 hover:bg-black text-white font-bold py-3 px-4 rounded-xl transition-colors shadow-lg relative z-10">
+                Siguiente Carta <i class="fa-solid fa-arrow-right ml-2"></i>
+            </button>
+        </div>
+    </div>
+
+    <div id="endScreen" class="hidden w-full max-w-2xl mx-auto bg-white rounded-3xl p-8 text-center z-20 animate-pop shadow-2xl border-4 border-[#003366] mt-8">
+        <div class="mb-6 relative inline-block">
+            <i class="fa-solid fa-trophy text-6xl text-yellow-500 drop-shadow-md"></i>
+        </div>
+        <h2 class="text-3xl font-black text-gray-800 mb-2 font-serif">¡Mesa Limpia!</h2>
+        <p class="text-gray-600 mb-8">Has finalizado todos los casos de Reintegros 2026-2.</p>
+        
+        <div class="bg-[#f0f9ff] rounded-2xl p-6 mb-8 border border-[#bae6fd]">
+            <div class="text-sm text-[#0369a1] uppercase tracking-wider mb-1 font-bold">Botín Obtenido</div>
+            <div class="text-5xl font-black text-yellow-500 mb-4 drop-shadow-sm" id="finalScoreDisplay">0</div>
+            <p id="performanceMessage" class="text-lg font-bold"></p>
+        </div>
+
+        <div class="flex flex-col gap-4">
+            <a href="https://view.genially.com/6481da1c6a7fc300124fea4f" target="_blank" class="w-full bg-gradient-to-r from-blue-700 to-indigo-800 hover:from-blue-600 hover:to-indigo-700 text-white font-bold py-4 px-6 rounded-xl transition-all transform hover:scale-[1.02] shadow-xl flex items-center justify-center gap-3">
+                <i class="fa-solid fa-book-open"></i> Repasar la Guía de Reintegros
+            </a>
+            <button onclick="location.reload()" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-3 px-6 rounded-xl transition-colors border border-gray-300">
+                <i class="fa-solid fa-rotate-right mr-2"></i> Repartir de nuevo
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Configuración real de Pintas de Póker (Usando entidades HTML para garantizar que todas aparezcan perfectamente)
+        const cardSuits = [
+            { icon: '&spades;', colorClass: 'text-black-suit', name: 'spade' },
+            { icon: '&hearts;', colorClass: 'text-red-suit', name: 'heart' },
+            { icon: '&clubs;', colorClass: 'text-black-suit', name: 'club' },
+            { icon: '&diams;', colorClass: 'text-red-suit', name: 'diamond' }
+        ];
+
+        const cardRanks = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10'];
+
+        // Casos Específicos basados en la Matriz de Novedades y Guía
+        const questionsData = [
+            {
+                category: "Paso Cero",
+                question: "Antes de iniciar cualquier solicitud de reintegro en Banner, ¿cuál es el paso CERO que debes realizar obligatoriamente para evitar reprocesos?",
+                options: [
+                    "Crear un ticket inmediatamente en HubSpot.",
+                    "Revisar en Analytics | Servicio, si el estudiante ya cuenta con una solicitud de reintegro.",
+                    "Pedirle al estudiante que pague el 10% por adelantado.",
+                    "Ingresar directamente a SVASVPR."
+                ],
+                correct: 1,
+                explanation: "Siempre debes validar en Analytics si el estudiante ya tiene un trámite en curso para evitar reprocesos innecesarios."
+            },
+            {
+                category: "Descuentos",
+                question: "Estudiante solicita reintegro y exige que se le aplique el descuento de 'Pronto Pago'. No tiene otros convenios. ¿Qué procede?",
+                options: [
+                    "Se le suma el 10% de reintegro al Pronto Pago.",
+                    "Se le aplica Pronto Pago pero pierde el 10% de reintegro.",
+                    "Los reintegros NO aplican a descuento de Pronto pago ni a Escala Ingresantes, solo al 10% de reintegro.",
+                    "Se le otorga el descuento solo si paga en efectivo."
+                ],
+                correct: 2,
+                explanation: "Los reintegros son estrictos: NO aplican a Pronto Pago ni a Dcto Ingresantes, únicamente al 10% de reintegro + su convenio (si aplica)."
+            },
+            {
+                category: "Banner - Ruta",
+                question: "Al crear la solicitud sin novedad en Banner (SVASVPR), ¿qué parámetros exactos debes seleccionar tras ingresar el ID?",
+                options: [
+                    "Código de servicio: Solicitud de reintegro / Tipo de Solicitud: SOL.",
+                    "Código de servicio: Reintegro Especial / Tipo de Solicitud: TCK.",
+                    "Código de servicio: Cambio de Programa / Tipo de Solicitud: REIN.",
+                    "Código de servicio: Novedad Académica / Tipo de Solicitud: SOL."
+                ],
+                correct: 0,
+                explanation: "La ruta técnica exacta y obligatoria en SVASVPR es Código de servicio: Solicitud de reintegro y Tipo de Solicitud: SOL."
+            },
+            {
+                category: "Banner - Plantilla",
+                question: "En la sección de 'Datos Adicionales' insertas un Comentario Interno. Según la plantilla oficial, ¿qué dato NO se incluye?",
+                options: [
+                    "Programa origen y Programa destino.",
+                    "Sede destino y Jornada destino.",
+                    "Promedio Acumulado del estudiante.",
+                    "Usuario de quien crea la solicitud y Nota."
+                ],
+                correct: 2,
+                explanation: "La plantilla exige: Ticket (si aplica), Prog origen/destino, Sede/Jornada destino, Nota y Usuario. El promedio no va ahí."
+            },
+            {
+                category: "Reingresantes",
+                question: "Estudiante cursó solo su primer semestre en el 202560 obteniendo un 60% de descuento. Quiere volver para el 2026-2 y exige mantener ese 60%. ¿Qué aplica?",
+                options: [
+                    "Se le mantiene el 60% intacto por ser de primer semestre.",
+                    "NO se mantiene. Los reintegros no aplican a Escala Ingresantes, aplica a las condiciones vigentes (10% + convenio si tiene).",
+                    "Debe aplicar como estudiante nuevo otra vez desde cero.",
+                    "Se le promedia el 60% con el 10% actual."
+                ],
+                correct: 1,
+                explanation: "NO aplica Escala Ingresante para reintegros, sin importar el descuento inicial. Entra a las condiciones vigentes de reintegro."
+            },
+            {
+                category: "Novedad: Malla",
+                question: "Tienes un estudiante en línea de 'Administración de Empresas'. Quiere saber si se acoge a su plan de estudios antiguo. El programa NO tiene restricción de facultad en el archivo. ¿Qué haces?",
+                options: [
+                    "Crear ticket en derivación para que la facultad le mantenga la malla antigua.",
+                    "Prometerle que no cambiará nada e ingresarlo a Banner.",
+                    "Mencionarle que se acoge a la Resolución rectoral vigente (posible cambio de plan) e ingresarlo directamente a SVASVPR.",
+                    "Solicitar aval de la facultad mediante ticket en HubSpot por ser modalidad virtual."
+                ],
+                correct: 2,
+                explanation: "Siempre menciónale que se acoge a la Resolución vigente (puede haber cambio de plan). Si NO hay restricción en el archivo, se hace directo en Banner."
+            },
+            {
+                category: "Cambio de Programa",
+                question: "Estudiante de Ingeniería Industrial desea reintegrarse cambiándose al nuevo programa 'Ingeniería en Sistemas de la Información'. ¿Cuál es el proceso exacto?",
+                options: [
+                    "Crear un ticket a la Facultad de Ingeniería inmediatamente porque es un programa nuevo.",
+                    "Validar primero la Oferta Académica para confirmar si se oferta, luego revisar archivo de Novedades y si no hay restricción, tramitar en Banner.",
+                    "Hacer el cambio directo en Banner (SVASVPR) sin revisar oferta, ya que ambos son ingenierías.",
+                    "Indicarle que para programas nuevos debe matricularse como nuevo estudiante."
+                ],
+                correct: 1,
+                explanation: "Si hay cambio de modalidad, sede o programa, es OBLIGATORIO validar primero la Oferta Académica. Luego, si el archivo de Novedades lo permite, se ingresa a Banner."
+            },
+            {
+                category: "Novedad: Con Facultad",
+                question: "Revisas el archivo de Novedades y notas que el programa de 'Diseño Gráfico' tiene la marca de 'Con Facultad'. ¿Qué paso ejecutas para su reintegro?",
+                options: [
+                    "Detener el proceso en Banner y crear un ticket para que la Facultad brinde el aval académico.",
+                    "Ingresar la solicitud en Banner y poner en la Nota: 'Pendiente aval de facultad'.",
+                    "Derivar al estudiante a Admisiones para prueba de portafolio.",
+                    "Procesar el reintegro en Banner normalmente pero sin aplicarle descuentos."
+                ],
+                correct: 0,
+                explanation: "Cuando el archivo dicta 'Con Facultad', no se toca Banner hasta no escalar y tener el aval directo de la facultad correspondiente."
+            },
+            {
+                category: "Cambio de Modalidad",
+                question: "Estudiante de 'Licenciatura en Ciencias Sociales' Presencial pide reintegro a Virtual. En el archivo de novedades, la licenciatura NO tiene marcas restrictivas. ¿Qué debes hacer?",
+                options: [
+                    "Ingresarlo directamente a Banner y cambiar el campo de jornada a 'Virtual'.",
+                    "Crear un ticket a la facultad porque los cambios de modalidad siempre requieren aval.",
+                    "Rechazar la solicitud porque las licenciaturas solo se ofertan presencial.",
+                    "Revisar la Oferta Académica vigente para confirmar si la Licenciatura sí se oferta en Virtual antes de ingresarlo a Banner."
+                ],
+                correct: 3,
+                explanation: "Nunca asumas. Aunque no haya restricción de facultad, TODO cambio de sede o modalidad exige revisar la Oferta Académica antes de tocar Banner."
+            },
+            {
+                category: "Persuasión",
+                question: "Estudiante quiere reintegrarse pero duda porque no le alcanza para pagar todo de contado. ¿Cuál es la estrategia correcta como Sensei de la persuasión?",
+                options: [
+                    "Decirle que regrese el próximo semestre cuando tenga el dinero.",
+                    "Ofrecerle un 50% de descuento sin autorización.",
+                    "Indagar y contarle los detalles de UNA sola alternativa que le sirva (pago mixto, 50/50, Credipoli, bloque si es virtual) con convicción.",
+                    "Nombrarle rápidamente 5 opciones de financiación para que él elija."
+                ],
+                correct: 2,
+                explanation: "Conecta, indaga como un pro. Ve con calma, cuéntale los detalles de UNA sola opción que se ajuste a su caso y cree en lo que dices."
+            }
+        ];
+
+        let currentCardIndex = 0;
+        let score = 0;
+        let isFlipped = false;
+        let currentSuitInfo = null;
+        let currentRank = '';
+        
+        const topSlotsContainer = document.getElementById('topSlotsContainer');
+        const cardContainer = document.getElementById('cardContainer');
+        const cardNumberTop = document.getElementById('cardNumberTop');
+        const cornerSuitTop = document.getElementById('cornerSuitTop');
+        const cardNumberBottom = document.getElementById('cardNumberBottom');
+        const cornerSuitBottom = document.getElementById('cornerSuitBottom');
+        const categoryBadge = document.getElementById('categoryBadge');
+        const questionText = document.getElementById('questionText');
+        const optionsContainer = document.getElementById('optionsContainer');
+        const scoreDisplay = document.getElementById('scoreDisplay');
+        
+        const feedbackModal = document.getElementById('feedbackModal');
+        const feedbackContent = document.getElementById('feedbackContent');
+        const feedbackIcon = document.getElementById('feedbackIcon');
+        const feedbackTitle = document.getElementById('feedbackTitle');
+        const feedbackExplanation = document.getElementById('feedbackExplanation');
+        const pointsEarned = document.getElementById('pointsEarned');
+        const cardWrapper = document.getElementById('cardWrapper');
+
+        function initTopSlots() {
+            topSlotsContainer.innerHTML = '';
+            for(let i = 0; i < questionsData.length; i++) {
+                const slot = document.createElement('div');
+                slot.className = 'mini-card-slot';
+                slot.id = `slot-${i}`;
+                topSlotsContainer.appendChild(slot);
+            }
+        }
+
+        function loadCardContent() {
+            if (currentCardIndex >= questionsData.length) {
+                document.getElementById('gameArea').classList.add('hidden');
+                document.getElementById('endScreen').classList.remove('hidden');
+                showEndScreen();
+                return;
+            }
+
+            const q = questionsData[currentCardIndex];
+            
+            // Asignar pinta y rango
+            currentSuitInfo = cardSuits[currentCardIndex % 4]; 
+            currentRank = cardRanks[currentCardIndex];
+            
+            // Actualizar Esquinas
+            cardNumberTop.innerText = currentRank;
+            cardNumberBottom.innerText = currentRank;
+            
+            // Actualizar clases de color y logo usando innerHTML para inyectar la entidad HTML
+            cardNumberTop.className = currentSuitInfo.colorClass;
+            cardNumberBottom.className = currentSuitInfo.colorClass;
+            
+            cornerSuitTop.innerHTML = currentSuitInfo.icon;
+            cornerSuitTop.className = `text-[1.4rem] leading-none mt-0.5 ${currentSuitInfo.colorClass}`;
+            
+            cornerSuitBottom.innerHTML = currentSuitInfo.icon;
+            cornerSuitBottom.className = `text-[1.4rem] leading-none mt-0.5 ${currentSuitInfo.colorClass}`;
+            
+            // Actualizar el número del Caso en el dorso
+            const cardBackCaseNumber = document.getElementById('cardBackCaseNumber');
+            if(cardBackCaseNumber) cardBackCaseNumber.innerText = `Caso #${currentCardIndex + 1}`;
+
+            // Actualizar Textos
+            categoryBadge.innerText = q.category;
+            questionText.innerText = q.question;
+            
+            // Generar Opciones
+            optionsContainer.innerHTML = '';
+            q.options.forEach((opt, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn w-full text-left p-3 rounded-lg text-[13px] font-semibold shadow-sm flex items-start gap-2 border';
+                btn.innerHTML = `<span class="inline-block font-bold text-gray-400 mt-0.5 w-5">${String.fromCharCode(65 + index)}.</span> <span class="flex-1">${opt}</span>`;
+                btn.onclick = (e) => checkAnswer(index, e);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function flipCard() {
+            if(!isFlipped) {
+                cardContainer.classList.add('flipped');
+                isFlipped = true;
+            }
+        }
+
+        let isCurrentAnswerCorrect = false;
+
+        function checkAnswer(selectedIndex, event) {
+            const buttons = optionsContainer.querySelectorAll('button');
+            buttons.forEach(b => b.disabled = true);
+            
+            const q = questionsData[currentCardIndex];
+            isCurrentAnswerCorrect = (selectedIndex === q.correct);
+            const btnClicked = event.currentTarget;
+
+            if (isCurrentAnswerCorrect) {
+                btnClicked.classList.remove('bg-[#f8fafc]', 'text-[#334155]');
+                btnClicked.classList.add('bg-green-600', 'border-green-700', 'text-white');
+                btnClicked.querySelector('span:first-child').classList.replace('text-gray-400', 'text-green-200');
+                score += 10;
+                updateScore();
+            } else {
+                btnClicked.classList.remove('bg-[#f8fafc]', 'text-[#334155]');
+                btnClicked.classList.add('bg-red-100', 'border-red-400', 'text-red-800');
+                buttons[q.correct].classList.remove('bg-[#f8fafc]');
+                buttons[q.correct].classList.add('bg-green-100', 'border-green-400');
+            }
+
+            setTimeout(() => {
+                showFeedback(isCurrentAnswerCorrect, q.explanation);
+            }, 600);
+        }
+
+        function updateScore() {
+            scoreDisplay.innerText = score;
+            scoreDisplay.parentElement.classList.remove('animate-pop');
+            void scoreDisplay.parentElement.offsetWidth;
+            scoreDisplay.parentElement.classList.add('animate-pop');
+        }
+
+        function showFeedback(isCorrect, explanation) {
+            feedbackModal.classList.remove('hidden');
+            
+            setTimeout(() => {
+                feedbackContent.classList.remove('scale-95', 'opacity-0');
+                feedbackContent.classList.add('scale-100', 'opacity-100');
+                
+                // Color del borde del modal según resultado
+                if(isCorrect) {
+                    feedbackContent.classList.replace('border-[#003366]', 'border-green-600') || feedbackContent.classList.add('border-green-600');
+                    feedbackContent.classList.remove('border-red-600');
+                } else {
+                    feedbackContent.classList.replace('border-[#003366]', 'border-red-600') || feedbackContent.classList.add('border-red-600');
+                    feedbackContent.classList.remove('border-green-600');
+                }
+            }, 10);
+
+            if (isCorrect) {
+                feedbackIcon.innerHTML = '<i class="fa-solid fa-circle-check text-green-500"></i>';
+                feedbackTitle.innerText = '¡Decisión Exacta!';
+                feedbackTitle.className = 'text-2xl font-black mb-2 font-serif text-green-700 relative z-10';
+                pointsEarned.classList.remove('hidden');
+            } else {
+                feedbackIcon.innerHTML = '<i class="fa-solid fa-triangle-exclamation text-red-500"></i>';
+                feedbackTitle.innerText = 'Revisa la Matriz';
+                feedbackTitle.className = 'text-2xl font-black mb-2 font-serif text-red-700 relative z-10';
+                pointsEarned.classList.add('hidden');
+            }
+
+            feedbackExplanation.innerText = explanation;
+        }
+
+        function triggerSpiderAnimation() {
+            // Ocultar Modal
+            feedbackContent.classList.remove('scale-100', 'opacity-100');
+            feedbackContent.classList.add('scale-95', 'opacity-0');
+            
+            setTimeout(() => {
+                feedbackModal.classList.add('hidden');
+                
+                // Preparar Animación de vuelo
+                const slotIndex = currentCardIndex;
+                const targetSlot = document.getElementById(`slot-${slotIndex}`);
+                
+                // Obtener coordenadas exactas
+                const cardRect = cardContainer.getBoundingClientRect();
+                const slotRect = targetSlot.getBoundingClientRect();
+                
+                const deltaX = slotRect.left - cardRect.left + (slotRect.width / 2) - (cardRect.width / 2);
+                const deltaY = slotRect.top - cardRect.top + (slotRect.height / 2) - (cardRect.height / 2);
+                const scaleRatio = slotRect.width / cardRect.width;
+
+                // Aplicar transformación
+                cardContainer.style.transition = 'transform 0.5s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.5s';
+                // Mantenemos el rotateY porque la carta está boca arriba
+                cardContainer.style.transform = `translate(${deltaX}px, ${deltaY}px) scale(${scaleRatio}) rotateY(180deg)`;
+                cardContainer.style.opacity = '0.3';
+
+                setTimeout(() => {
+                    // Al terminar el vuelo, llenar el slot
+                    fillTopSlot(slotIndex, isCurrentAnswerCorrect, currentRank, currentSuitInfo);
+
+                    // Resetear la carta principal ocultamente
+                    cardContainer.style.transition = 'none';
+                    cardContainer.style.transform = 'translate(0, 0) scale(1) rotateY(0deg)';
+                    cardContainer.classList.remove('flipped');
+                    cardContainer.style.opacity = '1';
+                    isFlipped = false;
+
+                    // Cargar siguiente pregunta con un ligero delay para sensación de "nueva carta"
+                    setTimeout(() => {
+                        cardContainer.style.transition = 'transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1)';
+                        currentCardIndex++;
+                        loadCardContent();
+                    }, 50);
+
+                }, 500); // Duración del vuelo
+
+            }, 200); // Tiempo de ocultar modal
+        }
+
+        function fillTopSlot(index, isCorrect, rank, suitInfo) {
+            const slot = document.getElementById(`slot-${index}`);
+            slot.classList.remove('border-dashed', 'bg-black/15');
+            slot.classList.add('mini-card-filled');
+            
+            // Icono de estado superpuesto
+            const overlayIcon = isCorrect 
+                ? `<div class="status-overlay text-green-500"><i class="fa-solid fa-check"></i></div>` 
+                : `<div class="status-overlay text-red-500"><i class="fa-solid fa-xmark"></i></div>`;
+
+            slot.innerHTML = `
+                <div class="mini-card-content ${suitInfo.colorClass}">
+                    <span class="font-bold text-[14px] leading-none">${rank}</span>
+                    <span class="text-[16px] leading-none mt-[1px]">${suitInfo.icon}</span>
+                </div>
+                ${overlayIcon}
+            `;
+        }
+
+        function showEndScreen() {
+            document.getElementById('finalScoreDisplay').innerText = score;
+            const perfMsg = document.getElementById('performanceMessage');
+            
+            if (score === 100) {
+                perfMsg.innerText = "¡Nivel Dios Universitario! Dominas la matriz y la persuasión.";
+                perfMsg.className = "text-xl font-bold text-green-600";
+            } else if (score >= 70) {
+                perfMsg.innerText = "¡Buena jugada! Eres sólido, pero la matriz de Novedades no perdona errores.";
+                perfMsg.className = "text-xl font-bold text-blue-600";
+            } else {
+                perfMsg.innerText = "Necesitas barajar de nuevo. Consultar el archivo de novedades es VITAL antes de tocar Banner.";
+                perfMsg.className = "text-xl font-bold text-red-600";
+            }
+        }
+
+        window.onload = () => {
+            initTopSlots();
+            loadCardContent();
+        };
+
+    </script>
+</body>
+</html>
