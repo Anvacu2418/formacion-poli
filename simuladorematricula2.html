@@ -245,8 +245,8 @@
 
     <!-- SCRIPT LOGIC -->
     <script>
-        // API Configuration (Provided empty as requested, to be filled by runtime)
-        const apiKey = ""; 
+        // API Configuration 
+        const apiKey = "AQ.Ab8RN6JALzU1Cd6ZEl11lMflXXNDYL51Dzi4ImnvoU3pPC7Ogw"; 
 
         // Database / State
         const rawCases = [
@@ -487,6 +487,12 @@
             const input = document.getElementById('userResponseInput').value.trim();
             if (!input || input.length < 20) {
                 alert("Por favor, redacta una respuesta más completa (mínimo 20 caracteres) aplicando el modelo consultivo.");
+                return;
+            }
+
+            // Validar si la API Key fue configurada antes de intentar conectar
+            if (!apiKey || apiKey === "TU_API_KEY_AQUI" || apiKey === "") {
+                document.getElementById('typingIndicator').innerHTML = `<span class="text-red-400 font-bold"><i class="fas fa-exclamation-triangle"></i> Error de Sistema: Falta configurar la API Key de Gemini en el código HTML.</span>`;
                 return;
             }
 
