@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evolución Outbound USAM - De Informadores a Consultores</title>
+    
+    <!-- Fonts: Inter & Montserrat -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Icons: FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Montserrat', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            900: '#0c4a6e',
+                            950: '#082f49',
+                        },
+                        accent: {
+                            400: '#34d399',
+                            500: '#10b981',
+                            600: '#059669',
+                        }
+                    },
+                    animation: {
+                        'fade-in-up': 'fadeInUp 0.8s ease-out forwards',
+                    },
+                    keyframes: {
+                        fadeInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Custom Styles for scrollbar and specific interactions */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #0ea5e9, #10b981);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased selection:bg-brand-500 selection:text-white">
+
+    <!-- Navigation -->
+    <nav class="fixed w-full z-50 glass-card shadow-sm transition-all duration-300" id="navbar">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center gap-3">
+                    <div class="bg-brand-900 text-white p-2 rounded-lg">
+                        <i class="fa-solid fa-graduation-cap text-xl"></i>
+                    </div>
+                    <span class="font-display font-bold text-xl tracking-tight text-brand-900">USAM <span class="text-accent-500">PRO</span></span>
+                </div>
+                <div class="hidden md:flex space-x-8 text-sm font-medium">
+                    <a href="#contexto" class="text-slate-600 hover:text-brand-600 transition-colors">El Cambio</a>
+                    <a href="#formula" class="text-slate-600 hover:text-brand-600 transition-colors">La Fórmula</a>
+                    <a href="#casos" class="text-slate-600 hover:text-brand-600 transition-colors">Laboratorio de Casos</a>
+                    <a href="#cierre" class="text-slate-600 hover:text-brand-600 transition-colors">Técnicas de Cierre</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden bg-brand-950 text-white">
+        <!-- Background Elements -->
+        <div class="absolute inset-0 overflow-hidden pointer-events-none">
+            <div class="absolute -top-[20%] -right-[10%] w-[70%] h-[70%] rounded-full bg-brand-600/20 blur-3xl"></div>
+            <div class="absolute bottom-[10%] -left-[10%] w-[50%] h-[50%] rounded-full bg-accent-500/20 blur-3xl"></div>
+            <div class="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
+        </div>
+
+        <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center animate-fade-in-up">
+            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 border border-white/20 backdrop-blur-sm text-sm font-medium mb-8">
+                <span class="w-2 h-2 rounded-full bg-accent-400 animate-pulse"></span>
+                Evolución Estratégica 2026
+            </div>
+            <h1 class="text-5xl md:text-7xl font-display font-bold tracking-tight mb-6 leading-tight">
+                De Informadores a <br>
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-accent-400 to-brand-400">Consultores Estratégicos</span>
+            </h1>
+            <p class="mt-6 text-xl text-slate-300 max-w-3xl mx-auto font-light leading-relaxed">
+                El mercado universitario cambió. Los bots informan, los humanos conectan. Descubre cómo transformar cada llamada Outbound en inteligencia de mercado y acuerdos de alto valor.
+            </p>
+            <div class="mt-10 flex justify-center gap-4">
+                <a href="#contexto" class="px-8 py-4 bg-brand-600 hover:bg-brand-500 text-white rounded-xl font-medium transition-all shadow-lg hover:shadow-brand-500/30 hover:-translate-y-1">
+                    Comenzar Recorrido
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Context Section (The Why) -->
+    <section id="contexto" class="py-24 bg-white relative">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <h2 class="text-brand-600 font-semibold tracking-wide uppercase text-sm mb-3">El Paradigma</h2>
+                <h3 class="text-3xl md:text-4xl font-display font-bold text-slate-900 mb-4">¿Por qué fallan los libretos de siempre?</h3>
+                <p class="text-lg text-slate-600">La auditoría no busca castigar, busca evidenciar que estamos usando herramientas de ayer para los retos de hoy. USAM creció y la competencia también.</p>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <!-- Informador Card -->
+                <div class="bg-slate-50 border border-slate-200 p-8 rounded-2xl relative group overflow-hidden transition-all hover:border-red-200 hover:shadow-lg">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-red-100 rounded-bl-full -z-10 transition-transform group-hover:scale-110 opacity-50"></div>
+                    <div class="w-14 h-14 bg-white shadow-sm border border-slate-100 rounded-xl flex items-center justify-center text-red-500 text-2xl mb-6">
+                        <i class="fa-solid fa-robot"></i>
+                    </div>
+                    <h4 class="text-2xl font-bold mb-3 text-slate-800">El Modelo Informador</h4>
+                    <ul class="space-y-4 text-slate-600">
+                        <li class="flex items-start gap-3"><i class="fa-solid fa-xmark text-red-400 mt-1"></i> Lee un script rígido sin leer el contexto.</li>
+                        <li class="flex items-start gap-3"><i class="fa-solid fa-xmark text-red-400 mt-1"></i> Si el estudiante dice "Me voy", dice "Ok, que le vaya bien".</li>
+                        <li class="flex items-start gap-3"><i class="fa-solid fa-xmark text-red-400 mt-1"></i> Presiona el cierre por miedo: "Pagas hoy o lo pierdes".</li>
+                        <li class="flex items-start gap-3"><i class="fa-solid fa-xmark text-red-400 mt-1"></i> <strong>Pierde datos:</strong> La universidad se queda ciega.</li>
+                    </ul>
+                </div>
+
+                <!-- Consultor Card -->
+                <div class="bg-brand-50 border border-brand-100 p-8 rounded-2xl relative group overflow-hidden transition-all hover:border-brand-300 hover:shadow-xl shadow-brand-100">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-brand-200 rounded-bl-full -z-10 transition-transform group-hover:scale-110 opacity-50"></div>
+                    <div class="w-14 h-14 bg-white shadow-sm border border-brand-100 rounded-xl flex items-center justify-center text-brand-600 text-2xl mb-6">
+                        <i class="fa-solid fa-user-tie"></i>
+                    </div>
+                    <h4 class="text-2xl font-bold mb-3 text-brand-900">El Modelo Consultor</h4>
+                    <ul class="space-y-4 text-slate-700">
+                        <li class="flex items-start gap-3"><i class="fa-solid fa-check text-brand-500 mt-1"></i> Adapta la conversación según la emoción del estudiante.</li>
+                        <li class="flex items-start gap-3"><i class="fa-solid fa-check text-brand-500 mt-1"></i> Si el estudiante dice "Me voy", indaga <strong>por qué</strong> se va.</li>
+                        <li class="flex items-start gap-3"><i class="fa-solid fa-check text-brand-500 mt-1"></i> Cierra por triangulación: Conecta el pago con la meta de vida.</li>
+                        <li class="flex items-start gap-3"><i class="fa-solid fa-check text-brand-500 mt-1"></i> <strong>Recauda inteligencia:</strong> Ayuda a USAM a mejorar.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- The Formula Section -->
+    <section id="formula" class="py-24 bg-slate-900 text-white relative">
+        <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/dark-matter.png')] opacity-50"></div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="text-center mb-16">
+                <h2 class="text-accent-400 font-semibold tracking-wide uppercase text-sm mb-3">La Metodología</h2>
+                <h3 class="text-3xl md:text-5xl font-display font-bold mb-6">La Ecuación del Consultor</h3>
+                <p class="text-lg text-slate-400 max-w-2xl mx-auto">No necesitas un libreto. Necesitas una estructura lógica que resuelva cualquier objeción, sin importar lo difícil que parezca.</p>
+                
+                <div class="mt-8 inline-block bg-slate-800 border border-slate-700 px-8 py-4 rounded-2xl shadow-2xl">
+                    <p class="text-2xl md:text-4xl font-display font-bold tracking-widest text-white">
+                        <span class="text-brand-400">C</span> + 
+                        <span class="text-accent-400">I</span> + 
+                        <span class="text-yellow-400">S</span> + 
+                        <span class="text-purple-400">C</span>
+                    </p>
+                </div>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- C1 -->
+                <div class="bg-slate-800 border border-slate-700 p-6 rounded-2xl hover:-translate-y-2 transition-transform duration-300">
+                    <div class="w-12 h-12 rounded-full bg-brand-500/20 text-brand-400 flex items-center justify-center text-xl mb-4 border border-brand-500/30">
+                        <i class="fa-solid fa-handshake"></i>
+                    </div>
+                    <h4 class="text-xl font-bold text-white mb-2">1. Conexión</h4>
+                    <p class="text-sm text-slate-400 leading-relaxed mb-4">Validar la emoción del estudiante para bajar defensas. Sin empatía, se corta la comunicación.</p>
+                    <div class="bg-slate-900/50 p-3 rounded-lg border border-slate-700/50 text-xs text-brand-300 italic">
+                        "Entiendo perfectamente que tomar esta decisión requiere análisis..."
+                    </div>
+                </div>
+
+                <!-- I -->
+                <div class="bg-slate-800 border border-slate-700 p-6 rounded-2xl hover:-translate-y-2 transition-transform duration-300 relative overflow-hidden">
+                    <div class="absolute -right-4 -top-4 w-16 h-16 bg-accent-500/10 rounded-full blur-xl"></div>
+                    <div class="w-12 h-12 rounded-full bg-accent-500/20 text-accent-400 flex items-center justify-center text-xl mb-4 border border-accent-500/30">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </div>
+                    <h4 class="text-xl font-bold text-white mb-2">2. Indagación</h4>
+                    <p class="text-sm text-slate-400 leading-relaxed mb-4">El paso vital. Extraer el "por qué" real. Convertirnos en detectives estratégicos de la universidad.</p>
+                    <div class="bg-slate-900/50 p-3 rounded-lg border border-slate-700/50 text-xs text-accent-300 italic">
+                        "Más allá del precio, ¿qué factor fue decisivo para ti en esa otra institución?"
+                    </div>
+                </div>
+
+                <!-- S -->
+                <div class="bg-slate-800 border border-slate-700 p-6 rounded-2xl hover:-translate-y-2 transition-transform duration-300">
+                    <div class="w-12 h-12 rounded-full bg-yellow-500/20 text-yellow-400 flex items-center justify-center text-xl mb-4 border border-yellow-500/30">
+                        <i class="fa-solid fa-lightbulb"></i>
+                    </div>
+                    <h4 class="text-xl font-bold text-white mb-2">3. Solución</h4>
+                    <p class="text-sm text-slate-400 leading-relaxed mb-4">Aportar valor real basado en el dolor detectado. No ofrecer "descuentos por ofrecer".</p>
+                    <div class="bg-slate-900/50 p-3 rounded-lg border border-slate-700/50 text-xs text-yellow-300 italic">
+                        "Tenemos el plan de Pausa Académica que resguarda tus notas mientras te recuperas."
+                    </div>
+                </div>
+
+                <!-- C2 -->
+                <div class="bg-slate-800 border border-slate-700 p-6 rounded-2xl hover:-translate-y-2 transition-transform duration-300">
+                    <div class="w-12 h-12 rounded-full bg-purple-500/20 text-purple-400 flex items-center justify-center text-xl mb-4 border border-purple-500/30">
+                        <i class="fa-solid fa-bullseye"></i>
+                    </div>
+                    <h4 class="text-xl font-bold text-white mb-2">4. Cierre</h4>
+                    <p class="text-sm text-slate-400 leading-relaxed mb-4">El compromiso natural. Conectar la acción (matrícula/pausa) con la meta de vida del estudiante.</p>
+                    <div class="bg-slate-900/50 p-3 rounded-lg border border-slate-700/50 text-xs text-purple-300 italic">
+                        "¿Qué nos falta para que sientas la tranquilidad de retomar tu carrera hoy?"
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Lab / Accordions Section -->
+    <section id="casos" class="py-24 bg-slate-50 relative">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-brand-600 font-semibold tracking-wide uppercase text-sm mb-3">Laboratorio Interactivo</h2>
+                <h3 class="text-3xl md:text-4xl font-display font-bold text-slate-900 mb-4">Desactivando Casos "Imposibles"</h3>
+                <p class="text-slate-600">Haz clic en cada escenario para ver cómo transformar una llamada perdida en inteligencia estratégica mediante la fórmula.</p>
+            </div>
+
+            <!-- Accordion List -->
+            <div class="space-y-4">
+                
+                <!-- Item 1 -->
+                <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden transition-all duration-200">
+                    <button class="w-full px-6 py-5 flex items-center justify-between bg-white hover:bg-slate-50 focus:outline-none group" onclick="toggleAccordion('acc1', this)">
+                        <div class="flex items-center gap-4">
+                            <div class="w-10 h-10 rounded-full bg-red-100 text-red-500 flex items-center justify-center shrink-0">
+                                <i class="fa-solid fa-building-columns"></i>
+                            </div>
+                            <span class="text-left font-bold text-slate-800 text-lg group-hover:text-brand-600 transition-colors">"Me pasé a otra Universidad"</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-down text-slate-400 transition-transform duration-300"></i>
+                    </button>
+                    
+                    <div id="acc1" class="hidden border-t border-slate-100">
+                        <div class="p-6 bg-slate-50/50">
+                            <!-- Error -->
+                            <div class="mb-6 p-4 bg-red-50 border border-red-100 rounded-xl flex gap-3">
+                                <i class="fa-solid fa-triangle-exclamation text-red-500 mt-1"></i>
+                                <div>
+                                    <h5 class="font-bold text-red-800 text-sm mb-1">El Error (Informador):</h5>
+                                    <p class="text-sm text-red-600">"Ah, bueno. Qué pena. Las puertas quedan abiertas. Hasta luego." (Se pierde el dato estratégico de la competencia).</p>
+                                </div>
+                            </div>
+                            <!-- Solucion -->
+                            <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+                                <h5 class="font-bold text-brand-900 mb-4 text-sm flex items-center gap-2">
+                                    <i class="fa-solid fa-check-circle text-accent-500"></i> Aplicando la Fórmula C+I+S+C
+                                </h5>
+                                <div class="space-y-3 relative pl-4 border-l-2 border-slate-200 ml-2">
+                                    <p class="text-sm"><strong class="text-brand-600">Conexión:</strong> "Valoro mucho tu sinceridad. Tomar la decisión de cambiar implica mucho análisis."</p>
+                                    <p class="text-sm"><strong class="text-accent-600">Indagación (El Oro):</strong> "Por curiosidad, para ayudarnos a mejorar... ¿qué característica específica de esa otra U influyó más? ¿Horario, plan de estudios o costo?"</p>
+                                    <p class="text-sm"><strong class="text-yellow-600">Solución:</strong> "Saber que valoraste más sus laboratorios nos ayuda a reportarlo a dirección académica."</p>
+                                    <p class="text-sm"><strong class="text-purple-600">Cierre:</strong> "Actualizaré tu ficha. ¿Estarías de acuerdo si te envío un saludo a futuro por si buscas una especialización?"</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Item 2 -->
+                <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden transition-all duration-200">
+                    <button class="w-full px-6 py-5 flex items-center justify-between bg-white hover:bg-slate-50 focus:outline-none group" onclick="toggleAccordion('acc2', this)">
+                        <div class="flex items-center gap-4">
+                            <div class="w-10 h-10 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
+                                <i class="fa-solid fa-graduation-cap"></i>
+                            </div>
+                            <span class="text-left font-bold text-slate-800 text-lg group-hover:text-brand-600 transition-colors">"Ya terminé materias / Me gradué"</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-down text-slate-400 transition-transform duration-300"></i>
+                    </button>
+                    
+                    <div id="acc2" class="hidden border-t border-slate-100">
+                        <div class="p-6 bg-slate-50/50">
+                            <!-- Error -->
+                            <div class="mb-6 p-4 bg-red-50 border border-red-100 rounded-xl flex gap-3">
+                                <i class="fa-solid fa-triangle-exclamation text-red-500 mt-1"></i>
+                                <div>
+                                    <h5 class="font-bold text-red-800 text-sm mb-1">El Error (Informador):</h5>
+                                    <p class="text-sm text-red-600">"Ah, listo, felicitaciones entonces, no te molesto más." (Se pierde la oportunidad de retención de posgrado/alumni).</p>
+                                </div>
+                            </div>
+                            <!-- Solucion -->
+                            <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+                                <h5 class="font-bold text-brand-900 mb-4 text-sm flex items-center gap-2">
+                                    <i class="fa-solid fa-check-circle text-accent-500"></i> Aplicando la Fórmula C+I+S+C
+                                </h5>
+                                <div class="space-y-3 relative pl-4 border-l-2 border-slate-200 ml-2">
+                                    <p class="text-sm"><strong class="text-brand-600">Conexión:</strong> "¡Qué fantástica noticia! Felicitaciones, es un hito de vida gigante."</p>
+                                    <p class="text-sm"><strong class="text-accent-600">Indagación:</strong> "Ahora que alcanzaste esto, ¿cuál es el siguiente paso? ¿Mercado laboral directo o especializarte?"</p>
+                                    <p class="text-sm"><strong class="text-yellow-600">Solución:</strong> "Perfecto, tenemos beneficios del club Alumni y networking exclusivo para egresados."</p>
+                                    <p class="text-sm"><strong class="text-purple-600">Cierre:</strong> "¿Qué tal si agendamos enviarte info de los posgrados del próximo ciclo para que lo tengas en el radar?"</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Item 3 -->
+                <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden transition-all duration-200">
+                    <button class="w-full px-6 py-5 flex items-center justify-between bg-white hover:bg-slate-50 focus:outline-none group" onclick="toggleAccordion('acc3', this)">
+                        <div class="flex items-center gap-4">
+                            <div class="w-10 h-10 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center shrink-0">
+                                <i class="fa-solid fa-wallet"></i>
+                            </div>
+                            <span class="text-left font-bold text-slate-800 text-lg group-hover:text-brand-600 transition-colors">"No tengo dinero / Me quedé sin empleo"</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-down text-slate-400 transition-transform duration-300"></i>
+                    </button>
+                    
+                    <div id="acc3" class="hidden border-t border-slate-100">
+                        <div class="p-6 bg-slate-50/50">
+                            <!-- Error -->
+                            <div class="mb-6 p-4 bg-red-50 border border-red-100 rounded-xl flex gap-3">
+                                <i class="fa-solid fa-triangle-exclamation text-red-500 mt-1"></i>
+                                <div>
+                                    <h5 class="font-bold text-red-800 text-sm mb-1">El Error (Informador):</h5>
+                                    <p class="text-sm text-red-600">Ofrecer un descuento agresivo inmediatamente o simplemente cortar la llamada por falta de presupuesto inmediato.</p>
+                                </div>
+                            </div>
+                            <!-- Solucion -->
+                            <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+                                <h5 class="font-bold text-brand-900 mb-4 text-sm flex items-center gap-2">
+                                    <i class="fa-solid fa-check-circle text-accent-500"></i> Aplicando la Fórmula C+I+S+C
+                                </h5>
+                                <div class="space-y-3 relative pl-4 border-l-2 border-slate-200 ml-2">
+                                    <p class="text-sm"><strong class="text-brand-600">Conexión:</strong> "Entiendo lo retador de la situación. La estabilidad de tu hogar es prioridad."</p>
+                                    <p class="text-sm"><strong class="text-accent-600">Indagación (Diagnóstico):</strong> "Si el factor económico no fuera un impedimento, ¿tu deseo real sería continuar en este periodo?"</p>
+                                    <p class="text-sm"><strong class="text-yellow-600">Solución:</strong> "Si el deseo está, tenemos planes de alivio temporal, becas por desempleo y periodos de gracia."</p>
+                                    <p class="text-sm"><strong class="text-purple-600">Cierre:</strong> "¿Te parece si agendamos 5 mins con el área financiera para revisar tu caso puntual sin compromiso?"</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Redefining the Close -->
+    <section id="cierre" class="py-24 bg-white border-t border-slate-200 overflow-hidden">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <div class="text-center mb-16 max-w-2xl mx-auto">
+                <div class="inline-block p-3 bg-brand-50 text-brand-600 rounded-2xl mb-4">
+                    <i class="fa-solid fa-handshake-angle text-3xl"></i>
+                </div>
+                <h3 class="text-3xl md:text-4xl font-display font-bold text-slate-900 mb-4">Erradicando el Cliché del Cierre</h3>
+                <p class="text-slate-600">Un cierre presionado asegura un pago hoy, pero garantiza una deserción mañana. El cierre consultivo genera <strong>acuerdos</strong>.</p>
+            </div>
+
+            <div class="bg-slate-900 rounded-3xl p-8 md:p-12 shadow-2xl relative">
+                <!-- Grid vs -->
+                <div class="grid md:grid-cols-2 gap-12 relative z-10">
+                    
+                    <!-- Bad Way -->
+                    <div class="space-y-6">
+                        <div class="flex items-center gap-3 border-b border-slate-700 pb-4">
+                            <i class="fa-solid fa-xmark-circle text-red-500 text-2xl"></i>
+                            <h4 class="text-xl font-bold text-white">Venta de Presión (El Cliché)</h4>
+                        </div>
+                        <ul class="space-y-4">
+                            <li class="bg-red-500/10 border border-red-500/20 p-4 rounded-xl text-red-200 italic line-through decoration-red-500/50">
+                                "¿Contamos con tu pago hoy o mañana?"
+                            </li>
+                            <li class="bg-red-500/10 border border-red-500/20 p-4 rounded-xl text-red-200 italic line-through decoration-red-500/50">
+                                "Pagas hoy o pierdes el cupo y los beneficios."
+                            </li>
+                            <li class="bg-red-500/10 border border-red-500/20 p-4 rounded-xl text-red-200 italic line-through decoration-red-500/50">
+                                "Aprovecha porque los precios van a subir."
+                            </li>
+                        </ul>
+                        <p class="text-sm text-slate-400 mt-4"><i class="fa-solid fa-triangle-exclamation"></i> <strong>Efecto:</strong> El estudiante se siente acorralado. El poder lo tiene el miedo.</p>
+                    </div>
+
+                    <!-- Divider (Hidden on mobile) -->
+                    <div class="hidden md:flex absolute left-1/2 top-0 bottom-0 -translate-x-1/2 items-center justify-center">
+                        <div class="w-px h-full bg-gradient-to-b from-transparent via-slate-700 to-transparent"></div>
+                        <div class="absolute bg-slate-800 text-slate-400 p-2 rounded-full border border-slate-700 text-xs font-bold">VS</div>
+                    </div>
+
+                    <!-- Good Way -->
+                    <div class="space-y-6">
+                        <div class="flex items-center gap-3 border-b border-slate-700 pb-4">
+                            <i class="fa-solid fa-check-circle text-accent-400 text-2xl"></i>
+                            <h4 class="text-xl font-bold text-white">Cierre por Triangulación</h4>
+                        </div>
+                        <ul class="space-y-4">
+                            <li class="bg-accent-500/10 border border-accent-500/30 p-4 rounded-xl text-white font-medium italic relative overflow-hidden">
+                                <div class="absolute left-0 top-0 bottom-0 w-1 bg-accent-500"></div>
+                                "¿Qué nos hace falta para que sientas la tranquilidad de continuar tu proceso hoy?"
+                            </li>
+                            <li class="bg-accent-500/10 border border-accent-500/30 p-4 rounded-xl text-white font-medium italic relative overflow-hidden">
+                                <div class="absolute left-0 top-0 bottom-0 w-1 bg-accent-500"></div>
+                                "Pensando en tu meta de graduarte, ¿qué fecha te funcionaría mejor para asegurar el cupo?"
+                            </li>
+                            <li class="bg-accent-500/10 border border-accent-500/30 p-4 rounded-xl text-white font-medium italic relative overflow-hidden">
+                                <div class="absolute left-0 top-0 bottom-0 w-1 bg-accent-500"></div>
+                                "Basado en lo que hablamos, ¿sientes que este plan resuelve tu necesidad actual?"
+                            </li>
+                        </ul>
+                        <p class="text-sm text-slate-400 mt-4"><i class="fa-solid fa-lightbulb"></i> <strong>Efecto:</strong> El compromiso nace del estudiante. Conectas la decisión con su proyecto de vida.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA / Challenge Section -->
+    <section class="py-20 bg-brand-600 text-center relative overflow-hidden">
+        <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <h2 class="text-3xl md:text-5xl font-display font-bold text-white mb-6">El Reto de la Semana</h2>
+            <p class="text-xl text-brand-100 mb-10 leading-relaxed font-light">
+                No les pido que vendan más. Les pido que <strong class="text-white font-bold">indaguen mejor</strong>. 
+                <br>Esta semana, la meta es traer 3 casos de objeciones duras donde lograron aplicar C+I+S+C y descubrieron la causa raíz real.
+            </p>
+            <div class="inline-flex items-center gap-3 bg-white text-brand-900 px-8 py-4 rounded-full font-bold shadow-xl">
+                <i class="fa-solid fa-fire text-orange-500"></i> ¿Aceptan el reto?
+            </div>
+        </div>
+    </section>
+
+    <footer class="bg-slate-900 text-slate-400 py-8 text-center border-t border-slate-800">
+        <p class="text-sm">Diseñado para la formación estratégica de equipos comerciales. USAM 2026.</p>
+    </footer>
+
+    <script>
+        // Navbar Scroll Effect
+        window.addEventListener('scroll', () => {
+            const nav = document.getElementById('navbar');
+            if (window.scrollY > 20) {
+                nav.classList.add('shadow-md');
+                nav.classList.replace('bg-white/95', 'bg-white/95'); // Ensure backdrop stays
+            } else {
+                nav.classList.remove('shadow-md');
+            }
+        });
+
+        // Accordion Toggle Logic
+        function toggleAccordion(id, btn) {
+            const content = document.getElementById(id);
+            const icon = btn.querySelector('.fa-chevron-down');
+            
+            // Toggle Content
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                // Small animation delay for smooth reveal
+                content.animate([
+                    { opacity: 0, transform: 'translateY(-10px)' },
+                    { opacity: 1, transform: 'translateY(0)' }
+                ], { duration: 200, fill: 'forwards', easing: 'ease-out' });
+                icon.style.transform = 'rotate(180deg)';
+                btn.classList.add('bg-slate-50');
+            } else {
+                content.classList.add('hidden');
+                icon.style.transform = 'rotate(0deg)';
+                btn.classList.remove('bg-slate-50');
+            }
+        }
+    </script>
+</body>
+</html>
