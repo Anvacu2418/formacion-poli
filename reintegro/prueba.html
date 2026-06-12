@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evaluación de Refuerzo: Reintegros y Trámites 2026</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+            color: #1f2937;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        }
+        .radio-custom:checked + div {
+            border-color: #3b82f6;
+            background-color: #eff6ff;
+        }
+        .radio-custom:checked + div .radio-dot {
+            background-color: #3b82f6;
+            border-color: #3b82f6;
+        }
+        /* Custom scrollbar for feedback area */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #c1c1c1; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8; 
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4 sm:p-8">
+
+    <div id="app" class="w-full max-w-4xl">
+        
+        <!-- Pantalla de Inicio -->
+        <div id="intro-screen" class="glass-panel rounded-2xl p-8 sm:p-12 text-center transition-all duration-500 transform scale-100">
+            <div class="mb-6 flex justify-center">
+                <div class="bg-blue-100 text-blue-600 p-4 rounded-full">
+                    <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </div>
+            </div>
+            <h1 class="text-3xl sm:text-4xl font-bold text-gray-800 mb-4">¡Vamos a poner en práctica lo aprendido! 🚀</h1>
+            <p class="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
+                Esta semana tuvimos dos sesiones súper importantes sobre las novedades de Reintegros y Trámites Académicos. Es hora de demostrar tus habilidades de análisis crítico.
+            </p>
+            
+            <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-8 text-left max-w-2xl mx-auto rounded-r-lg">
+                <h3 class="font-semibold text-yellow-800 mb-2">Instrucciones:</h3>
+                <ul class="list-disc pl-5 text-yellow-700 space-y-1 text-sm">
+                    <li>Tendrás <strong>20 minutos</strong> para responder.</li>
+                    <li>Se te presentarán <strong>7 casos aleatorios</strong> (Banner, Tickets y Procesos).</li>
+                    <li>Solo tienes <strong>1 intento</strong>. ¡Lee con mucha atención!</li>
+                </ul>
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                <a href="https://whitneyintl.sharepoint.com/:x:/r/sites/PolitcnicoGrancolombianoRelacionamiento2/_layouts/15/Doc.aspx?sourcedoc=%7B85E4210D-234D-4707-A4D7-6F83AA8AFA64%7D&file=Novedades%20tramites%202026-2.xlsx&action=default&mobileredirect=true&DefaultItemOpen=1" 
+                   target="_blank" 
+                   class="flex items-center justify-center px-6 py-3 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg shadow-md transition duration-300 w-full sm:w-auto">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                    Ver Novedades de Programa
+                </a>
+                <button onclick="startQuiz()" class="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-md transition duration-300 w-full sm:w-auto">
+                    Comenzar Evaluación
+                </button>
+            </div>
+        </div>
+
+        <!-- Pantalla del Quiz -->
+        <div id="quiz-screen" class="hidden glass-panel rounded-2xl overflow-hidden flex flex-col min-h-[600px] transition-all duration-500">
+            <!-- Header / Timer -->
+            <div class="bg-white border-b px-6 py-4 flex justify-between items-center shadow-sm z-10">
+                <div>
+                    <span class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Pregunta <span id="current-q-num">1</span> de 7</span>
+                    <div class="w-32 sm:w-48 h-2 bg-gray-200 rounded-full mt-2">
+                        <div id="progress-bar" class="h-2 bg-blue-500 rounded-full transition-all duration-300" style="width: 14%;"></div>
+                    </div>
+                </div>
+                <div class="flex items-center text-red-500 font-bold bg-red-50 px-4 py-2 rounded-lg">
+                    <svg class="w-5 h-5 mr-2 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <span id="timer">20:00</span>
+                </div>
+            </div>
+
+            <!-- Question Area -->
+            <div class="flex-grow p-6 sm:p-10 overflow-y-auto">
+                <h2 id="question-text" class="text-xl sm:text-2xl font-medium text-gray-800 mb-8 leading-relaxed">
+                    <!-- Dynamic Question -->
+                </h2>
+                <div id="options-container" class="space-y-4">
+                    <!-- Dynamic Options -->
+                </div>
+            </div>
+
+            <!-- Footer / Navigation -->
+            <div class="bg-gray-50 border-t px-6 py-4 flex justify-between items-center">
+                <button onclick="prevQuestion()" id="btn-prev" class="flex items-center px-4 py-2 text-gray-600 hover:text-blue-600 font-medium disabled:opacity-50 disabled:cursor-not-allowed transition">
+                    <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                    Anterior
+                </button>
+                
+                <!-- Numbered Pagination -->
+                <div id="pagination-dots" class="hidden sm:flex space-x-2">
+                    <!-- Dynamic dots -->
+                </div>
+
+                <button onclick="nextQuestion()" id="btn-next" class="flex items-center px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-sm transition">
+                    Siguiente
+                    <svg class="w-5 h-5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                </button>
+                <button onclick="finishQuiz()" id="btn-finish" class="hidden flex items-center px-6 py-2 bg-green-500 hover:bg-green-600 text-white font-medium rounded-lg shadow-sm transition">
+                    Finalizar Prueba
+                    <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Pantalla de Resultados -->
+        <div id="results-screen" class="hidden glass-panel rounded-2xl p-8 sm:p-12 transition-all duration-500">
+            <div class="text-center mb-10">
+                <div id="score-icon" class="inline-block p-4 rounded-full mb-4">
+                    <!-- Dynamic Icon -->
+                </div>
+                <h1 class="text-3xl font-bold text-gray-800 mb-2">Evaluación Finalizada</h1>
+                <p class="text-xl text-gray-600">Tu puntaje: <span id="final-score" class="font-bold text-2xl"></span> / 7</p>
+            </div>
+
+            <div class="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+                <h3 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2">Feedback Personalizado:</h3>
+                <div id="feedback-container" class="space-y-6 max-h-[400px] overflow-y-auto pr-2">
+                    <!-- Dynamic Feedback -->
+                </div>
+            </div>
+
+            <div class="mt-8 text-center">
+                <p class="text-gray-500 text-sm">El intento ha sido registrado. Puedes cerrar esta ventana y volver a la operación.</p>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Banco de 30 preguntas (Generales, Banner y Novedades/Tickets)
+        const questionBank = [
+            // --- GENERALES / PASO A PASO (6) ---
+            {
+                type: "general",
+                question: "Estás a punto de ingresar a Banner para tramitar un reintegro regular. Antes de crear la nueva solicitud en la plataforma, la directriz indica que es obligatorio realizar una validación previa en SVASVPR. ¿Cuál es el propósito crítico de este paso?",
+                options: [
+                    "Verificar si el estudiante tiene deudas financieras pendientes con Fincomercio o Credipoli.",
+                    "Verificar si el estudiante ya cuenta con una solicitud activa, en revisión o recientemente aprobada (desde el 20 de mayo), para evitar duplicar procesos.",
+                    "Confirmar que el estudiante pertenezca al catálogo antiguo antes de enviarlo a la facultad.",
+                    "Asegurar que el código de la solicitud sea SREIN y no SOL."
+                ],
+                correct: 1,
+                topic: "el paso a paso previo a la creación de solicitudes en ASVAS BPR para no generar reprocesos"
+            },
+            {
+                type: "general",
+                question: "Al crear una solicitud de cambio de programa, Banner arroja un error y no te permite seleccionar el programa destino correcto en los 'Datos Adicionales'. ¿Cómo debes proceder para no afectar el trámite del estudiante?",
+                options: [
+                    "Rechazar la llamada e indicarle al estudiante que el sistema está caído y debe intentar mañana.",
+                    "Crear un ticket inmediatamente a soporte TI para que desbloqueen la opción en Banner.",
+                    "Seleccionar el programa que permite el sistema, pero detallar de forma obligatoria en el 'Comentario Interno' el programa origen y el programa destino real.",
+                    "Dejar el campo en blanco y poner la nota en el sistema CRM de HubSpot."
+                ],
+                correct: 2,
+                topic: "el uso obligatorio y estratégico del Comentario Interno cuando Banner restringe la selección de programas"
+            },
+            {
+                type: "general",
+                question: "Según el instructivo de creación de solicitudes en Banner (SVASVPR), al momento de llenar el campo 'Tipo de Solicitud' luego de colocar el ID y el código de servicio, ¿qué valor exacto debes seleccionar?",
+                options: ["SREIN", "SOL", "REINT", "BO"],
+                correct: 1,
+                topic: "el instructivo visual de Banner, donde se especifica claramente que el tipo de solicitud es SOL"
+            },
+            {
+                type: "general",
+                question: "Atiendes a un estudiante que desea solicitar un reintegro. Al revisar Analytics, notas que cursaba un Doble Programa. El estudiante te confirma que solo desea reintegrarse a su carrera principal y cancelar la segunda. Sin embargo, al crear la solicitud, Banner no te permite modificar el programa de destino. ¿Qué acción debes tomar?",
+                options: [
+                    "Escalar el caso por ticket a la facultad porque todos los dobles programas se manejan por derivación.",
+                    "Seleccionar el programa que permite el sistema, pero detallar de forma obligatoria en el 'Comentario Interno' que el reintegro es solo para el programa principal y que desea cancelar el otro.",
+                    "Crear dos solicitudes distintas en Banner, una aprobando y otra rechazando.",
+                    "Decirle al estudiante que primero debe enviar una carta a registro y control renunciando al doble programa."
+                ],
+                correct: 1,
+                topic: "la importancia de indagar sobre el doble programa y registrar la decisión en el comentario interno para evitar que el sistema automatizado apruebe ambos"
+            },
+            {
+                type: "general",
+                question: "Recibes una llamada de un estudiante que desea retomar sus estudios en la Maestría en Inteligencia Artificial. Al validar en Analytics, observas que en su primer semestre registra el estado 'Aplazamiento' y no cursó ninguna materia (sus notas están en 0.0 sin reportes evaluativos). El estudiante pregunta si puede aplicar a una homologación externa. ¿Qué debes hacer?",
+                options: [
+                    "Tramitar el reintegro por Banner y decirle que la homologación externa ya no aplica porque estuvo matriculado.",
+                    "Identificar el caso como una 'Readmisión' (proceso de Admisiones) ya que no cursó materias en primer semestre, y confirmar que sí podría postularse a homologación externa.",
+                    "Crear un ticket a la facultad para que ellos decidan si se le valen las notas en 0.0.",
+                    "Generarle la orden de pago por última materia para que retome."
+                ],
+                correct: 1,
+                topic: "la diferencia radical entre un Reintegro y una Readmisión (aplazamiento en primer semestre sin cursar), y cómo esto afecta la homologación externa"
+            },
+            {
+                type: "general",
+                question: "Un estudiante se contacta molesto porque inició un programa hace un año, cursó dos semanas, se retiró sin cancelar formalmente y ahora quiere volver, pero exige una homologación externa de un técnico que acaba de terminar. ¿Es procedente su solicitud de homologación?",
+                options: [
+                    "Sí, porque no alcanzó a tener notas definitivas, así que se considera estudiante nuevo.",
+                    "Sí, siempre y cuando adjunte el título en un ticket derivado a la facultad.",
+                    "No. Al haber estado matriculado y haber tocado contenido evaluativo (así sea poco tiempo), se considera Reintegro y la homologación externa es solo para ingresos nuevos o readmisiones.",
+                    "No, porque las homologaciones externas solo aplican para convenios SENA."
+                ],
+                correct: 2,
+                topic: "las reglas de Homologación Externa, las cuales son improcedentes para estudiantes que ya tuvieron actividad académica en la institución"
+            },
+
+            // --- BANNER (8) ---
+            {
+                type: "banner",
+                question: "Un estudiante de Psicología Virtual se comunica para reintegrarse. Al validar su historial, notas que pertenece al plan de estudios antiguo (terminado en PSI). Según las directrices actuales, ¿cuál es el canal y procedimiento correcto?",
+                options: [
+                    "Se debe derivar por ticket a la facultad para que presente entrevista.",
+                    "Se inserta la solicitud directamente por Banner (SVASVPR), asumiendo que se encuentra cobijado por el plan de contingencia.",
+                    "Se debe rechazar la solicitud e indicarle que el plan antiguo fue cancelado.",
+                    "Se inserta por Banner, pero se le advierte que sus prácticas ahora serán obligatoriamente clínicas presenciales."
+                ],
+                correct: 1,
+                topic: "el manejo del plan antiguo de Psicología Virtual (PSI), el cual se gestiona directo por Banner asumiendo el plan de contingencia"
+            },
+            {
+                type: "banner",
+                question: "Revisando el caso de una estudiante de Psicología Presencial Bogotá que solicita un reintegro, validas en su historial académico que le faltan exactamente 10 asignaturas para culminar su programa. Según las novedades de este programa, ¿cómo debes gestionar esta solicitud?",
+                options: [
+                    "Escalar la solicitud a la facultad por medio de ticket para que ellos evalúen el caso.",
+                    "Insertar la solicitud directamente en Banner, pasándola al plan de estudios nuevo y advirtiéndole que realizará práctica clínica presencial.",
+                    "Generar la solicitud por Banner al plan antiguo sin hacer ninguna advertencia.",
+                    "Rechazar la solicitud porque debe cambiar a modalidad virtual obligatoriamente."
+                ],
+                correct: 1,
+                topic: "las novedades de Psicología Presencial, donde solo se escala a la facultad si faltan exactamente 5 materias; si faltan más, van a plan nuevo por Banner"
+            },
+            {
+                type: "banner",
+                question: "Un estudiante regular de Administración de Empresas Virtual te llama para retomar estudios. Verificas en Analytics y su avance curricular es del 82%. Es un estudiante TA. ¿Cuál es el proceso a seguir?",
+                options: [
+                    "Escalar por ticket a la facultad adjuntando su documento de identidad.",
+                    "Tramitar por Banner pasándolo al plan de estudios nuevo (vigente) debido a la reforma.",
+                    "Tramitar la solicitud directamente por Banner manteniendo su plan de estudios antiguo, ya que su avance es superior al 70%.",
+                    "Pedirle el título de bachiller y generar un ticket de homologación."
+                ],
+                correct: 2,
+                topic: "las reglas de Administración de Empresas Virtual para regulares: si el avance es >=70%, se mantiene en el plan antiguo directamente por Banner"
+            },
+            {
+                type: "banner",
+                question: "Un estudiante de la Licenciatura en Primera Infancia se comunica para solicitar su reintegro. Al consultar su historial, confirmas que tiene un avance curricular del 95%. De acuerdo a las novedades estipuladas por la facultad para este programa, ¿cuál es el procedimiento a seguir?",
+                options: [
+                    "Tramitar la solicitud de reintegro indicando obligatoriamente un cambio de programa a Licenciatura en Educación Infantil.",
+                    "Escalar el caso por ticket a la facultad debido al cambio de registro calificado.",
+                    "Crear la solicitud por Banner (SVASVPR) manteniendo su programa actual de Primera Infancia, dado que su avance supera el 90%.",
+                    "Informarle que el programa no se oferta y que debe esperar a la nueva resolución del Ministerio."
+                ],
+                correct: 2,
+                topic: "la excepción en Licenciatura en Primera Infancia, donde los avances >90% se mantienen en su mismo programa por Banner"
+            },
+            {
+                type: "banner",
+                question: "Atiendes a un estudiante de Derecho Virtual (ingreso 2024 corte C) que desea hacer un reintegro estándar sin cambios de programa ni de modalidad. ¿Cómo se gestiona su solicitud?",
+                options: [
+                    "Se debe escalar por ticket a la facultad para ajustes de homologación de la nueva malla.",
+                    "Se tramita directamente por Banner, ya que no aplica para cambios especiales ni requiere validación previa de facultad para un reintegro normal.",
+                    "Se tramita por Banner, pero se le exige una carta firmada aceptando prácticas presenciales.",
+                    "Se rechaza porque la homologación de Derecho Virtual solo aplica para ingresos de 2023 hacia atrás."
+                ],
+                correct: 1,
+                topic: "el flujo estándar de Derecho Virtual, que procede normal por Banner a menos que requiera ajustes de homologación por cambios de malla o sea un cambio por convenio Policía"
+            },
+            {
+                type: "banner",
+                question: "Te contacta un estudiante de Negocios Internacionales Virtual que abandonó en tercer semestre. Desea reintegrarse para el próximo bloque. ¿A qué plan de estudios se debe direccionar y por qué canal?",
+                options: [
+                    "Plan nuevo, gestionado por Ticket a la facultad.",
+                    "Plan antiguo, gestionado directamente por Banner (SVASVPR).",
+                    "Plan nuevo, gestionado por Banner.",
+                    "Plan antiguo, gestionado por Ticket para validación de créditos."
+                ],
+                correct: 1,
+                topic: "la novedad de Negocios Internacionales Virtual: todo reintegro va al plan antiguo por Banner, a excepción de los que estén en primer semestre"
+            },
+            {
+                type: "banner",
+                question: "Un estudiante regular de Profesional en Gestión de la Seguridad y Salud Laboral Virtual, con un avance del 45% en el plan antiguo, pide reintegro. ¿Cómo lo gestionas?",
+                options: [
+                    "Por Banner, direccionándolo al plan de estudios nuevo (donde la opción de grado es materia).",
+                    "Por Ticket a la facultad para que aprueben el mantenimiento de su plan antiguo.",
+                    "Por Banner, manteniéndolo en el plan antiguo porque supera el 40%.",
+                    "Por Ticket, exigiéndole la carta de aceptación de prácticas en Medellín."
+                ],
+                correct: 0,
+                topic: "Gestión de SST Virtual: solo los >70% van por ticket para mantener el antiguo. Los de menor avance (como 45%) van a plan nuevo por Banner"
+            },
+            {
+                type: "banner",
+                question: "Un estudiante regular de Administración de Empresas Virtual te llama para retomar estudios. Su avance curricular es del 40%. Es un estudiante TA. ¿Cuál es la directriz exacta según las últimas sesiones?",
+                options: [
+                    "Escalar por ticket a la facultad adjuntando el título de bachiller.",
+                    "Tramitar la solicitud directamente por Banner, pasándolo al plan de estudios vigente (nuevo), e informarle que debe acogerse a dicho plan.",
+                    "Escalar a la facultad para que decidan si lo dejan en el plan antiguo.",
+                    "Mantenerlo en el plan antiguo por Banner porque es estudiante regular."
+                ],
+                correct: 1,
+                topic: "la clarificación dada en la sesión: los regulares de Admin Empresas con <70% van al plan nuevo, y el trámite se hace directo por Banner informando al estudiante"
+            },
+
+            // --- TICKETS / NOVEDADES (16) ---
+            {
+                type: "ticket",
+                question: "Un estudiante de Psicología Presencial se comunica para solicitar un cambio de modalidad a Psicología Virtual (Plan nuevo PSI 3). A través de un ticket, el estudiante adjunta un documento en Word redactado por él mismo donde indica: 'Acepto realizar mis prácticas clínicas de manera presencial en décimo semestre'. ¿Cuál es el procedimiento correcto ante este caso?",
+                options: [
+                    "Aprobar la solicitud en Banner y adjuntar el Word en los comentarios internos.",
+                    "Rechazar la carta adjunta. El estudiante debe pasar por un proceso de entrevista/pruebas con la facultad, quienes le enviarán la Carta de Aceptación oficial que deberá firmar a mano y adjuntar posteriormente.",
+                    "Escalar el caso a registro y control para que validen la firma digital del Word.",
+                    "Aprobar el cambio de modalidad, ya que el único requisito es que exista una manifestación escrita del estudiante."
+                ],
+                correct: 1,
+                topic: "el estricto proceso de admisión para Psicología Virtual (PSI 3), que exige la carta oficial enviada por la facultad con firma a mano, invalidando documentos genéricos"
+            },
+            {
+                type: "ticket",
+                question: "Una estudiante colombiana radicada en España quiere hacer un cambio de programa a Psicología Virtual (Plan PSI 3) y te pregunta si puede hacer sus prácticas clínicas en Madrid. ¿Qué le respondes y cómo procedes?",
+                options: [
+                    "Le confirmas que sí es posible gracias a los convenios internacionales y le apruebas el reintegro por Banner.",
+                    "Le indicas que la directriz general exige prácticas presenciales en Bogotá o Medellín. Dado su caso atípico, debes recomendarle escalar la consulta a la facultad para evaluar excepciones antes de tramitar el cambio.",
+                    "Rechazas la llamada indicando que el programa es exclusivo para residentes en Colombia.",
+                    "Le informas que puede hacerlas virtuales sin problema, ya que está fuera del país."
+                ],
+                correct: 1,
+                topic: "el manejo de casos atípicos en el exterior para Psicología PSI 3, donde la regla es presencialidad en COL, y solo la facultad puede evaluar excepciones internacionales"
+            },
+            {
+                type: "ticket",
+                question: "Revisando el caso de una estudiante de Psicología Presencial Bogotá que solicita un reintegro, validas en su historial académico que le faltan exactamente 5 asignaturas para culminar su programa. Según las novedades de este programa, ¿cómo debes gestionar esta solicitud?",
+                options: [
+                    "Escalar la solicitud a la facultad por medio de ticket para que ellos evalúen el caso y den el aval de si se mantiene en el plan antiguo o pasa al nuevo.",
+                    "Insertar la solicitud directamente en Banner, pasándola al plan de estudios nuevo y advirtiéndole que realizará práctica clínica presencial.",
+                    "Generar la solicitud por Banner al plan antiguo sin hacer ninguna advertencia.",
+                    "Rechazar la solicitud porque debe cambiar a modalidad virtual obligatoriamente."
+                ],
+                correct: 0,
+                topic: "las novedades de Psicología Presencial, donde el faltante exacto de 5 materias exige escalamiento a la facultad por ticket"
+            },
+            {
+                type: "ticket",
+                question: "Un estudiante de Administración de Empresas Virtual que pertenece al convenio SENA solicita un reintegro. Verificas en Analytics y su avance curricular es del 62%. De acuerdo con las novedades del programa, ¿cuál es la ruta de gestión correcta?",
+                options: [
+                    "Tramitar el reintegro por Banner y pasarlo al plan nuevo automáticamente.",
+                    "Se debe escalar a la facultad por medio de ticket para su validación, y tú como asesor debes autogestionar la descarga del título en la plataforma del SENA para adjuntarlo.",
+                    "Se debe escalar a la facultad por ticket, pero es obligatorio pedirle al estudiante que nos envíe el cartón del SENA escaneado.",
+                    "Tramitar por Banner al plan antiguo porque los convenios SENA no sufren cambios de malla."
+                ],
+                correct: 1,
+                topic: "el manejo de convenios SENA en Admin Empresas (<70%), que van por ticket, y la instrucción de optimizar tiempos descargando nosotros mismos el certificado desde el portal del SENA"
+            },
+            {
+                type: "ticket",
+                question: "Verificas a un estudiante de Administración de Empresas Virtual de la Policía Nacional con un avance del 55%. Solicita reintegro. ¿Cómo procedes?",
+                options: [
+                    "Lo tramitas por Banner al plan nuevo, porque el avance es menor al 70%.",
+                    "Le pides que descargue su título del portal SENA y lo adjuntas a un ticket.",
+                    "Escalas la solicitud por ticket a la facultad para validación, pero previamente le solicitas al estudiante que te envíe su soporte/título de la Policía para adjuntarlo.",
+                    "Lo mantienes en el plan antiguo por Banner gracias a su convenio."
+                ],
+                correct: 2,
+                topic: "el manejo de convenios distintos al SENA (ej. Policía) con <70% en Admin Empresas, donde sí es obligatorio solicitarle el soporte directamente al estudiante para adjuntarlo al ticket"
+            },
+            {
+                type: "ticket",
+                question: "Un estudiante de la Licenciatura en Primera Infancia se comunica para solicitar su reintegro. Al consultar su historial, confirmas que tiene un avance curricular del 85%. De acuerdo a las novedades estipuladas por la facultad para este programa, ¿cuál es el procedimiento a seguir?",
+                options: [
+                    "Tramitar la solicitud de reintegro indicando obligatoriamente un cambio de programa a Licenciatura en Educación Infantil.",
+                    "Escalar el caso por ticket a la facultad debido a que le falta poco para el 90%.",
+                    "Crear la solicitud por Banner manteniendo su programa actual de Primera Infancia.",
+                    "Informarle que el programa no se oferta y rechazar la solicitud."
+                ],
+                correct: 0,
+                topic: "la regla de Primera Infancia: avances menores al 90% (como el 85%) deben cambiar obligatoriamente a Licenciatura en Educación Infantil"
+            },
+            {
+                type: "ticket",
+                question: "Te entra una solicitud para la Maestría en Inteligencia Artificial y Computación (programa nuevo). El estudiante no tiene notas en su historial porque es su primer ingreso. ¿Cómo se procesa?",
+                options: [
+                    "Se crea el reintegro por Banner en el código SREIN.",
+                    "Se rechaza porque no aplica para trámites académicos; al no tener notas, es un proceso de Admisiones (Readmisión).",
+                    "Se escala un ticket a la facultad adjuntando el pago de los derechos pecuniarios.",
+                    "Se tramita como cambio de modalidad a virtual."
+                ],
+                correct: 1,
+                topic: "la validación obligatoria para programas nuevos como Maestría en IA: si no hay notas, es readmisión, no reintegro"
+            },
+            {
+                type: "ticket",
+                question: "Revisas las novedades y ves que la Especialización en Gerencia de Telecomunicaciones Bogotá Presencial indica: 'Programa no ofertado sin plan de contingencia'. Un estudiante te llama pidiendo reintegro. ¿Qué le respondes?",
+                options: [
+                    "Le informas inmediatamente que el programa fue cerrado y que debe escoger otra carrera.",
+                    "Creas un ticket derivando la solicitud a la facultad; ellos evaluarán su avance y decidirán internamente si le permiten terminar o le exigen cambio de programa.",
+                    "Le apruebas el reintegro por Banner, porque los antiguos tienen derechos adquiridos.",
+                    "Le indicas que debe pagar una multa por extemporaneidad antes de crear el ticket."
+                ],
+                correct: 1,
+                topic: "el significado operativo de 'no ofertado': aplica restricciones de ingreso para nuevos, pero los reintegros SIEMPRE se escalan por ticket para que la facultad decida, sin rechazar al estudiante de antemano"
+            },
+            {
+                type: "ticket",
+                question: "Un estudiante de la Licenciatura en Ciencias Sociales solicita reintegro. Revisas la matriz y notas que el programa está en 'Renovación de registro calificado'. ¿Qué implica esto para tu gestión?",
+                options: [
+                    "Que debes tramitarlo por Banner al catálogo antiguo de inmediato.",
+                    "Que debes rechazarlo hasta que el Ministerio apruebe el registro.",
+                    "Que todo reintegro va a catálogo nuevo (con cambios) y debe ser escalado a la facultad por medio de ticket mientras se confirma el procedimiento final.",
+                    "Que el estudiante debe hacer una homologación externa obligatoria."
+                ],
+                correct: 2,
+                topic: "el manejo preventivo de programas en renovación de registro (Licenciaturas): se escalan por ticket asumiendo paso al catálogo nuevo"
+            },
+            {
+                type: "ticket",
+                question: "El plan de estudios de la Especialización en Contratación Estatal cambió en el periodo 202630. Un estudiante que abandonó en 2025 pide regresar. ¿Cómo procedes?",
+                options: [
+                    "Reintegro por Banner al plan antiguo.",
+                    "Reintegro por Banner al plan nuevo.",
+                    "Ticket a la facultad para validación de equivalencias de materias y definición del plan de transición.",
+                    "Solicitar carta de aceptación de prácticas presenciales."
+                ],
+                correct: 2,
+                topic: "los cambios recientes de malla en posgrados (Contratación Estatal), que obligan a usar ticket para el plan de equivalencias y transición"
+            },
+            {
+                type: "ticket",
+                question: "Un estudiante de la Maestría en Derecho Procesal (programa abierto en 202630) te llama para un cambio de programa. ¿Qué debes saber sobre esta maestría?",
+                options: [
+                    "Que se aprueba automáticamente por Banner si tiene buen promedio.",
+                    "Que no aplica para reintegros regulares; al ser primera cohorte, todo trámite (como cambio de programa) debe ser validado y autorizado explícitamente por la facultad vía ticket.",
+                    "Que solo se permiten reintegros si el estudiante aporta un certificado del SENA.",
+                    "Que el programa ya no se oferta."
+                ],
+                correct: 1,
+                topic: "el cuidado con programas recién aperturados (Derecho Procesal), donde no hay contingencias ni histórico, exigiendo aval de facultad vía ticket"
+            },
+            {
+                type: "ticket",
+                question: "Atiendes a un estudiante de Periodismo Virtual con un avance del 40% que quiere retomar. Las novedades dicen que el programa no se oferta. Según la directriz de la capacitación, ¿qué le ofreces?",
+                options: [
+                    "Le informas que puede reintegrarse a Periodismo Presencial.",
+                    "Le ofreces directamente el cambio a Comunicación Social Virtual (o el programa que desee) dado que su avance es menor al 70%.",
+                    "Escalas un ticket a la facultad de Periodismo para que aprueben su reingreso.",
+                    "Le pides que haga homologación externa."
+                ],
+                correct: 1,
+                topic: "la directriz específica de Periodismo Virtual: si tienen <70%, no se escala, se les ofrece cambio directo a Comunicación Social"
+            },
+            {
+                type: "ticket",
+                question: "Para un posgrado (Ej. Especialización), un estudiante reprobó una materia el semestre pasado y te contacta. ¿Cuál es el proceso de 'Reprogramación de Módulos'?",
+                options: [
+                    "Se le matricula por Banner al siguiente bloque sin costo adicional.",
+                    "Se crea un ticket a 'Mesa de Ayuda - Ilumno' detallando la asignatura para que confirmen fechas de oferta. Luego el estudiante debe pagar el valor de la materia y volver a reportarlo para que se la carguen.",
+                    "Se le cobra el 10% del semestre y se inscribe por SVASVPR.",
+                    "Se le informa que al perder una materia en posgrado, es expulsado del programa."
+                ],
+                correct: 1,
+                topic: "el flujo específico de Reprogramación de Módulos en Posgrados, que requiere ticket para buscar oferta, pago específico y reporte de pago para cargue"
+            },
+            {
+                type: "ticket",
+                question: "Un estudiante de Tecnología en Gestión de Mercadeo Virtual solicita reintegro tras varios periodos de inactividad. El programa tuvo modificaciones curriculares recientes. ¿Cuál es el procedimiento a seguir según las novedades?",
+                options: [
+                    "Tramitar el reintegro por Banner y pasarlo al plan nuevo automáticamente.",
+                    "Ofrecerle cambio a Contaduría Pública ya que su programa actual no se oferta.",
+                    "Escalar por medio de ticket a la facultad para contar con el aval o negación a la solicitud, y que validen homologaciones o equivalencias al nuevo plan.",
+                    "Mantenerlo en su plan antiguo por SVASVPR debido a que es estudiante regular."
+                ],
+                correct: 2,
+                topic: "la novedad de Tecnología en Gestión de Mercadeo, que exige ticket a facultad por los cambios de malla y necesidad de equivalencias"
+            },
+            {
+                type: "ticket",
+                question: "Un estudiante del plan antiguo de Psicología Virtual (PSI) te llama porque solo le faltan Práctica 1 y Práctica 2 para graduarse. Te aclara que Práctica 1 es prerrequisito de la 2. ¿Cómo gestionas el cobro?",
+                options: [
+                    "Se le cobra el semestre completo porque las prácticas valen por todo el periodo.",
+                    "Se crea un ticket a la facultad para que le regalen la Práctica 2.",
+                    "Es un beneficio especial: Se le genera orden por 'Última Materia' para cursar la Práctica 1 ahora, y se le aclara que el próximo semestre deberá pagar nuevamente 'Última Materia' para la Práctica 2.",
+                    "Se le obliga a pasarse al plan nuevo (PSI 3) para hacer una sola práctica clínica."
+                ],
+                correct: 2,
+                topic: "el beneficio financiero de 'Última Materia' aplicado en cadena para estudiantes del plan antiguo de psicología que solo deben las dos prácticas consecutivas"
+            },
+            {
+                type: "ticket",
+                question: "Un estudiante te llama solicitando un cambio de programa de Psicología a Contaduría. Al abrir Banner, ves que el campo de 'Programa Destino' está bloqueado y no te deja seleccionar Contaduría. Siguiendo el protocolo, ¿qué información NO puede faltar en el Comentario Interno?",
+                options: [
+                    "El promedio acumulado del estudiante.",
+                    "El correo personal y celular del estudiante para que lo llamen.",
+                    "El Programa de Origen, el Programa de Destino (Contaduría), Sede, Jornada, el número de Ticket (si aplica) y tu Usuario.",
+                    "La solicitud formal de homologación de las materias vistas en psicología."
+                ],
+                correct: 2,
+                topic: "la estructura estricta e indelegable del Comentario Interno para garantizar que el backoffice o la automatización procese el cambio correctamente cuando Banner falla visualmente"
+            }
+        ];
+
+        // Variables de estado
+        let currentQuestions = [];
+        let currentQuestionIndex = 0;
+        let selectedAnswers = {};
+        let timerInterval;
+        let timeLeft = 1200; // 20 minutes in seconds
+
+        // Iniciar el Quiz
+        function startQuiz() {
+            // Seleccionar 7 preguntas aleatorias del banco
+            const shuffled = questionBank.sort(() => 0.5 - Math.random());
+            currentQuestions = shuffled.slice(0, 7);
+
+            document.getElementById('intro-screen').classList.add('hidden');
+            document.getElementById('quiz-screen').classList.remove('hidden');
+            
+            // Generar los puntos de paginación
+            const dotsContainer = document.getElementById('pagination-dots');
+            dotsContainer.innerHTML = '';
+            currentQuestions.forEach((_, index) => {
+                const dot = document.createElement('div');
+                dot.className = `w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-colors duration-300 ${index === 0 ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'}`;
+                dot.innerText = index + 1;
+                dot.id = `dot-${index}`;
+                dotsContainer.appendChild(dot);
+            });
+
+            startTimer();
+            loadQuestion();
+        }
+
+        // Temporizador
+        function startTimer() {
+            const timerDisplay = document.getElementById('timer');
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                timerDisplay.textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+                
+                if(timeLeft <= 300) {
+                    timerDisplay.parentElement.classList.remove('bg-red-50', 'text-red-500');
+                    timerDisplay.parentElement.classList.add('bg-red-600', 'text-white', 'animate-pulse');
+                }
+
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    finishQuiz();
+                }
+            }, 1000);
+        }
+
+        // Cargar Pregunta
+        function loadQuestion() {
+            const q = currentQuestions[currentQuestionIndex];
+            document.getElementById('current-q-num').innerText = currentQuestionIndex + 1;
+            document.getElementById('progress-bar').style.width = `${((currentQuestionIndex + 1) / 7) * 100}%`;
+            document.getElementById('question-text').innerText = q.question;
+
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+
+            q.options.forEach((opt, index) => {
+                const isChecked = selectedAnswers[currentQuestionIndex] === index;
+                
+                const optionDiv = document.createElement('label');
+                optionDiv.className = "block cursor-pointer relative";
+                optionDiv.innerHTML = `
+                    <input type="radio" name="q${currentQuestionIndex}" value="${index}" class="peer sr-only radio-custom" ${isChecked ? 'checked' : ''} onchange="selectOption(${index})">
+                    <div class="p-4 rounded-xl border-2 border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 flex items-start">
+                        <div class="w-5 h-5 rounded-full border-2 border-gray-300 mr-4 mt-0.5 flex-shrink-0 flex items-center justify-center radio-dot transition-colors">
+                            <div class="w-2.5 h-2.5 rounded-full bg-white opacity-0 peer-checked:opacity-100 transition-opacity"></div>
+                        </div>
+                        <span class="text-gray-700 font-medium">${opt}</span>
+                    </div>
+                `;
+                optionsContainer.appendChild(optionDiv);
+            });
+
+            updateNavButtons();
+            updatePaginationDots();
+        }
+
+        // Seleccionar Opción
+        function selectOption(index) {
+            selectedAnswers[currentQuestionIndex] = index;
+            // Refrescar estilos
+            const inputs = document.querySelectorAll(`input[name="q${currentQuestionIndex}"]`);
+            inputs.forEach((input, i) => {
+                const dotContainer = input.nextElementSibling.querySelector('.radio-dot');
+                const innerDot = dotContainer.querySelector('div');
+                if(i === index) {
+                    dotContainer.classList.add('bg-blue-600', 'border-blue-600');
+                    dotContainer.classList.remove('border-gray-300');
+                    innerDot.classList.remove('opacity-0');
+                } else {
+                    dotContainer.classList.remove('bg-blue-600', 'border-blue-600');
+                    dotContainer.classList.add('border-gray-300');
+                    innerDot.classList.add('opacity-0');
+                }
+            });
+        }
+
+        // Navegación
+        function prevQuestion() {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                loadQuestion();
+            }
+        }
+
+        function nextQuestion() {
+            if (currentQuestionIndex < 6) {
+                currentQuestionIndex++;
+                loadQuestion();
+            }
+        }
+
+        function updateNavButtons() {
+            document.getElementById('btn-prev').disabled = currentQuestionIndex === 0;
+            
+            if (currentQuestionIndex === 6) {
+                document.getElementById('btn-next').classList.add('hidden');
+                document.getElementById('btn-finish').classList.remove('hidden');
+            } else {
+                document.getElementById('btn-next').classList.remove('hidden');
+                document.getElementById('btn-finish').classList.add('hidden');
+            }
+        }
+
+        function updatePaginationDots() {
+            for(let i=0; i<7; i++){
+                const dot = document.getElementById(`dot-${i}`);
+                if(i === currentQuestionIndex) {
+                    dot.className = "w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-colors duration-300 bg-blue-600 text-white transform scale-110 shadow-md";
+                } else if (selectedAnswers[i] !== undefined) {
+                    dot.className = "w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-colors duration-300 bg-blue-200 text-blue-800";
+                } else {
+                    dot.className = "w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-colors duration-300 bg-gray-200 text-gray-600";
+                }
+            }
+        }
+
+        // Finalizar y generar Feedback
+        function finishQuiz() {
+            clearInterval(timerInterval);
+            
+            let score = 0;
+            let feedbackHTML = "";
+
+            currentQuestions.forEach((q, index) => {
+                const userAns = selectedAnswers[index];
+                const isCorrect = userAns === q.correct;
+                
+                if (isCorrect) score++;
+
+                const statusColor = isCorrect ? 'text-green-600' : 'text-red-600';
+                const statusIcon = isCorrect ? 
+                    `<svg class="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>` : 
+                    `<svg class="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>`;
+
+                feedbackHTML += `
+                    <div class="border-l-4 ${isCorrect ? 'border-green-500 bg-green-50' : 'border-red-500 bg-red-50'} p-4 rounded-r-lg">
+                        <div class="flex items-start">
+                            <div class="mr-3 mt-1">${statusIcon}</div>
+                            <div>
+                                <p class="font-semibold text-gray-800 text-sm mb-1">Pregunta ${index + 1}:</p>
+                                <p class="text-gray-700 text-sm mb-2">${q.question}</p>
+                                ${!isCorrect ? `
+                                    <div class="mt-2 text-sm bg-white p-3 rounded border border-red-100 shadow-sm">
+                                        <p class="font-bold text-red-700 mb-1">¡Ups! Te quedó mal.</p>
+                                        <p class="text-gray-800">Porque la respuesta correcta es: <span class="font-semibold text-blue-700">"${q.options[q.correct]}"</span></p>
+                                        <p class="mt-2 text-gray-600 italic">💡 Debes revisar mejor <strong>${q.topic}</strong>.</p>
+                                    </div>
+                                ` : `
+                                    <p class="text-green-700 text-sm font-medium mt-1">¡Excelente análisis!</p>
+                                `}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            // Actualizar Pantalla Final
+            document.getElementById('quiz-screen').classList.add('hidden');
+            document.getElementById('results-screen').classList.remove('hidden');
+            document.getElementById('final-score').innerText = score;
+            document.getElementById('feedback-container').innerHTML = feedbackHTML;
+
+            const iconContainer = document.getElementById('score-icon');
+            if(score === 7) {
+                iconContainer.className = "inline-block p-4 rounded-full mb-4 bg-green-100 text-green-600";
+                iconContainer.innerHTML = `<svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path></svg>`;
+            } else if (score >= 4) {
+                iconContainer.className = "inline-block p-4 rounded-full mb-4 bg-yellow-100 text-yellow-600";
+                iconContainer.innerHTML = `<svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`;
+            } else {
+                iconContainer.className = "inline-block p-4 rounded-full mb-4 bg-red-100 text-red-600";
+                iconContainer.innerHTML = `<svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>`;
+            }
+        }
+    </script>
+</body>
+</html>
