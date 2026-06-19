@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>100 Expertos Dicen | Reto Interactivo</title>
+    <!-- Tailwind CSS para el diseño UI/UX -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome para íconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Poppins', 'sans-serif'] },
+                    colors: {
+                        poli: { blue: '#002B5C', yellow: '#F2A900', light: '#4A90E2', dark: '#001530' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #001530 0%, #002B5C 100%);
+            color: white;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        /* Efecto Glassmorfismo */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+            border-radius: 1rem;
+        }
+        .btn-glass {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+        .btn-glass:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        .btn-glass:active {
+            transform: translateY(1px);
+        }
+        /* Animaciones */
+        @keyframes pulse-red {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+        .timer-warning { animation: pulse-red 1s infinite; }
+        
+        @keyframes strike-in {
+            0% { transform: scale(5); opacity: 0; }
+            50% { transform: scale(0.8); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .strike-mark {
+            animation: strike-in 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            color: #ef4444;
+            font-size: 8rem;
+            text-shadow: 0 10px 25px rgba(0,0,0,0.8);
+        }
+        #strike-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 50;
+            justify-content: center;
+            align-items: center;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center p-4">
+
+    <!-- Contenedor Principal de la App -->
+    <div id="app" class="w-full max-w-4xl"></div>
+
+    <!-- Overlay de Error (Strike) -->
+    <div id="strike-overlay" class="flex">
+        <i class="fa-solid fa-xmark strike-mark"></i>
+    </div>
+
+    <script>
+        // --- MOTOR DE AUDIO (Web Audio API - Sin archivos externos) ---
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        function playTone(frequency, type, duration, vol = 0.1) {
+            if(audioCtx.state === 'suspended') audioCtx.resume();
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            oscillator.type = type;
+            oscillator.frequency.value = frequency;
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            oscillator.start();
+            gainNode.gain.setValueAtTime(vol, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duration);
+            oscillator.stop(audioCtx.currentTime + duration);
+        }
+
+        function playSuccess() {
+            playTone(600, 'sine', 0.1, 0.2);
+            setTimeout(() => playTone(800, 'sine', 0.3, 0.2), 100);
+        }
+
+        function playError() {
+            playTone(150, 'sawtooth', 0.5, 0.3);
+            setTimeout(() => playTone(100, 'sawtooth', 0.5, 0.3), 150);
+        }
+
+        function playTick() {
+            playTone(1000, 'square', 0.05, 0.05);
+        }
+
+        const questions = [
+            {
+                scenario: "Estudiante de Posgrado necesita ampliación de fechas para pagar el 50% de diferencia. Teniendo en cuenta las políticas (máx 2 semanas post-inicio de clases), ¿cuál es tu primera acción?",
+                topic: "Ampliación de Fechas Posgrados - Autogestión progresiva en TZAPAOR.",
+                options: [
+                    { text: "Crear un ticket a Finanzas para que evalúen el caso.", isCorrect: false },
+                    { text: "Ingresar yo mismo a TZAPAOR y ampliar primero una semana (y otra si luego requiere). Si da error, pido apoyo al BO.", isCorrect: true },
+                    { text: "Indicar al estudiante que las fechas de posgrado son inmodificables.", isCorrect: false },
+                    { text: "Pedirlo a mi BO por chat para que lo amplíe de una vez por las dos semanas.", isCorrect: false }
+                ]
+            },
+            {
+                scenario: "Sale un comunicado oficial respaldando la ampliación de fechas de pago y un estudiante lo solicita. ¿Cómo lo gestionas?",
+                topic: "Actualización de Órdenes con respaldo - Autogestión en TZAPAOR.",
+                options: [
+                    { text: "Le pido al estudiante que envíe un correo a la universidad.", isCorrect: false },
+                    { text: "Se lo pido a mi Back Office, ellos lo actualizan siempre por mí.", isCorrect: false },
+                    { text: "Lo actualizo yo mismo directamente en Banner (TZAPAOR). Si falla o no tengo permisos, acudo al BO.", isCorrect: true },
+                    { text: "Creo un ticket para el área de Registro y Control.", isCorrect: false }
+                ]
+            },
+            {
+                scenario: "Un estudiante necesita dividir su orden de pago para hacer un 'pago mixto', 'abono del 20%' o un 'pago 50/50'. ¿Qué debes hacer?",
+                topic: "División de Órdenes (Pago Mixto/Abonos) - Autogestión en TSAAREV.",
+                options: [
+                    { text: "Ingresar a TSAAREV y dividirla yo mismo. Solo si me da error o no tengo permisos, le pido apoyo al BO.", isCorrect: true },
+                    { text: "Derivar el caso a Finanzas mediante un ticket.", isCorrect: false },
+                    { text: "Pedirle inmediatamente a mi Back Office por chat que divida la orden.", isCorrect: false },
+                    { text: "Decirle al estudiante que el sistema no permite ese tipo de división de pagos.", isCorrect: false }
+                ]
+            },
+            {
+                scenario: "Un estudiante ingresante quiere aplicar 'Pronto Pago' sumado a un 'Convenio'. ¿Por dónde solicitas esta gestión?",
+                topic: "Descuentos Acumulables - Uso del formulario oficial.",
+                options: [
+                    { text: "Le pido la gestión a mi Back Office por el chat interno.", isCorrect: false },
+                    { text: "Creo un ticket de escalamiento a la dirección de programa.", isCorrect: false },
+                    { text: "Le digo al estudiante que los descuentos no se pueden acumular.", isCorrect: false },
+                    { text: "A través del Formulario oficial de Descuentos.", isCorrect: true }
+                ]
+            },
+            {
+                scenario: "Vas a pedir apoyo al Back Office por chat interno. Además del ID, la Consulta y los Soportes, ¿qué datos son OBLIGATORIOS en tu plantilla?",
+                topic: "Plantilla de Escalamiento a BO - Datos requeridos.",
+                options: [
+                    { text: "Tipo de estudiante, Programa y Modalidad.", isCorrect: true },
+                    { text: "Número telefónico y correo personal del estudiante.", isCorrect: false },
+                    { text: "El historial de tickets anteriores del estudiante.", isCorrect: false },
+                    { text: "El nombre del asesor que lo atendió antes que yo.", isCorrect: false }
+                ]
+            },
+            {
+                scenario: "Un estudiante de primer ingreso te dice: 'No me sale mi certificado de primer nivel'. ¿A qué área le creas el ticket?",
+                topic: "Certificados Primer Nivel - Autogestión del asesor.",
+                options: [
+                    { text: "A Registro y Control para que lo generen manualmente.", isCorrect: false },
+                    { text: "A mi Back Office para que lo descargue y me lo envíe.", isCorrect: false },
+                    { text: "A ninguna. Valido el pago y lo guío para que lo descargue en SmartCampus.", isCorrect: true },
+                    { text: "A finanzas para que revisen si el pago cruzó.", isCorrect: false }
+                ]
+            },
+            {
+                scenario: "El estudiante pide actualizar su CAPP a mitad de semestre sin razón aparente. ¿Qué debes saber antes de pedirlo al BO?",
+                topic: "Actualización CAPP - Condiciones estrictas de solicitud.",
+                options: [
+                    { text: "Que el BO lo actualizará de inmediato para mejorar la experiencia.", isCorrect: false },
+                    { text: "Que el BO solo lo hará si hay una casuística muy justificada o en fechas masivas.", isCorrect: true },
+                    { text: "Que debo crear un ticket al decano primero para autorización.", isCorrect: false },
+                    { text: "Que tiene un costo adicional que el estudiante debe pagar.", isCorrect: false }
+                ]
+            },
+            {
+                scenario: "El estudiante requiere un 'Anticipo de Matrícula'. ¿Cómo evitas escalar este caso a Tesorería?",
+                topic: "Anticipo de Matrícula - Generación de cheques por BO.",
+                options: [
+                    { text: "Solicitando a mi Back Office la generación de órdenes (cheques con centavos).", isCorrect: true },
+                    { text: "Generando un recibo manual en el sistema.", isCorrect: false },
+                    { text: "Diciéndole al estudiante que la universidad ya no permite anticipos.", isCorrect: false },
+                    { text: "Enviando un correo directo al director financiero.", isCorrect: false }
+                ]
+            },
+            {
+                scenario: "Un estudiante requiere su 'Licencia ED' (English Discoveries). ¿Cómo procedes?",
+                topic: "Licencia ED - Alcance de orden de pago por BO.",
+                options: [
+                    { text: "Derivo el caso creando un ticket al departamento de idiomas.", isCorrect: false },
+                    { text: "Le pido a mi Back Office la generación de la orden de pago.", isCorrect: true },
+                    { text: "Le digo que debe comprar la licencia en una plataforma externa.", isCorrect: false },
+                    { text: "Escalo el caso a soporte técnico de la plataforma ED.", isCorrect: false }
+                ]
+            },
+            {
+                scenario: "El estudiante solicita el trámite de 'Última Materia'. ¿Qué debes hacer ANTES de pedirle la gestión al Back Office?",
+                topic: "Última Materia - Validación previa del asesor.",
+                options: [
+                    { text: "Nada, simplemente le paso el dato al Back Office por chat.", isCorrect: false },
+                    { text: "Crear un ticket a la mesa de graduación por si acaso.", isCorrect: false },
+                    { text: "Asegurarle al estudiante que el trámite ya está aprobado.", isCorrect: false },
+                    { text: "Validar en su avance curricular que efectivamente le falte solo una materia.", isCorrect: true }
+                ]
+            }
+        ];
+
+        // Mezclar opciones de cada pregunta para que no siempre la correcta esté en el mismo lugar
+        questions.forEach(q => {
+            q.options.sort(() => Math.random() - 0.5);
+        });
+
+        // --- ESTADO DE LA APLICACIÓN ---
+        let state = {
+            currentScreen: 'intro', // intro, playing, results, played
+            score: 0,
+            currentQuestionIndex: 0,
+            timeLeft: 60,
+            failedTopics: [],
+            timerInterval: null
+        };
+
+        const WIKI_URL = "https://anvacu2418.github.io/formacion-poli/wiki_BO.html";
+        const FORMS_URL = "https://forms.office.com/pages/responsepage.aspx?id=BQZldA8p5Em-njqSbbFJyqjt2zcJafdOkBCR-pMG625UOEhHU082RTBIU01KMFQ3WjlRSTlBUE5WUyQlQCN0PWcu&route=shorturl";
+
+        // --- LÓGICA DE RENDERIZADO ---
+        function render() {
+            const app = document.getElementById('app');
+            
+            // Verificar si ya jugó (Un solo intento)
+            if (localStorage.getItem('bo_game_played') === 'true' && state.currentScreen !== 'results') {
+                state.currentScreen = 'played';
+            }
+
+            if (state.currentScreen === 'intro') {
+                app.innerHTML = `
+                    <div class="glass-panel p-8 md:p-12 text-center animate-[fadeIn_0.5s_ease-out]">
+                        <div class="inline-block bg-poli-yellow text-poli-dark px-4 py-1 rounded-full font-bold text-sm mb-6">
+                            GAMIFICACIÓN EVALUATIVA
+                        </div>
+                        <h1 class="text-4xl md:text-6xl font-extrabold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-poli-light to-white">
+                            100 Expertos Dicen
+                        </h1>
+                        <p class="text-lg md:text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
+                            Bienvenido al simulador de rutas. Tienes <strong class="text-poli-yellow">60 segundos</strong> por caso. Demuestra que conoces el alcance de tu Back Office y la ruta correcta para resolver casos <strong class="text-white">sin escalar tickets innecesarios.</strong>
+                        </p>
+                        <div class="flex flex-col md:flex-row justify-center items-center gap-4 mb-8">
+                            <div class="flex items-center gap-2 text-sm text-gray-400">
+                                <i class="fa-solid fa-clock"></i> 10 Casos
+                            </div>
+                            <div class="flex items-center gap-2 text-sm text-gray-400">
+                                <i class="fa-solid fa-star"></i> 100 Pts
+                            </div>
+                            <div class="flex items-center gap-2 text-sm text-red-400 font-bold">
+                                <i class="fa-solid fa-triangle-exclamation"></i> Un Solo Intento
+                            </div>
+                        </div>
+                        <button onclick="startGame()" class="bg-poli-light hover:bg-blue-400 text-white font-bold py-4 px-10 rounded-full text-xl shadow-[0_0_20px_rgba(74,144,226,0.5)] transition-all transform hover:scale-105">
+                            <i class="fa-solid fa-play mr-2"></i> Iniciar Reto
+                        </button>
+                    </div>
+                `;
+            } 
+            else if (state.currentScreen === 'playing') {
+                const q = questions[state.currentQuestionIndex];
+                const timerColor = state.timeLeft > 15 ? 'bg-green-500' : state.timeLeft > 5 ? 'bg-poli-yellow' : 'bg-red-500';
+                const timerClass = state.timeLeft <= 5 ? 'timer-warning' : '';
+
+                app.innerHTML = `
+                    <div class="glass-panel p-6 md:p-10">
+                        <!-- Header: Stats -->
+                        <div class="flex justify-between items-center mb-6 border-b border-white/20 pb-4">
+                            <div class="text-xl font-bold">
+                                <span class="text-gray-400 text-sm block">CASO</span>
+                                ${state.currentQuestionIndex + 1} / 10
+                            </div>
+                            <div class="text-2xl font-black text-poli-yellow text-right">
+                                <span class="text-gray-400 text-sm block font-normal">POLIPUNTOS</span>
+                                ${state.score}
+                            </div>
+                        </div>
+
+                        <!-- Temporizador -->
+                        <div class="w-full bg-gray-800 rounded-full h-4 mb-8 overflow-hidden relative ${timerClass}">
+                            <div class="${timerColor} h-4 transition-all duration-1000 ease-linear" style="width: ${(state.timeLeft / 60) * 100}%"></div>
+                        </div>
+
+                        <!-- Pregunta -->
+                        <div class="bg-white/10 p-6 rounded-xl mb-8 border-l-4 border-poli-light">
+                            <h2 class="text-2xl md:text-3xl font-semibold leading-snug">
+                                "${q.scenario}"
+                            </h2>
+                        </div>
+
+                        <!-- Opciones -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            ${q.options.map((opt, index) => `
+                                <button onclick="handleAnswer(${opt.isCorrect})" class="btn-glass text-left p-5 rounded-xl flex items-center gap-4 group">
+                                    <div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center font-bold group-hover:bg-poli-light transition-colors">
+                                        ${String.fromCharCode(65 + index)}
+                                    </div>
+                                    <span class="flex-1 text-lg">${opt.text}</span>
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+            else if (state.currentScreen === 'results') {
+                const isPerfect = state.score === 100;
+                
+                let feedbackHTML = '';
+                if (state.failedTopics.length > 0) {
+                    feedbackHTML = `
+                        <div class="bg-red-900/40 border border-red-500/50 rounded-xl p-6 text-left mb-8">
+                            <h3 class="text-xl font-bold text-red-400 mb-4 flex items-center gap-2">
+                                <i class="fa-solid fa-triangle-exclamation"></i> Oportunidades de Mejora Detectadas:
+                            </h3>
+                            <p class="text-gray-300 mb-4 text-sm">Escalaste o gestionaste incorrectamente los siguientes procesos. Tu deber es dominarlos para descongestionar la operación:</p>
+                            <ul class="list-disc pl-5 space-y-2 text-gray-200">
+                                ${state.failedTopics.map(t => `<li>${t}</li>`).join('')}
+                            </ul>
+                        </div>
+                    `;
+                }
+
+                app.innerHTML = `
+                    <div class="glass-panel p-8 md:p-12 text-center">
+                        <div class="w-24 h-24 mx-auto rounded-full flex items-center justify-center mb-6 ${isPerfect ? 'bg-green-500/20 text-green-400' : 'bg-poli-yellow/20 text-poli-yellow'}">
+                            <i class="fa-solid ${isPerfect ? 'fa-trophy' : 'fa-chart-simple'} text-5xl"></i>
+                        </div>
+                        
+                        <h1 class="text-4xl font-extrabold mb-2">Evaluación Completada</h1>
+                        <div class="text-6xl font-black mb-6 ${isPerfect ? 'text-green-400' : 'text-poli-yellow'}">
+                            ${state.score} <span class="text-2xl text-gray-400">Pts</span>
+                        </div>
+
+                        ${isPerfect ? 
+                            `<p class="text-xl text-gray-200 mb-8">¡Felicidades! Eres un <strong class="text-green-400">Resolutor Élite</strong>. Has demostrado que dominas el uso de herramientas como TZAPAOR y la Wiki.</p>` : 
+                            `<p class="text-lg text-gray-300 mb-8">Buen intento, pero hay procesos que aún puedes resolver por tu cuenta antes de escalar.</p>`
+                        }
+
+                        ${feedbackHTML}
+
+                        <div class="flex flex-col sm:flex-row justify-center gap-4">
+                            <a href="${WIKI_URL}" target="_blank" class="bg-poli-light hover:bg-blue-400 text-white font-bold py-3 px-6 rounded-lg transition-all flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-book"></i> Consultar Wiki BO
+                            </a>
+                            <a href="${FORMS_URL}" target="_blank" class="btn-glass hover:text-white font-bold py-3 px-6 rounded-lg transition-all flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-percent"></i> Formulario Descuentos
+                            </a>
+                        </div>
+                        
+                        <!-- Botón oculto para reiniciar (Solo para el desarrollador/arquitecto) -->
+                        <button onclick="resetGameDev()" class="mt-12 text-xs text-gray-500 hover:text-white opacity-50"><i class="fa-solid fa-rotate-right"></i> Borrar progreso (Dev Mode)</button>
+                    </div>
+                `;
+            }
+            else if (state.currentScreen === 'played') {
+                app.innerHTML = `
+                    <div class="glass-panel p-12 text-center">
+                        <i class="fa-solid fa-lock text-6xl text-gray-500 mb-6"></i>
+                        <h2 class="text-3xl font-bold mb-4">Intento Registrado</h2>
+                        <p class="text-gray-300 mb-8">Esta es una evaluación de intento único y ya la has completado. Dirígete a la Wiki para seguir capacitándote.</p>
+                        <a href="${WIKI_URL}" target="_blank" class="bg-poli-light hover:bg-blue-400 text-white font-bold py-3 px-6 rounded-lg transition-all inline-block">
+                            <i class="fa-solid fa-book mr-2"></i> Ir a la Wiki
+                        </a>
+                        <br>
+                        <button onclick="resetGameDev()" class="mt-8 text-xs text-gray-500 hover:text-white opacity-50"><i class="fa-solid fa-rotate-right"></i> Resetear (Dev Mode)</button>
+                    </div>
+                `;
+            }
+        }
+
+        // --- CONTROLADORES DE LÓGICA ---
+        function startGame() {
+            audioCtx.resume(); // Habilitar audio tras interacción
+            state.currentScreen = 'playing';
+            state.score = 0;
+            state.currentQuestionIndex = 0;
+            state.failedTopics = [];
+            startTimer();
+            render();
+        }
+
+        function startTimer() {
+            state.timeLeft = 60;
+            clearInterval(state.timerInterval);
+            state.timerInterval = setInterval(() => {
+                state.timeLeft--;
+                
+                if(state.timeLeft > 0 && state.timeLeft <= 5) {
+                    playTick(); // Sonido de tensión final
+                }
+
+                if (state.timeLeft <= 0) {
+                    clearInterval(state.timerInterval);
+                    handleTimeout();
+                } else {
+                    render();
+                }
+            }, 1000);
+        }
+
+        function showStrike() {
+            const overlay = document.getElementById('strike-overlay');
+            overlay.style.display = 'flex';
+            playError();
+            setTimeout(() => {
+                overlay.style.display = 'none';
+            }, 800);
+        }
+
+        function handleAnswer(isCorrect) {
+            clearInterval(state.timerInterval);
+            
+            if (isCorrect) {
+                state.score += 10;
+                playSuccess();
+                nextQuestion();
+            } else {
+                state.failedTopics.push(questions[state.currentQuestionIndex].topic);
+                showStrike();
+                setTimeout(nextQuestion, 800); // Esperar a que pase el strike visual
+            }
+        }
+
+        function handleTimeout() {
+            state.failedTopics.push(questions[state.currentQuestionIndex].topic + " (Tiempo agotado)");
+            showStrike();
+            setTimeout(nextQuestion, 800);
+        }
+
+        function nextQuestion() {
+            state.currentQuestionIndex++;
+            if (state.currentQuestionIndex < questions.length) {
+                startTimer();
+                render();
+            } else {
+                endGame();
+            }
+        }
+
+        function endGame() {
+            state.currentScreen = 'results';
+            localStorage.setItem('bo_game_played', 'true'); // Bloquear futuros intentos
+            render();
+        }
+
+        function resetGameDev() {
+            localStorage.removeItem('bo_game_played');
+            state.currentScreen = 'intro';
+            render();
+        }
+
+        // --- INICIALIZACIÓN ---
+        window.onload = render;
+
+    </script>
+</body>
+</html>
