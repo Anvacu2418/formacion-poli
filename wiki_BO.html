@@ -5,14 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Wiki Gestión BO</title>
     
-    <!-- 1. PREVENCIÓN PANTALLA BLANCA -->
     <script>window.process = { env: { NODE_ENV: 'production' } };</script>
 
-    <!-- 2. ESTILOS (Tailwind CSS) Y FUENTES -->
+    <script type="importmap">
+    {
+      "imports": {
+        "react": "https://esm.sh/react@18.2.0",
+        "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+        "lucide-react": "https://esm.sh/lucide-react@0.263.1?external=react"
+      }
+    }
+    </script>
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     
-    <!-- 3. MOTOR PARA LEER EL CÓDIGO (Babel) -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     
     <style>
@@ -36,16 +43,16 @@
 <body>
     <div id="root"></div>
 
-    <!-- 4. APLICACIÓN WIKI ACTUALIZADA -->
     <script type="text/babel" data-presets="react" data-type="module">
-        import React, { useState } from 'https://esm.sh/react@18.2.0';
-        import { createRoot } from 'https://esm.sh/react-dom@18.2.0/client';
+        // ¡Mira qué limpias quedan ahora las importaciones gracias al importmap!
+        import React, { useState } from 'react';
+        import { createRoot } from 'react-dom/client';
         import { 
             Search, BookOpen, ShieldCheck, Lightbulb, Menu, X, ChevronRight, 
             Calculator, AlertTriangle, CheckCircle, Clock, FileText, User, 
             DollarSign, Globe, Smartphone, RotateCcw, Calendar, MapPin, Briefcase,
             MessageCircle, Clipboard, Send, HelpCircle, Home, ExternalLink, Link, Eye, Info
-        } from 'https://esm.sh/lucide-react@0.263.1';
+        } from 'lucide-react';
 
         const wikiData = {
             links: {
@@ -149,225 +156,29 @@
             );
 
             const renderContent = () => {
-                if (activeSection === 'home') return (
-                    <div className="flex flex-col items-center justify-center py-8 text-center animate-fadeIn">
-                        <div className="bg-gradient-to-r from-blue-600 to-emerald-500 p-1 rounded-full mb-6 shadow-xl">
-                            <div className="bg-white p-4 rounded-full"><BookOpen className="w-16 h-16 text-blue-600" /></div>
-                        </div>
-                        <h1 className="text-4xl font-bold text-gray-800 mb-4">Bienvenido a tu <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-emerald-500">Wiki BO</span></h1>
-                        <p className="text-lg text-gray-600 max-w-3xl mb-8 leading-relaxed bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
-                            Tu herramienta para gestiones rápidas y precisas. Aquí encuentras lo que gestiona el Back Office y cómo escalar correctamente a Mesa de Ayuda.
-                        </p>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-2xl mb-10">
-                            <a href={wikiData.links.formDescuentos} target="_blank" className="flex items-center justify-center p-4 bg-emerald-600 text-white rounded-xl shadow-lg hover:bg-emerald-700 font-bold group transition-transform hover:-translate-y-1">
-                                <Calculator className="w-6 h-6 mr-3 group-hover:scale-110"/> Solicitud de Descuentos
-                            </a>
-                            <a href={wikiData.links.teamsSoporte} target="_blank" className="flex items-center justify-center p-4 bg-indigo-600 text-white rounded-xl shadow-lg hover:bg-indigo-700 font-bold group transition-transform hover:-translate-y-1">
-                                <MessageCircle className="w-6 h-6 mr-3 group-hover:scale-110"/> Soporte Operación
-                            </a>
-                        </div>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full max-w-5xl">
-                             {[
-                                {id: 'definitions', label: '📖 Diccionario BO', color: 'blue'},
-                                {id: 'discounts', label: '🏷️ Descuentos', color: 'emerald'},
-                                {id: 'chatpiso', label: '💬 Chat de Piso', color: 'indigo'},
-                                {id: 'mesaAyuda', label: '🎧 Mesa de Ayuda', color: 'rose'}
-                             ].map(btn => (
-                                <button key={btn.id} onClick={() => setActiveSection(btn.id)} className={`p-4 bg-white border border-gray-100 rounded-xl shadow-sm hover:shadow-md transition-all hover:bg-${btn.color}-50 text-gray-700 font-medium`}>
-                                    {btn.label}
-                                </button>
-                             ))}
-                        </div>
-                    </div>
-                );
+                if (activeSection === 'home') {
+                    // Mapeo corregido para que Tailwind pueda procesar los colores
+                    const hoverColors = {
+                        blue: 'hover:bg-blue-50',
+                        emerald: 'hover:bg-emerald-50',
+                        indigo: 'hover:bg-indigo-50',
+                        rose: 'hover:bg-rose-50'
+                    };
 
-                if (activeSection === 'definitions') return (
-                    <div className="space-y-6 animate-fadeIn">
-                        <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg"><h2 className="text-xl font-bold text-blue-800 flex items-center"><BookOpen className="w-6 h-6 mr-2" /> Diccionario BO</h2></div>
-                        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-                            {['Todos', 'Financiero', 'Documentación', 'Idiomas'].map(cat => (
-                                <button key={cat} onClick={() => setFilterCategory(cat)} className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap ${filterCategory === cat ? 'bg-slate-800 text-white shadow-md' : 'bg-white border text-gray-600 hover:bg-gray-50'}`}>{cat}</button>
-                            ))}
-                        </div>
-                        <div className="grid gap-6 md:grid-cols-2">
-                            {filteredDefs.map(item => (
-                                <div key={item.id} className={`bg-white rounded-xl shadow-sm border p-5 hover:shadow-md transition-all flex flex-col justify-between ${item.isHighlight ? 'border-emerald-200 ring-1 ring-emerald-100' : 'border-gray-100'}`}>
-                                    <div>
-                                        <div className="flex justify-between mb-3">
-                                            <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
-                                                <span className={`p-2 rounded-lg ${getCatColor(item.category).split(' ')[0]}`}><IconComp icon={item.icon} className="w-5 h-5"/></span> {item.title}
-                                            </h3>
-                                        </div>
-                                        <span className={`px-2 py-1 rounded text-xs font-semibold mb-3 ${getCatColor(item.category)}`}>{item.category}</span>
-                                        <p className="text-gray-600 text-sm my-4 whitespace-pre-line">{item.definition}</p>
-                                        {item.requirements && (
-                                            <div className="bg-gray-50 rounded-lg p-3 text-sm border"><p className="font-semibold mb-1">📋 Requisitos:</p><ul className="list-disc list-inside">{item.requirements.map((r,i)=><li key={i}>{r}</li>)}</ul></div>
-                                        )}
-                                    </div>
-                                    {item.action && (
-                                        <a href={wikiData.links[item.action.link]} target="_blank" className="mt-4 w-full bg-blue-50 text-blue-700 hover:bg-blue-100 py-2 rounded-lg font-bold flex items-center justify-center text-sm border border-blue-200">
-                                            <IconComp icon={item.action.icon} className="w-4 h-4 mr-2"/> {item.action.label}
-                                        </a>
-                                    )}
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                );
-
-                if (activeSection === 'mesaAyuda') return (
-                    <div className="space-y-6 animate-fadeIn">
-                        <div className="bg-rose-50 border-l-4 border-rose-500 p-5 rounded-r-lg">
-                            <h2 className="text-xl font-bold text-rose-800 flex items-center"><HelpCircle className="w-6 h-6 mr-2" /> Mesa de Ayuda / Escalamiento</h2>
-                            <p className="text-rose-600 mt-1">Aquí solo se deben escalar solicitudes que el BO NO puede gestionar. Tiempos: 24-72h hábiles.</p>
-                        </div>
-                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {wikiData.mesaAyudaItems.map((item, idx) => (
-                                <div key={idx} className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm tipificacion-card group transition-all flex flex-col justify-between">
-                                    <div>
-                                        <h3 className="font-bold text-gray-800 mb-2 leading-tight">{item.title}</h3>
-                                        <p className="text-xs text-gray-600 mb-4">{item.desc}</p>
-                                    </div>
-                                    <div className="pt-3 border-t border-dashed border-gray-100">
-                                        <div className="p-2 bg-rose-50 rounded-lg border border-rose-100 group-hover:bg-rose-100">
-                                            <p className="text-[9px] uppercase tracking-wider font-extrabold text-rose-400 mb-1">Título para el caso:</p>
-                                            <p className="text-[10px] font-bold text-rose-800 flex items-center justify-between">
-                                                {item.tipificacion} <Clipboard size={10} />
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                );
-
-                if (activeSection === 'tips') return (
-                    <div className="space-y-6 animate-fadeIn">
-                        <div className="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-lg"><h2 className="text-xl font-bold text-amber-800 flex items-center"><Lightbulb className="w-6 h-6 mr-2" /> Tips & SLAs</h2></div>
-                        <div className="bg-orange-50 rounded-2xl p-6 border border-orange-200 relative overflow-hidden">
-                            <h3 className="text-xl font-bold text-orange-900 mb-4 flex items-center relative z-10"><Globe className="w-6 h-6 mr-2"/> Certificados de Idiomas</h3>
-                            <div className="grid md:grid-cols-3 gap-4 mb-6 relative z-10">
-                                {wikiData.idiomasInfo.tipos.map((t, idx) => (
-                                    <div key={idx} className="bg-white/80 p-4 rounded-xl border border-orange-100 text-xs">
-                                        <h4 className="font-bold text-orange-800 mb-1">{t.t}</h4>
-                                        <p className="text-orange-900/80">{t.d}</p>
-                                    </div>
-                                ))}
+                    return (
+                        <div className="flex flex-col items-center justify-center py-8 text-center animate-fadeIn">
+                            <div className="bg-gradient-to-r from-blue-600 to-emerald-500 p-1 rounded-full mb-6 shadow-xl">
+                                <div className="bg-white p-4 rounded-full"><BookOpen className="w-16 h-16 text-blue-600" /></div>
                             </div>
-                            <div className="bg-red-50 border-l-4 border-red-400 p-4 rounded-r-lg relative z-10 text-sm">
-                                <p className="font-bold text-red-800 mb-1">⚠️ ¡Validación Crítica!</p>
-                                <p className="text-red-700">{wikiData.idiomasInfo.warning}</p>
+                            <h1 className="text-4xl font-bold text-gray-800 mb-4">Bienvenido a tu <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-emerald-500">Wiki BO</span></h1>
+                            <p className="text-lg text-gray-600 max-w-3xl mb-8 leading-relaxed bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+                                Tu herramienta para gestiones rápidas y precisas. Aquí encuentras lo que gestiona el Back Office y cómo escalar correctamente a Mesa de Ayuda.
+                            </p>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-2xl mb-10">
+                                <a href={wikiData.links.formDescuentos} target="_blank" className="flex items-center justify-center p-4 bg-emerald-600 text-white rounded-xl shadow-lg hover:bg-emerald-700 font-bold group transition-transform hover:-translate-y-1">
+                                    <Calculator className="w-6 h-6 mr-3 group-hover:scale-110"/> Solicitud de Descuentos
+                                </a>
+                                <a href={wikiData.links.teamsSoporte} target="_blank" className="flex items-center justify-center p-4 bg-indigo-600 text-white rounded-xl shadow-lg hover:bg-indigo-700 font-bold group transition-transform hover:-translate-y-1">
+                                    <MessageCircle className="w-6 h-6 mr-3 group-hover:scale-110"/> Soporte Operación
+                                </a>
                             </div>
-                        </div>
-                        <div className="space-y-4">
-                            {wikiData.tips.map(tip => (
-                                <div key={tip.id} className="bg-white rounded-xl shadow-sm border-l-4 p-6 hover:bg-gray-50 transition-colors" style={{borderLeftColor: tip.type === 'success' ? '#10B981' : tip.type === 'warning' ? '#F59E0B' : '#3B82F6'}}>
-                                    <h3 className="font-bold text-lg text-gray-800 mb-2">{tip.title}</h3>
-                                    <p className="text-gray-600 text-sm leading-relaxed whitespace-pre-line">{tip.content}</p>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                );
-
-                if (activeSection === 'discounts') return (
-                     <div className="space-y-8 animate-fadeIn">
-                        <div className="bg-gradient-to-r from-emerald-500 to-teal-600 rounded-2xl p-8 text-white shadow-lg relative overflow-hidden">
-                            <h2 className="text-2xl font-bold mb-4 flex items-center relative z-10"><Lightbulb className="w-8 h-8 mr-3"/> Información General de Descuentos</h2>
-                            <p className="bg-white/10 p-4 rounded-xl border border-white/20 text-lg relative z-10">"Si evidenciamos códigos TA, TV, TO en Analytics o historial de semestres previos, NO pedir soporte."</p>
-                            <div className="mt-6 flex gap-4 relative z-10">
-                                <a href={wikiData.links.formDescuentos} target="_blank" className="bg-white text-emerald-700 px-6 py-3 rounded-full font-bold shadow-md hover:bg-emerald-50 transition-colors">Solicitud de Descuentos</a>
-                                <a href={wikiData.links.gestionDescuentosVisual} target="_blank" className="bg-emerald-800 text-white px-6 py-3 rounded-full font-bold border border-emerald-400 hover:bg-emerald-900 transition-colors">Consultar Gestión</a>
-                            </div>
-                        </div>
-                        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
-                            <h3 className="text-lg font-bold text-gray-800 mb-4">Acumulables</h3>
-                            <ul className="space-y-3">
-                                <li className="p-3 bg-gray-50 rounded-lg text-gray-700 font-medium">1. Pronto Pago + Dcto. Ingresante</li>
-                                <li className="p-3 bg-gray-50 rounded-lg text-gray-700 font-medium">2. Pronto Pago + Convenio</li>
-                                <li className="p-3 bg-gray-50 rounded-lg text-gray-700 font-medium">3. Reintegro + Convenio</li>
-                            </ul>
-                        </div>
-                    </div>
-                );
-
-                if (activeSection === 'chatpiso') return (
-                     <div className="space-y-6 animate-fadeIn">
-                        <div className="bg-indigo-50 border-l-4 border-indigo-500 p-5 rounded-r-lg">
-                            <h2 className="text-xl font-bold text-indigo-800 flex items-center"><MessageCircle className="w-6 h-6 mr-2" /> Chat de Piso / Apoyo Operativo</h2>
-                        </div>
-                        <div className="grid md:grid-cols-2 gap-8">
-                            <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
-                                <div className="bg-indigo-600 px-6 py-4 text-white font-bold">Gestiones Directas</div>
-                                <div className="divide-y divide-gray-100 overflow-y-auto max-h-[500px]">
-                                    {wikiData.chatPisoItems.map(item => (
-                                        <div key={item.id} className="p-4 hover:bg-indigo-50 transition-colors">
-                                            <p className="font-bold text-gray-800 text-sm mb-1">{item.title}</p>
-                                            <p className="text-xs text-gray-500">{item.desc}</p>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                            <div className="flex flex-col gap-6">
-                                <div className="bg-slate-800 text-white rounded-xl p-6">
-                                    <h3 className="font-bold mb-4 flex items-center text-indigo-300"><Clipboard className="w-5 h-5 mr-2"/> Plantilla Chat</h3>
-                                    <div className="bg-slate-900/50 p-4 rounded-lg font-mono text-xs text-gray-300 border border-slate-700 whitespace-pre-wrap leading-loose">ID: \nTipo: \nPrograma: \nConsulta: \nSoportes: </div>
-                                    <button onClick={copyTemplate} className="mt-4 w-full bg-indigo-500 hover:bg-indigo-400 py-2 rounded-lg font-bold">Copiar Plantilla</button>
-                                </div>
-                                <a href={wikiData.links.teamsSoporte} target="_blank" className="w-full bg-green-600 hover:bg-green-700 text-white py-4 rounded-lg font-bold flex items-center justify-center shadow-lg transition-transform hover:-translate-y-1"><Send className="w-5 h-5 mr-2"/> Ir al Chat de Piso</a>
-                            </div>
-                        </div>
-                    </div>
-                );
-                return null;
-            };
-
-            return (
-                <div className="min-h-screen flex flex-col md:flex-row">
-                    <aside className={`fixed md:sticky top-0 z-30 h-screen w-64 bg-slate-900 text-white transition-transform ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 flex flex-col shadow-2xl`}>
-                        <div className="p-6 border-b border-slate-800 flex justify-between items-center cursor-pointer" onClick={() => setActiveSection('home')}>
-                            <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-emerald-400">Wiki BO</h1>
-                            <button onClick={() => setMobileMenuOpen(false)} className="md:hidden text-slate-400"><X /></button>
-                        </div>
-                        <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
-                            {[
-                                {id:'home', label:'Inicio', icon: Home}, 
-                                {id:'definitions', label:'Diccionario BO', icon: BookOpen}, 
-                                {id:'discounts', label:'Descuentos', icon: Calculator}, 
-                                {id:'chatpiso', label:'Chat Piso', icon: MessageCircle}, 
-                                {id:'mesaAyuda', label:'Mesa Ayuda', icon: HelpCircle}, 
-                                {id:'tips', label:'Tips y SLAs', icon: Lightbulb}
-                            ].map(nav => (
-                                <button key={nav.id} onClick={() => { setActiveSection(nav.id); setMobileMenuOpen(false); }} className={`w-full flex items-center p-3 rounded-xl transition-all ${activeSection === nav.id ? 'bg-slate-700 text-white shadow-lg' : 'text-slate-300 hover:bg-slate-800'}`}>
-                                    <IconComp icon={nav.icon} className="mr-3 w-5 h-5" /> <span className="font-medium text-sm">{nav.label}</span>
-                                </button>
-                            ))}
-                        </nav>
-                        <div className="p-4 bg-slate-950 border-t border-slate-800 text-[10px] text-slate-500 uppercase font-bold text-center">Poli Servicio - 2026</div>
-                    </aside>
-                    <main className="flex-1 flex flex-col h-screen overflow-hidden">
-                        <div className="md:hidden bg-white border-b p-4 flex justify-between items-center sticky top-0 z-20">
-                            <h1 className="text-lg font-bold text-slate-800">Wiki Gestión BO</h1>
-                            <button onClick={() => setMobileMenuOpen(true)} className="text-slate-600 bg-gray-100 p-2 rounded-lg"><Menu /></button>
-                        </div>
-                        <div className="flex-1 p-4 md:p-8 overflow-y-auto bg-gray-50 scroll-smooth">
-                            <div className="max-w-6xl mx-auto pb-10">
-                                {activeSection !== 'home' && (
-                                    <button onClick={() => setActiveSection('home')} className="mb-6 text-xs font-bold text-blue-500 flex items-center hover:text-blue-700 uppercase tracking-widest transition-colors">
-                                        <ChevronRight size={14} className="rotate-180 mr-1" /> Volver al Inicio
-                                    </button>
-                                )}
-                                {renderContent()}
-                            </div>
-                        </div>
-                    </main>
-                </div>
-            );
-        };
-
-        const root = createRoot(document.getElementById('root'));
-        root.render(<WikiBO />);
-    </script>
-</body>
-</html>
