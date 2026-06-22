@@ -1,148 +1,73 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wiki Gestión BO</title>
-    
-    <!-- 1. PREVENCIÓN PANTALLA BLANCA -->
-    <script>window.process = { env: { NODE_ENV: 'production' } };</script>
-
-    <!-- 2. IMPORTMAP: La forma más segura de cargar dependencias en el navegador -->
-    <script type="importmap">
-    {
-      "imports": {
-        "react": "https://esm.sh/react@18.2.0",
-        "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
-        "lucide-react": "https://esm.sh/lucide-react@0.263.1?external=react"
-      }
-    }
-    </script>
-
-    <!-- 3. ESTILOS (Tailwind CSS) Y FUENTES -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-    
-    <!-- 4. MOTOR PARA LEER EL CÓDIGO (Babel) -->
-    <script src="https://unpkg.com/@babel/standalone@7.22.17/babel.min.js"></script>
-    
-    <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
-        .animate-fadeIn { animation: fadeIn 0.5s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        /* Scroll elegante */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-        .scrollbar-hide::-webkit-scrollbar { display: none; }
-        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-        
-        .tipificacion-card:hover {
-            border-color: #f43f5e; /* Rose 500 */
-            transform: translateY(-2px);
-        }
-    </style>
-</head>
-<body>
-    <div id="root"></div>
-
-    <!-- 5. APLICACIÓN WIKI -->
-    <script type="text/babel" data-presets="react" data-type="module">
-        import React, { useState } from 'react';
-        import { createRoot } from 'react-dom/client';
-        import { 
-            Search, BookOpen, ShieldCheck, Lightbulb, Menu, X, ChevronRight, 
-            Calculator, AlertTriangle, CheckCircle, Clock, FileText, User, 
-            DollarSign, Globe, Smartphone, RotateCcw, Calendar, MapPin, Briefcase,
-            MessageCircle, Clipboard, Send, HelpCircle, Home, ExternalLink, Link, Eye, Info, Target, Users
-        } from 'lucide-react';
-
-        const wikiData = {
-            links: {
-                formDescuentos: "https://forms.office.com/r/WgdS54TJaY",
-                teamsSoporte: "https://teams.microsoft.com/l/channel/19%3A1f9d3fa1936741ec9571e0ec69f1e7b6%40thread.tacv2/Soporte%20Operaci%C3%B3n?groupId=c1accda4-6cca-4dd7-bc44-8eb7ecb22741&tenantId=74650605-290f-49e4-be9e-3a926db149ca",
-                gestionDescuentosVisual: "https://whitneyintl.sharepoint.com/:x:/t/GestinBackoffice/IQDUYXMFXijlSrLqWvKLP9aiAS8uK-195hmIs4HXLJZvXY0?e=fXNXhC",
-                guiaRematricula: "https://view.genially.com/66a803b4211e0130bc4f0319/interactive-content-rematricula-2026-1",
-                conveniosVigentes: "https://whitneyintl.sharepoint.com/:x:/r/sites/PolitcnicoGrancolombianoRelacionamiento2/_layouts/15/Doc.aspx?sourcedoc=%7BE02B4A75-77B0-46C8-9787-13DAFEF08EB3%7D&file=04.%20LISTADO%20DE%20CONVENIOS%20EMPRESARIALES%2009-09-2025%20(1).xlsx&action=default&mobileredirect=true"
-            },
-            definitions: [
-                {
-                    id: 'fin-001', category: 'Financiero', title: '💸 Alivios Financieros',
-                    definition: `• Pronto Pago (Vigencia hasta Dic 21): 5% Virtual | 3% Presencial.\n• Descuento Ingresante: ⚠️ Solo si pasa a 2do o 3er semestre. (Cruzar con tabla 2025-60).\n• Reintegro: 10% para estudiantes que retoman estudios.`,
-                    permissions: 'Pronto pago aplica a: Matrícula completa, Media y 50/50.',
-                    requirements: ['Validar fechas', 'Revisar histórico'], 
-                    isHighlight: true, icon: Calendar,
-                    action: { label: 'Ver Guía Rematrícula', link: 'guiaRematricula', icon: ExternalLink }
+'<span class="text-rose-600 font-bold">ACTUALIZACIÓN MANUAL:</span> Solo con autorización o en posgrados. Dale clic al ícono de calendario. <br><b>⚠️ IMPORTANTE:</b> Mantén el orden lógico (Fecha 1 < Fecha 2 < Fecha 3 < Máx Fecha). Si rompes este orden, el sistema arrojará error.'
+                    ]
                 },
-                {
-                    id: 'doc-001', category: 'Documentación', title: '🏢 Descuentos Comerciales',
-                    definition: `1. Empresariales: Carta < 30 días.\n2. Académicos: Título/Acta (Ver Analytics -> Tipo admisión).\n3. Víctimas: Certificado RUV.\n4. Municipalidad: Certificado Residencia Alcaldía + Radicación.`,
-                    permissions: 'OJO: Si en Analytics sale TA, TV, TO o ya lo tuvo antes, NO PEDIR SOPORTE.',
-                    requirements: ['Soportes legibles'], icon: Briefcase,
-                    action: { label: 'Revisar Convenios Vigentes', link: 'conveniosVigentes', icon: Search }
+                { 
+                    id: 'SVASVPR', 
+                    title: 'SVASVPR - Solicitud de Reintegro e Historial', 
+                    desc: 'Consulta el historial de solicitudes del estudiante (Smart Campus) y creación de solicitudes de reintegro.',
+                    steps: [
+                        'Ingresa a Banner y coloca el <b>ID del estudiante</b>. Haz clic en el botón superior derecho <b>"IR"</b>.',
+                        '<b>¡Pausa y verifica! 🔎</b> En esta pantalla inicial verás TODO el historial de solicitudes del estudiante (reintegros, inscripciones a grados, diplomados, semestre terminal, certificados y trámites de cambio de programa/jornada/modalidad). <b>Verifica que no exista ya una solicitud de reintegro en curso antes de crear una nueva.</b>',
+                        'Si debes crearla, ve a la parte superior derecha, haz clic en <b>Herramientas</b> y selecciona <b>"Insertar nueva solicitud de servicio"</b>.',
+                        'En el formulario, coloca nuevamente el <b>ID del estudiante</b>.',
+                        'En <b>Código de servicio</b> selecciona <b>"Solicitud de reintegro"</b>, en <b>Tipo de solicitud</b> coloca <b>"SOL"</b> y haz clic en <b>Guardar</b>.',
+                        'Despliega la sección de <b>Datos adicionales</b> dando clic en la flecha hacia abajo.',
+                        'En el recuadro de datos adicionales, ajusta el <b>Programa, Periodo y Jornada</b>.',
+                        'Arriba de los datos adicionales, en la sección del medio (<b>Comentario interno</b>), pega la plantilla y da clic en <b>Guardar</b> nuevamente.',
+                        '<b>¿Te equivocaste? ✏️</b> Si cometiste un error, busca la solicitud en la pantalla principal y dale clic al ícono de <b>Lápiz (Editar)</b>. Cambia el <b>Estatus</b> de <b>"AC"</b> (Activa) a <b>"AN"</b> (Anulada) y actualiza el comentario interno explicando el motivo de la anulación.'
+                    ],
+                    template: `Ticket: [Número de ticket si aplica]\nPrograma origen: [Nombre del programa]\nPrograma destino: [Nombre del programa]\nSede destino: [Nombre de la sede]\nJornada destino: [Nombre de la jornada]\nNota: [Observaciones adicionales]\nUsuario de quien crea la solicitud: [Tu nombre]`
                 },
-                {
-                    id: 'idiomas-001', category: 'Idiomas', title: '📜 Certificado de Idiomas',
-                    definition: 'Costo: $16.000. BO genera orden -> Estudiante paga -> Estudiante monta caso.',
-                    permissions: 'VER DETALLE COMPLETO EN PESTAÑA TIPS O CERTIFICADOS.',
-                    requirements: ['Validar PARA QUÉ requiere el certificado', 'Explicar tipos de certificados al estudiante'], icon: Globe
+                { 
+                    id: 'TZABSEC', 
+                    title: 'TZABSEC - División de Órdenes', 
+                    desc: 'Dividir la orden para pagos 50/50, cuota inicial del 20%, pagos mixtos o topes de corresponsales. Sé estratégico al usarlo.',
+                    steps: [
+                        'Ingresa las siglas <b>TZABSEC</b> y dale buscar/ir.',
+                        'Coloca el <b>ID del estudiante</b> y en <b>Orden de pago</b> dale a los 3 puntitos para traer la orden. <i>(⚠️ DEBE existir una factura generada primero)</i>. Clic en <b>IR</b>.',
+                        'En la sección "Generación de boleta secundaria", dale clic a <b>Insertar</b> (arriba derecha).',
+                        'Coloca el <b>Monto</b> exacto mencionado y da clic al lado en <b>Fecha de vencimiento</b>.',
+                        'Repite "Insertar" para el excedente en <b>Saldo pendiente</b>. <i>(⚠️ Verifica que el saldo final quede en CERO. Si fallas, dale "Eliminar" a la fila)</i>.',
+                        'Da clic en <b>Guardar</b> abajo. Saldrá el mensaje en verde: "Saved successfully".',
+                        'Para descargar las sub-boletas, párate en la fila, busca la columna PDF (ícono de lupa) y dale clic. Se abrirá una nueva pestaña.'
+                    ]
+                },
+                { 
+                    id: 'TSAAREV', 
+                    title: 'TSAAREV - Revisión de detalle de cuenta', 
+                    desc: 'Consulta y validación del estado de cuenta del estudiante. La lectura de esta tabla se realiza de ABAJO hacia ARRIBA.',
+                    steps: [
+                        'Ingresa las siglas <b>TSAAREV</b> y dale buscar/ir.',
+                        'Coloca el <b>ID del estudiante</b> y dale clic al botón <b>"IR"</b> (arriba derecha).',
+                        'Aparecerá una tabla con los detalles. Presta atención a estas columnas clave:',
+                        '<ul class="list-disc pl-5 mt-2 space-y-2 text-gray-700"><li><b>Código de detalle y Descripción:</b> El concepto exacto que se está cobrando o aplicando.</li><li><b>Periodo:</b> El semestre al que corresponde el movimiento.</li><li><b>Cargo:</b> El valor que se le está cobrando al estudiante.</li><li><b>Pago:</b> Los valores que se aplican como becas, descuentos o pagos directos que realiza el estudiante.</li><li><b class="text-rose-600">Saldo:</b> ¡Esta columna siempre debe quedar en cero!</li></ul>',
+                        'En la parte inferior de la pantalla registra la sección de detalle general del saldo.'
+                    ],
+                    warnings: [
+                        {
+                            title: '🔎 1. Uso de saldos a favor',
+                            content: 'Si el estudiante NO solicita el uso, cruce o legalización de un saldo a favor, <b>NO debemos gestionarlo</b>, incluso si este es visible en Banner o Analytics.<br><br><span class="text-rose-700 font-medium">⚠️ Tener en cuenta que un saldo visible en Banner puede no estar disponible realmente. Es preferible que escalemos el caso para que el área global revise. Evitemos asegurarle saldos a favor al estudiante.</span>'
+                        },
+                        {
+                            title: '📅 2. Vigencia de saldos',
+                            content: 'Según el reglamento académico y disciplinario (art. 49), los saldos a favor por abonos o anticipos tienen una <b>vigencia de 1 año</b>.'
+                        },
+                        {
+                            title: '❗ Caso Real de Impacto',
+                            content: 'Se identificó un estudiante con un "saldo a favor" duplicado por anticipo, el cual fue utilizado para legalizar matrícula del periodo 2026-10. Posteriormente, se evidenció que no era un saldo real, <b>generando deuda al estudiante</b>.'
+                        }
+                    ],
+                    keyMessage: '🎯 Mensaje clave: Evitemos tomar acciones sin validación previa. Esto impacta directamente la experiencia del estudiante y la correcta gestión financiera.'
                 }
             ],
-            mesaAyudaItems: [
-                { id: 7, title: 'Carta Crédito', desc: 'Legalización crédito (Aplica para todas las entidad financieras con las que tenemos convenio) Deben adjuntar la carta crédito.', tipificacion: 'LEGALIZACIÓN DE MATRÍCULA' },
-                { id: 8, title: 'Legalización de pago', desc: 'Legalizar pago matrícula. No aplica Icetex/Timbre. Para PayU revisar primero link transaccional. Si >3 días y no registra en Analytics, escalar.', tipificacion: 'LEGALIZACIÓN DE MATRÍCULA' },
-                { id: 10, title: 'Cambios de Programa/Sede/Mod', desc: 'Cambio de jornada, modalidad, sede, programa, doble programa o segundo ciclo cuando falla autogestión o novedad excesiva.', tipificacion: 'INCONVENIENTE PLATAFORMA COMPLEMENTARIAS' },
-                { id: 11, title: 'Énfasis', desc: 'Cuando el estudiante presencial no puede solicitar el énfasis por autogestión. Adjuntar nombre del énfasis.', tipificacion: 'INCONVENIENTE PLATAFORMA COMPLEMENTARIAS' },
-                { id: 12, title: 'Acceso a Inscripción de Asignaturas', desc: 'Situación técnica que impida la inscripción (Cargar soportes completos).', tipificacion: 'INSCRIPCIÓN DE ASIGNATURAS' },
-                { id: 13, title: 'Sobrepasos', desc: 'Falta de cupos presenciales. Revisar que virtuales no estén en restricción (posible jornada contraria).', tipificacion: 'INSCRIPCIÓN DE ASIGNATURAS' },
-                { id: 14, title: 'Ampliación de créditos', desc: 'Cuando por plan de estudios el estudiante debe inscribir más materias y requiere más créditos.', tipificacion: 'INSCRIPCIÓN DE ASIGNATURAS' },
-                { id: 15, title: 'Proyecciones', desc: 'Cuando al estudiante no le registran las proyecciones necesarias para inscribir asignaturas.', tipificacion: 'INSCRIPCIÓN DE ASIGNATURAS' },
-                { id: 16, title: 'Saber pro', desc: 'Situaciones de inscripción o credenciales cuando no han realizado registro.', tipificacion: 'PRUEBAS SABER PRO' },
-                { id: 17, title: 'Reconocimiento de créditos', desc: 'Dudas sobre los créditos solicitados a un programa específico.', tipificacion: 'VALIDACIÓN PLAN DE ESTUDIOS' },
-                { id: 18, title: 'Actualización Correo-Celular', desc: 'Para actualizar número y vincular con Office 365. Extranjeros requieren indicativo.', tipificacion: 'ACTUALIZACIÓN Y/O CORRECCIÓN DE DATOS' },
-                { id: 19, title: 'Restablecimiento Contraseña', desc: 'Si por algún motivo no permite cambiar contraseña en el CPO. (Adjuntar soportes).', tipificacion: 'CONTRASEÑAS PLATAFORMA' },
-                { id: 20, title: 'Cambio SO a TM', desc: 'Analytics muestra todo aprobado para grado pero el estado continúa en SO.', tipificacion: 'PAZ Y SALVOS GRADOS' },
-                { id: 21, title: 'Validación de documentos', desc: 'Cuando pasa más de una semana hábil de haber cargado documentos de grado.', tipificacion: 'PAZ Y SALVOS GRADOS' },
-                { id: 22, title: 'Retiro de cargos financieros', desc: 'Reversión de cargos por certificados, 50%, licencias, etc. No aplica concepto CRÉDITO DEUDA.', tipificacion: 'CARTERA-DEUDA O ABONO' }
-            ],
             chatPisoItems: [
-                { id: 1, title: 'Media Matrícula', desc: 'Gestión y aplicación directa.' },
-                { id: 2, title: 'Actualización CAPP', desc: 'Solo cuando sea necesario (fechas masivas) o casuística particular.' },
-                { id: 3, title: 'Certificados de Idiomas', desc: 'Generación de orden de pago.' },
-                { id: 4, title: 'Diferencia 50%', desc: 'Generación de la segunda orden de pago.' },
-                { id: 5, title: 'Estimación de Cuota', desc: 'Inserción de cargos de matrícula en Banner.' },
-                { id: 6, title: 'Licencia ED', desc: 'Generación de orden de pago English Discoveries.' },
-                { id: 7, title: 'Anticipo de Matrícula', desc: 'Generación de ordenes (cheques con centavos).' },
-                { id: 8, title: 'Certificados Primer Nivel', desc: 'Revisar pago y validar con estudiante ruta de descarga (SmartCampus).' },
-                { id: 9, title: 'Última Materia', desc: 'Si avance curricular muestra que falta solo una.' }
-            ],
-            idiomasInfo: {
-                tipos: [
-                    { t: 'Certificado de uso de licencia de inglés', d: 'Informa que la licencia es una opción válida para cumplir requisito institucional.' },
-                    { t: 'Certificado de cumplimiento del requisito', d: 'Detalla cómo el estudiante cumplió el requisito.' },
-                    { t: 'Certificado de obligatoriedad', d: 'Señala que el inglés es obligatorio para el título.' }
-                ],
-                warning: 'Si el estudiante ya completó el proceso pero no aparece aprobado, NO emitir certificado. Revisar CAPP, solicitar actualización o escalar por ticket de validación.'
-            },
-            tips: [
-                { id: 't1', title: '⛔ NO DERIVAR TICKETS DE DESCUENTOS', content: 'Respuesta INMEDIATA por BO. Solo ticket si hay error confirmado en Banner.', type: 'warning' },
-                { id: 't2', title: '📅 Vigencia Pronto Pago', content: 'Hasta el 21 de Diciembre. ¡Úsalo como argumento de cierre!', type: 'success' },
-                { id: 't4', title: '⚡ Tiempos de Respuesta (SLA)', content: '• BO: ¡INMEDIATO!\n• Mesa de Ayuda: 24 a 72 hrs hábiles.', type: 'info' },
-                { id: 't5', title: '⚠️ Regla de Oro (Descuentos)', content: 'Regla de Mayor Valor: Siempre se otorga el descuento de mayor porcentaje (%).', type: 'info' }
-            ]
-        };
-
-        const IconComp = ({ icon: IconName, className }) => {
-            if (!IconName) return null;
-            return <IconName className={className} />;
-        };
-
+<!-- ... existing code ... -->
         const WikiBO = () => {
             const [activeSection, setActiveSection] = useState('home');
             const [searchTerm, setSearchTerm] = useState('');
             const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
             const [filterCategory, setFilterCategory] = useState('Todos');
+            const [activeBannerAcc, setActiveBannerAcc] = useState(null);
 
             const copyTemplate = () => {
                 const t = `ID: \nTipo de estudiante: \nPrograma y Modalidad: \nConsulta: \nSoportes: `;
@@ -150,36 +75,13 @@
                 alert('¡Plantilla copiada!');
             };
 
-            const getCatColor = (cat) => {
-                if(cat === 'Financiero') return 'bg-emerald-100 text-emerald-800 border-emerald-200';
-                if(cat === 'Documentación') return 'bg-indigo-100 text-indigo-800 border-indigo-200';
-                if(cat === 'Idiomas') return 'bg-orange-100 text-orange-800 border-orange-200';
-                return 'bg-blue-100 text-blue-800 border-blue-200';
+            const copyToClipboard = (text, msg) => {
+                navigator.clipboard.writeText(text);
+                alert(msg);
             };
 
-            const filteredDefs = wikiData.definitions.filter(i => 
-                (filterCategory === 'Todos' || i.category === filterCategory) &&
-                (i.title.toLowerCase().includes(searchTerm.toLowerCase()) || i.definition.toLowerCase().includes(searchTerm.toLowerCase()))
-            );
-
-            const renderContent = () => {
-                const hoverColors = {
-                    blue: 'hover:bg-blue-50',
-                    emerald: 'hover:bg-emerald-50',
-                    indigo: 'hover:bg-indigo-50',
-                    rose: 'hover:bg-rose-50',
-                    amber: 'hover:bg-amber-50'
-                };
-
-                if (activeSection === 'home') return (
-                    <div className="flex flex-col items-center justify-center py-8 text-center animate-fadeIn">
-                        <div className="bg-gradient-to-r from-blue-600 to-emerald-500 p-1 rounded-full mb-6 shadow-xl">
-                            <div className="bg-white p-4 rounded-full"><BookOpen className="w-16 h-16 text-blue-600" /></div>
-                        </div>
-                        <h1 className="text-4xl font-bold text-gray-800 mb-4">Bienvenido a tu <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-emerald-500">Wiki BO</span></h1>
-                        <p className="text-lg text-gray-600 max-w-3xl mb-8 leading-relaxed bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
-                            Tu herramienta para gestiones rápidas y precisas. Aquí encuentras lo que gestiona el Back Office y cómo escalar correctamente a Mesa de Ayuda.
-                        </p>
+            const getCatColor = (cat) => {
+<!-- ... existing code ... -->
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-2xl mb-10">
                             <a href={wikiData.links.formDescuentos} target="_blank" className="flex items-center justify-center p-4 bg-emerald-600 text-white rounded-xl shadow-lg hover:bg-emerald-700 font-bold group transition-transform hover:-translate-y-1">
                                 <Calculator className="w-6 h-6 mr-3 group-hover:scale-110"/> Solicitud de Descuentos
@@ -188,203 +90,117 @@
                                 <MessageCircle className="w-6 h-6 mr-3 group-hover:scale-110"/> Soporte Operación
                             </a>
                         </div>
-                        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 w-full max-w-6xl">
+                        <div className="grid grid-cols-2 md:grid-cols-6 gap-4 w-full max-w-6xl">
                              {[
                                 {id: 'definitions', label: '📖 Diccionario BO', color: 'blue'},
                                 {id: 'discounts', label: '🏷️ Descuentos', color: 'emerald'},
                                 {id: 'chatpiso', label: '💬 Chat de Piso', color: 'indigo'},
                                 {id: 'mesaAyuda', label: '🎧 Mesa de Ayuda', color: 'rose'},
-                                {id: 'consultiva', label: '🎯 Consultiva', color: 'amber'}
+                                {id: 'consultiva', label: '🎯 Consultiva', color: 'amber'},
+                                {id: 'banner', label: '💻 Banner', color: 'slate'}
                              ].map(btn => (
                                 <button key={btn.id} onClick={() => setActiveSection(btn.id)} className={`p-4 bg-white border border-gray-100 rounded-xl shadow-sm hover:shadow-md transition-all ${hoverColors[btn.color]} text-gray-700 font-medium`}>
                                     {btn.label}
                                 </button>
                              ))}
                         </div>
-                    </div>
-                );
-
-                if (activeSection === 'definitions') return (
-                    <div className="space-y-6 animate-fadeIn">
-                        <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg"><h2 className="text-xl font-bold text-blue-800 flex items-center"><BookOpen className="w-6 h-6 mr-2" /> Diccionario BO</h2></div>
-                        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-                            {['Todos', 'Financiero', 'Documentación', 'Idiomas'].map(cat => (
-                                <button key={cat} onClick={() => setFilterCategory(cat)} className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap ${filterCategory === cat ? 'bg-slate-800 text-white shadow-md' : 'bg-white border text-gray-600 hover:bg-gray-50'}`}>{cat}</button>
-                            ))}
-                        </div>
-                        <div className="grid gap-6 md:grid-cols-2">
-                            {filteredDefs.map(item => (
-                                <div key={item.id} className={`bg-white rounded-xl shadow-sm border p-5 hover:shadow-md transition-all flex flex-col justify-between ${item.isHighlight ? 'border-emerald-200 ring-1 ring-emerald-100' : 'border-gray-100'}`}>
-                                    <div>
-                                        <div className="flex justify-between mb-3">
-                                            <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
-                                                <span className={`p-2 rounded-lg ${getCatColor(item.category).split(' ')[0]}`}><IconComp icon={item.icon} className="w-5 h-5"/></span> {item.title}
-                                            </h3>
-                                        </div>
-                                        <span className={`px-2 py-1 rounded text-xs font-semibold mb-3 ${getCatColor(item.category)}`}>{item.category}</span>
-                                        <p className="text-gray-600 text-sm my-4 whitespace-pre-line">{item.definition}</p>
-                                        {item.requirements && (
-                                            <div className="bg-gray-50 rounded-lg p-3 text-sm border"><p className="font-semibold mb-1">📋 Requisitos:</p><ul className="list-disc list-inside">{item.requirements.map((r,i)=><li key={i}>{r}</li>)}</ul></div>
-                                        )}
-                                    </div>
-                                    {item.action && (
-                                        <a href={wikiData.links[item.action.link]} target="_blank" className="mt-4 w-full bg-blue-50 text-blue-700 hover:bg-blue-100 py-2 rounded-lg font-bold flex items-center justify-center text-sm border border-blue-200">
-                                            <IconComp icon={item.action.icon} className="w-4 h-4 mr-2"/> {item.action.label}
-                                        </a>
-                                    )}
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                );
-
-                if (activeSection === 'mesaAyuda') return (
-                    <div className="space-y-6 animate-fadeIn">
-                        <div className="bg-rose-50 border-l-4 border-rose-500 p-5 rounded-r-lg">
-                            <h2 className="text-xl font-bold text-rose-800 flex items-center"><HelpCircle className="w-6 h-6 mr-2" /> Mesa de Ayuda / Escalamiento</h2>
-                            <p className="text-rose-600 mt-1">Aquí solo se deben escalar solicitudes que el BO NO puede gestionar. Tiempos: 24-72h hábiles.</p>
-                        </div>
-                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {wikiData.mesaAyudaItems.map((item, idx) => (
-                                <div key={idx} className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm tipificacion-card group transition-all flex flex-col justify-between">
-                                    <div>
-                                        <h3 className="font-bold text-gray-800 mb-2 leading-tight">{item.title}</h3>
-                                        <p className="text-xs text-gray-600 mb-4">{item.desc}</p>
-                                    </div>
-                                    <div className="pt-3 border-t border-dashed border-gray-100">
-                                        <div className="p-2 bg-rose-50 rounded-lg border border-rose-100 group-hover:bg-rose-100">
-                                            <p className="text-[9px] uppercase tracking-wider font-extrabold text-rose-400 mb-1">Título para el caso:</p>
-                                            <p className="text-[10px] font-bold text-rose-800 flex items-center justify-between">
-                                                {item.tipificacion} <Clipboard size={10} />
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                );
-
-                if (activeSection === 'tips') return (
-                    <div className="space-y-6 animate-fadeIn">
-                        <div className="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-lg"><h2 className="text-xl font-bold text-amber-800 flex items-center"><Lightbulb className="w-6 h-6 mr-2" /> Tips & SLAs</h2></div>
-                        <div className="bg-orange-50 rounded-2xl p-6 border border-orange-200 relative overflow-hidden">
-                            <h3 className="text-xl font-bold text-orange-900 mb-4 flex items-center relative z-10"><Globe className="w-6 h-6 mr-2"/> Certificados de Idiomas</h3>
-                            <div className="grid md:grid-cols-3 gap-4 mb-6 relative z-10">
-                                {wikiData.idiomasInfo.tipos.map((t, idx) => (
-                                    <div key={idx} className="bg-white/80 p-4 rounded-xl border border-orange-100 text-xs">
-                                        <h4 className="font-bold text-orange-800 mb-1">{t.t}</h4>
-                                        <p className="text-orange-900/80">{t.d}</p>
-                                    </div>
-                                ))}
-                            </div>
-                            <div className="bg-red-50 border-l-4 border-red-400 p-4 rounded-r-lg relative z-10 text-sm">
-                                <p className="font-bold text-red-800 mb-1">⚠️ ¡Validación Crítica!</p>
-                                <p className="text-red-700">{wikiData.idiomasInfo.warning}</p>
-                            </div>
-                        </div>
-                        <div className="space-y-4">
-                            {wikiData.tips.map(tip => (
-                                <div key={tip.id} className="bg-white rounded-xl shadow-sm border-l-4 p-6 hover:bg-gray-50 transition-colors" style={{borderLeftColor: tip.type === 'success' ? '#10B981' : tip.type === 'warning' ? '#F59E0B' : '#3B82F6'}}>
-                                    <h3 className="font-bold text-lg text-gray-800 mb-2">{tip.title}</h3>
-                                    <p className="text-gray-600 text-sm leading-relaxed whitespace-pre-line">{tip.content}</p>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                );
-
-                if (activeSection === 'discounts') return (
-                     <div className="space-y-8 animate-fadeIn">
-                        <div className="bg-gradient-to-r from-emerald-500 to-teal-600 rounded-2xl p-8 text-white shadow-lg relative overflow-hidden">
-                            <h2 className="text-2xl font-bold mb-4 flex items-center relative z-10"><Lightbulb className="w-8 h-8 mr-3"/> Información General de Descuentos</h2>
-                            <p className="bg-white/10 p-4 rounded-xl border border-white/20 text-lg relative z-10">"Si evidenciamos códigos TA, TV, TO en Analytics o historial de semestres previos, NO pedir soporte."</p>
-                            <div className="mt-6 flex gap-4 relative z-10">
-                                <a href={wikiData.links.formDescuentos} target="_blank" className="bg-white text-emerald-700 px-6 py-3 rounded-full font-bold shadow-md hover:bg-emerald-50 transition-colors">Solicitud de Descuentos</a>
-                                <a href={wikiData.links.gestionDescuentosVisual} target="_blank" className="bg-emerald-800 text-white px-6 py-3 rounded-full font-bold border border-emerald-400 hover:bg-emerald-900 transition-colors">Consultar Gestión</a>
-                            </div>
-                        </div>
-                        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
-                            <h3 className="text-lg font-bold text-gray-800 mb-4">Acumulables</h3>
-                            <ul className="space-y-3">
-                                <li className="p-3 bg-gray-50 rounded-lg text-gray-700 font-medium">1. Pronto Pago + Dcto. Ingresante</li>
-                                <li className="p-3 bg-gray-50 rounded-lg text-gray-700 font-medium">2. Pronto Pago + Convenio</li>
-                                <li className="p-3 bg-gray-50 rounded-lg text-gray-700 font-medium">3. Reintegro + Convenio</li>
-                            </ul>
-                        </div>
-                    </div>
-                );
-
-                if (activeSection === 'chatpiso') return (
-                     <div className="space-y-6 animate-fadeIn">
-                        <div className="bg-indigo-50 border-l-4 border-indigo-500 p-5 rounded-r-lg">
-                            <h2 className="text-xl font-bold text-indigo-800 flex items-center"><MessageCircle className="w-6 h-6 mr-2" /> Chat de Piso / Apoyo Operativo</h2>
-                        </div>
-                        <div className="grid md:grid-cols-2 gap-8">
-                            <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
-                                <div className="bg-indigo-600 px-6 py-4 text-white font-bold">Gestiones Directas</div>
-                                <div className="divide-y divide-gray-100 overflow-y-auto max-h-[500px]">
-                                    {wikiData.chatPisoItems.map(item => (
-                                        <div key={item.id} className="p-4 hover:bg-indigo-50 transition-colors">
-                                            <p className="font-bold text-gray-800 text-sm mb-1">{item.title}</p>
-                                            <p className="text-xs text-gray-500">{item.desc}</p>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                            <div className="flex flex-col gap-6">
-                                <div className="bg-slate-800 text-white rounded-xl p-6">
-                                    <h3 className="font-bold mb-4 flex items-center text-indigo-300"><Clipboard className="w-5 h-5 mr-2"/> Plantilla Chat</h3>
-                                    <div className="bg-slate-900/50 p-4 rounded-lg font-mono text-xs text-gray-300 border border-slate-700 whitespace-pre-wrap leading-loose">
-                                        ID: <br/>
-                                        Tipo de estudiante: <br/>
-                                        Programa y Modalidad: <br/>
-                                        Consulta: <br/>
-                                        Soportes: 
-                                    </div>
-                                    <button onClick={copyTemplate} className="mt-4 w-full bg-indigo-500 hover:bg-indigo-400 py-2 rounded-lg font-bold">Copiar Plantilla</button>
-                                </div>
-                                <a href={wikiData.links.teamsSoporte} target="_blank" className="w-full bg-green-600 hover:bg-green-700 text-white py-4 rounded-lg font-bold flex items-center justify-center shadow-lg transition-transform hover:-translate-y-1"><Send className="w-5 h-5 mr-2"/> Ir al Chat de Piso</a>
-                            </div>
-                        </div>
-                    </div>
-                );
-
-                if (activeSection === 'consultiva') return (
-                    <div className="space-y-6 animate-fadeIn">
-                        <div className="bg-gradient-to-r from-amber-500 to-orange-500 border-l-4 border-orange-700 p-5 rounded-r-lg text-white shadow-md">
-                            <h2 className="text-xl font-bold flex items-center"><Target className="w-6 h-6 mr-2" /> Venta Consultiva - Poli Grancolombiano</h2>
-                            <p className="mt-1 text-sm text-orange-100">La rematrícula no es vender, es una negociación donde ambas partes ganan.</p>
-                        </div>
-                        <div className="grid md:grid-cols-2 gap-6">
-                            <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-                                <div className="flex items-center gap-3 mb-3 text-blue-600">
-                                    <Users className="w-6 h-6" /> <h3 className="font-bold text-lg text-gray-800">1. Conectar y Empatizar</h3>
-                                </div>
-                                <p className="text-sm text-gray-600">Escucha con atención. Muestra interés genuino por la situación del estudiante. No eres solo un operador, eres el asesor que lo guiará para que siga su sueño en el Poli.</p>
-                            </div>
-                            <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-                                <div className="flex items-center gap-3 mb-3 text-indigo-600">
-                                    <Search className="w-6 h-6" /> <h3 className="font-bold text-lg text-gray-800">2. Indagar (Estratega)</h3>
-                                </div>
-                                <p className="text-sm text-gray-600">Revisa su historial de Banner y Analytics. Adelántate a sus necesidades haciendo preguntas precisas. Descubre el *por qué* detrás de su barrera para rematricularse.</p>
-                            </div>
-                            <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-                                <div className="flex items-center gap-3 mb-3 text-emerald-600">
-                                    <Lightbulb className="w-6 h-6" /> <h3 className="font-bold text-lg text-gray-800">3. Solución Personalizada</h3>
-                                </div>
-                                <p className="text-sm text-gray-600">Usa tu conocimiento del BO (Descuentos, alivios, opciones académicas) para armar una respuesta a su medida. Hazle saber que esa solución fue pensada especialmente para él.</p>
-                            </div>
-                            <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-                                <div className="flex items-center gap-3 mb-3 text-rose-600">
-                                    <CheckCircle className="w-6 h-6" /> <h3 className="font-bold text-lg text-gray-800">4. Compromiso y Cierre</h3>
-                                </div>
-                                <p className="text-sm text-gray-600">Todo esfuerzo requiere un acuerdo. Si le gestionas un alivio o ayudas con un ticket, obtén el compromiso de matrícula. Explica los pasos a seguir con seguridad.</p>
-                            </div>
-                        </div>
+<!-- ... existing code ... -->
                         <div className="mt-6 bg-slate-800 p-6 rounded-xl text-center text-white">
                             <p className="font-bold text-lg mb-2">🤖 ¡No olvides a los Bots!</p>
                             <p className="text-sm text-gray-300">Asegúrate de que tus gestiones y conocimientos se alineen para alimentar bien a <b>Geeko</b> (para estudiantes) y <b>GIAN</b> (para expertos).</p>
+                        </div>
+                    </div>
+                );
+
+                if (activeSection === 'banner') return (
+                    <div className="space-y-6 animate-fadeIn">
+                        <div className="bg-gradient-to-r from-slate-800 to-slate-900 border-l-4 border-blue-500 p-6 rounded-r-xl text-white shadow-md">
+                            <h2 className="text-2xl font-bold flex items-center mb-2"><Monitor className="w-8 h-8 mr-3 text-blue-400" /> Manejo de Banner</h2>
+                            <p className="text-slate-300 text-lg mb-4">Realiza las gestiones y solicitudes directamente desde tu propia sesión de Banner.</p>
+                            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+                                <a href="https://home.poli.edu.co/applicationNavigator/seamless" target="_blank" className="bg-blue-600 hover:bg-blue-500 text-white px-5 py-2.5 rounded-lg font-bold flex items-center transition-colors">
+                                    <ExternalLink className="w-4 h-4 mr-2"/> Abrir Banner
+                                </a>
+                                <div className="bg-slate-800/50 p-3 rounded-lg border border-slate-700 flex items-start text-sm">
+                                    <AlertTriangle className="w-5 h-5 text-amber-400 mr-2 shrink-0"/>
+                                    <span className="text-slate-300"><b>¿Error en Banner?</b> Suele ser por inactividad. Cierra tu sesión, cierra la pestaña y vuelve a abrir desde este botón.</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="space-y-4">
+                            {wikiData.bannerProcesos.map((proc) => {
+                                const isOpen = activeBannerAcc === proc.id;
+                                return (
+                                    <div key={proc.id} className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm transition-all duration-200">
+                                        <button 
+                                            onClick={() => setActiveBannerAcc(isOpen ? null : proc.id)}
+                                            className={`w-full px-6 py-4 flex items-center justify-between bg-white hover:bg-gray-50 transition-colors ${isOpen ? 'border-b border-gray-100' : ''}`}
+                                        >
+                                            <div className="flex items-center gap-3">
+                                                <div className={`p-2 rounded-lg ${isOpen ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500'}`}>
+                                                    <FileText className="w-5 h-5" />
+                                                </div>
+                                                <span className={`font-bold text-lg ${isOpen ? 'text-blue-800' : 'text-gray-700'}`}>{proc.title}</span>
+                                            </div>
+                                            {isOpen ? <ChevronUp className="text-gray-400" /> : <ChevronDown className="text-gray-400" />}
+                                        </button>
+                                        
+                                        {isOpen && (
+                                            <div className="p-6 bg-gray-50/50 animate-fadeIn">
+                                                <p className="text-gray-600 mb-6 font-medium">{proc.desc}</p>
+                                                
+                                                {proc.steps && (
+                                                    <div className="mb-6">
+                                                        <h4 className="font-bold text-gray-800 mb-4 flex items-center"><CheckCircle className="w-5 h-5 text-emerald-500 mr-2"/> Paso a Paso</h4>
+                                                        <ol className="space-y-4 relative border-l-2 border-emerald-100 ml-3">
+                                                            {proc.steps.map((step, i) => (
+                                                                <li key={i} className="pl-6 relative">
+                                                                    <div className="absolute -left-[11px] top-0 bg-emerald-100 text-emerald-700 w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ring-4 ring-white">{i + 1}</div>
+                                                                    <span className="text-gray-700 text-sm leading-relaxed" dangerouslySetInnerHTML={{__html: step}}></span>
+                                                                </li>
+                                                            ))}
+                                                        </ol>
+                                                    </div>
+                                                )}
+
+                                                {proc.template && (
+                                                    <div className="bg-slate-800 rounded-xl p-5 shadow-inner mt-6">
+                                                        <div className="flex justify-between items-center mb-3">
+                                                            <p className="font-bold text-slate-200 text-sm flex items-center"><Clipboard className="w-4 h-4 mr-2"/> Plantilla Comentario Interno</p>
+                                                            <button onClick={() => copyToClipboard(proc.template, '¡Plantilla Banner copiada!')} className="text-xs bg-slate-700 hover:bg-slate-600 text-white px-3 py-1.5 rounded-md flex items-center transition-colors">
+                                                                <Copy className="w-3 h-3 mr-1"/> Copiar
+                                                            </button>
+                                                        </div>
+                                                        <pre className="text-emerald-400 font-mono text-xs whitespace-pre-wrap leading-relaxed bg-slate-900/50 p-4 rounded-lg border border-slate-700/50">{proc.template}</pre>
+                                                    </div>
+                                                )}
+
+                                                {proc.warnings && (
+                                                    <div className="mt-8 space-y-4">
+                                                        <h4 className="font-bold text-gray-800 flex items-center border-b pb-2"><AlertTriangle className="w-5 h-5 text-amber-500 mr-2"/> Consideraciones Críticas para Validar</h4>
+                                                        <div className="grid md:grid-cols-2 gap-4 pt-2">
+                                                            {proc.warnings.map((warn, i) => (
+                                                                <div key={i} className={`p-5 rounded-xl border ${i === 0 ? 'md:col-span-2 bg-amber-50 border-amber-200 shadow-sm' : 'bg-white border-gray-200 shadow-sm'}`}>
+                                                                    <h5 className={`font-bold mb-3 ${i === 0 ? 'text-amber-800 text-lg' : 'text-gray-800'}`}>{warn.title}</h5>
+                                                                    <p className="text-sm text-gray-700 leading-relaxed" dangerouslySetInnerHTML={{__html: warn.content}}></p>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {proc.keyMessage && (
+                                                    <div className="mt-6 bg-slate-800 text-white p-5 rounded-xl shadow-lg border border-slate-700 flex items-start gap-4">
+                                                        <Target className="w-8 h-8 text-emerald-400 shrink-0"/>
+                                                        <p className="font-medium text-slate-200 leading-relaxed text-sm md:text-base">{proc.keyMessage}</p>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            })}
                         </div>
                     </div>
                 );
@@ -393,13 +209,7 @@
             };
 
             return (
-                <div className="min-h-screen flex flex-col md:flex-row">
-                    <aside className={`fixed md:sticky top-0 z-30 h-screen w-64 bg-slate-900 text-white transition-transform ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 flex flex-col shadow-2xl`}>
-                        <div className="p-6 border-b border-slate-800 flex justify-between items-center cursor-pointer" onClick={() => setActiveSection('home')}>
-                            <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-emerald-400">Wiki BO</h1>
-                            <button onClick={() => setMobileMenuOpen(false)} className="md:hidden text-slate-400"><X /></button>
-                        </div>
-                        <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+<!-- ... existing code ... -->
                             {[
                                 {id:'home', label:'Inicio', icon: Home}, 
                                 {id:'definitions', label:'Diccionario BO', icon: BookOpen}, 
@@ -407,37 +217,8 @@
                                 {id:'chatpiso', label:'Chat Piso', icon: MessageCircle}, 
                                 {id:'mesaAyuda', label:'Mesa Ayuda', icon: HelpCircle}, 
                                 {id:'tips', label:'Tips y SLAs', icon: Lightbulb},
-                                {id:'consultiva', label:'Modelo Consultivo', icon: Target}
+                                {id:'consultiva', label:'Modelo Consultivo', icon: Target},
+                                {id:'banner', label:'Manejo de Banner', icon: Monitor}
                             ].map(nav => (
                                 <button key={nav.id} onClick={() => { setActiveSection(nav.id); setMobileMenuOpen(false); }} className={`w-full flex items-center p-3 rounded-xl transition-all ${activeSection === nav.id ? 'bg-slate-700 text-white shadow-lg' : 'text-slate-300 hover:bg-slate-800'}`}>
-                                    <IconComp icon={nav.icon} className="mr-3 w-5 h-5" /> <span className="font-medium text-sm">{nav.label}</span>
-                                </button>
-                            ))}
-                        </nav>
-                        <div className="p-4 bg-slate-950 border-t border-slate-800 text-[10px] text-slate-500 uppercase font-bold text-center">Poli Servicio - 2026</div>
-                    </aside>
-                    <main className="flex-1 flex flex-col h-screen overflow-hidden">
-                        <div className="md:hidden bg-white border-b p-4 flex justify-between items-center sticky top-0 z-20">
-                            <h1 className="text-lg font-bold text-slate-800">Wiki Gestión BO</h1>
-                            <button onClick={() => setMobileMenuOpen(true)} className="text-slate-600 bg-gray-100 p-2 rounded-lg"><Menu /></button>
-                        </div>
-                        <div className="flex-1 p-4 md:p-8 overflow-y-auto bg-gray-50 scroll-smooth">
-                            <div className="max-w-6xl mx-auto pb-10">
-                                {activeSection !== 'home' && (
-                                    <button onClick={() => setActiveSection('home')} className="mb-6 text-xs font-bold text-blue-500 flex items-center hover:text-blue-700 uppercase tracking-widest transition-colors">
-                                        <ChevronRight size={14} className="rotate-180 mr-1" /> Volver al Inicio
-                                    </button>
-                                )}
-                                {renderContent()}
-                            </div>
-                        </div>
-                    </main>
-                </div>
-            );
-        };
-
-        const root = createRoot(document.getElementById('root'));
-        root.render(<WikiBO />);
-    </script>
-</body>
-</html>
+<!-- ... existing code ... -->
