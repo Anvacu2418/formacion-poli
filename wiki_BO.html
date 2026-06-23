@@ -5,14 +5,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Wiki Gestión BO</title>
     
-    <!-- 1. PREVENCIÓN PANTALLA BLANCA -->
+    <!-- PREVENCIÓN PANTALLA BLANCA Y ATRAPADOR DE ERRORES -->
     <script>window.process = { env: { NODE_ENV: 'production' } };</script>
+    <script>
+        window.addEventListener('error', function(event) {
+            document.body.innerHTML = `
+                <div style="padding: 20px; font-family: sans-serif; color: #721c24; background-color: #f8d7da; border-color: #f5c6cb; margin: 20px; border-radius: 5px;">
+                    <h2 style="margin-top:0;">⚠️ Error crítico detectado</h2>
+                    <p><strong>Mensaje:</strong> ${event.message}</p>
+                    <p><strong>Línea:</strong> ${event.lineno} | <strong>Columna:</strong> ${event.colno}</p>
+                    <hr style="border-top: 1px solid #f5c6cb;">
+                    <p style="font-size: 14px;">La pantalla en blanco ha sido interceptada por el sistema de seguridad.</p>
+                </div>
+            `;
+        });
+    </script>
 
-    <!-- 2. ESTILOS (Tailwind CSS) Y FUENTES -->
+    <!-- ESTILOS (Tailwind CSS) Y FUENTES -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     
-    <!-- 3. LIBRERÍAS ESTABLES -->
+    <!-- LIBRERÍAS ESTABLES -->
     <script src="https://unpkg.com/react@18.2.0/umd/react.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js" crossorigin></script>
     <script>window.react = window.React;</script>
@@ -40,7 +53,7 @@
 <body>
     <div id="root"></div>
 
-    <!-- 4. APLICACIÓN WIKI -->
+    <!-- APLICACIÓN WIKI -->
     <script type="text/babel" data-presets="react">
         const { useState } = React;
         const { createRoot } = ReactDOM;
@@ -210,6 +223,8 @@
             const [searchTerm, setSearchTerm] = useState('');
             const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
             const [filterCategory, setFilterCategory] = useState('Todos');
+            
+            // Estados para los acordeones
             const [showIdiomasInfo, setShowIdiomasInfo] = useState(false);
             const [activeBannerAcc, setActiveBannerAcc] = useState(null);
 
