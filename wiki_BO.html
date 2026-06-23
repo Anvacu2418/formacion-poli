@@ -5,31 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Wiki Gestión BO</title>
     
-    <!-- PREVENCIÓN PANTALLA BLANCA Y ATRAPADOR DE ERRORES -->
+    <!-- 1. PREVENCIÓN PANTALLA BLANCA -->
     <script>window.process = { env: { NODE_ENV: 'production' } };</script>
-    <script>
-        window.addEventListener('error', function(event) {
-            document.body.innerHTML = `
-                <div style="padding: 20px; font-family: sans-serif; color: #721c24; background-color: #f8d7da; border-color: #f5c6cb; margin: 20px; border-radius: 5px;">
-                    <h2 style="margin-top:0;">⚠️ Error crítico detectado</h2>
-                    <p><strong>Mensaje:</strong> ${event.message}</p>
-                    <p><strong>Línea:</strong> ${event.lineno} | <strong>Columna:</strong> ${event.colno}</p>
-                    <hr style="border-top: 1px solid #f5c6cb;">
-                    <p style="font-size: 14px;">La pantalla en blanco ha sido interceptada por el sistema de seguridad.</p>
-                </div>
-            `;
-        });
+
+    <!-- 2. IMPORTMAP: El método que funcionaba bien en tu entorno -->
+    <script type="importmap">
+    {
+      "imports": {
+        "react": "https://esm.sh/react@18.2.0",
+        "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+        "lucide-react": "https://esm.sh/lucide-react@0.263.1?external=react"
+      }
+    }
     </script>
 
-    <!-- ESTILOS (Tailwind CSS) Y FUENTES -->
+    <!-- 3. ESTILOS (Tailwind CSS) Y FUENTES -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     
-    <!-- LIBRERÍAS ESTABLES -->
-    <script src="https://unpkg.com/react@18.2.0/umd/react.production.min.js" crossorigin></script>
-    <script src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js" crossorigin></script>
-    <script>window.react = window.React;</script>
-    <script src="https://unpkg.com/lucide-react@0.263.1/dist/umd/lucide-react.min.js"></script>
+    <!-- 4. MOTOR PARA LEER EL CÓDIGO (Babel) -->
     <script src="https://unpkg.com/@babel/standalone@7.22.17/babel.min.js"></script>
     
     <style>
@@ -53,17 +47,17 @@
 <body>
     <div id="root"></div>
 
-    <!-- APLICACIÓN WIKI -->
-    <script type="text/babel" data-presets="react">
-        const { useState } = React;
-        const { createRoot } = ReactDOM;
-        
-        const { 
-            Search, BookOpen, ShieldCheck, Lightbulb, Menu, X, ChevronRight, ChevronDown, ChevronUp,
-            Calculator, AlertTriangle, CheckCircle, Clock, FileText, User, GraduationCap, Copy,
-            DollarSign, Globe, Smartphone, RotateCcw, Calendar, MapPin, Briefcase, Monitor, Target, Users,
-            MessageCircle, Clipboard, Send, HelpCircle, Home, ExternalLink, Link, Eye, Info
-        } = window.lucideReact;
+    <!-- 5. APLICACIÓN WIKI CON TODAS LAS MEJORAS -->
+    <script type="text/babel" data-presets="react" data-type="module">
+        import React, { useState } from 'react';
+        import { createRoot } from 'react-dom/client';
+        import { 
+            Search, BookOpen, ShieldCheck, Lightbulb, Menu, X, ChevronRight, 
+            Calculator, AlertTriangle, CheckCircle, Clock, FileText, User, 
+            DollarSign, Globe, Smartphone, RotateCcw, Calendar, MapPin, Briefcase,
+            MessageCircle, Clipboard, Send, HelpCircle, Home, ExternalLink, Link, Eye, Info, Target, Users,
+            ChevronDown, ChevronUp, GraduationCap, Monitor, Copy
+        } from 'lucide-react';
 
         const wikiData = {
             links: {
@@ -72,8 +66,8 @@
                 gestionDescuentosVisual: "https://whitneyintl.sharepoint.com/:x:/t/GestinBackoffice/IQDUYXMFXijlSrLqWvKLP9aiAS8uK-195hmIs4HXLJZvXY0?e=fXNXhC",
                 guiaRematricula: "https://view.genially.com/66a803b4211e0130bc4f0319/interactive-content-rematricula-2026-1",
                 conveniosVigentes: "https://whitneyintl.sharepoint.com/:x:/r/sites/PolitcnicoGrancolombianoRelacionamiento2/_layouts/15/Doc.aspx?sourcedoc=%7BE02B4A75-77B0-46C8-9787-13DAFEF08EB3%7D&file=04.%20LISTADO%20DE%20CONVENIOS%20EMPRESARIALES%2009-09-2025%20(1).xlsx&action=default&mobileredirect=true",
-                bannerApp: "https://home.poli.edu.co/applicationNavigator/seamless",
-                salesAcademy: "https://whitneyintl.sharepoint.com/sites/PortalWhitney/SGC/Gesti%C3%B3n%20del%20talento%20humano/Universidad%20Comercial%20Ilumno%20-Admisiones?CT=1754325183551&OR=OWA-NT-Mail&CID=85ae7ea8-955a-c736-7927-bff35ef77afa"
+                salesAcademy: "https://whitneyintl.sharepoint.com/sites/PortalWhitney/SGC/Gesti%C3%B3n%20del%20talento%20humano/Universidad%20Comercial%20Ilumno%20-Admisiones?CT=1754325183551&OR=OWA-NT-Mail&CID=85ae7ea8-955a-c736-7927-bff35ef77afa",
+                bannerApp: "https://home.poli.edu.co/applicationNavigator/seamless"
             },
             definitions: [
                 {
@@ -224,19 +218,41 @@
             const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
             const [filterCategory, setFilterCategory] = useState('Todos');
             
-            // Estados para los acordeones
+            // Estados para los acordeones interactivos
+            const [toastMsg, setToastMsg] = useState(null);
             const [showIdiomasInfo, setShowIdiomasInfo] = useState(false);
             const [activeBannerAcc, setActiveBannerAcc] = useState(null);
 
-            const copyChatTemplate = () => {
-                const t = `ID: \nTipo de estudiante: \nPrograma y Modalidad: \nConsulta: \nSoportes: `;
-                navigator.clipboard.writeText(t);
-                alert('¡Plantilla copiada!');
+            const showToast = (msg) => {
+                setToastMsg(msg);
+                setTimeout(() => setToastMsg(null), 3000);
             };
 
-            const copyToClipboard = (text, msg) => {
-                navigator.clipboard.writeText(text);
-                alert(msg);
+            const copyToClipboard = (text, successMsg = '¡Plantilla copiada!') => {
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(text).then(() => showToast(successMsg)).catch(() => fallbackCopy(text, successMsg));
+                } else {
+                    fallbackCopy(text, successMsg);
+                }
+            };
+
+            const fallbackCopy = (text, successMsg) => {
+                const textArea = document.createElement("textarea");
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.select();
+                try {
+                    document.execCommand('copy');
+                    showToast(successMsg);
+                } catch (err) {
+                    showToast('Error al copiar');
+                }
+                document.body.removeChild(textArea);
+            };
+
+            const copyChatTemplate = () => {
+                const t = `ID: \nTipo de estudiante: \nPrograma y Modalidad: \nConsulta: \nSoportes: `;
+                copyToClipboard(t, '¡Plantilla de Chat copiada!');
             };
 
             const getCatColor = (cat) => {
@@ -635,8 +651,16 @@
             };
 
             return (
-                <div className="min-h-screen flex flex-col md:flex-row">
-                    <aside className={`fixed md:sticky top-0 z-30 h-screen w-64 bg-slate-900 text-white transition-transform ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 flex flex-col shadow-2xl`}>
+                <div className="min-h-screen flex flex-col md:flex-row relative">
+                    {/* Toast Notification */}
+                    {toastMsg && (
+                        <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 bg-slate-800 text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-3 animate-fadeIn border border-slate-700">
+                            <CheckCircle className="w-5 h-5 text-emerald-400" />
+                            <span className="font-medium text-sm">{toastMsg}</span>
+                        </div>
+                    )}
+
+                    <aside className={`fixed md:sticky top-0 z-30 h-screen w-64 bg-slate-900 text-white transition-transform ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 flex flex-col shadow-2xl shrink-0`}>
                         <div className="p-6 border-b border-slate-800 flex justify-between items-center cursor-pointer" onClick={() => setActiveSection('home')}>
                             <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-emerald-400">Wiki BO</h1>
                             <button onClick={() => setMobileMenuOpen(false)} className="md:hidden text-slate-400"><X /></button>
@@ -650,22 +674,22 @@
                                 {id:'consultiva', label:'Modelo Consultivo', icon: Target},
                                 {id:'banner', label:'Manejo de Banner', icon: Monitor}
                             ].map(nav => (
-                                <button key={nav.id} onClick={() => { setActiveSection(nav.id); setMobileMenuOpen(false); }} className={`w-full flex items-center p-3 rounded-xl transition-all ${activeSection === nav.id ? 'bg-slate-700 text-white shadow-lg' : 'text-slate-300 hover:bg-slate-800'}`}>
-                                    <IconComp icon={nav.icon} className="mr-3 w-5 h-5" /> <span className="font-medium text-sm">{nav.label}</span>
+                                <button key={nav.id} onClick={() => { setActiveSection(nav.id); setMobileMenuOpen(false); }} className={`w-full flex items-center p-3 rounded-xl transition-all ${activeSection === nav.id ? 'bg-slate-700 text-white shadow-lg border border-slate-600' : 'text-slate-300 hover:bg-slate-800'}`}>
+                                    <IconComp icon={nav.icon} className={`mr-3 w-5 h-5 ${activeSection === nav.id ? 'text-blue-400' : ''}`} /> <span className="font-medium text-sm">{nav.label}</span>
                                 </button>
                             ))}
                         </nav>
                         <div className="p-4 bg-slate-950 border-t border-slate-800 text-[10px] text-slate-500 uppercase font-bold text-center">Poli Servicio - 2026</div>
                     </aside>
-                    <main className="flex-1 flex flex-col h-screen overflow-hidden">
-                        <div className="md:hidden bg-white border-b p-4 flex justify-between items-center sticky top-0 z-20">
+                    <main className="flex-1 flex flex-col h-screen overflow-hidden bg-gray-50 w-full">
+                        <div className="md:hidden bg-white border-b p-4 flex justify-between items-center sticky top-0 z-20 shadow-sm">
                             <h1 className="text-lg font-bold text-slate-800">Wiki Gestión BO</h1>
-                            <button onClick={() => setMobileMenuOpen(true)} className="text-slate-600 bg-gray-100 p-2 rounded-lg"><Menu /></button>
+                            <button onClick={() => setMobileMenuOpen(true)} className="text-slate-600 bg-gray-100 hover:bg-gray-200 p-2 rounded-lg transition-colors"><Menu /></button>
                         </div>
-                        <div className="flex-1 p-4 md:p-8 overflow-y-auto bg-gray-50 scroll-smooth">
-                            <div className="max-w-6xl mx-auto pb-10">
+                        <div className="flex-1 p-4 md:p-8 overflow-y-auto scroll-smooth w-full">
+                            <div className="max-w-5xl mx-auto pb-10">
                                 {activeSection !== 'home' && (
-                                    <button onClick={() => setActiveSection('home')} className="mb-6 text-xs font-bold text-blue-500 flex items-center hover:text-blue-700 uppercase tracking-widest transition-colors">
+                                    <button onClick={() => setActiveSection('home')} className="mb-6 text-xs font-bold text-blue-500 flex items-center hover:text-blue-700 uppercase tracking-widest transition-colors w-fit">
                                         <ChevronRight size={14} className="rotate-180 mr-1" /> Volver al Inicio
                                     </button>
                                 )}
