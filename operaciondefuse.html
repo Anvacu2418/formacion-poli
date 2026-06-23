@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Operación Defuse: Lab Poli</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+        
+        body {
+            /* Estética Clean Lab: Fondo muy claro, limpio y profesional */
+            background-color: #f8fafc;
+            color: #334155;
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+            background-image: 
+                radial-gradient(circle at 50% 0%, #ffffff 0%, transparent 70%),
+                radial-gradient(circle at 100% 100%, #e2e8f0 0%, #f8fafc 100%);
+        }
+
+        .digital-font {
+            font-family: 'Share Tech Mono', monospace;
+        }
+
+        /* Glassmorphism Claro */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 1);
+            box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.08), 0 0 20px rgba(255, 255, 255, 0.5) inset;
+        }
+
+        /* Animations */
+        @keyframes shake {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            10% { transform: translate(-1px, -2px) rotate(-1deg); }
+            20% { transform: translate(-3px, 0px) rotate(1deg); }
+            30% { transform: translate(3px, 2px) rotate(0deg); }
+            40% { transform: translate(1px, -1px) rotate(1deg); }
+            50% { transform: translate(-1px, 2px) rotate(-1deg); }
+            60% { transform: translate(-3px, 1px) rotate(0deg); }
+            70% { transform: translate(3px, 1px) rotate(-1deg); }
+            80% { transform: translate(-1px, -1px) rotate(1deg); }
+            90% { transform: translate(1px, 2px) rotate(0deg); }
+            100% { transform: translate(1px, -2px) rotate(-1deg); }
+        }
+
+        .shake-active {
+            animation: shake 0.5s;
+            animation-iteration-count: 1;
+        }
+
+        .explosion-overlay {
+            position: fixed;
+            inset: 0;
+            background-color: #ef4444;
+            mix-blend-mode: color-burn;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 50;
+            transition: opacity 0.1s ease-out;
+        }
+
+        .explode-active {
+            opacity: 0.6;
+            transition: opacity 0.8s ease-in;
+        }
+
+        /* Wire styling - Ajustado para fondo claro */
+        .wire-container {
+            position: relative;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .wire-container:hover {
+            transform: scale(1.02);
+        }
+        .wire {
+            height: 14px;
+            width: 100%;
+            border-radius: 7px;
+            box-shadow: inset 0px 2px 4px rgba(255,255,255,0.4), 0px 3px 6px rgba(0,0,0,0.15);
+            position: relative;
+        }
+        .wire::after {
+            content: '';
+            position: absolute;
+            top: 0; bottom: 0; left: 50%;
+            width: 4px;
+            background: rgba(0,0,0,0.15);
+            transform: translateX(-50%);
+        }
+        .wire-cut .wire {
+            clip-path: polygon(0 0, 48% 0, 48% 100%, 0 100%, 0 0, 100% 0, 100% 100%, 52% 100%, 52% 0);
+        }
+        
+        /* Colores de cables más vivos para contraste */
+        .wire-red { background: linear-gradient(to bottom, #ef4444, #b91c1c); }
+        .wire-blue { background: linear-gradient(to bottom, #3b82f6, #1d4ed8); }
+        .wire-green { background: linear-gradient(to bottom, #10b981, #047857); }
+
+        .wire-label {
+            background: #ffffff;
+            padding: 10px 16px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            width: 100%;
+            margin-top: 8px;
+            font-size: 0.95rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            transition: all 0.2s;
+        }
+        
+        .wire-container:hover .wire-label {
+            border-color: #cbd5e1;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        /* Subtle lab grid background */
+        .lab-grid {
+            position: absolute;
+            inset: 0;
+            background-size: 40px 40px;
+            background-image: linear-gradient(to right, rgba(0,0,0,0.03) 1px, transparent 1px), linear-gradient(to bottom, rgba(0,0,0,0.03) 1px, transparent 1px);
+            z-index: 0;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="h-screen w-screen flex flex-col items-center justify-center relative">
+
+    <div id="explosionEffect" class="explosion-overlay"></div>
+    <div class="lab-grid"></div>
+
+    <!-- START SCREEN -->
+    <div id="startScreen" class="glass-panel p-10 rounded-3xl max-w-2xl text-center z-20 absolute flex flex-col items-center">
+        <div class="bg-blue-50 text-blue-600 p-4 rounded-full mb-4 shadow-sm border border-blue-100">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+            </svg>
+        </div>
+        <h1 class="text-4xl font-bold mb-4 text-slate-800 uppercase tracking-tight">Operación Defuse<br><span class="text-xl text-blue-600 font-semibold tracking-widest mt-1 block">LABORATORIO TECNOLÓGICO POLI</span></h1>
+        <p class="text-slate-600 mb-8 text-lg leading-relaxed">Eres la primera línea de defensa. Cada ticket escalado incorrectamente o sin evidencia es un fallo crítico en nuestro sistema. Lee el caso, analiza los síntomas y <strong class="text-red-500 font-bold">corta el cable correcto</strong> para desactivar el error y ganar Polipuntos.</p>
+        <button onclick="startGame()" class="px-10 py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-[0_8px_20px_rgba(37,99,235,0.25)] hover:shadow-[0_10px_25px_rgba(37,99,235,0.35)] hover:-translate-y-0.5 transition-all uppercase tracking-wider text-sm">
+            INICIAR SIMULACIÓN
+        </button>
+    </div>
+
+    <!-- GAME UI -->
+    <div id="gameUI" class="hidden w-full max-w-6xl h-full p-4 md:p-8 flex flex-col relative z-10">
+        
+        <!-- Header / HUD -->
+        <div class="flex justify-between items-center mb-6 glass-panel px-8 py-5 rounded-2xl border-t-4 border-t-blue-500">
+            <div class="flex items-center gap-4">
+                <div class="text-slate-400 font-bold tracking-widest text-xs uppercase">Polipuntos</div>
+                <div id="scoreDisplay" class="digital-font text-4xl text-blue-600 font-bold">000</div>
+            </div>
+            
+            <div class="text-center px-8 py-2 bg-slate-50 rounded-lg border border-slate-200">
+                <div class="text-slate-500 font-bold uppercase tracking-widest text-[10px] mb-2">Integridad del Sistema</div>
+                <div class="flex gap-3 justify-center" id="livesDisplay">
+                    <!-- Lives injected here -->
+                </div>
+            </div>
+
+            <div class="flex items-center gap-4 text-right">
+                <div class="text-slate-400 font-bold tracking-widest text-xs uppercase">Módulo Analizado</div>
+                <div id="caseCounter" class="digital-font text-4xl text-slate-700 font-bold">1/10</div>
+            </div>
+        </div>
+
+        <!-- Bomb Main Interface (Dispositivo de Laboratorio) -->
+        <div class="flex-1 glass-panel rounded-3xl p-2 md:p-8 flex flex-col md:flex-row gap-8 shadow-2xl relative overflow-hidden bg-white/60">
+            
+            <!-- Decoraciones del Dispositivo -->
+            <div class="absolute top-6 left-6 flex items-center gap-2">
+                <div class="h-3 w-3 rounded-full bg-red-500 animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.6)]"></div>
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Recibiendo Datos...</span>
+            </div>
+            <div class="absolute bottom-6 right-6 text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+                Defuse Protocol V2.4 // Lab Poli
+            </div>
+
+            <!-- Left Panel: Pantalla de Diagnóstico (The Problem) -->
+            <div class="flex-1 flex flex-col mt-8 md:mt-0">
+                <h2 class="text-sm font-bold mb-3 text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                    Reporte del Estudiante
+                </h2>
+                <!-- Pantalla tipo tablet clínica -->
+                <div class="bg-slate-50 border border-slate-200 rounded-2xl p-8 flex-1 relative overflow-hidden shadow-inner flex flex-col justify-center">
+                    <p id="caseDescription" class="text-slate-700 text-xl md:text-2xl leading-relaxed font-medium relative z-10"></p>
+                </div>
+            </div>
+
+            <!-- Right Panel: The Wires (Conexiones Físicas) -->
+            <div class="flex-1 flex flex-col justify-center gap-6 bg-slate-50/50 p-8 rounded-2xl border border-slate-100 mt-8 md:mt-0">
+                <h3 class="font-bold text-slate-500 uppercase tracking-widest text-sm flex items-center gap-2 mb-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                    Protocolos de Intervención
+                </h3>
+                <div id="wiresContainer" class="flex flex-col gap-5">
+                    <!-- Wires injected via JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FEEDBACK MODAL -->
+    <div id="feedbackModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+        <div id="modalContent" class="glass-panel p-10 rounded-3xl max-w-xl w-full text-center border-t-8 transform scale-95 transition-transform duration-300 shadow-2xl bg-white">
+            <h2 id="modalTitle" class="text-3xl font-extrabold mb-4 uppercase tracking-tight"></h2>
+            <p id="modalMessage" class="text-slate-600 mb-8 text-lg font-medium leading-relaxed"></p>
+            
+            <div id="modalSpeech" class="hidden mb-8 bg-blue-50 border border-blue-100 p-6 rounded-xl text-left relative">
+                <div class="absolute -top-3 left-6 bg-blue-100 text-blue-700 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">🎙️ Speech Sugerido</div>
+                <span id="speechText" class="italic text-slate-700 font-medium"></span>
+            </div>
+            
+            <button onclick="nextCase()" id="btnNext" class="px-10 py-4 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl shadow-lg transition-all uppercase tracking-wider text-sm">
+                CONTINUAR
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // --- DATA DE CASOS (EL ALMA DEL JUEGO) ---
+        const casesData = [
+            {
+                id: 1,
+                title: "Canvas Cookies",
+                description: "ESTUDIANTE REPORTA: 'No puedo visualizar el contenido de los escenarios en Canvas. Me sale una pantalla gris.'",
+                options: [
+                    { text: "Derivar inmediatamente a Inconvenientes Plataformas con captura de pantalla.", isCorrect: false, color: "red" },
+                    { text: "Pedir al estudiante que haga clic en el icono del 'ojo bloqueado' en Chrome, permita las cookies y recargue.", isCorrect: true, color: "blue" },
+                    { text: "Actualizar la contraseña del estudiante en Banner.", isCorrect: false, color: "green" }
+                ],
+                feedbackSuccess: "¡Módulo Desactivado! Ese error es por complementos o cookies de terceros bloqueadas. Validarlo ahorra un escalamiento.",
+                feedbackFail: "¡Fallo Crítico! Escalamiento innecesario. Era un simple bloqueo de cookies en el navegador del estudiante.",
+                speech: "Te explico, este error se presenta por seguridad de tu navegador al bloquear cookies de terceros. Ve al icono del ojo en la barra de direcciones y permítelas."
+            },
+            {
+                id: 2,
+                title: "SMS Código",
+                description: "ESTUDIANTE REPORTA: 'No me llega el código de verificación por SMS para crear un ticket en Consulta Alumnos'. Has verificado y los datos en Banner y HubSpot están CORRECTOS.",
+                options: [
+                    { text: "Recomendar liberar espacio de SMS o revisar Spam. Solo si persiste, escalar adjuntando evidencia visual con fecha y hora.", isCorrect: true, color: "red" },
+                    { text: "Escalar automáticamente el caso a Tecnología_Seguridad.", isCorrect: false, color: "blue" },
+                    { text: "Reportar a Sandra o Leidy para ajuste en HubSpot.", isCorrect: false, color: "green" }
+                ],
+                feedbackSuccess: "¡Excelente análisis! Nosotros somos el primer filtro. Si los datos están bien, el sistema lo envía, el problema suele estar en el equipo del usuario.",
+                feedbackFail: "¡Fallo Crítico! No validaste el primer filtro. Escalar sin revisar si tiene la bandeja llena genera carga operativa innecesaria.",
+                speech: "Hemos validado y los códigos se están generando. Por favor, revisa tu bandeja de SMS o libera espacio. Si persiste, envíame una captura de pantalla con la fecha y hora."
+            },
+            {
+                id: 3,
+                title: "Sync Contraseña",
+                description: "ESTUDIANTE REPORTA: 'Acabo de cambiar mi contraseña en CPO Poligran porque se me olvidó, pero intento entrar a Canvas y dice acceso denegado.'",
+                options: [
+                    { text: "Radicar ticket inmediato a TECNOLOGIA por falla de acceso.", isCorrect: false, color: "red" },
+                    { text: "Realizar el proceso de recuperación por el estudiante desde nuestro lado.", isCorrect: false, color: "blue" },
+                    { text: "Explicarle que tras el cambio debe esperar entre 5 y 25 minutos para la sincronización y luego volver a intentar.", isCorrect: true, color: "green" }
+                ],
+                feedbackSuccess: "¡Bomba Neutralizada! Gestionar la expectativa del estudiante es clave. Los sistemas no se actualizan en milisegundos.",
+                feedbackFail: "¡Fallo Crítico! Cortaste el cable equivocado. Solo era necesario esperar el tiempo de sincronización.",
+                speech: "Entiendo que necesites ingresar rápido. El sistema tarda unos minutos (5-25 min) en sincronizar tu nueva clave en todos los servicios para garantizar tu seguridad."
+            },
+            {
+                id: 4,
+                title: "Corrección Nombres",
+                description: "TICKET RECIBIDO: Un estudiante solicita corrección de sus apellidos. Adjunta una foto de su cédula, pero está borrosa y no se lee el segundo apellido.",
+                options: [
+                    { text: "Rechazar/Recontactar pidiendo el documento 100% legible antes de proceder.", isCorrect: true, color: "red" },
+                    { text: "Actualizar en Banner con lo que se logre entender y escalar a Tecnología.", isCorrect: false, color: "blue" },
+                    { text: "Escalar directamente a Tecnología - Seguridad de la Información.", isCorrect: false, color: "green" }
+                ],
+                feedbackSuccess: "¡Protocolo perfecto! Sin validación crítica (documento legible) no hay gestión. Evitaste un reproceso.",
+                feedbackFail: "¡Fallo Crítico! Actualizar datos con soportes ilegibles viola los protocolos de seguridad de la información.",
+                speech: "Para realizar este cambio de forma segura y garantizar que quede perfecto en el ecosistema Poli, por favor adjunta tu documento 100% legible."
+            },
+            {
+                id: 5,
+                title: "Falla Simuladores",
+                description: "ESTUDIANTE REPORTA: 'Al intentar entrar a los Simuladores de Experiencia Inmersiva me sale Error 404 o pantalla en blanco.'",
+                options: [
+                    { text: "Pedirle que borre el historial de navegación.", isCorrect: false, color: "red" },
+                    { text: "Derivar el caso a Simuladores adjuntando soporte con fecha y hora, aplicando speech de empatía.", isCorrect: true, color: "blue" },
+                    { text: "Decirle que no podemos ayudarle y cierre la sesión.", isCorrect: false, color: "green" }
+                ],
+                feedbackSuccess: "¡Excelente! Es una falla conocida. Documentar con evidencia y empatizar es la estrategia correcta.",
+                feedbackFail: "¡Fallo Crítico! Ignoraste la directriz de #NotiBoom. Es una falla ya identificada que requería derivación documentada.",
+                speech: "Entiendo lo vital que son los simuladores. Tecnología ya está trabajando en esto. He reportado tu caso para que puedas retomar lo antes posible. ¡Gracias por tu paciencia!"
+            },
+            {
+                id: 6,
+                title: "Stream Denegado",
+                description: "ESTUDIANTE REPORTA: 'No puedo ver mis clases grabadas, la App de Stream me dice Acceso Denegado.'",
+                options: [
+                    { text: "Indicar que la clase fue borrada por el profesor.", isCorrect: false, color: "red" },
+                    { text: "Crear ticket en Inconvenientes Plataformas Complementarias con captura de error y URL exacta.", isCorrect: true, color: "blue" },
+                    { text: "Enviar caso a Mesa de Ayuda Ilumno.", isCorrect: false, color: "green" }
+                ],
+                feedbackSuccess: "¡Bomba desactivada! URL + Captura son el soporte vital para que Tecnología actúe de inmediato.",
+                feedbackFail: "¡Fallo Crítico! Escalaste mal o asumiste información falsa. Necesitabas derivar a Plataformas Complementarias con evidencia.",
+                speech: "Entiendo lo importante que es tu clase. Para darte solución definitiva, escalaré tu caso a tecnología. Solo compárteme la captura y el link que usas."
+            },
+            {
+                id: 7,
+                title: "Actualización Datos 3ros",
+                description: "LLAMADA: 'Hola, soy la mamá de Juan Pérez, él está trabajando. Necesito actualizar su número de celular en el sistema.'",
+                options: [
+                    { text: "Crear ticket en HubSpot a Mesa de ayuda porque es un trámite sencillo.", isCorrect: false, color: "red" },
+                    { text: "Pedirle la cédula del estudiante a la madre para validar.", isCorrect: false, color: "blue" },
+                    { text: "Informar amablemente que por seguridad es un trámite estrictamente personal y no se gestiona por terceros.", isCorrect: true, color: "green" }
+                ],
+                feedbackSuccess: "¡Regla de Oro salvada! Solo el titular puede actualizar sus datos.",
+                feedbackFail: "¡Fallo Crítico! Violación grave de seguridad de la información. ¡Nunca alterar datos por solicitud de terceros!",
+                speech: "Comprendo la situación, sin embargo, por protocolos de seguridad de la información, este trámite es estrictamente personal y debe solicitarlo el estudiante."
+            },
+            {
+                id: 8,
+                title: "Authenticator Sync",
+                description: "ESTUDIANTE REPORTA: 'Estoy atascado en el inicio de sesión. La pantalla me pide código de Authenticator pero hay un error de sincronización (UDC id no available).'",
+                options: [
+                    { text: "Escalar urgente a Gobierno Digital.", isCorrect: false, color: "red" },
+                    { text: "Hacer que desinstale e instale la app.", isCorrect: false, color: "blue" },
+                    { text: "Indicarle que mire abajo en el recuadro y haga clic en 'Use su contraseña en su lugar'.", isCorrect: true, color: "green" }
+                ],
+                feedbackSuccess: "¡Solución en primera llamada! Un técnico astuto sabe usar las rutas alternativas de la interfaz.",
+                feedbackFail: "¡Fallo Crítico! Hiciste perder tiempo al estudiante con reprocesos cuando la solución estaba a un clic en la pantalla.",
+                speech: "No te preocupes. Mira en la parte inferior de ese recuadro, haz clic en 'Use su contraseña en su lugar', digita tu clave y entrarás directamente."
+            },
+            {
+                id: 9,
+                title: "Licencia Excel A1",
+                description: "ESTUDIANTE REPORTA: 'Necesito usar Macros y Power Pivot para mi grado, pero me quitaron la licencia de escritorio de Office 365.'",
+                options: [
+                    { text: "Indicar que abra el archivo en web y seleccione 'Abrir en la aplicación de escritorio'.", isCorrect: true, color: "red" },
+                    { text: "Crear ticket a soporte Microsoft para restaurar la licencia A1 Plus.", isCorrect: false, color: "blue" },
+                    { text: "Decirle que el Poli ya no paga esa licencia y debe comprarla.", isCorrect: false, color: "green" }
+                ],
+                feedbackSuccess: "¡Magia técnica! Le diste una alternativa real (Workaround) entendiendo su necesidad académica.",
+                feedbackFail: "¡Fallo Crítico! Diste información errónea. La licencia A1 Plus fue retirada globalmente por Microsoft, pero el truco de la versión web funciona.",
+                speech: "Comprendo que Excel avanzado es vital para tu carrera. Aunque MS ajustó las licencias, puedes abrir tu archivo en la versión web y seleccionar 'Abrir en aplicación de escritorio'."
+            },
+            {
+                id: 10,
+                title: "Carné POLIGRAN",
+                description: "ESTUDIANTE REPORTA: 'Intento descargar mi carné por la app POLIGRAN y sale Alerta: estado inactivo.'",
+                options: [
+                    { text: "Radicar caso por falla en la aplicación POLIGRAN.", isCorrect: false, color: "red" },
+                    { text: "Aclarar que ahora el carné se descarga vía SmartCampus y validar que esté matriculado.", isCorrect: true, color: "blue" },
+                    { text: "Escalar a Tecnología / Cuenta Bloqueada.", isCorrect: false, color: "green" }
+                ],
+                feedbackSuccess: "¡Excelente! Estás actualizado con las nuevas directrices. Esa app ya no se usa para el carné.",
+                feedbackFail: "¡Fallo Crítico! Escalaste un error de una aplicación obsoleta para ese proceso. El carné ahora vive en SmartCampus.",
+                speech: "Actualmente tu carné lo descargas directamente desde SmartCampus (asegurándote de estar matriculado). La app Poligran ya no gestiona este documento."
+            }
+        ];
+
+        // --- STREAMING_CHUNK:Setting up state variables and Web Audio... ---
+        // GAME STATE
+        let currentCaseIndex = 0;
+        let score = 0;
+        let lives = 3;
+        let isProcessing = false;
+        
+        let activeCases = [...casesData].sort(() => Math.random() - 0.5);
+
+        // WEB AUDIO API
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        function playTone(freq, type, duration, vol=0.1) {
+            if(audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration);
+        }
+
+        function playSnip() {
+            playTone(800, 'square', 0.1, 0.05);
+            setTimeout(() => playTone(1200, 'sine', 0.1, 0.05), 50);
+        }
+
+        function playSuccess() {
+            playTone(523.25, 'sine', 0.1, 0.1); // C5
+            setTimeout(() => playTone(659.25, 'sine', 0.1, 0.1), 100); // E5
+            setTimeout(() => playTone(783.99, 'sine', 0.3, 0.1), 200); // G5
+            setTimeout(() => playTone(1046.50, 'sine', 0.5, 0.15), 300); // C6
+        }
+
+        function playExplosion() {
+            if(audioCtx.state === 'suspended') audioCtx.resume();
+            const bufferSize = audioCtx.sampleRate * 2; 
+            const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+            const data = buffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) {
+                data[i] = Math.random() * 2 - 1; 
+            }
+            const noise = audioCtx.createBufferSource();
+            noise.buffer = buffer;
+            const noiseFilter = audioCtx.createBiquadFilter();
+            noiseFilter.type = 'lowpass';
+            noiseFilter.frequency.value = 1000;
+            const gainNode = audioCtx.createGain();
+            gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1.5);
+            
+            noise.connect(noiseFilter);
+            noiseFilter.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            noise.start();
+            
+            playTone(50, 'sawtooth', 1.5, 0.3);
+            playTone(100, 'square', 1.0, 0.2);
+        }
+
+        // --- STREAMING_CHUNK:Selecting DOM Elements... ---
+        const uiStart = document.getElementById('startScreen');
+        const uiGame = document.getElementById('gameUI');
+        const elScore = document.getElementById('scoreDisplay');
+        const elLives = document.getElementById('livesDisplay');
+        const elCaseCounter = document.getElementById('caseCounter');
+        const elCaseDesc = document.getElementById('caseDescription');
+        const elWires = document.getElementById('wiresContainer');
+        
+        const modal = document.getElementById('feedbackModal');
+        const modalContent = document.getElementById('modalContent');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalMessage = document.getElementById('modalMessage');
+        const modalSpeech = document.getElementById('modalSpeech');
+        const speechText = document.getElementById('speechText');
+        const btnNext = document.getElementById('btnNext');
+
+        // --- STREAMING_CHUNK:Implementing Core Game Functions... ---
+        function startGame() {
+            if(audioCtx.state === 'suspended') audioCtx.resume();
+            uiStart.classList.add('hidden');
+            uiGame.classList.remove('hidden');
+            score = 0;
+            lives = 3;
+            currentCaseIndex = 0;
+            updateHUD();
+            loadCase();
+        }
+
+        function updateHUD() {
+            elScore.innerText = score.toString().padStart(3, '0');
+            elCaseCounter.innerText = `${currentCaseIndex + 1}/${activeCases.length}`;
+            
+            elLives.innerHTML = '';
+            for(let i=0; i<3; i++) {
+                if(i < lives) {
+                    elLives.innerHTML += `<div class="w-4 h-4 rounded-full bg-emerald-500 shadow-[0_0_8px_#10b981] border border-emerald-300"></div>`;
+                } else {
+                    elLives.innerHTML += `<div class="w-4 h-4 rounded-full bg-slate-200 border border-slate-300"></div>`;
+                }
+            }
+        }
+
+        function loadCase() {
+            isProcessing = false;
+            const current = activeCases[currentCaseIndex];
+            
+            elCaseDesc.innerHTML = '';
+            let i = 0;
+            const text = current.description;
+            
+            const typing = setInterval(() => {
+                elCaseDesc.innerHTML += text.charAt(i);
+                i++;
+                if(i % 3 === 0) playTone(1200, 'triangle', 0.015, 0.01);
+                if(i >= text.length) clearInterval(typing);
+            }, 10);
+
+            elWires.innerHTML = '';
+            const shuffledOptions = [...current.options].sort(() => Math.random() - 0.5);
+
+            shuffledOptions.forEach((opt, idx) => {
+                const wireHtml = `
+                    <div class="wire-container group" onclick="cutWire(this, ${opt.isCorrect})">
+                        <div class="flex items-center gap-4">
+                            <!-- Cable Visual: Terminales grises claros y cable coloreado -->
+                            <div class="w-16 h-12 flex items-center justify-center relative flex-shrink-0">
+                                <div class="w-3 h-full bg-slate-300 absolute left-0 rounded-l-md border border-slate-400"></div>
+                                <div class="wire wire-${opt.color} transition-all duration-300 z-10"></div>
+                                <div class="w-3 h-full bg-slate-300 absolute right-0 rounded-r-md border border-slate-400"></div>
+                            </div>
+                            <!-- Opción -->
+                            <div class="wire-label text-slate-700 font-medium">
+                                ${opt.text}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                elWires.innerHTML += wireHtml;
+            });
+        }
+
+        // --- STREAMING_CHUNK:Handling interactions and feedback logic... ---
+        function cutWire(element, isCorrect) {
+            if(isProcessing) return;
+            isProcessing = true;
+            
+            playSnip();
+            element.classList.add('wire-cut');
+            
+            const current = activeCases[currentCaseIndex];
+
+            setTimeout(() => {
+                if(isCorrect) {
+                    handleSuccess(current);
+                } else {
+                    handleExplosion(current);
+                }
+            }, 500);
+        }
+
+        function handleSuccess(caseData) {
+            playSuccess();
+            score += 10;
+            updateHUD();
+            showModal(true, "¡PROTOCOLOS EN ORDEN!", caseData.feedbackSuccess, caseData.speech);
+        }
+
+        function handleExplosion(caseData) {
+            playExplosion();
+            lives--;
+            updateHUD();
+            
+            document.body.classList.add('shake-active');
+            const flash = document.getElementById('explosionEffect');
+            flash.classList.add('explode-active');
+            
+            setTimeout(() => {
+                document.body.classList.remove('shake-active');
+                flash.classList.remove('explode-active');
+                
+                if(lives <= 0) {
+                    showGameOver();
+                } else {
+                    showModal(false, "¡ERROR DE PROTOCOLO!", caseData.feedbackFail, caseData.speech);
+                }
+            }, 800);
+        }
+
+        function showModal(isSuccess, title, msg, speech) {
+            modal.classList.remove('hidden');
+            
+            modalContent.className = `glass-panel p-10 rounded-3xl max-w-xl w-full text-center border-t-8 transform scale-100 transition-all duration-300 shadow-2xl bg-white ${isSuccess ? 'border-emerald-500' : 'border-red-500'}`;
+            
+            modalTitle.innerText = title;
+            modalTitle.className = `text-3xl font-extrabold mb-4 uppercase tracking-tight ${isSuccess ? 'text-emerald-600' : 'text-red-600'}`;
+            
+            modalMessage.innerText = msg;
+            
+            if(speech) {
+                modalSpeech.classList.remove('hidden');
+                speechText.innerText = `"${speech}"`;
+            } else {
+                modalSpeech.classList.add('hidden');
+            }
+            
+            btnNext.innerText = "SIGUIENTE CASO";
+            btnNext.onclick = nextCase;
+        }
+
+        function showGameOver() {
+            modal.classList.remove('hidden');
+            modalContent.className = `glass-panel p-10 rounded-3xl max-w-xl w-full text-center border-t-8 border-red-600 transform scale-100 shadow-2xl bg-white`;
+            modalTitle.innerText = "SISTEMA COMPROMETIDO";
+            modalTitle.className = "text-4xl font-extrabold mb-4 uppercase tracking-tight text-red-600";
+            modalMessage.innerText = `Has fallado 3 protocolos. El soporte ineficiente ha sobrecargado el sistema.\n\nPolipuntos Obtenidos: ${score}`;
+            modalSpeech.classList.add('hidden');
+            
+            btnNext.innerText = "REINICIAR SIMULADOR";
+            btnNext.onclick = () => location.reload();
+        }
+
+        function showVictory() {
+            playSuccess();
+            setTimeout(playSuccess, 300);
+            
+            modal.classList.remove('hidden');
+            modalContent.className = `glass-panel p-10 rounded-3xl max-w-xl w-full text-center border-t-8 border-blue-500 transform scale-100 shadow-2xl bg-white`;
+            modalTitle.innerText = "¡LABORATORIO ESTABILIZADO!";
+            modalTitle.className = "text-4xl font-extrabold mb-4 uppercase tracking-tight text-blue-600";
+            modalMessage.innerText = `¡Eres un Especialista de Soporte! Has demostrado un análisis impecable.\n\nTotal Polipuntos: ${score}/100`;
+            modalSpeech.classList.add('hidden');
+            
+            btnNext.innerText = "VOLVER A ENTRENAR";
+            btnNext.onclick = () => location.reload();
+        }
+
+        function nextCase() {
+            modal.classList.add('hidden');
+            currentCaseIndex++;
+            
+            if(currentCaseIndex >= activeCases.length) {
+                showVictory();
+            } else {
+                updateHUD();
+                loadCase();
+            }
+        }
+    </script>
+</body>
+</html>
