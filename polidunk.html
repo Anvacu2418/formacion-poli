@@ -156,13 +156,15 @@
         .monster-scatter { position: absolute; font-size: 5rem; z-index: 5; display: none; filter: drop-shadow(0 0 15px rgba(255,255,255,0.2)); }
         #screen-game.terror-mode .monster-scatter { display: block; }
         
-        #screen-game.terror-mode .options-grid { flex-direction: row; justify-content: space-around; align-items: center; width: 100%; height: 100%; }
+        #screen-game.terror-mode .options-grid { flex-direction: column; justify-content: space-around; align-items: center; width: 100%; height: 100%; }
         #screen-game.terror-mode .option-btn { 
-            width: 45%; max-width: 240px; aspect-ratio: 1/1; border-radius: 50%; /* Forma circular para encajar en la luz */
-            background: #2f3542; color: #f5f6fa; border-color: #576574; z-index: 15;
-            display: flex; align-items: center; justify-content: center; text-align: center; padding: 25px; margin: 10px;
+            width: 90%; max-width: 500px;
+            background: transparent; color: #f5f6fa; border: none; z-index: 15;
+            display: block; text-align: center; padding: 20px; margin: 10px; font-size: 1.3rem; font-weight: 800; text-shadow: 0 2px 10px rgba(0,0,0,1);
         }
-        #screen-game.terror-mode .option-btn:hover:not(:disabled) { background: #576574; border-color: var(--secondary); transform: scale(1.05); }
+        #screen-game.terror-mode .option-btn:hover:not(:disabled) { background: transparent; border: none; box-shadow: none; transform: scale(1.05); color: var(--secondary); text-shadow: 0 0 15px rgba(255,165,2,1); }
+        #screen-game.terror-mode .option-btn.correct { color: var(--correct) !important; background: transparent !important; border: none !important; text-shadow: 0 0 15px var(--correct); }
+        #screen-game.terror-mode .option-btn.wrong { color: var(--wrong) !important; background: transparent !important; border: none !important; text-shadow: 0 0 15px var(--wrong); }
 
         .env-race { background: #a4b0be; position: relative; width: 100%; height: 250px; display: flex; flex-direction: column; justify-content: center; overflow: hidden; }
         .track-line { width: 100%; height: 60px; border-bottom: 4px dashed white; position: relative; display: flex; align-items: center; }
@@ -206,6 +208,104 @@
         </div>
     </div>
 
+    <!-- PANTALLA 1: MAPA -->
+    <div class="screen" id="screen-map">
+        <div class="map-bg">
+            <div class="title-ribbon">PoliDunk Land</div>
+            <p style="margin-top: 10px; font-weight: 800; color: #2d3436;">Resuelve los casos y gana recompensas.</p>
+            
+            <div class="path-container">
+                <!-- Líneas Punteadas del Camino (Animadas) -->
+                <svg width="100%" height="100%" style="position: absolute; top: 0; left: 0; z-index: 1; pointer-events: none;">
+                    <line class="map-path-line" x1="15%" y1="60%" x2="35%" y2="20%" stroke="#ff4757" stroke-width="5" stroke-dasharray="12,12" stroke-linecap="round" transform="translate(45, 45)" />
+                    <line class="map-path-line" x1="35%" y1="20%" x2="60%" y2="50%" stroke="#ff4757" stroke-width="5" stroke-dasharray="12,12" stroke-linecap="round" transform="translate(45, 45)" />
+                    <line class="map-path-line" x1="60%" y1="50%" x2="80%" y2="15%" stroke="#ff4757" stroke-width="5" stroke-dasharray="12,12" stroke-linecap="round" transform="translate(45, 45)" />
+                </svg>
+
+                <!-- Usamos SVGs premium gratuitos de Iconify (Noto Emojis) -->
+                <div class="level-node unlocked" id="node-1" onclick="startLevel(1)">
+                    <img src="https://api.iconify.design/noto/clown-face.svg" alt="Payaso">
+                </div>
+                <div class="level-node" id="node-2" onclick="startLevel(2)">
+                    <img src="https://api.iconify.design/noto/magnifying-glass-tilted-right.svg" alt="Emprendimiento">
+                </div>
+                <div class="level-node" id="node-3" onclick="startLevel(3)">
+                    <img src="https://api.iconify.design/noto/horse-racing.svg" alt="Carrera">
+                </div>
+                <div class="level-node" id="node-4" onclick="startLevel(4)">
+                    <img src="https://api.iconify.design/noto/ghost.svg" alt="Terror">
+                </div>
+            </div>
+            
+            <div style="background: white; padding: 15px 30px; border-radius: 20px; font-family: var(--font-title); color: var(--primary); box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+                PoliPuntos: <span id="global-score">0</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- PANTALLA 2: JUEGO -->
+    <div class="screen" id="screen-game">
+        
+        <div class="game-header">
+            <button class="btn-home" onclick="goHome()">🏠 Salir</button>
+            <div id="level-title">Nivel 1</div>
+            <div><span id="q-counter">1</span>/5</div>
+        </div>
+
+        <!-- Entornos Dinámicos -->
+        
+        <!-- Entorno Payaso (Niveles 1 y 2) -->
+        <div class="environment" id="env-payaso">
+            <img src="https://api.iconify.design/noto/bullseye.svg" class="target" id="payaso-target">
+            <div class="board" id="payaso-board"></div>
+            <img src="https://api.iconify.design/noto/clown-face.svg" class="clown" id="payaso-char">
+            <div class="wave-container">
+                <div class="wave"></div>
+                <div class="wave"></div>
+            </div>
+        </div>
+
+        <!-- Entorno Carrera (Nivel 3) -->
+        <div class="environment env-race" id="env-race" style="display: none;">
+            <div class="timer-badge" id="race-timer">15s</div>
+            <div class="track-line">
+                <img src="https://api.iconify.design/noto/horse-racing.svg" class="horse" id="race-horse">
+                <div class="finish-line"></div>
+            </div>
+        </div>
+
+        <!-- Área de Preguntas Común -->
+        <div class="question-area">
+            <!-- Zona de cabecera siempre visible (Blanca) -->
+            <div class="q-header-zone">
+                <div class="question-text" id="question-text">Cargando la pregunta...</div>
+                
+                <!-- Caja de Feedback se movió aquí para que no quede a oscuras -->
+                <div class="feedback-box" id="feedback-box">
+                    <span id="feedback-msg">Mensaje</span>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" id="auto-progress"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Zona de opciones (Se vuelve oscura en Terror) -->
+            <div class="options-zone" id="options-zone">
+                <div class="local-flashlight" id="local-flashlight"></div>
+                
+                <img src="https://api.iconify.design/noto/zombie.svg" class="monster-scatter" style="top: 15%; left: 10%; width: 90px;">
+                <img src="https://api.iconify.design/noto/vampire.svg" class="monster-scatter" style="bottom: 15%; right: 10%; width: 100px;">
+                <img src="https://api.iconify.design/noto/ghost.svg" class="monster-scatter" style="top: 10%; right: 40%; width: 80px;">
+                <img src="https://api.iconify.design/noto/spider.svg" class="monster-scatter" style="bottom: 10%; left: 40%; width: 70px;">
+
+                <div class="options-grid">
+                    <button class="option-btn" id="btn-A" onclick="checkAnswer('A', this)">Opción A</button>
+                    <button class="option-btn" id="btn-B" onclick="checkAnswer('B', this)">Opción B</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- PANTALLA 3: PANTALLA FINAL (RECOMPENSAS) -->
     <div class="screen" id="screen-final">
         <div style="background: var(--bg-map); width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; padding: 20px;">
@@ -232,6 +332,7 @@
             </div>
         </div>
     </div>
+</div>
 
 <script>
     const bancoPreguntas = [
@@ -407,7 +508,7 @@
         let fbMsg = document.getElementById('feedback-msg');
 
         if (isCorrect) {
-            globalScore += 5; // Ajustado a 5 puntos (20 preguntas x 5 = 100 puntos máx)
+            globalScore += 10;
             if(btnElement) btnElement.classList.add('correct');
             fbBox.classList.add('show', 'success');
             fbMsg.innerHTML = `✅ <b>¡Exacto!</b> ${currentQ.reason}`;
