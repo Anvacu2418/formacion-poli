@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GeniallyLand: PoliDunk</title>
+    <!-- Importamos tipografías divertidas y legibles -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@600;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-main: #1387a3;
+            --bg-map: #81ecec;
+            --primary: #ff4757;
+            --secondary: #ffa502;
+            --correct: #2ed573;
+            --wrong: #ff4757;
+            --text-dark: #2f3542;
+            --font-title: 'Fredoka One', cursive;
+            --font-text: 'Nunito', sans-serif;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: var(--font-text);
+            background-color: var(--bg-main);
+            color: var(--text-dark);
+            overflow-x: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            /* Fondo de estrellas dinámico */
+            background-image: 
+                radial-gradient(white, rgba(255,255,255,.2) 2px, transparent 40px),
+                radial-gradient(white, rgba(255,255,255,.15) 1px, transparent 30px);
+            background-size: 550px 550px, 350px 350px;
+            background-position: 0 0, 20px 60px;
+            animation: moveStars 100s linear infinite;
+        }
+
+        @keyframes moveStars { 0% { background-position: 0 0, 20px 60px; } 100% { background-position: 550px 550px, 370px 410px; } }
+
+        /* Contenedor principal estilo Canvas */
+        .app-container {
+            width: 100%; max-width: 900px; min-height: 600px;
+            background: #f1f2f6;
+            position: relative; overflow: hidden;
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            display: flex; flex-direction: column;
+        }
+
+        .screen { display: none; width: 100%; height: 100%; position: absolute; top: 0; left: 0; background: #f1f2f6; flex-direction: column; }
+        .screen.active { display: flex; animation: fadeIn 0.5s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+
+        .map-bg { background: #7ed6df; flex-grow: 1; position: relative; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .title-ribbon {
+            background: var(--primary); color: white; font-family: var(--font-title); font-size: 2.5rem;
+            padding: 10px 40px; border-radius: 50px; text-transform: uppercase;
+            box-shadow: 0 8px 0 #c0392b, 0 15px 20px rgba(0,0,0,0.2);
+            margin-top: 20px; z-index: 10; text-align: center;
+        }
+
+        .path-container { position: relative; width: 100%; height: 400px; margin-top: 20px; }
+        .level-node {
+            position: absolute; width: 90px; height: 90px;
+            background: white; border: 6px solid #dfe4ea; border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            font-family: var(--font-title); font-size: 2rem; color: #a4b0be;
+            cursor: not-allowed; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 10px 15px rgba(0,0,0,0.1); z-index: 5;
+        }
+        .level-node img { width: 50px; height: 50px; filter: grayscale(100%); opacity: 0.5; }
+        
+        .level-node.unlocked { border-color: var(--secondary); cursor: pointer; color: var(--secondary); animation: pulseMap 2s infinite; }
+        .level-node.unlocked img { filter: grayscale(0%); opacity: 1; }
+        .level-node.unlocked:hover { transform: scale(1.15) translateY(-10px); }
+        
+        .level-node.completed { border-color: var(--correct); background: #e8f8f5; color: var(--correct); cursor: pointer; }
+        .level-node.completed img { filter: grayscale(0%); opacity: 1; }
+        
+        @keyframes pulseMap { 0% { box-shadow: 0 0 0 0 rgba(255, 165, 2, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(255, 165, 2, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 165, 2, 0); } }
+
+        /* Animación para el camino punteado */
+        @keyframes marchPath { to { stroke-dashoffset: -200; } }
+        .map-path-line { animation: marchPath 10s linear infinite; }
+
+        /* Posiciones nodos */
+        #node-1 { top: 60%; left: 15%; }
+        #node-2 { top: 20%; left: 35%; }
+        #node-3 { top: 50%; left: 60%; }
+        #node-4 { top: 15%; left: 80%; }
+
+        .game-header { background: #ff4757; color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; font-family: var(--font-title); font-size: 1.5rem; }
+        .btn-home { background: white; color: var(--primary); border: none; padding: 10px 15px; border-radius: 10px; font-family: var(--font-title); cursor: pointer; transition: transform 0.2s; }
+        .btn-home:hover { transform: scale(1.1); }
+
+        .environment { position: relative; width: 100%; height: 250px; background: #dff9fb; overflow: hidden; display: flex; justify-content: center; align-items: flex-end; }
+        
+        /* Olas de agua CSS puro */
+        .wave-container { position: absolute; bottom: 0; left: 0; width: 100%; height: 80px; overflow: hidden; z-index: 10; }
+        .wave { position: absolute; bottom: -20px; left: 0; width: 200%; height: 100px; background: #00a8ff; border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%; animation: waveFloat 4s linear infinite; }
+        .wave:nth-child(2) { animation-direction: reverse; opacity: 0.5; bottom: -10px; background: #48dbfb; }
+        @keyframes waveFloat { 0% { transform: translateX(0) rotate(0deg); } 100% { transform: translateX(-50%) rotate(360deg); } }
+
+        /* El Payaso y su tabla */
+        .board { position: absolute; bottom: 70px; left: 50%; transform: translateX(-50%); width: 200px; height: 15px; background: #c23616; border-radius: 10px; z-index: 5; transition: transform 0.4s; transform-origin: left; }
+        .clown { position: absolute; bottom: 85px; left: 50%; transform: translateX(-50%); width: 100px; height: 100px; z-index: 6; transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55); }
+        .target { position: absolute; right: 20%; top: 40px; width: 60px; height: 60px; animation: floatTarget 2s ease-in-out infinite; }
+        
+        @keyframes floatTarget { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        
+        /* Animaciones del juego */
+        .clown-fall { transform: translate(-50%, 150px) rotate(180deg) scale(0.5); opacity: 0; }
+        .clown-laugh { animation: laugh 0.5s; }
+        @keyframes laugh { 0%, 100% { transform: translateX(-50%) scale(1); } 25% { transform: translateX(-60%) scale(1.1); } 75% { transform: translateX(-40%) scale(1.1); } }
+
+        .question-area { flex-grow: 1; display: flex; flex-direction: column; width: 100%; z-index: 20; background: white; }
+        .q-header-zone { padding: 20px; display: flex; flex-direction: column; align-items: center; width: 100%; background: white; box-shadow: 0 4px 10px rgba(0,0,0,0.05); z-index: 30; }
+        .options-zone { padding: 20px; display: flex; justify-content: center; align-items: center; flex-grow: 1; width: 100%; position: relative; overflow: hidden; background: white; }
+        
+        .question-text { font-size: 1.2rem; font-weight: 800; text-align: center; margin-bottom: 10px; color: var(--text-dark); min-height: 40px; }
+        
+        .options-grid { display: flex; flex-direction: column; gap: 15px; width: 100%; max-width: 700px; z-index: 10; }
+        .option-btn { 
+            background: #f1f2f6; border: 3px solid #dfe4ea; color: var(--text-dark);
+            padding: 15px 20px; border-radius: 15px; font-size: 1.1rem; font-family: var(--font-text); font-weight: 800;
+            cursor: pointer; transition: all 0.2s; text-align: left; position: relative; overflow: hidden;
+        }
+        .option-btn:hover:not(:disabled) { transform: translateY(-3px); border-color: var(--secondary); background: #fff; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .option-btn:disabled { cursor: not-allowed; }
+        
+        .option-btn.correct { background: var(--correct) !important; color: white !important; border-color: var(--correct) !important; }
+        .option-btn.wrong { background: var(--wrong) !important; color: white !important; border-color: var(--wrong) !important; }
+
+        .feedback-box { width: 100%; max-width: 700px; padding: 15px; border-radius: 15px; font-weight: 800; text-align: center; font-size: 1.1rem; display: none; animation: fadeIn 0.3s; margin-top: 10px; }
+        .feedback-box.show { display: block; }
+        .feedback-box.success { background: #e8f8f5; color: #27ae60; border: 2px solid #2ecc71; }
+        .feedback-box.error { background: #fdedec; color: #c0392b; border: 2px solid #e74c3c; }
+
+        .progress-bar-container { width: 100%; height: 8px; background: #dfe4ea; border-radius: 4px; margin-top: 10px; overflow: hidden; }
+        .progress-bar { height: 100%; background: var(--secondary); width: 100%; transform-origin: left; }
+        .progress-bar.animate { animation: shrinkBar 4s linear forwards; }
+        @keyframes shrinkBar { from { width: 100%; } to { width: 0%; } }
+
+        #screen-game.terror-mode .question-area { background: transparent; }
+        #screen-game.terror-mode .q-header-zone { background: white; z-index: 100; border-bottom: 3px solid #dfe4ea; }
+        #screen-game.terror-mode .options-zone { background: #1e272e; }
+        
+        .local-flashlight { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle 180px at var(--x, 50%) var(--y, 50%), transparent 0%, rgba(0,0,0,0.99) 100%); pointer-events: none; z-index: 90; display: none; }
+        #screen-game.terror-mode .local-flashlight { display: block; }
+        
+        .monster-scatter { position: absolute; font-size: 5rem; z-index: 5; display: none; filter: drop-shadow(0 0 15px rgba(255,255,255,0.2)); }
+        #screen-game.terror-mode .monster-scatter { display: block; }
+        
+        #screen-game.terror-mode .options-grid { flex-direction: row; justify-content: space-around; align-items: center; width: 100%; height: 100%; }
+        #screen-game.terror-mode .option-btn { 
+            width: 45%; max-width: 240px; aspect-ratio: 1/1; border-radius: 50%; /* Forma circular para encajar en la luz */
+            background: #2f3542; color: #f5f6fa; border-color: #576574; z-index: 15;
+            display: flex; align-items: center; justify-content: center; text-align: center; padding: 25px; margin: 10px;
+        }
+        #screen-game.terror-mode .option-btn:hover:not(:disabled) { background: #576574; border-color: var(--secondary); transform: scale(1.05); }
+
+        .env-race { background: #a4b0be; position: relative; width: 100%; height: 250px; display: flex; flex-direction: column; justify-content: center; overflow: hidden; }
+        .track-line { width: 100%; height: 60px; border-bottom: 4px dashed white; position: relative; display: flex; align-items: center; }
+        .horse { width: 80px; height: 80px; position: absolute; left: 5%; transition: left 0.5s ease-out; z-index: 5; transform: scaleX(-1); /* Voltea el caballo hacia adelante */ }
+        .finish-line { position: absolute; right: 20px; height: 100%; width: 20px; background: repeating-linear-gradient(45deg, #000, #000 10px, #fff 10px, #fff 20px); }
+
+        .env-terror { background: #2f3542; position: relative; width: 100%; height: 250px; overflow: hidden; }
+        .flashlight { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle 100px at var(--x, 50%) var(--y, 50%), transparent 0%, rgba(0,0,0,0.95) 100%); z-index: 10; pointer-events: none; }
+        .monster-bg { position: absolute; width: 80px; height: 80px; filter: drop-shadow(0 0 10px rgba(255,255,255,0.5)); }
+
+    </style>
+</head>
+<body>
+
+    <!-- PANTALLA 0: INTRODUCCIÓN -->
+    <div class="screen active" id="screen-intro">
+        <div style="background: var(--bg-map); width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; padding: 20px;">
+            <div style="background: white; padding: 40px; border-radius: 20px; box-shadow: 0 15px 30px rgba(0,0,0,0.2); max-width: 600px; text-align: center; position: relative; overflow: hidden;">
+                <!-- Decoración -->
+                <div style="position: absolute; top: -20px; right: -20px; font-size: 5rem; opacity: 0.1;">🎡</div>
+                <div style="position: absolute; bottom: -10px; left: -10px; font-size: 5rem; opacity: 0.1;">🎪</div>
+                
+                <h1 style="font-family: var(--font-title); font-size: 2.8rem; color: var(--primary); margin-bottom: 20px; line-height: 1.2;">¡Bienvenido a <br><span style="color: var(--secondary)">PoliDunk Land!</span></h1>
+                
+                <p style="font-size: 1.2rem; font-weight: 800; color: var(--text-dark); margin-bottom: 15px;">
+                    El parque de diversiones donde tu conocimiento es la clave.
+                </p>
+                <p style="font-size: 1.05rem; color: #576574; margin-bottom: 30px; line-height: 1.6;">
+                    Prepárate para enfrentar 4 atracciones retadoras sobre el <b>Reconocimiento de Créditos</b>. 
+                    <br><br><b>Dinámica del juego:</b> Tendrás que superar 5 retos por cada nivel. Si aciertas, avanzarás y sumarás PoliPuntos. Ten cuidado, en la <b>Carrera Poli</b> el tiempo corre, y en la <b>Mansión del Terror</b> deberás buscar la respuesta en la oscuridad.
+                    <br><br>Lee con atención y elige sabiamente. ¿Estás listo para iniciar el recorrido?
+                </p>
+                
+                <button style="font-family: var(--font-title); font-size: 1.3rem; padding: 15px 40px; background: var(--secondary); color: white; border: none; border-radius: 50px; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 8px 0 #e69500;" 
+                        onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 11px 0 #e69500'" 
+                        onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 8px 0 #e69500'"
+                        onclick="comenzarAventura()">
+                    ¡Empezar Aventura!
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PANTALLA 3: PANTALLA FINAL (RECOMPENSAS) -->
+    <div class="screen" id="screen-final">
+        <div style="background: var(--bg-map); width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; padding: 20px;">
+            <div style="background: white; padding: 40px; border-radius: 20px; box-shadow: 0 15px 30px rgba(0,0,0,0.2); max-width: 600px; text-align: center; position: relative; overflow: hidden;">
+                <!-- Decoración -->
+                <div style="position: absolute; top: -20px; right: -20px; font-size: 5rem; opacity: 0.1;">🎡</div>
+                <div style="position: absolute; bottom: -10px; left: -10px; font-size: 5rem; opacity: 0.1;">🎟️</div>
+                
+                <h1 style="font-family: var(--font-title); font-size: 2.5rem; color: var(--primary);">¡Aventura Terminada!</h1>
+                <p style="font-size: 1.2rem; font-weight: 800; color: var(--text-dark); margin-top: 10px;">Puntaje Final: <span id="final-score-text" style="color: var(--correct); font-size: 1.8rem;">0</span> <span style="font-size: 1.2rem;">/ 100 PoliPuntos</span></p>
+
+                <!-- Icono del premio animado -->
+                <div id="prize-icon" style="font-size: 6rem; margin: 20px 0; animation: floatTarget 2s ease-in-out infinite;">🧸</div>
+                
+                <h2 id="prize-name" style="color: var(--secondary); margin-bottom: 10px; font-family: var(--font-title);">Cargando Premio...</h2>
+                <p id="prize-msg" style="font-size: 1.05rem; color: #576574; margin-bottom: 30px; line-height: 1.6; font-weight: 600;">Analizando tu desempeño...</p>
+                
+                <button style="font-family: var(--font-title); font-size: 1.3rem; padding: 15px 40px; background: var(--primary); color: white; border: none; border-radius: 50px; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 8px 0 #002b5e;" 
+                        onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 11px 0 #002b5e'" 
+                        onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 8px 0 #002b5e'"
+                        onclick="location.reload()">
+                    ¡Volver a Jugar!
+                </button>
+            </div>
+        </div>
+    </div>
+
+<script>
+    const bancoPreguntas = [
+        // NIVEL 1: Casos Prácticos (cat: 1)
+        { cat: 1, q: "Un estudiante del programa PGCOVBO4INS (Ingeniería de Sistemas) ingresó en 202310. ¿Cuáles créditos debe realizar?", a: "0 de Informática, 4 de Emprendimiento y 0 Optativos.", b: "0 de Informática, 3 de Emprendimiento y 2 Optativos.", correct: "B", reason: "Ingresantes desde RC 202310 tienen una modificación específica en su malla que exige 3 de Emprendimiento y 2 Optativos." },
+        { cat: 1, q: "El estudiante de PGCOPBO4DER (Derecho presencial) requiere confirmar su esquema de créditos.", a: "4 de Informática, 3 de Emprendimiento y 6 Optativos.", b: "4 de Informática, 0 de Emprendimiento y 3 Optativos.", correct: "A", reason: "Derecho exige 4 créditos de Informática, 3 de Emprendimiento y 6 Optativos." },
+        { cat: 1, q: "Un alumno de tecnología virtual (código PGCOVBO3TCL) te contacta. ¿Qué requisitos de créditos tiene?", a: "0 de Informática, 3 de Emprendimiento y 0 Optativos.", b: "3 de Informática, 0 de Emprendimiento y 3 Optativos.", correct: "A", reason: "Para los códigos de tecnología (3) usualmente se exigen únicamente 3 créditos de Emprendimiento." },
+        { cat: 1, q: "Estudiante del programa PGCOPBO4IND necesita saber sus créditos requeridos según la matriz.", a: "0 de Informática, 3 de Emprendimiento y 3 Optativos.", b: "3 de Informática, 3 de Emprendimiento y 0 Optativos.", correct: "A", reason: "La matriz estipula para este código 0 de informática, 3 de emprendimiento y 3 optativos." },
+        { cat: 1, q: "Si consultas el código PGCOPME4MEP2, ¿cuál es el reporte correcto de créditos obligatorios?", a: "4 de Informática, 3 de Emprendimiento y 0 Optativos.", b: "0 de Informática, 0 de Emprendimiento y 6 Optativos.", correct: "B", reason: "Solo se exigen 6 créditos optativos para este caso particular." },
+        { cat: 1, q: "Un estudiante de diseño PGCOVBO3DES te pide revisar su estado de créditos.", a: "0 de Informática, 0 de Emprendimiento y 3 Optativos.", b: "4 de Informática, 0 de Emprendimiento y 3 Optativos.", correct: "A", reason: "Su matriz señala exactamente 0 de Informática, 0 de Emprendimiento y 3 Optativos." },
+        { cat: 1, q: "El código PGCOPME4ITE pertenece a un estudiante que duda de sus requisitos. ¿Cuáles son?", a: "3 de Informática, 2 de Emprendimiento y 0 Optativos.", b: "3 de Informática, 3 de Emprendimiento y 0 Optativos.", correct: "A", reason: "Esta carrera en específico requiere 3 de informática y 2 de emprendimiento." },
+        { cat: 1, q: "Para Psicología Virtual (PGCOVBO4PSI), ¿cuántos créditos están parametrizados de base?", a: "4 de Informática, 3 de Emprendimiento y 0 Optativos.", b: "4 de Informática, 0 de Emprendimiento y 6 Optativos.", correct: "A", reason: "La matriz es clara: 4 de Info, 3 de Empr y 0 Optativos." },
+        { cat: 1, q: "Estudiante de un programa Técnico (código PGCOVBO2) pregunta por sus créditos.", a: "0 de Informática, 3 de Emprendimiento y 0 Optativos.", b: "0 de Informática, 2 de Emprendimiento y 0 Optativos.", correct: "B", reason: "Los niveles técnicos (código 2) suelen requerir solo 2 créditos de Emprendimiento." },
+        { cat: 1, q: "Un estudiante de Economía Presencial te da su código terminado en ECO. ¿Cuántos créditos asumes de base?", a: "4 de Informática, 3 de Emprendimiento y 3 Optativos.", b: "4 de Informática, 4 de Emprendimiento y 0 Optativos.", correct: "A", reason: "Es el estándar general (4-3-3) para muchas carreras profesionales presenciales." },
+
+        // NIVEL 2: Emprendimiento (cat: 2)
+        { cat: 2, q: "Un estudiante sacó 65 en el examen final del MOOC de Emprendimiento y pregunta por qué no se le aprobó.", a: "Porque la nota mínima para aprobar es de 70.", b: "Porque debía asistir a sesiones en vivo obligatorias.", correct: "A", reason: "Los MOOCs de emprendimiento se aprueban obligatoriamente con nota mínima de 70 en el examen." },
+        { cat: 2, q: "El estudiante terminó su MOOC con 85 de nota, pero no le aparecen los créditos. ¿Qué paso clave omitió?", a: "No descargó el certificado en PDF para enviarlo.", b: "No diligenció el formulario correspondiente tras finalizar.", correct: "B", reason: "Es indispensable diligenciar el formulario para que el Centro cargue la información." },
+        { cat: 2, q: "Faltan solo dos días para que cierre la Cohorte actual de MOOCs y un estudiante quiere inscribirse. ¿Qué le recomiendas?", a: "Que se inscriba de inmediato; aún tiene 48 horas.", b: "Que espere a la apertura de la próxima cohorte.", correct: "B", reason: "Por el tiempo de cierre tan próximo, lo estratégico es indicarle que espere." },
+        { cat: 2, q: "Durante el registro en la plataforma para los MOOCs de Emprendimiento, ¿qué correo debe usar obligatoriamente?", a: "El correo institucional.", b: "El correo personal de matrícula.", correct: "A", reason: "Debe colocar sus credenciales institucionales y confirmar en el correo de la U." },
+        { cat: 2, q: "¿Cuándo se hace el reporte oficial de cuántos créditos de emprendimiento realizó el estudiante?", a: "Inmediatamente al terminar el examen.", b: "Una semana posterior al cierre de cada cohorte.", correct: "B", reason: "El reporte se procesa masivamente una semana después de finalizada la cohorte." },
+        { cat: 2, q: "Un estudiante pregunta si los MOOCs de emprendimiento tienen algún costo extra.", a: "Tienen un costo administrativo por el certificado.", b: "Son cursos virtuales abiertos totalmente gratuitos.", correct: "B", reason: "Son cursos abiertos y gratuitos para la comunidad Poli." },
+        { cat: 2, q: "El estudiante tiene dudas sobre su idea de negocio Canvas en el MOOC. ¿Puede pedir ayuda a un profesor?", a: "No, los cursos son 100% autogestionables.", b: "Sí, cuenta con la asesoría permanente del equipo de profesores.", correct: "B", reason: "En Emprendimiento SÍ contarán con asesoría permanente del equipo de profesores." },
+        { cat: 2, q: "¿Cuántos créditos otorga el MOOC 'Habilidades Blandas para Emprender'?", a: "1 crédito.", b: "2 créditos.", correct: "A", reason: "Todos los MOOCs de emprendimiento listados otorgan 1 crédito cada uno." },
+        { cat: 2, q: "Según el calendario 2026-1, ¿cuándo CIERRAN las 3 cohortes de emprendimiento?", a: "13 de marzo, 8 de mayo y 26 de junio.", b: "20 de enero, 24 de marzo y 12 de mayo.", correct: "A", reason: "Esas son las fechas exactas de cierre establecidas." },
+        { cat: 2, q: "¿En qué menú de la plataforma encuentra los cursos una vez inicia sesión?", a: "Ingresando a la plataforma de MOOCs en la parte superior MOOCs 'Emprendimiento'.", b: "En la sección de 'Talleres Extraordinarios'.", correct: "A", reason: "En el menú superior, ingresa por la opción de MOOCs y luego Emprendimiento." },
+
+        // NIVEL 3: Informática (cat: 3)
+        { cat: 3, q: "En los cursos Cisco, ¿con qué calificación mínima se aprueba el examen final para el reconocimiento?", a: "70% o más.", b: "60% o más.", correct: "B", reason: "Para informática en Cisco, el mínimo es 60% (emprendimiento es 70%)." },
+        { cat: 3, q: "Estudiante está trabado en Python 1 de Cisco y pide tutoría de un profesor. ¿Qué le respondes?", a: "Que los cursos son autocontenidos y no tienen acompañamiento.", b: "Que agende un caso al CSU para asignarle profesor.", correct: "A", reason: "Cisco no tiene acompañamiento docente vía plataforma o correo." },
+        { cat: 3, q: "Estudiante envía por ticket su certificado de Cisco exigiendo créditos. ¿Es válido?", a: "No, los certificados no son válidos para el cargue.", b: "Sí, el certificado es el documento oficial.", correct: "A", reason: "El sistema valida la nota del examen (>60%) en fechas habilitadas. Certificados no sirven." },
+        { cat: 3, q: "Un estudiante duda entre Cisco y Biblioteca. ¿Cuál es la diferencia principal en la dinámica?", a: "Cisco da hasta 4 créditos por curso pero solo tiene 2 ofertas al año; Biblioteca exige asistencia a múltiples talleres pero está todo el semestre.", b: "Cisco es rápido y está abierto todo el año; Biblioteca solo abre en temporada de exámenes.", correct: "A", reason: "Cisco concentra créditos pero en cohortes cerradas. Biblioteca requiere acumular horas progresivamente durante el semestre." },
+        { cat: 3, q: "Estudiante finalizó curso en Cisco fuera de fechas de la cohorte. ¿Qué pasa?", a: "El sistema no mostrará resultados para cargarlos.", b: "Se le cargará en el siguiente semestre con penalidad.", correct: "A", reason: "Cisco es estricto; fuera de fechas no hay reconocimiento de sistema." },
+        { cat: 3, q: "Al diligenciar el formulario de un Taller de Biblioteca, ¿qué es indispensable marcar para que valga como crédito?", a: "Opción 9 (Reconocimiento de créditos).", b: "Opción de asistencia voluntaria general.", correct: "A", reason: "Debe seleccionar la opción 9 obligatoriamente para fines de créditos." },
+        { cat: 3, q: "Si hay fallas en la plataforma Cisco, ¿qué canal es el indicado?", a: "Escribir al docente de Informática del Poli.", b: "Crear el ticket respectivo a través de HubSpot detallando muy bien la situación y adjuntando el soporte con el error.", correct: "B", reason: "Es el proceso estándar de mesa de ayuda para resolver incidencias con plataformas externas." },
+        { cat: 3, q: "¿En qué fecha se realiza el cargue de notas del RC1 de 2026 para Cisco?", a: "21 de Junio.", b: "3 de Julio.", correct: "B", reason: "El 21 de junio finaliza, pero el cargue masivo es el 3 de Julio." },
+        { cat: 3, q: "¿Cuántas horas de dedicación da el taller de biblioteca 'Herramientas de Análisis de Impacto'?", a: "4 horas.", b: "6 horas.", correct: "A", reason: "Ese taller en específico otorga 4 horas acumulables." },
+        { cat: 3, q: "Si un estudiante necesita varios créditos y elige Talleres de Biblioteca, ¿qué debe tener en cuenta?", a: "Que es la vía más rápida porque solo asiste a una sesión de 2 horas.", b: "Que debe acumular horas en diferentes talleres durante el semestre para sumar los créditos.", correct: "B", reason: "Los talleres otorgan de a 2, 4 o 6 horas, por lo que debe asistir a varios para sumar las 16h de 1 crédito." },
+
+        // NIVEL 4: Optativos (cat: 4)
+        { cat: 4, q: "Para obtener 1 crédito optativo de investigación en MOOCs, ¿cuál es la condición final indispensable?", a: "Finalizar el curso y descargar el diploma.", b: "Finalizar el curso y diligenciar obligatoriamente la encuesta.", correct: "B", reason: "Solo quienes completen la encuesta tras el curso recibirán los créditos." },
+        { cat: 4, q: "¿Cuántas asistencias a las clases de Bienestar equivalen a 1 crédito optativo?", a: "16 asistencias.", b: "8 asistencias.", correct: "B", reason: "8 asistencias (calculadas en horas dobles) equivalen a 1 crédito." },
+        { cat: 4, q: "Estudiante asistió a clase presencial de gimnasio de Bienestar que duró 1 hora y 30 min. ¿Cómo se contabiliza?", a: "Como 1.5 horas exactas.", b: "Obtiene 2 horas de crédito.", correct: "B", reason: "La plataforma 'regala' la fracción; 1h 30m equivale a 2 horas." },
+        { cat: 4, q: "¿Cómo debe inscribirse el estudiante a clase presencial de Bienestar en Bogotá para créditos?", a: "Acercándose al espacio de entrenamiento; el profe lo inscribe ahí.", b: "Llenando un ticket 48h antes.", correct: "A", reason: "Solo deben asistir al lugar y el docente toma el registro." },
+        { cat: 4, q: "Desde Permanencia, ¿cuántos talleres 'Workshops' debe realizar el estudiante para obtener 1 crédito completo?", a: "2 talleres.", b: "1 taller.", correct: "A", reason: "1 taller da 1/2 crédito. Para 1 crédito completo debe realizar 2." },
+        { cat: 4, q: "Estudiante completó horas de Bienestar a un día de terminar semestre, pero no las ve. ¿Qué ocurre?", a: "El registro puede demorar 1-2 semanas a final de semestre.", b: "Las perdió por no reportarlas con anticipación.", correct: "A", reason: "Si se hacen muy próximo a la finalización, el registro se demora." },
+        { cat: 4, q: "¿A través de qué plataforma acceden a los MOOCs de Investigación?", a: "poliformacion.poligran.edu.co", b: "Smart Campus en la sección Cisco.", correct: "A", reason: "La plataforma designada para investigación es Poliformación." },
+        { cat: 4, q: "¿A qué área pertenecen los 'Workshops: Successful learning experiences'?", a: "Departamento de Internacionalización.", b: "Departamento de Permanencia.", correct: "B", reason: "Son gestionados por Consejería Académica (Permanencia)." },
+        { cat: 4, q: "¿En qué meses se cargan habitualmente los créditos optativos de investigación?", a: "Marzo, Junio, Septiembre y Diciembre.", b: "Enero, Abril, Julio y Octubre.", correct: "A", reason: "Se cargan en fechas de corte específicas al final de esos trimestres." }
+    ];
+
+    let currentLevel = 1;
+    let maxUnlocked = 1;
+    let globalScore = 0;
+    
+    let currentPool = [];
+    let qIndex = 0;
+    let currentQ = {};
+    let isTransitioning = false;
+    let timerInterval;
+
+    const levelTitles = {1: "Casos Prácticos", 2: "Emprendimiento", 3: "Informática", 4: "Créditos Optativos"};
+
+    // Lógica para empezar la aventura
+    function comenzarAventura() {
+        document.getElementById('screen-intro').classList.remove('active');
+        document.getElementById('screen-map').classList.add('active');
+    }
+
+    function goHome() {
+        if(timerInterval) clearInterval(timerInterval);
+        document.getElementById('screen-game').classList.remove('active');
+        document.getElementById('screen-map').classList.add('active');
+        document.getElementById('global-score').innerText = globalScore;
+    }
+
+    function startLevel(lvl) {
+        if (lvl > maxUnlocked) return; // Bloqueado
+        
+        currentLevel = lvl;
+        document.getElementById('level-title').innerText = levelTitles[lvl];
+        
+        // Preparar banco: 5 aleatorias del nivel
+        let filtered = bancoPreguntas.filter(p => p.cat === lvl);
+        currentPool = filtered.sort(() => Math.random() - 0.5).slice(0, 5);
+        qIndex = 0;
+
+        // Mostrar entorno correcto
+        document.getElementById('env-payaso').style.display = (lvl===1 || lvl===2) ? 'flex' : 'none';
+        document.getElementById('env-race').style.display = (lvl===3) ? 'flex' : 'none';
+        
+        const screenGame = document.getElementById('screen-game');
+        if (lvl === 4) {
+            screenGame.classList.add('terror-mode');
+        } else {
+            screenGame.classList.remove('terror-mode');
+        }
+
+        // Ir a pantalla juego
+        document.getElementById('screen-map').classList.remove('active');
+        document.getElementById('screen-game').classList.add('active');
+        
+        loadQuestion();
+    }
+
+    function loadQuestion() {
+        if (qIndex >= 5) {
+            endLevel();
+            return;
+        }
+
+        isTransitioning = false;
+        currentQ = currentPool[qIndex];
+        document.getElementById('q-counter').innerText = qIndex + 1;
+        
+        document.getElementById('question-text').innerText = currentQ.q;
+        
+        let btnA = document.getElementById('btn-A');
+        let btnB = document.getElementById('btn-B');
+        
+        btnA.innerText = "A) " + currentQ.a;
+        btnB.innerText = "B) " + currentQ.b;
+        
+        // Reset botones
+        btnA.className = "option-btn"; btnB.className = "option-btn";
+        btnA.disabled = false; btnB.disabled = false;
+        
+        // Reset Feedback
+        document.getElementById('feedback-box').className = "feedback-box";
+        document.getElementById('auto-progress').classList.remove('animate');
+
+        // Resets visuales específicos
+        if(currentLevel === 1 || currentLevel === 2) {
+            document.getElementById('payaso-board').style.transform = "rotate(0deg) translateX(-50%)";
+            document.getElementById('payaso-char').className = "clown";
+        }
+        
+        if(currentLevel === 3) {
+            // Caballo inicia en 5% y avanza hasta 80%
+            let startPos = 5 + (qIndex * 15);
+            document.getElementById('race-horse').style.left = startPos + "%";
+            
+            // Cronómetro
+            let timeLeft = 15;
+            document.getElementById('race-timer').innerText = timeLeft + "s";
+            document.getElementById('race-timer').style.color = "var(--text-dark)";
+            if(timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                document.getElementById('race-timer').innerText = timeLeft + "s";
+                if(timeLeft <= 3) document.getElementById('race-timer').style.color = "var(--wrong)";
+                if(timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    checkAnswer('TIME', null); // Forzar fallo
+                }
+            }, 1000);
+        }
+    }
+
+    function checkAnswer(selection, btnElement) {
+        if (isTransitioning) return;
+        isTransitioning = true;
+        if(timerInterval) clearInterval(timerInterval);
+
+        // Bloquear botones
+        document.getElementById('btn-A').disabled = true;
+        document.getElementById('btn-B').disabled = true;
+
+        let isCorrect = (selection === currentQ.correct);
+        let correctBtn = (currentQ.correct === 'A') ? document.getElementById('btn-A') : document.getElementById('btn-B');
+
+        let fbBox = document.getElementById('feedback-box');
+        let fbMsg = document.getElementById('feedback-msg');
+
+        if (isCorrect) {
+            globalScore += 5; // Ajustado a 5 puntos (20 preguntas x 5 = 100 puntos máx)
+            if(btnElement) btnElement.classList.add('correct');
+            fbBox.classList.add('show', 'success');
+            fbMsg.innerHTML = `✅ <b>¡Exacto!</b> ${currentQ.reason}`;
+            triggerSuccessAnim();
+        } else {
+            if(btnElement) btnElement.classList.add('wrong');
+            correctBtn.classList.add('correct'); // Mostrar cuál era la buena
+            fbBox.classList.add('show', 'error');
+            fbMsg.innerHTML = `❌ <b>¡Fallaste${selection==='TIME' ? ' por tiempo' : ''}!</b> ${currentQ.reason}`;
+            triggerFailAnim();
+        }
+
+        // Iniciar barra de auto-avance (4 segundos)
+        // Usamos void obj.offsetWidth para forzar reflow y reiniciar la animación CSS
+        let pBar = document.getElementById('auto-progress');
+        pBar.classList.remove('animate');
+        void pBar.offsetWidth; 
+        pBar.classList.add('animate');
+
+        setTimeout(() => {
+            qIndex++;
+            loadQuestion();
+        }, 4000);
+    }
+
+    function triggerSuccessAnim() {
+        if(currentLevel === 1 || currentLevel === 2) {
+            document.getElementById('payaso-board').style.transform = "rotate(45deg) translateX(-50%)";
+            document.getElementById('payaso-char').classList.add('clown-fall');
+        } else if (currentLevel === 3) {
+            let nextPos = 5 + ((qIndex + 1) * 15);
+            document.getElementById('race-horse').style.left = nextPos + "%";
+        }
+    }
+
+    function triggerFailAnim() {
+        if(currentLevel === 1 || currentLevel === 2) {
+            document.getElementById('payaso-char').classList.add('clown-laugh');
+        }
+    }
+
+    function endLevel() {
+        let node = document.getElementById('node-' + currentLevel);
+        node.classList.remove('unlocked');
+        node.classList.add('completed');
+        
+        if (currentLevel < 4) {
+            if (maxUnlocked === currentLevel) {
+                maxUnlocked++;
+                let nextNode = document.getElementById('node-' + maxUnlocked);
+                nextNode.classList.add('unlocked');
+            }
+            // Volver al mapa tras 1 seg
+            setTimeout(goHome, 1000);
+        } else {
+            // El juego terminó, ir a la pantalla final
+            setTimeout(mostrarPantallaFinal, 1000);
+        }
+    }
+
+    function mostrarPantallaFinal() {
+        document.getElementById('screen-game').classList.remove('active');
+        document.getElementById('screen-final').classList.add('active');
+        
+        let prizeIcon = "";
+        let prizeName = "";
+        let prizeMsg = "";
+
+        if (globalScore >= 85) {
+            prizeIcon = "🧸👑";
+            prizeName = "Poli-Peluche Gigante (Oro)";
+            prizeMsg = "¡Nivel Dios Administrativo! Dominas a la perfección las normativas, fechas y excepciones. Eres un asesor blindado, ¡nadie te engaña!";
+        } else if (globalScore >= 60) {
+            prizeIcon = "🧸🥈";
+            prizeName = "Poli-Peluche Mediano (Plata)";
+            prizeMsg = "¡Buen desempeño! Tuviste muy buena precisión, aunque en el camino tuviste un par de tropiezos. Revisa bien los detalles normativos.";
+        } else if (globalScore >= 40) {
+            prizeIcon = "🧸🥉";
+            prizeName = "Llavero de Peluche (Bronce)";
+            prizeMsg = "Pasaste la prueba, pero por poco. Hay áreas de los manuales que necesitas reforzar urgentemente para evitar confusiones al asesorar.";
+        } else {
+            prizeIcon = "🤡💦";
+            prizeName = "¡El Payaso se ríe de ti!";
+            prizeMsg = "¡Peligro crítico! Fallaste demasiadas veces. Recuerda que un error impacta directamente los requisitos de grado del estudiante. Toca repasar los módulos obligatoriamente.";
+        }
+
+        document.getElementById('final-score-text').innerText = globalScore;
+        document.getElementById('prize-icon').innerText = prizeIcon;
+        document.getElementById('prize-name').innerText = prizeName;
+        document.getElementById('prize-msg').innerText = prizeMsg;
+    }
+
+    // Efecto Linterna interactiva (Nivel 4) adaptada a la nueva zona oscura
+    function moveFlashlight(e) {
+        if(currentLevel === 4 && document.getElementById('screen-game').classList.contains('active')) {
+            const zone = document.getElementById('options-zone');
+            if(!zone) return;
+            const rect = zone.getBoundingClientRect();
+            let x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+            let y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
+            zone.style.setProperty('--x', x + 'px');
+            zone.style.setProperty('--y', y + 'px');
+        }
+    }
+    document.addEventListener('mousemove', moveFlashlight);
+    document.addEventListener('touchmove', moveFlashlight);
+
+</script>
+</body>
+</html>
