@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tablero Táctico de Entrenamiento | Venta Consultiva</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .fade-in { animation: fadeIn 0.5s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Tab styles */
+        .tab-btn.active {
+            border-bottom: 3px solid #db2777; /* rosa poli (pink-600) */
+            color: #db2777;
+            font-weight: 700;
+        }
+        .tab-content { display: none; }
+        .tab-content.active { display: flex; }
+    </style>
+</head>
+<body class="text-slate-800 h-screen flex flex-col overflow-hidden">
+
+    <!-- Header & Navigation -->
+    <header class="bg-indigo-900 text-white shadow-md shrink-0">
+        <div class="p-4 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <i class="fas fa-chalkboard-teacher text-2xl text-pink-500"></i>
+                <div>
+                    <h1 class="text-xl font-bold tracking-wide">Clínica de Venta Consultiva</h1>
+                    <p class="text-xs text-indigo-200">Entrenamiento Táctico - Ilumno (Poli & San Marcos)</p>
+                </div>
+            </div>
+            <div class="text-sm bg-indigo-800 px-4 py-2 rounded-full border border-indigo-700">
+                <i class="fas fa-users mr-2"></i> Equipo en OJT: <span id="total-agents" class="font-bold text-pink-500">14</span>/14
+            </div>
+        </div>
+        <!-- Tabs -->
+        <div class="flex px-6 bg-indigo-950">
+            <button onclick="switchTab('dashboard')" id="tab-dashboard-btn" class="tab-btn active px-6 py-3 text-sm text-indigo-200 hover:text-white transition uppercase tracking-wider">
+                <i class="fas fa-chart-pie mr-2"></i> Tablero Táctico
+            </button>
+            <button onclick="switchTab('plan')" id="tab-plan-btn" class="tab-btn px-6 py-3 text-sm text-indigo-200 hover:text-white transition uppercase tracking-wider">
+                <i class="fas fa-route mr-2"></i> Plan de Trabajo y Medición
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex overflow-hidden">
+        
+        <!-- ========================================== -->
+        <!-- TAB 1: DASHBOARD TÁCTICO                   -->
+        <!-- ========================================== -->
+        <div id="tab-dashboard" class="tab-content active flex-1 flex overflow-hidden w-full fade-in">
+            <!-- Sidebar: Agent List -->
+            <aside class="w-1/4 bg-white border-r border-slate-200 flex flex-col shadow-inner z-10 min-w-[250px]">
+                <div class="p-4 border-b border-slate-100 bg-slate-50">
+                    <h2 class="font-bold text-slate-700 uppercase text-xs tracking-wider mb-2">Roster de Expertos</h2>
+                    <input type="text" id="search-agent" placeholder="Buscar experto..." class="w-full text-sm p-2 rounded border border-slate-300 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition">
+                </div>
+                <div class="flex-1 overflow-y-auto p-2 space-y-1" id="agent-list">
+                    <!-- Injected via JS -->
+                </div>
+            </aside>
+
+            <!-- Main Dashboard Area -->
+            <section class="flex-1 overflow-y-auto p-6 bg-slate-100 flex flex-col gap-6">
+                
+                <!-- Top widgets -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Chart Area -->
+                    <div class="glass-panel rounded-xl p-6 h-96 flex flex-col">
+                        <h3 class="font-bold text-lg mb-1 text-indigo-900" id="chart-title">Selecciona un experto</h3>
+                        <p class="text-xs text-slate-500 mb-4">Análisis de Mínimos Cometidos</p>
+                        <div class="flex-1 relative w-full flex justify-center items-center">
+                            <canvas id="agentChart"></canvas>
+                            <div id="empty-state" class="absolute inset-0 flex flex-col items-center justify-center text-slate-400">
+                                <i class="fas fa-mouse-pointer text-4xl mb-3"></i>
+                                <p>Haz clic en un experto en la lista</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mentoring Groups (Tácticas) -->
+                <div class="glass-panel rounded-xl p-6 h-96 flex flex-col">
+                    <h3 class="font-bold text-lg mb-1 text-indigo-900"><i class="fas fa-layer-group text-pink-500 mr-2"></i>Células de Entrenamiento</h3>
+                    <p class="text-xs text-slate-500 mb-4">Agrupación automática según mayor área de oportunidad</p>
+                        <div class="flex-1 overflow-y-auto space-y-4 pr-2" id="tactical-groups">
+                            <!-- Injected via JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Plan Builder -->
+                <div class="glass-panel rounded-xl p-6">
+                    <div class="flex justify-between items-end mb-4 border-b border-slate-200 pb-2">
+                        <div>
+                            <h3 class="font-bold text-lg text-indigo-900"><i class="fas fa-clipboard-check text-green-500 mr-2"></i>Acuerdo de Coaching</h3>
+                            <p class="text-xs text-slate-500">Documenta el compromiso y genera el soporte descargable.</p>
+                        </div>
+                        <button id="download-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg text-sm font-semibold transition shadow-md flex items-center gap-2">
+                            <i class="fas fa-download"></i> Descargar Evaluación
+                        </button>
+                    </div>
+                    
+                    <form id="evaluation-form" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-600 mb-1">Experto Evaluado</label>
+                                <input type="text" id="eval-name" class="w-full text-sm p-2 rounded border border-slate-300 bg-slate-50" readonly placeholder="Selecciona en la lista...">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-600 mb-1">Fortalezas Identificadas</label>
+                                <textarea id="eval-strengths" rows="2" class="w-full text-sm p-2 rounded border border-slate-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500" placeholder="Ej. Excelente tono de voz, disposición de aprendizaje..."></textarea>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-600 mb-1">Foco de Entrenamiento (Mínimo principal)</label>
+                                <input type="text" id="eval-focus" class="w-full text-sm p-2 rounded border border-slate-300 bg-slate-50" readonly>
+                            </div>
+                        </div>
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-600 mb-1">Plan de Acción / Compromiso</label>
+                                <textarea id="eval-action" rows="3" class="w-full text-sm p-2 rounded border border-slate-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500" placeholder="Ej. Aplicar técnica de escucha activa, usar el formato de registro X, revisar protocolo de cierre..."></textarea>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-600 mb-1">Fecha Compromiso</label>
+                                    <input type="date" id="eval-date" class="w-full text-sm p-2 rounded border border-slate-300 focus:border-indigo-500">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-600 mb-1">Evaluador / Formador</label>
+                                    <input type="text" id="eval-trainer" class="w-full text-sm p-2 rounded border border-slate-300 focus:border-indigo-500" placeholder="Tu nombre">
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </section>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB 2: PLAN DE TRABAJO Y MEDICIÓN          -->
+        <!-- ========================================== -->
+        <div id="tab-plan" class="tab-content flex-1 overflow-y-auto p-6 bg-slate-100 fade-in w-full flex-col gap-6">
+            
+            <div class="mb-2">
+                <h2 class="text-2xl font-bold text-indigo-900">Estrategia de Refuerzo Preventivo</h2>
+                <p class="text-slate-600">Plan de trabajo diseñado para desarrollar pensamiento crítico y empatía (Rematrícula = Negociación donde ambos ganan).</p>
+            </div>
+
+            <!-- Roadmap Section -->
+            <div class="glass-panel rounded-xl p-6">
+                <h3 class="font-bold text-lg mb-6 text-slate-800 border-b pb-2"><i class="fas fa-map-signs text-pink-500 mr-2"></i>Ruta del Taller Preventivo</h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <!-- Phase 1 -->
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 relative">
+                        <div class="absolute -top-3 -left-3 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">1</div>
+                        <h4 class="font-bold text-blue-900 text-sm mb-2 mt-1">Concientización</h4>
+                        <p class="text-xs text-blue-800 mb-2">Entender el <b>porqué</b> de los errores. No es memorizar el guion, es entender al estudiante (Marquitos/Geeko).</p>
+                        <ul class="text-[11px] text-blue-700 list-disc pl-4 space-y-1">
+                            <li>Análisis grupal de casos reales.</li>
+                            <li>Clínica de errores comunes.</li>
+                        </ul>
+                    </div>
+                    
+                    <!-- Phase 2 -->
+                    <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-4 relative">
+                        <div class="absolute -top-3 -left-3 w-8 h-8 bg-emerald-600 text-white rounded-full flex items-center justify-center font-bold">2</div>
+                        <h4 class="font-bold text-emerald-900 text-sm mb-2 mt-1">Intervención por Células</h4>
+                        <p class="text-xs text-emerald-800 mb-2">Taller dividido en los 3 grupos del tablero táctico.</p>
+                        <ul class="text-[11px] text-emerald-700 list-disc pl-4 space-y-1">
+                            <li>Roleplay específico de su debilidad.</li>
+                            <li>Uso correcto de bots para expertos (MIA y GIAN) para agilizar procesos.</li>
+                        </ul>
+                    </div>
+
+                    <!-- Phase 3 -->
+                    <div class="bg-pink-50 border border-pink-200 rounded-lg p-4 relative">
+                        <div class="absolute -top-3 -left-3 w-8 h-8 bg-pink-500 text-white rounded-full flex items-center justify-center font-bold">3</div>
+                        <h4 class="font-bold text-pink-900 text-sm mb-2 mt-1">Shadowing & Coaching</h4>
+                        <p class="text-xs text-pink-800 mb-2">Acompañamiento 1 a 1 en tiempo real en la gestión.</p>
+                        <ul class="text-[11px] text-pink-700 list-disc pl-4 space-y-1">
+                            <li>Escucha lado a lado.</li>
+                            <li>Feedback inmediato con enfoque en Venta Consultiva.</li>
+                        </ul>
+                    </div>
+
+                    <!-- Phase 4 -->
+                    <div class="bg-purple-50 border border-purple-200 rounded-lg p-4 relative">
+                        <div class="absolute -top-3 -left-3 w-8 h-8 bg-purple-600 text-white rounded-full flex items-center justify-center font-bold">4</div>
+                        <h4 class="font-bold text-purple-900 text-sm mb-2 mt-1">Medición de Impacto</h4>
+                        <p class="text-xs text-purple-800 mb-2">Evaluación del antes y después para tomar decisiones de permanencia.</p>
+                        <ul class="text-[11px] text-purple-700 list-disc pl-4 space-y-1">
+                            <li>Corte de "Mínimos" semanal.</li>
+                            <li>Revisión de acuerdos firmados.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- KPI & Measurement Section -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-2">
+                
+                <div class="glass-panel rounded-xl p-6">
+                    <h3 class="font-bold text-lg mb-4 text-slate-800 border-b pb-2"><i class="fas fa-balance-scale text-indigo-500 mr-2"></i>¿Cómo sabemos si mejoran?</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-start gap-3">
+                            <div class="bg-pink-100 p-2 rounded text-pink-600"><i class="fas fa-robot"></i></div>
+                            <div>
+                                <h4 class="text-sm font-bold text-slate-700">3. Adopción de Herramientas (MIA/GIAN)</h4>
+                                <p class="text-xs text-slate-500">Medir empíricamente (en el shadowing) si el experto consulta al bot en lugar de dar información errada o tardar demasiado.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Evaluator Checklist -->
+                <div class="glass-panel rounded-xl p-6 bg-slate-800 text-white">
+                    <h3 class="font-bold text-lg mb-4 text-pink-400 border-b border-slate-600 pb-2"><i class="fas fa-tasks mr-2"></i>Checklist del Formador</h3>
+                    <p class="text-xs text-slate-300 mb-4">Antes de dar de baja a un recurso, asegúrate de haber cumplido este ciclo:</p>
+                    
+                    <label class="flex items-center gap-3 mb-2 cursor-pointer group">
+                        <input type="checkbox" class="form-checkbox text-pink-500 rounded bg-slate-700 border-slate-500 focus:ring-pink-500">
+                        <span class="text-sm text-slate-200 group-hover:text-white transition">Agrupé al agente en su célula correcta.</span>
+                    </label>
+                    <label class="flex items-center gap-3 mb-2 cursor-pointer group">
+                        <input type="checkbox" class="form-checkbox text-pink-500 rounded bg-slate-700 border-slate-500 focus:ring-pink-500">
+                        <span class="text-sm text-slate-200 group-hover:text-white transition">Realicé clínica enseñando el 'porqué', no solo el proceso.</span>
+                    </label>
+                    <label class="flex items-center gap-3 mb-2 cursor-pointer group">
+                        <input type="checkbox" class="form-checkbox text-pink-500 rounded bg-slate-700 border-slate-500 focus:ring-pink-500">
+                        <span class="text-sm text-slate-200 group-hover:text-white transition">Firmamos el 'Acuerdo de Coaching' (Pestaña Tablero).</span>
+                    </label>
+                    <label class="flex items-center gap-3 mb-2 cursor-pointer group">
+                        <input type="checkbox" class="form-checkbox text-pink-500 rounded bg-slate-700 border-slate-500 focus:ring-pink-500">
+                        <span class="text-sm text-slate-200 group-hover:text-white transition">Hice Shadowing de al menos 3 interacciones.</span>
+                    </label>
+                    <label class="flex items-center gap-3 mb-2 cursor-pointer group">
+                        <input type="checkbox" class="form-checkbox text-pink-500 rounded bg-slate-700 border-slate-500 focus:ring-pink-500">
+                        <span class="text-sm text-slate-200 group-hover:text-white transition">Generé reporte comparativo final para toma de decisiones.</span>
+                    </label>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <script>
+        // Data extracted from all 14 images
+        const categories = [
+            "Tiempos de respuesta", 
+            "Fluidez", // Incluye apertura y uso de plantillas
+            "Escucha activa", 
+            "Solución integral", 
+            "Identificación necesidades", 
+            "Gestión objeciones", 
+            "Cierre a la acción", 
+            "Registro correcto", 
+            "Seguimiento de casos"
+        ];
+
+        // 8 Originales + 6 Nuevos
+        const agentsData = [
+            { name: "Jorman.Vazquez@ilumno.com", scores: [2, 0, 0, 1, 0, 1, 3, 1, 1], total: 9 },
+            { name: "Jose.Ardila@ilumno.com", scores: [1, 0, 1, 6, 1, 0, 0, 7, 1], total: 17 },
+            { name: "Angie.Romero@ilumno.com", scores: [5, 0, 1, 3, 0, 0, 0, 3, 0], total: 12 },
+            { name: "Ayde.Borja@ilumno.com", scores: [1, 0, 0, 2, 0, 0, 1, 2, 0], total: 6 },
+            { name: "Danna.Guerrero@ilumno.com", scores: [1, 0, 0, 1, 0, 0, 2, 0, 0], total: 4 },
+            { name: "Diego.Espinosa@ilumno.com", scores: [0, 0, 0, 1, 0, 1, 3, 2, 3], total: 10 },
+            { name: "Maria.Gomez@ilumno.com", scores: [1, 1, 0, 1, 0, 0, 0, 1, 0], total: 4 },
+            { name: "angelica.alfonso@ilumno.com", scores: [1, 0, 0, 0, 0, 0, 3, 3, 1], total: 8 },
+            
+            // 6 Nuevos Expertos agregados
+            { name: "Camila.Becerra@ilumno.com", scores: [0, 0, 0, 0, 0, 0, 1, 1, 0], total: 2 },
+            { name: "Yeraldin.Leon@ilumno.com", scores: [1, 0, 0, 0, 0, 0, 3, 0, 0], total: 4 },
+            { name: "Francy.Pireto@ilumno.com", scores: [0, 0, 1, 3, 2, 0, 0, 3, 2], total: 11 },
+            { name: "Angie.Pinzon@ilumno.com", scores: [0, 1, 0, 2, 0, 0, 1, 3, 1], total: 8 },
+            { name: "Ashly.Lopez@ilumno.com", scores: [0, 3, 1, 3, 2, 0, 1, 4, 1], total: 15 },
+            { name: "Karol.Cortes@ilumno.com", scores: [4, 4, 1, 1, 1, 0, 2, 3, 0], total: 16 }
+        ];
+
+        let currentChart = null;
+
+        // Initialize App
+        document.addEventListener('DOMContentLoaded', () => {
+            renderAgentList(agentsData);
+            calculateTacticalGroups();
+            
+            // Search logic
+            document.getElementById('search-agent').addEventListener('input', (e) => {
+                const term = e.target.value.toLowerCase();
+                const filtered = agentsData.filter(a => a.name.toLowerCase().includes(term));
+                renderAgentList(filtered);
+            });
+
+            // Download logic
+            document.getElementById('download-btn').addEventListener('click', downloadEvaluation);
+        });
+
+        // Tab Switching Logic
+        function switchTab(tabId) {
+            // Remove active classes
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            // Add active classes to selected
+            document.getElementById(`tab-${tabId}-btn`).classList.add('active');
+            document.getElementById(`tab-${tabId}`).classList.add('active');
+        }
+
+        function renderAgentList(agents) {
+            const listContainer = document.getElementById('agent-list');
+            listContainer.innerHTML = '';
+
+            agents.sort((a,b) => b.total - a.total).forEach(agent => {
+                const div = document.createElement('div');
+                div.className = 'p-3 rounded-lg border border-transparent hover:border-indigo-200 hover:bg-indigo-50 cursor-pointer transition flex justify-between items-center group';
+                div.innerHTML = `
+                    <div class="truncate pr-2">
+                        <p class="text-sm font-semibold text-slate-700 truncate group-hover:text-indigo-700">${agent.name.split('@')[0]}</p>
+                        <p class="text-xs text-slate-400">Total mínimos: <span class="font-bold ${agent.total >= 10 ? 'text-red-500' : 'text-slate-500'}">${agent.total}</span></p>
+                    </div>
+                    <i class="fas fa-chevron-right text-slate-300 group-hover:text-indigo-500 text-xs"></i>
+                `;
+                div.onclick = () => selectAgent(agent);
+                listContainer.appendChild(div);
+            });
+        }
+
+        function selectAgent(agent) {
+            document.getElementById('empty-state').style.display = 'none';
+            document.getElementById('chart-title').innerText = "Análisis: " + agent.name.split('@')[0];
+            
+            document.getElementById('eval-name').value = agent.name;
+            
+            // Find main area of opportunity
+            let maxIndex = 0;
+            for(let i=1; i<agent.scores.length; i++) {
+                if(agent.scores[i] > agent.scores[maxIndex]) maxIndex = i;
+            }
+            document.getElementById('eval-focus').value = categories[maxIndex];
+
+            // Render Chart
+            const ctx = document.getElementById('agentChart').getContext('2d');
+            if (currentChart) currentChart.destroy();
+
+            currentChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: categories,
+                    datasets: [{
+                        label: 'Mínimos registrados',
+                        data: agent.scores,
+                        backgroundColor: 'rgba(79, 70, 229, 0.2)', // Indigo 600
+                        borderColor: 'rgba(79, 70, 229, 1)',
+                        pointBackgroundColor: 'rgba(219, 39, 119, 1)', // Rosa Poli (Pink 600)
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(219, 39, 119, 1)',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            angleLines: { color: 'rgba(0,0,0,0.1)' },
+                            grid: { color: 'rgba(0,0,0,0.1)' },
+                            pointLabels: { font: { size: 10, family: 'Inter' } },
+                            ticks: { display: false, stepSize: 1 }
+                        }
+                    },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        function calculateTacticalGroups() {
+            // Grupos macro basados en metodología de venta consultiva
+            const groups = {
+                "Defensores del Proceso (Registros y Tiempos)": { criteria: [0, 7, 8], agents: [], color: 'blue' },
+                "Mediocampistas (Empatía, Indagación, Solución)": { criteria: [1, 2, 3, 4], agents: [], color: 'green' },
+                "Delanteros (Objeciones y Cierres)": { criteria: [5, 6], agents: [], color: 'pink' }
+            };
+
+            agentsData.forEach(agent => {
+                let maxIndex = 0;
+                for(let i=1; i<agent.scores.length; i++) {
+                    if(agent.scores[i] > agent.scores[maxIndex]) maxIndex = i;
+                }
+
+                for (const [groupName, data] of Object.entries(groups)) {
+                    if (data.criteria.includes(maxIndex)) {
+                        data.agents.push({name: agent.name.split('@')[0], total: agent.total, mainError: categories[maxIndex]});
+                        break;
+                    }
+                }
+            });
+
+            const container = document.getElementById('tactical-groups');
+            container.innerHTML = '';
+
+            for (const [groupName, data] of Object.entries(groups)) {
+                if (data.agents.length === 0) continue;
+                
+                let agentsHtml = data.agents.sort((a,b)=>b.total - a.total).map(a => 
+                    `<li class="text-xs flex justify-between items-center py-1 border-b border-slate-100 last:border-0">
+                        <span class="font-medium text-slate-700">${a.name}</span>
+                        <span class="text-slate-500 italic bg-white px-2 py-0.5 rounded shadow-sm text-[10px] truncate max-w-[120px] text-right">${a.mainError}</span>
+                </li>`
+            ).join('');
+
+            const colorMap = {
+                'blue': 'bg-blue-50 border-blue-200 text-blue-800',
+                'green': 'bg-emerald-50 border-emerald-200 text-emerald-800',
+                'pink': 'bg-pink-50 border-pink-200 text-pink-800'
+            };
+
+            div = document.createElement('div');
+                div.className = `p-3 rounded-lg border ${colorMap[data.color]}`;
+                div.innerHTML = `
+                    <h4 class="font-bold text-sm mb-2 border-b border-black/10 pb-1 flex justify-between items-center">
+                        ${groupName} <span class="bg-white/50 px-2 py-0.5 rounded-full text-xs">${data.agents.length}</span>
+                    </h4>
+                    <ul class="space-y-1">${agentsHtml}</ul>
+                `;
+                container.appendChild(div);
+            }
+        }
+
+        function downloadEvaluation() {
+            const name = document.getElementById('eval-name').value;
+            if(!name) {
+                alert("Por favor selecciona un experto de la lista primero.");
+                return;
+            }
+
+            const strengths = document.getElementById('eval-strengths').value;
+            const focus = document.getElementById('eval-focus').value;
+            const action = document.getElementById('eval-action').value;
+            const date = document.getElementById('eval-date').value;
+            const trainer = document.getElementById('eval-trainer').value;
+
+            const content = `
+===================================================
+CLÍNICA DE VENTA CONSULTIVA - ILUMNO
+(Politécnico Grancolombiano / Universidad San Marcos)
+===================================================
+
+FECHA DE ACUERDO: ${date || new Date().toLocaleDateString()}
+FORMADOR / COACH: ${trainer || 'No especificado'}
+
+DATOS DEL EXPERTO:
+---------------------------------------------------
+Nombre: ${name}
+Foco Principal a Mejorar: ${focus}
+
+FORTALEZAS IDENTIFICADAS:
+---------------------------------------------------
+${strengths || 'No se registraron fortalezas.'}
+
+PLAN DE ACCIÓN Y COMPROMISOS (ENFOQUE CONSULTIVO):
+---------------------------------------------------
+${action || 'No se registraron compromisos.'}
+
+MÉTRICAS A EVALUAR POST-TALLER:
+---------------------------------------------------
+[ ] Reducción de mínimos en '${focus}'
+[ ] Uso verificado de GIAN / MIA
+[ ] Mejora en empatía (Negociación gana-gana)
+
+===================================================
+Documento generado automáticamente desde el Tablero Táctico.
+`;
+
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Coaching_${name.split('@')[0]}_${new Date().toISOString().split('T')[0]}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>
