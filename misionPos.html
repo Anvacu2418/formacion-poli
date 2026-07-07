@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Misión: Estratega de Posgrados | Ilumno</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        poli: {
+                            blue: '#002E5D',
+                            green: '#78B833',
+                            light: '#F3F4F6',
+                            accent: '#F59E0B'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .glass-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
+        .slide-up { animation: slideUp 0.5s ease-out forwards; }
+        .fade-in { animation: fadeIn 0.4s ease-in forwards; }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .accordion-content { transition: max-height 0.3s ease-in-out, opacity 0.3s ease-in-out; max-height: 0; opacity: 0; overflow: hidden; }
+        .accordion-content.open { max-height: 600px; opacity: 1; }
+    </style>
+</head>
+<body class="text-slate-800 antialiased selection:bg-poli-green selection:text-white pb-12">
+
+    <header class="bg-poli-blue text-white py-8 px-6 shadow-lg border-b-4 border-poli-green">
+        <div class="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between">
+            <div>
+                <h1 class="text-3xl font-bold tracking-tight"><i class="fa-solid fa-graduation-cap mr-3"></i>Misión Posgrados</h1>
+                <p class="mt-2 text-slate-300 text-lg">Dominio de Calendarios, TZAPAOR y Cohortes</p>
+            </div>
+            <div class="mt-4 md:mt-0 flex items-center bg-white/10 px-4 py-2 rounded-lg border border-white/20">
+                <i class="fa-solid fa-coins text-poli-accent text-2xl mr-3 shadow-sm"></i>
+                <div>
+                    <p class="text-sm text-slate-300 leading-tight">Recompensa Máxima</p>
+                    <p class="font-bold text-xl leading-tight">100 Polipuntos</p>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-5xl mx-auto mt-8 px-4 sm:px-6">
+        
+        <section class="mb-10 slide-up">
+            <h2 class="text-2xl font-bold text-poli-blue mb-4"><i class="fa-solid fa-book-open mr-2"></i>Cápsula de Repaso</h2>
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                
+                <!-- Accordion Item 1 -->
+                <div class="border-b border-slate-100">
+                    <button class="w-full text-left px-6 py-4 font-semibold flex justify-between items-center hover:bg-slate-50 focus:outline-none transition-colors" onclick="toggleAccordion('acc-1')">
+                        <span class="text-poli-blue"><i class="fa-solid fa-clock-rotate-left mr-2 text-poli-green"></i>La "Gabela" de Admisiones</span>
+                        <i class="fa-solid fa-chevron-down text-slate-400 transition-transform duration-300" id="icon-acc-1"></i>
+                    </button>
+                    <div id="acc-1" class="accordion-content px-6 bg-slate-50">
+                        <p class="pb-4 text-slate-600 text-sm md:text-base leading-relaxed mt-2">
+                            Aunque el calendario oficial indique que las clases iniciaron (ej. 1 de julio), Admisiones tiene un margen de <strong>máximo 2 semanas</strong> posteriores al inicio para seguir matriculando y cumplir metas. Nuestro deber es dar tranquilidad al estudiante sin desmentir a la Universidad: las clases terminan en la fecha oficial (ej. 20 de octubre).
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Accordion Item 2 -->
+                <div class="border-b border-slate-100">
+                    <button class="w-full text-left px-6 py-4 font-semibold flex justify-between items-center hover:bg-slate-50 focus:outline-none transition-colors" onclick="toggleAccordion('acc-2')">
+                        <span class="text-poli-blue"><i class="fa-solid fa-calendar-check mr-2 text-poli-green"></i>Ajuste de Fechas y TZAPAOR</span>
+                        <i class="fa-solid fa-chevron-down text-slate-400 transition-transform duration-300" id="icon-acc-2"></i>
+                    </button>
+                    <div id="acc-2" class="accordion-content px-6 bg-slate-50">
+                        <p class="pb-4 text-slate-600 text-sm md:text-base leading-relaxed mt-2">
+                            Si un estudiante terminó en junio, pero su orden sale para septiembre, <strong>NO esperamos a septiembre</strong>. Para garantizar la meta de rematrícula, ajustamos las fechas a julio mediante <em>TZAPAOR</em>. El sistema cargará sus materias automáticamente basado en esta nueva fecha. (Solo se crea ticket si el estudiante no pudo pagar y se le corre a la cohorte de septiembre).
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Accordion Item 3 (Nuevo) -->
+                <div class="border-b border-slate-100">
+                    <button class="w-full text-left px-6 py-4 font-semibold flex justify-between items-center hover:bg-slate-50 focus:outline-none transition-colors" onclick="toggleAccordion('acc-3')">
+                        <span class="text-poli-blue"><i class="fa-solid fa-layer-group mr-2 text-poli-green"></i>Identificación de Cohortes: 30 vs 80</span>
+                        <i class="fa-solid fa-chevron-down text-slate-400 transition-transform duration-300" id="icon-acc-3"></i>
+                    </button>
+                    <div id="acc-3" class="accordion-content px-6 bg-slate-50">
+                        <p class="pb-4 text-slate-600 text-sm md:text-base leading-relaxed mt-2">
+                            Por año tenemos 5 cohortes divididas semestralmente. El <strong>primer semestre (Terminación 30)</strong> tiene 2 ingresos en posgrados virtuales: Marzo y Mayo. El <strong>segundo semestre (Terminación 80)</strong> tiene 3 ingresos: Julio, Agosto y Octubre. Entender esta división es vital para ubicar al estudiante en el calendario correcto.
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <section class="slide-up" style="animation-delay: 0.1s;">
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-6 md:p-8 relative overflow-hidden">
+                <!-- Elemento decorativo -->
+                <div class="absolute top-0 right-0 w-32 h-32 bg-poli-green/10 rounded-bl-full -z-10"></div>
+                
+                <h2 class="text-2xl font-bold text-poli-blue mb-2"><i class="fa-solid fa-gamepad mr-2"></i>Simulador de Casos</h2>
+                <p class="text-slate-500 mb-6">Cada pregunta correcta vale 20 Polipuntos. Completa los 5 pasos para obtener los 100.</p>
+
+                <form id="mission-form">
+                    
+                    <!-- Progress Bar -->
+                    <div class="mb-6 flex items-center justify-between">
+                        <span id="step-counter" class="text-sm font-bold text-poli-blue">Paso 1 de 5</span>
+                        <div class="w-3/4 bg-slate-200 rounded-full h-2.5">
+                            <div id="progress-bar" class="bg-poli-green h-2.5 rounded-full transition-all duration-500 ease-out" style="width: 20%;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Mensaje de Error (Oculto por defecto) -->
+                    <div id="form-error" class="hidden bg-red-50 border-l-4 border-red-500 text-red-700 p-3 mb-6 rounded text-sm flex items-center">
+                        <i class="fa-solid fa-circle-exclamation mr-2 text-red-500"></i>
+                        <span id="error-text">Por favor, selecciona una opción antes de continuar.</span>
+                    </div>
+
+                    <!-- Question 1 -->
+                    <div class="question-step fade-in" id="step-1">
+                        <div class="bg-slate-50 p-5 rounded-lg border border-slate-200">
+                            <p class="font-semibold text-slate-800 mb-4"><span class="bg-poli-blue text-white px-2 py-1 rounded text-xs mr-2 shadow-sm">Caso 1</span>Un estudiante llama mencionando que Admisiones le dijo que iniciaba clases hoy. Según el calendario, la cohorte inició el 1 de julio y el semestre se divide en dos bloques. ¿Cuándo termina clases realmente este estudiante y qué le dices?</p>
+                            <div class="space-y-3">
+                                <label class="flex items-start p-3 bg-white border rounded cursor-pointer hover:border-poli-green transition-colors">
+                                    <input type="radio" name="q1" value="A" class="mt-1 mr-3 text-poli-green focus:ring-poli-green">
+                                    <span class="text-sm text-slate-700">Le digo que en Admisiones le dieron mala información. Debe revisar si inició el 1 de julio. Termina el 25 de agosto.</span>
+                                </label>
+                                <label class="flex items-start p-3 bg-white border rounded cursor-pointer hover:border-poli-green transition-colors">
+                                    <input type="radio" name="q1" value="B" class="mt-1 mr-3 text-poli-green focus:ring-poli-green">
+                                    <span class="text-sm text-slate-700">Acompaño su proceso sin hacerlo sentir engañado, entendiendo la gabela de 2 semanas de Admisiones. Le confirmo que sus clases terminan el 20 de octubre.</span>
+                                </label>
+                                <label class="flex items-start p-3 bg-white border rounded cursor-pointer hover:border-poli-green transition-colors">
+                                    <input type="radio" name="q1" value="C" class="mt-1 mr-3 text-poli-green focus:ring-poli-green">
+                                    <span class="text-sm text-slate-700">Como entró tarde, se le corre el calendario dos semanas, por lo que terminaría a principios de noviembre.</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="flex justify-end mt-6">
+                            <button type="button" onclick="nextStep(1)" class="bg-poli-blue hover:bg-blue-800 text-white font-bold py-2 px-6 rounded-full shadow transition-colors">Siguiente <i class="fa-solid fa-arrow-right ml-2"></i></button>
+                        </div>
+                    </div>
+
+                    <!-- Question 2 -->
+                    <div class="question-step hidden fade-in" id="step-2">
+                        <div class="bg-slate-50 p-5 rounded-lg border border-slate-200">
+                            <p class="font-semibold text-slate-800 mb-4"><span class="bg-poli-blue text-white px-2 py-1 rounded text-xs mr-2 shadow-sm">Caso 2</span>Estudiante finalizó el 30 de junio. Quiere pagar ya, pero su orden tiene fechas de septiembre. ¿Qué haces?</p>
+                            <div class="space-y-3">
+                                <label class="flex items-start p-3 bg-white border rounded cursor-pointer hover:border-poli-green transition-colors">
+                                    <input type="radio" name="q2" value="A" class="mt-1 mr-3 text-poli-green focus:ring-poli-green">
+                                    <span class="text-sm text-slate-700">Le digo que pague en septiembre como dice el recibo, total, ya no pasa nada.</span>
+                                </label>
+                                <label class="flex items-start p-3 bg-white border rounded cursor-pointer hover:border-poli-green transition-colors">
+                                    <input type="radio" name="q2" value="B" class="mt-1 mr-3 text-poli-green focus:ring-poli-green">
+                                    <span class="text-sm text-slate-700">Ajusto las fechas a través de TZAPAOR para julio (12, 19, 26). La prioridad es garantizar la meta de rematrícula.</span>
+                                </label>
+                                <label class="flex items-start p-3 bg-white border rounded cursor-pointer hover:border-poli-green transition-colors">
+                                    <input type="radio" name="q2" value="C" class="mt-1 mr-3 text-poli-green focus:ring-poli-green">
+                                    <span class="text-sm text-slate-700">Le creo un caso a tecnología para que le arreglen el recibo porque está dañado.</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="flex justify-between mt-6">
+                            <button type="button" onclick="prevStep(2)" class="text-slate-500 hover:text-poli-blue font-semibold py-2 px-4 transition-colors"><i class="fa-solid fa-arrow-left mr-2"></i> Anterior</button>
+                            <button type="button" onclick="nextStep(2)" class="bg-poli-blue hover:bg-blue-800 text-white font-bold py-2 px-6 rounded-full shadow transition-colors">Siguiente <i class="fa-solid fa-arrow-right ml-2"></i></button>
+                        </div>
+                    </div>
+
+                    <!-- Question 3 -->
+                    <div class="question-step hidden fade-in" id="step-3">
+                        <div class="bg-slate-50 p-5 rounded-lg border border-slate-200">
+                            <p class="font-semibold text-slate-800 mb-4"><span class="bg-poli-blue text-white px-2 py-1 rounded text-xs mr-2 shadow-sm">Caso 3</span>Relacionado al caso anterior: Si le modificas las fechas a julio mediante TZAPAOR, el estudiante pregunta angustiado: "¿Me van a cargar las materias?"</p>
+                            <div class="space-y-3">
+                                <label class="flex items-start p-3 bg-white border rounded cursor-pointer hover:border-poli-green transition-colors">
+                                    <input type="radio" name="q3" value="A" class="mt-1 mr-3 text-poli-green focus:ring-poli-green">
+                                    <span class="text-sm text-slate-700">Sí, se las van a cargar. El sistema lo hace con base en la fecha en que se matriculó/pagó. No hay problema.</span>
+                                </label>
+                                <label class="flex items-start p-3 bg-white border rounded cursor-pointer hover:border-poli-green transition-colors">
+                                    <input type="radio" name="q3" value="B" class="mt-1 mr-3 text-poli-green focus:ring-poli-green">
+                                    <span class="text-sm text-slate-700">No, como modificamos el recibo, obligatoriamente hay que crear un caso a servicio académico.</span>
+                                </label>
+                                <label class="flex items-start p-3 bg-white border rounded cursor-pointer hover:border-poli-green transition-colors">
+                                    <input type="radio" name="q3" value="C" class="mt-1 mr-3 text-poli-green focus:ring-poli-green">
+                                    <span class="text-sm text-slate-700">Sí, pero solo si el estudiante inscribe las materias por autogestión.</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="flex justify-between mt-6">
+                            <button type="button" onclick="prevStep(3)" class="text-slate-500 hover:text-poli-blue font-semibold py-2 px-4 transition-colors"><i class="fa-solid fa-arrow-left mr-2"></i> Anterior</button>
+                            <button type="button" onclick="nextStep(3)" class="bg-poli-blue hover:bg-blue-800 text-white font-bold py-2 px-6 rounded-full shadow transition-colors">Siguiente <i class="fa-solid fa-arrow-right ml-2"></i></button>
+                        </div>
+                    </div>
+
+                    <!-- Question 4 -->
+                    <div class="question-step hidden fade-in" id="step-4">
+                        <div class="bg-slate-50 p-5 rounded-lg border border-slate-200">
+                            <p class="font-semibold text-slate-800 mb-4"><span class="bg-poli-blue text-white px-2 py-1 rounded text-xs mr-2 shadow-sm">Caso 4</span>Un estudiante pagó por bloques. No alcanzó a pagar el segundo bloque y las clases ya iniciaron. ¿Cómo gestionas la fecha de pago?</p>
+                            <div class="space-y-3">
+                                <label class="flex items-start p-3 bg-white border rounded cursor-pointer hover:border-poli-green transition-colors">
+                                    <input type="radio" name="q4" value="A" class="mt-1 mr-3 text-poli-green focus:ring-poli-green">
+                                    <span class="text-sm text-slate-700">Le amplío la fecha inmediatamente las 2 semanas máximas permitidas para que consiga la plata tranquilo.</span>
+                                </label>
+                                <label class="flex items-start p-3 bg-white border rounded cursor-pointer hover:border-poli-green transition-colors">
+                                    <input type="radio" name="q4" value="B" class="mt-1 mr-3 text-poli-green focus:ring-poli-green">
+                                    <span class="text-sm text-slate-700">Le cancelo las materias del segundo bloque porque ya iniciaron clases.</span>
+                                </label>
+                                <label class="flex items-start p-3 bg-white border rounded cursor-pointer hover:border-poli-green transition-colors">
+                                    <input type="radio" name="q4" value="C" class="mt-1 mr-3 text-poli-green focus:ring-poli-green">
+                                    <span class="text-sm text-slate-700">Le amplío la fecha paulatinamente (no de golpe) para generarle urgencia, recordando que hay un tope de 2 semanas post-inicio.</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="flex justify-between mt-6">
+                            <button type="button" onclick="prevStep(4)" class="text-slate-500 hover:text-poli-blue font-semibold py-2 px-4 transition-colors"><i class="fa-solid fa-arrow-left mr-2"></i> Anterior</button>
+                            <button type="button" onclick="nextStep(4)" class="bg-poli-blue hover:bg-blue-800 text-white font-bold py-2 px-6 rounded-full shadow transition-colors">Siguiente <i class="fa-solid fa-arrow-right ml-2"></i></button>
+                        </div>
+                    </div>
+
+                    <!-- Question 5 (Nueva) -->
+                    <div class="question-step hidden fade-in" id="step-5">
+                        <div class="bg-slate-50 p-5 rounded-lg border border-slate-200">
+                            <p class="font-semibold text-slate-800 mb-4"><span class="bg-poli-blue text-white px-2 py-1 rounded text-xs mr-2 shadow-sm">Caso 5</span>¿Qué debes verificar obligatoriamente en Analytics para poder revisar el calendario correctamente y saber a qué cohorte pertenece un estudiante?</p>
+                            <div class="space-y-3">
+                                <label class="flex items-start p-3 bg-white border rounded cursor-pointer hover:border-poli-green transition-colors">
+                                    <input type="radio" name="q5" value="A" class="mt-1 mr-3 text-poli-green focus:ring-poli-green">
+                                    <span class="text-sm text-slate-700">Verificar únicamente si es de modalidad virtual o presencial, ya que los posgrados comparten el mismo calendario a nivel general sin importar la fecha.</span>
+                                </label>
+                                <label class="flex items-start p-3 bg-white border rounded cursor-pointer hover:border-poli-green transition-colors">
+                                    <input type="radio" name="q5" value="B" class="mt-1 mr-3 text-poli-green focus:ring-poli-green">
+                                    <span class="text-sm text-slate-700">Buscar la fecha del primer pago que hizo el estudiante y, con base en ese mes, buscarlo en el calendario general institucional.</span>
+                                </label>
+                                <label class="flex items-start p-3 bg-white border rounded cursor-pointer hover:border-poli-green transition-colors">
+                                    <input type="radio" name="q5" value="C" class="mt-1 mr-3 text-poli-green focus:ring-poli-green">
+                                    <span class="text-sm text-slate-700">Debemos verificar la cohorte del estudiante, el periodo académico en el que ingresó (ej. 30 o 80), y el nivel (maestría o especialización).</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="flex justify-between mt-6">
+                            <button type="button" onclick="prevStep(5)" class="text-slate-500 hover:text-poli-blue font-semibold py-2 px-4 transition-colors"><i class="fa-solid fa-arrow-left mr-2"></i> Anterior</button>
+                            <button type="button" onclick="evaluateMission()" class="bg-poli-green hover:bg-green-600 text-white font-bold py-2 px-8 rounded-full shadow-lg transition-transform transform hover:scale-105">
+                                <i class="fa-solid fa-paper-plane mr-2"></i>Enviar Misión
+                            </button>
+                        </div>
+                    </div>
+
+                </form>
+            </div>
+        </section>
+
+        <section id="feedback-section" class="hidden mt-8 slide-up">
+            <div id="feedback-card" class="bg-white rounded-2xl shadow-2xl border-t-8 p-8 text-center">
+                <div id="feedback-icon" class="text-6xl mb-4"></div>
+                <h3 id="feedback-title" class="text-2xl font-bold mb-2 text-slate-800"></h3>
+                <p id="feedback-score" class="font-semibold text-xl mb-2 text-slate-700"></p>
+                <p id="feedback-message" class="text-slate-600 text-lg mb-6 max-w-2xl mx-auto"></p>
+                
+                <div id="improvement-areas" class="text-left bg-slate-50 p-4 rounded-lg mb-6 hidden">
+                    <p class="font-bold text-red-500 mb-2"><i class="fa-solid fa-triangle-exclamation mr-2"></i>Áreas a reforzar:</p>
+                    <ul id="error-list" class="list-disc pl-5 text-sm text-slate-700 space-y-1"></ul>
+                </div>
+
+                <div class="bg-blue-50 border border-blue-200 rounded-xl p-6 text-left shadow-sm">
+                    <p class="text-poli-blue font-semibold mb-2"><i class="fa-solid fa-envelope-open-text mr-2"></i>Recordatorio Importante</p>
+                    <p class="text-sm text-slate-600 mb-4 leading-relaxed">Recuerda que la semana pasada se envió un correo con el resumen y los puntos claves de la sesión de refuerzo que tuvimos. Por favor, revísalo si aún no lo has hecho, es vital para nuestra gestión de posgrados.</p>
+                    
+                    <p class="text-sm text-slate-600 mb-2 font-semibold"><i class="fa-solid fa-link text-poli-green mr-1"></i>Link de acceso al Calendario de Posgrados (Ingresa con tu correo Poli):</p>
+                    <a href="https://poligran.sharepoint.com/:x:/r/sites/Calendarios/_layouts/15/Doc.aspx?sourcedoc=%7BFB26C302-3E3C-4EE3-B5CB-4086DED11393%7D&file=Calendario%20institucional%20inicio%20y%20fin%202026.xlsm&action=default&mobileredirect=true" target="_blank" class="inline-block bg-poli-blue text-white px-4 py-2 rounded shadow hover:bg-blue-800 transition-colors text-sm break-all">
+                        <i class="fa-solid fa-file-excel mr-2"></i>Calendario Institucional Inicio y Fin 2026.xlsm
+                    </a>
+                </div>
+                
+                <button onclick="location.reload()" class="mt-8 bg-slate-200 text-slate-700 font-semibold py-2 px-6 rounded-full hover:bg-slate-300 transition-colors">Volver a intentar la Misión</button>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        // Lógica de Acordeón
+        function toggleAccordion(id) {
+            const content = document.getElementById(id);
+            const icon = document.getElementById('icon-' + id);
+            
+            if (content.classList.contains('open')) {
+                content.classList.remove('open');
+                icon.style.transform = 'rotate(0deg)';
+            } else {
+                content.classList.add('open');
+                icon.style.transform = 'rotate(180deg)';
+            }
+        }
+
+        // Respuestas Correctas
+        const correctAnswers = {
+            q1: 'B',
+            q2: 'B',
+            q3: 'A',
+            q4: 'C',
+            q5: 'C'
+        };
+
+        // Mensajes de error específicos
+        const errorMessages = {
+            q1: "Caso 1 (Gabela de Admisiones): Recuerda no desautorizar a la universidad, acompaña al estudiante y confirma la fecha oficial de cierre.",
+            q2: "Caso 2 (Fechas de Pago): Nuestra prioridad es Rematrícula. Usa TZAPAOR para ajustar a fechas cercanas, no lo mandes para meses posteriores.",
+            q3: "Caso 3 (Cargue de materias): Si solo ajustas la fecha dentro de la misma cohorte mediante TZAPAOR, el sistema carga las materias automáticamente.",
+            q4: "Caso 4 (Pago por bloques): No des plazos amplios de inmediato. Amplía paulatinamente para generar urgencia, respetando el límite de 2 semanas post-inicio.",
+            q5: "Caso 5 (Analytics): Para encontrar el calendario correcto, es vital cruzar el Nivel (Maestría/Especialización), el periodo (30/80) y la cohorte exacta."
+        };
+
+        // Navegación Stepper
+        function showError(msg) {
+            const errDiv = document.getElementById('form-error');
+            document.getElementById('error-text').innerText = msg;
+            errDiv.classList.remove('hidden');
+        }
+
+        function hideError() {
+            document.getElementById('form-error').classList.add('hidden');
+        }
+
+        function nextStep(current) {
+            const form = document.getElementById('mission-form');
+            const formData = new FormData(form);
+            
+            // Validar que respondió la pregunta actual
+            if (!formData.get('q' + current)) {
+                showError('⚠️ ¡Alto ahí! Selecciona una opción antes de continuar.');
+                return;
+            }
+            hideError();
+
+            document.getElementById('step-' + current).classList.add('hidden');
+            document.getElementById('step-' + (current + 1)).classList.remove('hidden');
+            
+            updateProgress(current + 1);
+        }
+
+        function prevStep(current) {
+            hideError();
+            document.getElementById('step-' + current).classList.add('hidden');
+            document.getElementById('step-' + (current - 1)).classList.remove('hidden');
+            updateProgress(current - 1);
+        }
+
+        function updateProgress(step) {
+            document.getElementById('step-counter').innerText = 'Paso ' + step + ' de 5';
+            document.getElementById('progress-bar').style.width = (step * 20) + '%';
+        }
+
+        // Evaluación Final
+        function evaluateMission() {
+            const form = document.getElementById('mission-form');
+            const formData = new FormData(form);
+            
+            // Validar última pregunta
+            if (!formData.get('q5')) {
+                showError('⚠️ ¡Alto ahí! Responde este último caso para completar tu misión.');
+                return;
+            }
+            hideError();
+
+            let score = 0;
+            let errors = [];
+
+            // Calcular puntaje
+            for (let key in correctAnswers) {
+                if (formData.get(key) === correctAnswers[key]) {
+                    score++;
+                } else {
+                    errors.push(errorMessages[key]);
+                }
+            }
+
+            displayFeedback(score, errors);
+        }
+
+        function displayFeedback(score, errors) {
+            // Ocultar formulario, Mostrar Feedback
+            document.getElementById('mission-form').closest('section').style.display = 'none';
+            const feedbackSection = document.getElementById('feedback-section');
+            const feedbackCard = document.getElementById('feedback-card');
+            const icon = document.getElementById('feedback-icon');
+            const title = document.getElementById('feedback-title');
+            const scoreText = document.getElementById('feedback-score');
+            const message = document.getElementById('feedback-message');
+            const improvementArea = document.getElementById('improvement-areas');
+            const errorList = document.getElementById('error-list');
+            
+            feedbackSection.classList.remove('hidden');
+            
+            const totalPoints = score * 20;
+            scoreText.innerText = `Puntaje Total: ${totalPoints} / 100 Polipuntos`;
+
+            if (score === 5) {
+                // Éxito Total
+                feedbackCard.classList.add('border-poli-green');
+                icon.innerHTML = '<i class="fa-solid fa-medal text-yellow-400 drop-shadow-md"></i>';
+                title.innerText = "¡Operación Exitosa! Eres un Estratega Experto";
+                title.classList.add('text-poli-green');
+                scoreText.classList.add('text-poli-green');
+                message.innerText = "¡Impecable! Has demostrado un dominio absoluto del código TZAPAOR, los calendarios y las cohortes. Tu capacidad para negociar y resolver problemas asegura nuestras metas de rematrícula.";
+                improvementArea.classList.add('hidden');
+            } else {
+                // Necesita Refuerzo
+                feedbackCard.classList.add('border-poli-accent');
+                icon.innerHTML = '<i class="fa-solid fa-user-shield text-poli-accent drop-shadow-md"></i>';
+                title.innerText = "Misión Completada, pero hay brechas en el radar";
+                title.classList.add('text-poli-accent');
+                scoreText.classList.add('text-poli-accent');
+                message.innerText = "Tienes las bases, pero el diablo está en los detalles. Recuerda que un ajuste de fechas o una mala lectura de cohorte puede costar una matrícula.";
+                
+                // Mostrar errores
+                errorList.innerHTML = '';
+                errors.forEach(err => {
+                    const li = document.createElement('li');
+                    li.innerText = err;
+                    errorList.appendChild(li);
+                });
+                improvementArea.classList.remove('hidden');
+            }
+            
+            // Scroll suave hacia el feedback
+            feedbackSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    </script>
+</body>
+</html>
