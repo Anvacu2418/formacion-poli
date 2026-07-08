@@ -3,194 +3,295 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mundial Rematrícula POLI</title>
-    <!-- Tailwind CSS -->
+    <title>Mundial de Rematrícula POLI</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome para Iconos -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #0f172a; color: #f8fafc; }
-        .glass-panel { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
-        .tab-active { border-bottom: 2px solid #10b981; color: #10b981; font-weight: bold; }
-        .tab-inactive { color: #94a3b8; }
-        /* Animación de ruleta */
-        .roulette-spin { animation: spinBlur 0.5s linear infinite; }
-        @keyframes spinBlur { 0% { filter: blur(0px); opacity: 1; } 50% { filter: blur(4px); opacity: 0.5; } 100% { filter: blur(0px); opacity: 1; } }
+        body {
+            background-color: #0f172a; /* Slate 900 */
+            color: #e2e8f0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-image: radial-gradient(circle at top right, #1e293b, transparent), radial-gradient(circle at bottom left, #020617, transparent);
+            min-height: 100vh;
+        }
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1rem;
+        }
+        .neon-text {
+            text-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+        }
+        .tab-active {
+            border-bottom: 2px solid #10b981;
+            color: #10b981;
+        }
+        /* Ocultar barra de scroll para el panel admin */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1e293b; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #10b981; 
+            border-radius: 4px;
+        }
     </style>
 </head>
-<body class="p-4 md:p-8 relative min-h-screen">
+<body class="p-4 md:p-8">
 
-    <div id="login-modal" class="fixed inset-0 bg-slate-900/95 z-[100] flex items-center justify-center backdrop-blur-md transition-opacity">
-        <div class="bg-slate-800 p-8 rounded-xl border-2 border-emerald-500 shadow-[0_0_30px_rgba(16,185,129,0.3)] max-w-md w-full mx-4 text-center">
-            <div class="bg-emerald-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-[0_0_15px_rgba(16,185,129,0.5)]">
-                <i class="fas fa-id-badge text-3xl text-slate-900"></i>
-            </div>
-            <h2 class="text-2xl font-bold text-white uppercase tracking-wider mb-2">Ingreso al Mundial</h2>
-            <p class="text-slate-400 text-sm mb-6">Identifícate para calificar a los equipos. Solo se permite <strong>un voto por persona por equipo</strong>.</p>
+    <!-- Modal: Ingreso al VAR -->
+    <div id="auth-modal" class="fixed inset-0 bg-slate-900/95 backdrop-blur-md z-[100] flex flex-col justify-center items-center p-4 transition-opacity duration-500">
+        <div class="bg-slate-800 border-2 border-emerald-500 rounded-2xl shadow-[0_0_30px_rgba(16,185,129,0.3)] w-full max-w-md p-8 text-center relative overflow-hidden">
+            <!-- Efecto decorativo -->
+            <div class="absolute -top-10 -right-10 w-32 h-32 bg-emerald-500/20 rounded-full blur-2xl"></div>
             
-            <input type="text" id="judge-name-input" placeholder="Escribe tu Nombre y Apellido" class="w-full bg-slate-900 border border-slate-600 rounded p-4 text-white focus:outline-none focus:border-emerald-500 mb-4 text-center font-bold">
+            <i class="fas fa-id-badge text-5xl text-emerald-500 mb-4"></i>
+            <h2 class="text-3xl font-black text-white mb-2 tracking-wider">INGRESO AL VAR</h2>
+            <p class="text-slate-400 mb-6 text-sm">Identifícate para calificar a los equipos. Solo se permite <strong>un voto</strong> por persona por equipo.</p>
             
-            <button onclick="ingresarVAR()" class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold py-3 rounded-lg shadow-lg transition-transform transform hover:scale-105">
-                <i class="fas fa-sign-in-alt mr-2"></i> ENTRAR AL MUNDIAL
+            <input type="text" id="judge-name-input" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-4 text-white font-bold text-center mb-6 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/50" placeholder="Escribe tu Nombre y Apellido" onkeypress="if(event.key === 'Enter') loginVAR()">
+            
+            <button onclick="loginVAR()" class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold py-4 rounded-lg shadow-lg transition-transform transform hover:scale-105">
+                <i class="fas fa-sign-in-alt mr-2"></i> ENTRAR AL TORNEO
             </button>
         </div>
     </div>
 
-    <header class="flex flex-col md:flex-row justify-between items-center mb-8 glass-panel p-4 md:p-6 shadow-2xl border-t-4 border-t-emerald-500 rounded-xl">
-        <div class="flex items-center gap-4 mb-4 md:mb-0">
-            <div class="bg-emerald-500 p-3 rounded-full shadow-[0_0_15px_rgba(16,185,129,0.5)]">
-                <i class="fas fa-trophy text-2xl text-slate-900"></i>
+    <!-- Modal SECRETO: Panel de Administración -->
+    <div id="admin-modal" class="hidden fixed inset-0 bg-black/95 backdrop-blur-sm z-[200] flex flex-col justify-center items-center p-4 lg:p-10">
+        <div class="bg-slate-900 border border-slate-700 rounded-xl shadow-[0_0_50px_rgba(0,0,0,0.8)] w-full max-w-6xl max-h-full flex flex-col">
+            <div class="flex justify-between items-center p-6 border-b border-slate-700 bg-slate-800 rounded-t-xl">
+                <h2 class="text-2xl font-black text-white uppercase"><i class="fas fa-user-shield text-emerald-500 mr-3"></i>Panel de Control Técnico</h2>
+                <button onclick="cerrarAdmin()" class="text-slate-400 hover:text-white transition-colors"><i class="fas fa-times text-3xl"></i></button>
             </div>
-            <div>
-                <h1 class="text-2xl md:text-3xl font-extrabold uppercase tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">
-                    Mundial Rematrícula POLI
-                </h1>
-                <p class="text-sm text-slate-400">Torneo de Venta Consultiva</p>
-            </div>
-        </div>
-        
-        <div class="text-center md:text-right">
-            <p class="text-slate-400 text-sm mb-2">Fase Clasificatoria - Juez: <span id="judge-display-name" class="text-emerald-400 font-bold uppercase">Pendiente</span></p>
-            <div class="flex items-center justify-center md:justify-end gap-3">
-                <span class="px-3 py-1 bg-red-500/20 text-red-400 text-xs font-bold rounded-full border border-red-500/50 flex items-center gap-2 animate-pulse">
-                    <span class="w-2 h-2 rounded-full bg-red-500"></span> EN VIVO
-                </span>
-                <button onclick="exportarDatos()" class="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded text-sm transition border border-slate-500">
-                    <i class="fas fa-file-excel mr-1"></i> Exportar
-                </button>
-            </div>
-        </div>
-    </header>
-
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
-        <!-- Columna Izquierda: Ranking -->
-        <div class="lg:col-span-1 glass-panel p-6 rounded-xl flex flex-col h-[700px]">
-            <h2 class="text-xl font-bold mb-4 flex items-center gap-2 border-b border-slate-700 pb-3">
-                <i class="fas fa-list-ol text-emerald-400"></i> Tabla de Posiciones
-            </h2>
-            <div id="leaderboard" class="flex-1 overflow-y-auto space-y-3 pr-2">
-                <div class="text-center text-slate-500 mt-10"><i class="fas fa-circle-notch fa-spin text-2xl mb-2"></i><br>Cargando posiciones...</div>
-            </div>
-        </div>
-
-        <!-- Columna Derecha: Panel de Control -->
-        <div class="lg:col-span-2 glass-panel rounded-xl flex flex-col h-[700px] overflow-hidden">
             
-            <!-- Pestañas -->
-            <div class="flex border-b border-slate-700">
-                <button onclick="switchTab('calificar')" id="tab-calificar" class="flex-1 py-4 tab-active transition">
-                    <i class="fas fa-gavel mr-2"></i> El VAR (Calificar)
-                </button>
-                <button onclick="switchTab('escenarios')" id="tab-escenarios" class="flex-1 py-4 tab-inactive transition hover:bg-slate-800/50">
-                    <i class="fas fa-theater-masks mr-2"></i> Escenarios (Ruleta)
-                </button>
-            </div>
-
-            <!-- Contenido Pestañas -->
-            <div class="p-6 flex-1 overflow-y-auto relative">
-                
-                <div id="content-calificar" class="space-y-6">
-                    <div class="bg-slate-800/50 p-4 rounded-lg border border-slate-700">
-                        <label class="block text-sm text-slate-400 mb-2">Selecciona el equipo a evaluar:</label>
-                        <select id="team-select" class="w-full bg-slate-900 border border-slate-600 rounded p-3 text-white focus:outline-none focus:border-emerald-500 text-lg">
-                            <option value="">-- Elige un Equipo --</option>
-                            <option value="1">Selección Alfa</option>
-                            <option value="2">Selección Beta</option>
-                            <option value="3">Selección Gamma</option>
-                            <option value="4">Selección Delta</option>
-                            <option value="5">Selección Épsilon</option>
-                            <option value="6">Selección Zeta</option>
-                            <option value="7">Selección Omega</option>
-                        </select>
+            <div class="p-6 flex-1 overflow-hidden flex flex-col">
+                <div class="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
+                    <h3 class="text-lg font-bold text-emerald-400">Auditoría de Feedbacks</h3>
+                    <div class="flex flex-wrap justify-end gap-3">
+                        <button onclick="cargarDatosAdmin()" class="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded font-bold transition-colors"><i class="fas fa-sync-alt mr-2"></i>Refrescar</button>
+                        <button onclick="exportarDatos()" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded font-bold transition-colors shadow-lg shadow-blue-500/30"><i class="fas fa-file-excel mr-2"></i>Descargar Data</button>
+                        <button onclick="resetearTorneo()" id="btn-reset" class="bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded font-bold transition-colors shadow-lg shadow-red-500/30"><i class="fas fa-skull-crossbones mr-2"></i>Reiniciar Torneo</button>
                     </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <!-- Criterio 1 -->
-                        <div class="bg-slate-800 p-4 rounded-lg border-l-4 border-l-blue-500">
-                            <h3 class="font-bold mb-1 text-blue-400">1. Voz e Inflexión</h3>
-                            <p class="text-xs text-slate-400 mb-3">Tono, volumen, actitud y empatía vocal.</p>
-                            <input type="range" id="score-1" min="1" max="10" value="5" class="w-full mb-2 accent-blue-500" oninput="document.getElementById('val-1').innerText = this.value">
-                            <div class="text-center font-bold text-xl"><span id="val-1">5</span>/10</div>
-                        </div>
-                        
-                        <!-- Criterio 2 -->
-                        <div class="bg-slate-800 p-4 rounded-lg border-l-4 border-l-purple-500">
-                            <h3 class="font-bold mb-1 text-purple-400">2. Indagación</h3>
-                            <p class="text-xs text-slate-400 mb-3">Preguntas abiertas y descubrimiento de necesidades.</p>
-                            <input type="range" id="score-2" min="1" max="10" value="5" class="w-full mb-2 accent-purple-500" oninput="document.getElementById('val-2').innerText = this.value">
-                            <div class="text-center font-bold text-xl"><span id="val-2">5</span>/10</div>
-                        </div>
-
-                        <!-- Criterio 3 -->
-                        <div class="bg-slate-800 p-4 rounded-lg border-l-4 border-l-emerald-500">
-                            <h3 class="font-bold mb-1 text-emerald-400">3. Venta Consultiva</h3>
-                            <p class="text-xs text-slate-400 mb-3">Solución personalizada y manejo de la negociación.</p>
-                            <input type="range" id="score-3" min="1" max="10" value="5" class="w-full mb-2 accent-emerald-500" oninput="document.getElementById('val-3').innerText = this.value">
-                            <div class="text-center font-bold text-xl"><span id="val-3">5</span>/10</div>
-                        </div>
-                    </div>
-
-                    <div class="bg-slate-800/50 p-4 rounded-lg border border-slate-700">
-                        <label class="block text-sm text-slate-400 mb-2 font-bold"><i class="fas fa-comment-dots"></i> Feedback / Oportunidades de Mejora:</label>
-                        <textarea id="feedback-text" rows="3" class="w-full bg-slate-900 border border-slate-600 rounded p-3 text-white focus:outline-none focus:border-emerald-500" placeholder="Ej: Faltó indagar más sobre el motivo de la falta de tiempo..."></textarea>
-                    </div>
-
-                    <button onclick="submitScore()" class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold py-4 rounded-lg shadow-lg text-lg transition-transform transform hover:scale-[1.01]">
-                        <i class="fas fa-paper-plane mr-2"></i> ENVIAR CALIFICACIÓN AL VAR
-                    </button>
                 </div>
-
-                <div id="content-escenarios" class="hidden space-y-6">
-                    
-                    <div class="bg-blue-900/30 p-5 rounded-lg border border-blue-500/50">
-                        <h3 class="font-bold text-blue-400 text-lg mb-2"><i class="fas fa-microphone-alt"></i> Nivel 1: El Camaleón de la Voz</h3>
-                        <p class="text-sm text-slate-300 mb-3"><strong>Objetivo:</strong> Demostrar que cómo se dice es tan importante como qué se dice.</p>
-                        <div class="bg-slate-900 p-3 rounded text-sm italic border-l-2 border-blue-500 mb-3">
-                            "Te informamos que el plazo para la renovación de tu matrícula con el beneficio financiero vence el día de hoy a la medianoche. Si el pago no se refleja en el sistema, perderás el descuento aplicado a tu plan de estudios y se generará un recargo extemporáneo."
-                        </div>
-                        <ul class="text-sm text-slate-400 list-disc pl-5">
-                            <li><strong>Asesor 1:</strong> Lee el texto de forma normal, plana, como lo harías en cualquier llamada rutinaria.</li>
-                            <li><strong>Asesor 2:</strong> Lee el texto de pie, sonriendo, y aplicando un perfil: Narrador de Fútbol emocionado O Locutor de radio de medianoche.</li>
-                        </ul>
-                    </div>
-
-                    <div class="bg-purple-900/30 p-5 rounded-lg border border-purple-500/50">
-                        <div class="flex justify-between items-start mb-2">
-                            <h3 class="font-bold text-purple-400 text-lg"><i class="fas fa-search"></i> Nivel 2: Indagación Absurda</h3>
-                            <button onclick="ruletearCasos()" class="bg-purple-600 hover:bg-purple-500 text-white px-3 py-1 rounded text-sm transition shadow-lg">
-                                <i class="fas fa-sync-alt"></i> Girar Ruleta
-                            </button>
-                        </div>
-                        <p class="text-sm text-slate-300 mb-3"><strong>Objetivo:</strong> Hacer mínimo 3 preguntas abiertas para descubrir la necesidad antes de ofrecer el producto.</p>
-                        <div id="ruleta-nivel-2" class="bg-slate-900 p-4 rounded text-center text-lg font-bold border-2 border-purple-500 text-purple-300 min-h-[80px] flex items-center justify-center">
-                            Haz clic en "Girar Ruleta" para descubrir tu caso.
-                        </div>
-                    </div>
-
-                    <div class="bg-emerald-900/30 p-5 rounded-lg border border-emerald-500/50">
-                        <h3 class="font-bold text-emerald-400 text-lg mb-2"><i class="fas fa-handshake"></i> Nivel 3: El Chicharrón Real (Roleplay)</h3>
-                        <p class="text-sm text-slate-300 mb-3"><strong>Objetivo:</strong> Aplicar empatía, indagación y venta consultiva en un caso real. Prohibido hablar de precios los primeros 2 minutos.</p>
-                        <div id="ruleta-nivel-3" class="bg-slate-900 p-4 rounded text-center text-md font-bold border-2 border-emerald-500 text-emerald-300 min-h-[80px] flex items-center justify-center">
-                            El caso se sorteará al girar la ruleta arriba.
-                        </div>
-                    </div>
-
+                
+                <div class="overflow-auto rounded border border-slate-700 flex-1 bg-slate-900/50">
+                    <table class="w-full text-left text-sm text-slate-300">
+                        <thead class="bg-slate-800 text-emerald-500 sticky top-0">
+                            <tr>
+                                <th class="p-4 border-b border-slate-700 font-bold uppercase">Fecha/Hora</th>
+                                <th class="p-4 border-b border-slate-700 font-bold uppercase">Nombre del Juez</th>
+                                <th class="p-4 border-b border-slate-700 font-bold uppercase">Equipo Evaluado</th>
+                                <th class="p-4 border-b border-slate-700 font-bold uppercase text-center" title="Nivel 1: Voz">Pts Voz</th>
+                                <th class="p-4 border-b border-slate-700 font-bold uppercase text-center" title="Nivel 2: Indagación">Pts Indag.</th>
+                                <th class="p-4 border-b border-slate-700 font-bold uppercase text-center" title="Nivel 3: Negociación">Pts Neg.</th>
+                                <th class="p-4 border-b border-slate-700 font-bold uppercase">Observaciones / Feedback</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-table-body" class="divide-y divide-slate-700">
+                            <!-- Datos inyectados por JS -->
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Header Principal -->
+    <header class="flex justify-between items-center mb-8 glass-panel p-4 md:p-6 shadow-2xl border-t-4 border-t-emerald-500 relative">
+        <div class="flex items-center gap-4">
+            <!-- BOTÓN SECRETO ADMIN: Doble clic en el trofeo -->
+            <div class="bg-emerald-500 p-3 rounded-full shadow-[0_0_15px_rgba(16,185,129,0.5)] cursor-pointer hover:bg-emerald-400 transition-colors" ondblclick="abrirAdmin()" title="Doble clic para opciones técnicas">
+                <i class="fas fa-trophy text-2xl text-slate-900"></i>
+            </div>
+            <div>
+                <h1 class="text-3xl font-bold tracking-wider text-white uppercase neon-text">Mundial de Rematrícula</h1>
+                <p class="text-emerald-400 font-semibold tracking-widest text-sm">COPA POLI 2026 - LA TRIATLÓN</p>
+            </div>
+        </div>
+        <div class="text-right hidden md:block">
+            <p class="text-slate-400 text-sm font-bold" id="display-judge-name">Juez: Pendiente</p>
+            <div class="flex items-center gap-2 mt-1 justify-end">
+                <span class="w-3 h-3 rounded-full bg-red-500 animate-pulse"></span>
+                <span class="text-red-400 font-bold">EN VIVO</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Left Column: Leaderboard -->
+        <div class="lg:col-span-1 space-y-6">
+            <div class="glass-panel p-6 shadow-xl">
+                <h2 class="text-xl font-bold mb-4 flex items-center gap-2 border-b border-slate-700 pb-2">
+                    <i class="fas fa-list-ol text-emerald-500"></i> Tabla de Posiciones
+                </h2>
+                <div id="leaderboard" class="space-y-3">
+                    <!-- Teams injected via JS -->
+                </div>
+            </div>
+            
+            <div class="glass-panel p-6 shadow-xl flex flex-col items-center justify-center border-2 border-dashed border-slate-600">
+                 <h3 class="text-slate-400 mb-2 font-bold uppercase tracking-widest">En la Arena</h3>
+                 <p class="text-xl font-black text-white text-center"><i class="fas fa-fire text-orange-500 mr-2"></i> ¡Listos para evaluar!</p>
+            </div>
+        </div>
+
+        <!-- Right Column: Tabs and Content -->
+        <div class="lg:col-span-2 glass-panel p-2 shadow-xl flex flex-col">
+            <!-- Tabs -->
+            <div class="flex border-b border-slate-700 p-2">
+                <button onclick="switchTab('tab-calificador')" id="btn-calificador" class="tab-btn tab-active flex-1 py-3 text-center font-bold hover:bg-slate-800 rounded-t-lg transition-colors">
+                    <i class="fas fa-gavel mr-2"></i> El VAR (Calificador)
+                </button>
+                <button onclick="switchTab('tab-escenarios')" id="btn-escenarios" class="tab-btn flex-1 py-3 text-center font-bold text-slate-400 hover:bg-slate-800 rounded-t-lg transition-colors">
+                    <i class="fas fa-theater-masks mr-2"></i> Casos y Escenarios
+                </button>
+            </div>
+
+            <!-- Tab Content: Calificador -->
+            <div id="tab-calificador" class="p-6 flex-1">
+                <h3 class="text-2xl font-bold mb-6 text-white flex items-center justify-between">
+                    <span>Panel de Calificación Oficial</span>
+                    <i class="fas fa-clipboard-check text-emerald-500"></i>
+                </h3>
+                
+                <div class="mb-6">
+                    <label class="block text-slate-400 mb-2 font-bold uppercase text-sm tracking-wider">Seleccionar Equipo a Evaluar:</label>
+                    <select id="team-select" class="w-full bg-slate-800 border-2 border-slate-600 rounded-lg p-4 text-white font-bold text-lg focus:outline-none focus:border-emerald-500 cursor-pointer">
+                        <!-- Options injected via JS -->
+                    </select>
+                </div>
+
+                <div class="space-y-6 bg-slate-800/50 p-6 rounded-lg border border-slate-700 shadow-inner">
+                    <!-- Nivel 1 -->
+                    <div>
+                        <div class="flex justify-between items-end mb-2">
+                            <label class="font-bold text-emerald-400"><i class="fas fa-microphone-alt mr-2"></i>Nivel 1: El Camaleón (Voz)</label>
+                            <span id="val-1" class="text-2xl font-black text-white bg-slate-900 px-3 py-1 rounded shadow">5</span>
+                        </div>
+                        <input type="range" id="score-1" min="0" max="10" value="5" class="w-full accent-emerald-500 cursor-pointer" oninput="document.getElementById('val-1').innerText = this.value">
+                        <p class="text-xs text-slate-400 mt-1">Evalúa: Postura, sonrisa al hablar, inflexión, contraste entre el asesor normal vs dinámico.</p>
+                    </div>
+
+                    <!-- Nivel 2 -->
+                    <div>
+                        <div class="flex justify-between items-end mb-2">
+                            <label class="font-bold text-emerald-400"><i class="fas fa-search mr-2"></i>Nivel 2: Detective (Indagación)</label>
+                            <span id="val-2" class="text-2xl font-black text-white bg-slate-900 px-3 py-1 rounded shadow">5</span>
+                        </div>
+                        <input type="range" id="score-2" min="0" max="10" value="5" class="w-full accent-emerald-500 cursor-pointer" oninput="document.getElementById('val-2').innerText = this.value">
+                        <p class="text-xs text-slate-400 mt-1">Evalúa: Calidad de preguntas abiertas, capacidad de descubrir el dolor del cliente ANTES de ofrecer soluciones.</p>
+                    </div>
+
+                    <!-- Nivel 3 -->
+                    <div>
+                        <div class="flex justify-between items-end mb-2">
+                            <label class="font-bold text-emerald-400"><i class="fas fa-handshake mr-2"></i>Nivel 3: La Negociación (Real)</label>
+                            <span id="val-3" class="text-2xl font-black text-white bg-slate-900 px-3 py-1 rounded shadow">5</span>
+                        </div>
+                        <input type="range" id="score-3" min="0" max="10" value="5" class="w-full accent-emerald-500 cursor-pointer" oninput="document.getElementById('val-3').innerText = this.value">
+                        <p class="text-xs text-slate-400 mt-1">Evalúa: Venta consultiva aplicada a POLI bajo presión de un compañero rival, empatía, uso de fuentes.</p>
+                    </div>
+
+                    <!-- Feedback Area -->
+                    <div class="mt-6 pt-6 border-t border-slate-700">
+                        <label class="font-bold text-emerald-400 mb-2 block"><i class="fas fa-comment-dots mr-2"></i>Oportunidades de Mejora (Cualitativo)</label>
+                        <textarea id="feedback-text" rows="3" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-4 text-white focus:outline-none focus:border-emerald-500 placeholder-slate-600 transition-colors" placeholder="Escribe aquí las observaciones, muletillas a evitar, o felicitaciones por el desempeño..."></textarea>
+                    </div>
+                </div>
+
+                <button onclick="submitScore()" id="btn-submit" class="w-full mt-6 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-lg py-5 rounded-lg shadow-[0_0_20px_rgba(16,185,129,0.4)] transition-all transform hover:scale-[1.02]">
+                    <i class="fas fa-cloud-upload-alt mr-2"></i> REGISTRAR PUNTAJE EN EL VAR
+                </button>
+            </div>
+
+            <!-- Tab Content: Escenarios -->
+            <div id="tab-escenarios" class="p-6 hidden flex-1">
+                <h3 class="text-2xl font-bold mb-6 text-white flex items-center justify-between">
+                    <span>Instrucciones y Casos Oficiales</span>
+                    <i class="fas fa-book-open text-emerald-500"></i>
+                </h3>
+                
+                <div class="space-y-6">
+                    <!-- Nivel 1 -->
+                    <div class="bg-slate-800 border-l-4 border-blue-500 p-5 rounded-r shadow-lg">
+                        <h4 class="font-bold text-blue-400 text-lg mb-2"><i class="fas fa-microphone-alt mr-2"></i>Nivel 1: El Camaleón (Voz)</h4>
+                        <p class="text-sm text-slate-300 mb-3"><strong>Objetivo:</strong> Demostrar cómo la postura, la sonrisa y la inflexión cambian radicalmente el mensaje.</p>
+                        <p class="text-sm text-slate-300 mb-3"><strong>Instrucciones:</strong> Un integrante lee el texto de forma normal, como lo haría atendiendo en cualquier llamada diaria. El otro integrante de la pareja elige uno de estos perfiles y lo lee aplicando la emoción correspondiente:</p>
+                        <ul class="list-disc list-inside text-sm text-slate-300 mb-4 ml-2">
+                            <li><span class="text-yellow-400 font-bold">Narrador de Fútbol:</span> Alta energía, emoción de final de mundial, ritmo rápido.</li>
+                            <li><span class="text-purple-400 font-bold">Locutor de Radio Nocturno:</span> Tono profundo, empático, pausado, sonriendo.</li>
+                        </ul>
+                        <div class="bg-slate-900 p-4 rounded border border-slate-700">
+                            <p class="italic text-slate-200">"Te informamos que el plazo para la renovación de tu matrícula con el beneficio financiero vence el día de hoy a la medianoche. Si el pago no se refleja en el sistema, perderás el descuento aplicado a tu plan de estudios y se generará un recargo extemporáneo."</p>
+                        </div>
+                    </div>
+
+                    <!-- Nivel 2 -->
+                    <div class="bg-slate-800 border-l-4 border-purple-500 p-5 rounded-r shadow-lg">
+                        <h4 class="font-bold text-purple-400 text-lg mb-2"><i class="fas fa-search mr-2"></i>Nivel 2: Detective (Indagación Absurda)</h4>
+                        <p class="text-sm text-slate-300 mb-3"><strong>Objetivo:</strong> Fomentar la curiosidad y la formulación de preguntas abiertas para descubrir la necesidad oculta del cliente sin guiarse por un libreto.</p>
+                        <p class="text-sm text-slate-300 mb-4"><strong>Instrucciones:</strong> Un integrante asume el rol de <strong>Cliente</strong> y el otro de <strong>Asesor</strong>. El Asesor tiene prohibido vender directamente en los primeros minutos; debe hacer al menos 3 preguntas estratégicas para entender al cliente.</p>
+                        
+                        <div class="flex flex-col items-center p-4 bg-slate-900 rounded border border-slate-700 relative overflow-hidden">
+                            <div class="absolute inset-0 bg-gradient-to-r from-purple-900/20 to-pink-900/20 z-0"></div>
+                            <button onclick="spinRouletteNivel2()" class="z-10 bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-all transform hover:scale-105 mb-4 flex items-center border border-purple-400">
+                                <i class="fas fa-sync-alt mr-2" id="icon-spin-2"></i> Sortear Caso Absurdo
+                            </button>
+                            <div id="roulette-result-2" class="z-10 text-center w-full min-h-[100px] flex items-center justify-center text-lg font-bold text-yellow-300 italic border-2 border-dashed border-purple-500/50 bg-slate-800/80 p-4 rounded-lg shadow-inner">
+                                ¿Qué cliente extraño les tocará convencer?
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Nivel 3 -->
+                    <div class="bg-slate-800 border-l-4 border-emerald-500 p-5 rounded-r shadow-lg">
+                        <h4 class="font-bold text-emerald-400 text-lg mb-2"><i class="fas fa-fist-raised mr-2"></i>Nivel 3: La Batalla Cruzada (Roleplay POLI)</h4>
+                        <p class="text-sm text-slate-300 mb-3"><strong>Objetivo:</strong> Demostrar dominio total de la Venta Consultiva bajo presión ante un cliente difícil, enfrentando a equipos rivales.</p>
+                        <p class="text-sm text-slate-300 mb-4"><strong>Instrucciones:</strong> ¡Se enfrentan dos equipos (Ej: Alfa vs Gamma)! Se gira la ruleta para definir UN solo caso para ambos. 
+                            <br><br><span class="text-emerald-300 font-bold">Round 1:</span> Asesor del <strong>Equipo A</strong> atiende al Estudiante difícil del <strong>Equipo B</strong>. 
+                            <br><span class="text-emerald-300 font-bold">Round 2:</span> Asesor del <strong>Equipo B</strong> atiende al Estudiante difícil del <strong>Equipo A</strong>.
+                            <br><br><em>Regla para el Estudiante:</em> Debes ser difícil pero realista. Si el asesor hace la indagación correcta y toca tu "dolor", DEBES ceder un poco.
+                            <br><em>Regla para el Asesor:</em> Prohibido dar precios o fechas en el 1er minuto. Obligatorio indagar, empatizar y ofrecer alternativas.
+                        </p>
+                        
+                        <div class="flex flex-col items-center p-4 bg-slate-900 rounded border border-slate-700 relative overflow-hidden">
+                            <div class="absolute inset-0 bg-gradient-to-r from-emerald-900/20 to-teal-900/20 z-0"></div>
+                            <button onclick="spinRouletteNivel3()" class="z-10 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-all transform hover:scale-105 mb-4 flex items-center border border-emerald-400">
+                                <i class="fas fa-sync-alt mr-2" id="icon-spin-3"></i> Sortear Caso Crítico POLI
+                            </button>
+                            <div id="roulette-result-3" class="z-10 text-center w-full min-h-[100px] flex items-center justify-center text-md font-bold text-emerald-200 border-2 border-dashed border-emerald-500/50 bg-slate-800/80 p-4 rounded-lg shadow-inner">
+                                Presiona el botón para revelar la batalla cruzada...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="fixed bottom-5 right-5 bg-emerald-500 text-white px-6 py-4 rounded-lg shadow-[0_0_20px_rgba(16,185,129,0.5)] transform translate-y-24 opacity-0 transition-all duration-300 font-bold z-50 flex items-center">
+        <i class="fas fa-check-circle text-2xl mr-3"></i> 
+        <div>
+            <p>¡Puntaje Registrado!</p>
+            <p class="text-xs font-normal text-emerald-100">Guardado de forma segura en la base de datos.</p>
+        </div>
+    </div>
+
+    <!-- FIREBASE Y LÓGICA DE LA APLICACIÓN -->
     <script type="module">
-        // Importaciones de Firebase vía CDN para HTML estático
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, onSnapshot, collection, updateDoc, getDocs, increment } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, onSnapshot, collection, addDoc, updateDoc, getDocs, deleteDoc, increment, query, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // =========================================================================
-        // CONFIGURACIÓN DE FIREBASE (Con tus credenciales exactas)
+        // CONFIGURACIÓN EXACTA DE FIREBASE DEL USUARIO
         // =========================================================================
         const firebaseConfig = {
             apiKey: "AIzaSyDzlh_dTR4soG9NlU_iKmcaamyJMoz3A3M",
@@ -198,113 +299,129 @@
             projectId: "mundial-poli",
             storageBucket: "mundial-poli.firebasestorage.app",
             messagingSenderId: "894326312778",
-            appId: "1:894326312778:web:051dc856a66a9afcc3bbb3",
-            measurementId: "G-2KN1SMMCZW"
+            appId: "1:894326312778:web:051dc856a66a9afcc3bbb3"
         };
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
-        // ID único para esta app dentro de la estructura general
-        const appId = "mundial-rematricula-poli-v1";
-        
+        const appId = 'mundial-poli-app'; // Identificador interno para las colecciones
         let userAuth = null;
-        let judgeName = localStorage.getItem('judgeName_poli');
+        let currentJudgeName = ""; // Almacena el nombre de quien califica
 
-        // Casos para la ruleta
+        // Equipos por defecto
+        const defaultTeams = [
+            { id: 1, name: "Selección Alfa", score: 0, matches: 0 },
+            { id: 2, name: "Selección Beta", score: 0, matches: 0 },
+            { id: 3, name: "Selección Gamma", score: 0, matches: 0 },
+            { id: 4, name: "Selección Delta", score: 0, matches: 0 },
+            { id: 5, name: "Selección Omega", score: 0, matches: 0 },
+            { id: 6, name: "Selección Sigma", score: 0, matches: 0 },
+            { id: 7, name: "Selección Zeta", score: 0, matches: 0 }
+        ];
+
+        let teams = [];
+
+        // Bases de Datos de Casos (Ruletas)
         const absurdCases = [
-            "Venderle una cámara bronceadora a un Vampiro.",
-            "Venderle un Smartwatch a un ermitaño que odia la tecnología y vive en una cabaña.",
-            "Venderle una suscripción de carne premium a un activista vegano.",
-            "Venderle un curso de buceo a alguien que tiene fobia extrema al agua."
+            "Convencer a un Vampiro (que odia el sol y duerme de día) de comprar una cama bronceadora de última tecnología.",
+            "Venderle un Smartwatch con GPS y notificaciones a un ermitaño que vive en una cabaña sin internet y odia la tecnología.",
+            "Venderle una suscripción mensual de cortes de carne premium a un activista y líder de una comunidad vegana.",
+            "Venderle un curso intensivo de 'Cómo hablar en público y oratoria' a un mimo profesional."
         ];
 
         const realCases = [
-            "Estudiante de 4to semestre que no quiere renovar porque siente que no está aprendiendo en modalidad virtual y no tiene tiempo por su nuevo trabajo.",
-            "Estudiante que no se ha matriculado porque tuvo un problema fuerte con un docente el semestre pasado y siente que la universidad no la apoyó.",
-            "Estudiante mujer embarazada que quiere aplazar porque le mandaron reposo, está muy cansada y siente que no va a rendir académicamente.",
-            "Estudiante que te dice directamente: 'Ya me matriculé en otra universidad porque allá me homologaron más rápido y era más barato'."
+            "Estudiante de 4to semestre que no quiere renovar porque siente que no aprende en modalidad virtual y no tiene tiempo por su nuevo trabajo.",
+            "Estudiante que pide cancelación porque el semestre pasado tuvo un problema con una nota, nadie le solucionó a tiempo y se siente ignorado.",
+            "Estudiante que no tiene dinero para la matrícula porque perdió su empleo y desconoce totalmente las opciones de financiación y becas.",
+            "Estudiante que quiere aplazar porque siente que la carrera no es lo suyo, está desmotivado y no sabe que existe el área de bienestar o tutorías.",
+            "Estudiante embarazada que solicita aplazamiento porque el embarazo le ha dado muy duro, está muy agotada y el médico le ordenó reposo absoluto.",
+            "Estudiante que solicita el retiro definitivo porque ya se matriculó en otra universidad presencial y siente que ya no hay vuelta atrás."
         ];
 
-        // Init App and Auth
+        // 1. Inicialización y Autenticación Anónima Segura
         async function init() {
-            // Mostrar Modal si no hay nombre guardado
-            if (!judgeName) {
-                document.getElementById('login-modal').classList.remove('hidden');
-            } else {
-                document.getElementById('login-modal').classList.add('hidden');
-                document.getElementById('judge-display-name').innerText = judgeName;
-            }
-
             try {
-                const userCredential = await signInAnonymously(auth);
-                userAuth = userCredential.user;
-                console.log("Conectado a Firebase anónimamente:", userAuth.uid);
-                
-                // Iniciar listener de posiciones
-                listenLeaderboard();
+                await signInAnonymously(auth);
+                userAuth = auth.currentUser;
+                setupFirebaseListeners();
             } catch (error) {
-                console.error("Error conectando a Firebase:", error);
-                alert("Hubo un problema conectando a la base de datos. Recarga la página.");
+                console.error("Error de Autenticación Firebase:", error);
             }
         }
 
-        // Listener en tiempo real para el Ranking
-        function listenLeaderboard() {
+        // 2. Control de Ingreso (Acreditación del Juez)
+        window.loginVAR = function() {
+            const nameInput = document.getElementById('judge-name-input').value.trim();
+            if (nameInput === "") {
+                alert("Por favor, escribe tu nombre para ingresar al torneo.");
+                return;
+            }
+            // Clave oculta por si el admin entra directo por el input
+            if (nameInput.toLowerCase() === 'poli') {
+                document.getElementById('auth-modal').classList.add('opacity-0', 'pointer-events-none');
+                setTimeout(() => document.getElementById('auth-modal').classList.add('hidden'), 500);
+                abrirAdmin(true); // Fuerza abrir admin
+                currentJudgeName = "Administrador Master";
+                document.getElementById('display-judge-name').innerText = "Juez: Administrador Master";
+                return;
+            }
+
+            currentJudgeName = nameInput;
+            document.getElementById('display-judge-name').innerText = `Juez: ${currentJudgeName}`;
+            
+            const modal = document.getElementById('auth-modal');
+            modal.classList.add('opacity-0', 'pointer-events-none');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 500);
+        }
+
+        // 3. Lectura en Vivo de los Equipos
+        function setupFirebaseListeners() {
+            if (!userAuth) return;
             const teamsRef = collection(db, 'artifacts', appId, 'public', 'data', 'teams');
             
             onSnapshot(teamsRef, (snapshot) => {
-                let teamsData = [];
-                // Nombres base por si la BD está vacía
-                const baseNames = {
-                    1: "Selección Alfa", 2: "Selección Beta", 3: "Selección Gamma", 
-                    4: "Selección Delta", 5: "Selección Épsilon", 6: "Selección Zeta", 7: "Selección Omega"
-                };
-
-                // Inicializar 7 equipos si no existen
-                for(let i=1; i<=7; i++) {
-                    teamsData.push({ id: i.toString(), name: baseNames[i], score: 0, matches: 0 });
+                if (snapshot.empty) {
+                    // Crear equipos base si no existen en la base de datos
+                    defaultTeams.forEach(async (team) => {
+                        await setDoc(doc(teamsRef, team.id.toString()), team);
+                    });
+                } else {
+                    teams = snapshot.docs.map(doc => doc.data());
+                    renderLeaderboard();
+                    populateSelect();
                 }
-
-                // Actualizar con datos reales de Firebase
-                snapshot.forEach(doc => {
-                    const data = doc.data();
-                    const index = teamsData.findIndex(t => t.id === doc.id);
-                    if(index !== -1) {
-                        teamsData[index] = { ...teamsData[index], ...data };
-                    }
-                });
-
-                // Ordenar por puntaje
-                teamsData.sort((a, b) => b.score - a.score);
-                renderLeaderboard(teamsData);
             }, (error) => {
-                console.error("Error en snapshot:", error);
+                console.error("Error leyendo equipos: ", error);
             });
         }
 
-        function renderLeaderboard(teams) {
+        function renderLeaderboard() {
             const container = document.getElementById('leaderboard');
             container.innerHTML = '';
             
-            teams.forEach((team, index) => {
-                const isFirst = index === 0 && team.score > 0;
-                const html = `
-                    <div class="bg-slate-800 rounded-lg p-3 flex items-center justify-between border-l-4 ${isFirst ? 'border-l-yellow-400 bg-slate-700/80 shadow-[0_0_15px_rgba(250,204,21,0.2)]' : 'border-l-slate-600'}">
+            const sortedTeams = [...teams].sort((a, b) => b.score - a.score);
+
+            sortedTeams.forEach((team, index) => {
+                let badgeColor = index === 0 ? 'bg-yellow-500 text-yellow-900 shadow-[0_0_10px_rgba(234,179,8,0.5)]' : 
+                                 index === 1 ? 'bg-slate-300 text-slate-800' : 
+                                 index === 2 ? 'bg-amber-700 text-amber-100' : 'bg-slate-700 text-slate-300';
+                
+                let html = `
+                    <div class="flex items-center justify-between p-3 bg-slate-800/50 rounded border border-slate-700 transition-all hover:bg-slate-700">
                         <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 rounded-full bg-slate-900 flex items-center justify-center font-bold text-slate-400">
+                            <span class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${badgeColor}">
                                 ${index + 1}
-                            </div>
+                            </span>
                             <div>
-                                <h4 class="font-bold text-white flex items-center gap-2">
-                                    ${team.name} ${isFirst ? '<i class="fas fa-crown text-yellow-400 text-xs"></i>' : ''}
-                                </h4>
-                                <p class="text-xs text-slate-400">${team.matches} Jueces han calificado</p>
+                                <h4 class="font-bold text-white uppercase text-sm">${team.name}</h4>
+                                <p class="text-xs text-slate-400">${team.matches} Votos</p>
                             </div>
                         </div>
                         <div class="text-right">
-                            <div class="text-xl font-black text-emerald-400">${team.score}</div>
-                            <div class="text-[10px] text-slate-500">PTOS</div>
+                            <span class="text-2xl font-black text-emerald-400">${team.score}</span>
                         </div>
                     </div>
                 `;
@@ -312,169 +429,310 @@
             });
         }
 
-        // Exponer funciones globales al HTML
-        window.switchTab = function(tabName) {
-            document.getElementById('content-calificar').classList.add('hidden');
-            document.getElementById('content-escenarios').classList.add('hidden');
-            document.getElementById('tab-calificar').classList.replace('tab-active', 'tab-inactive');
-            document.getElementById('tab-escenarios').classList.replace('tab-active', 'tab-inactive');
-
-            document.getElementById(`content-${tabName}`).classList.remove('hidden');
-            document.getElementById(`tab-${tabName}`).classList.replace('tab-inactive', 'tab-active');
-        }
-
-        window.ingresarVAR = function() {
-            const nameInput = document.getElementById('judge-name-input').value.trim();
-            if (nameInput.length < 4) {
-                alert("Por favor, ingresa tu nombre y apellido real para registrarte en el VAR.");
-                return;
-            }
-            judgeName = nameInput;
-            localStorage.setItem('judgeName_poli', judgeName);
-            document.getElementById('login-modal').style.opacity = '0';
-            setTimeout(() => {
-                document.getElementById('login-modal').classList.add('hidden');
-                document.getElementById('judge-display-name').innerText = judgeName;
-            }, 300);
-        }
-
-        window.ruletearCasos = function() {
-            const r2 = document.getElementById('ruleta-nivel-2');
-            const r3 = document.getElementById('ruleta-nivel-3');
+        function populateSelect() {
+            const select = document.getElementById('team-select');
+            const currentSelection = select.value;
+            select.innerHTML = '';
             
-            r2.classList.add('roulette-spin');
-            r3.classList.add('roulette-spin');
-
-            let counter = 0;
-            const interval = setInterval(() => {
-                r2.innerText = absurdCases[Math.floor(Math.random() * absurdCases.length)];
-                r3.innerText = realCases[Math.floor(Math.random() * realCases.length)];
-                counter++;
-                if (counter > 15) {
-                    clearInterval(interval);
-                    r2.classList.remove('roulette-spin');
-                    r3.classList.remove('roulette-spin');
-                    // Selección final
-                    r2.innerText = absurdCases[Math.floor(Math.random() * absurdCases.length)];
-                    r3.innerText = realCases[Math.floor(Math.random() * realCases.length)];
-                }
-            }, 100);
+            const sortedById = [...teams].sort((a, b) => a.id - b.id);
+            sortedById.forEach(team => {
+                select.innerHTML += `<option value="${team.id}">${team.name}</option>`;
+            });
+            
+            if (currentSelection && teams.find(t => t.id.toString() === currentSelection)) {
+                select.value = currentSelection;
+            }
         }
 
+        // 4. Enviar Puntaje (Con validación de Voto Único)
         window.submitScore = async function() {
-            if (!userAuth) {
-                alert("Conectando a la base de datos... espera 2 segundos.");
-                return;
-            }
-            if (!judgeName) {
-                document.getElementById('login-modal').classList.remove('hidden');
-                document.getElementById('login-modal').style.opacity = '1';
+            if (!userAuth || currentJudgeName === "") {
+                alert("Debes identificarte primero para poder calificar.");
                 return;
             }
 
-            const teamSelect = document.getElementById('team-select');
-            const teamId = teamSelect.value;
-            const teamName = teamSelect.options[teamSelect.selectedIndex].text;
-            
-            if (!teamId) {
-                alert("Por favor, selecciona un equipo de la lista.");
-                return;
-            }
+            const btn = document.getElementById('btn-submit');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Procesando VAR...';
 
+            const teamId = parseInt(document.getElementById('team-select').value);
             const score1 = parseInt(document.getElementById('score-1').value);
             const score2 = parseInt(document.getElementById('score-2').value);
             const score3 = parseInt(document.getElementById('score-3').value);
             const feedbackText = document.getElementById('feedback-text').value;
+            
             const totalScore = score1 + score2 + score3;
+            const team = teams.find(t => t.id === teamId);
 
-            try {
-                // Prevenir doble votación creando un ID único basado en Equipo + Juez
-                const safeJudgeName = judgeName.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
-                const feedbackId = `${teamId}_${safeJudgeName}`;
-                
-                // Usamos la colección principal del proyecto en Firebase
-                const feedbackDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'feedbacks', feedbackId);
-                
-                const docSnap = await getDoc(feedbackDocRef);
-                if (docSnap.exists()) {
-                    alert(`¡Atención ${judgeName}! Ya enviaste una calificación para la ${teamName}. El VAR solo permite un voto por equipo.`);
-                    return;
+            if(team) {
+                try {
+                    // VALIDACIÓN: ¿Ya votó este juez por este equipo?
+                    const feedbacksRef = collection(db, 'artifacts', appId, 'public', 'data', 'feedbacks');
+                    if (currentJudgeName !== "Administrador Master") {
+                        const q = query(feedbacksRef, where("judgeName", "==", currentJudgeName), where("teamId", "==", teamId));
+                        const querySnapshot = await getDocs(q);
+                        
+                        if (!querySnapshot.empty) {
+                            alert(`🚨 ¡FALTA TÉCNICA! Ya registraste una calificación para la ${team.name}. Solo puedes votar una vez por equipo.`);
+                            btn.disabled = false;
+                            btn.innerHTML = '<i class="fas fa-cloud-upload-alt mr-2"></i> REGISTRAR PUNTAJE EN EL VAR';
+                            return;
+                        }
+                    }
+
+                    // 1. Guardar Feedback Detallado
+                    await addDoc(feedbacksRef, {
+                        teamId: teamId,
+                        teamName: team.name,
+                        score1: score1,
+                        score2: score2,
+                        score3: score3,
+                        totalScore: totalScore,
+                        feedback: feedbackText,
+                        judgeName: currentJudgeName,
+                        timestamp: new Date().toISOString()
+                    });
+
+                    // 2. Actualizar Puntaje del Equipo (Usando increment para evitar choques si varios votan al tiempo)
+                    const teamRef = doc(db, 'artifacts', appId, 'public', 'data', 'teams', teamId.toString());
+                    await updateDoc(teamRef, {
+                        score: increment(totalScore),
+                        matches: increment(1)
+                    });
+
+                    // Reset UI
+                    document.getElementById('score-1').value = 5;
+                    document.getElementById('val-1').innerText = 5;
+                    document.getElementById('score-2').value = 5;
+                    document.getElementById('val-2').innerText = 5;
+                    document.getElementById('score-3').value = 5;
+                    document.getElementById('val-3').innerText = 5;
+                    document.getElementById('feedback-text').value = '';
+
+                    showToast();
+                } catch (error) {
+                    console.error("Error guardando puntaje: ", error);
+                    alert("Hubo un error de conexión con la base de datos.");
                 }
+            }
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-cloud-upload-alt mr-2"></i> REGISTRAR PUNTAJE EN EL VAR';
+        }
 
-                // 1. Guardar el feedback detallado
-                await setDoc(feedbackDocRef, {
-                    teamId: teamId,
-                    teamName: teamName,
-                    judgeName: judgeName,
-                    scoreVoz: score1,
-                    scoreIndagacion: score2,
-                    scoreVenta: score3,
-                    total: totalScore,
-                    feedback: feedbackText || "Sin comentarios adicionales.",
-                    timestamp: new Date().toISOString()
-                });
+        // ==========================================
+        // PANEL DE ADMINISTRADOR VIP SECRETO
+        // ==========================================
+        const ADMIN_PASSWORD = "poli";
 
-                // 2. Actualizar el acumulado del equipo (Increment es seguro para concurrencia)
-                const teamRef = doc(db, 'artifacts', appId, 'public', 'data', 'teams', teamId);
-                await setDoc(teamRef, {
-                    name: teamName,
-                    score: increment(totalScore),
-                    matches: increment(1)
-                }, { merge: true }); // Merge asegura que si el equipo no existe, lo crea.
-
-                // Alerta de éxito y reinicio de UI
-                alert(`¡Calificación registrada con éxito! Le diste ${totalScore} puntos a la ${teamName}.`);
-                document.getElementById('team-select').value = "";
-                document.getElementById('score-1').value = 5; document.getElementById('val-1').innerText = "5";
-                document.getElementById('score-2').value = 5; document.getElementById('val-2').innerText = "5";
-                document.getElementById('score-3').value = 5; document.getElementById('val-3').innerText = "5";
-                document.getElementById('feedback-text').value = "";
-
-            } catch (error) {
-                console.error("Error guardando calificación:", error);
-                alert("Hubo un error al guardar. Revisa tu conexión.");
+        window.abrirAdmin = function(force = false) {
+            if (force) {
+                document.getElementById('admin-modal').classList.remove('hidden');
+                cargarDatosAdmin();
+                return;
+            }
+            const pass = prompt("ACCESO RESTRINGIDO - MODO DIRECTOR TÉCNICO\nIngrese la contraseña:");
+            if(pass === ADMIN_PASSWORD) {
+                document.getElementById('admin-modal').classList.remove('hidden');
+                cargarDatosAdmin();
+            } else if (pass !== null) {
+                alert("Contraseña incorrecta. Tarjeta roja. 🟥");
             }
         }
 
-        window.exportarDatos = async function() {
+        window.cerrarAdmin = function() {
+            document.getElementById('admin-modal').classList.add('hidden');
+        }
+
+        window.cargarDatosAdmin = async function() {
             if (!userAuth) return;
+            const tbody = document.getElementById('admin-table-body');
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center p-8 text-emerald-400 font-bold"><i class="fas fa-spinner fa-spin text-2xl mb-2"></i><br>Consultando la base de datos...</td></tr>';
             
             try {
-                alert("Generando Excel con todos los datos... Por favor espera.");
-                
                 const feedbacksRef = collection(db, 'artifacts', appId, 'public', 'data', 'feedbacks');
                 const fbSnapshot = await getDocs(feedbacksRef);
                 
-                let csv = "--- REGISTRO DEL VAR (MUNDIAL POLI) ---\n\n";
-                csv += "Fecha,Juez Calificador,Equipo,Ptos Voz,Ptos Indagacion,Ptos Venta,Total,Feedback Cualitativo\n";
-                
-                fbSnapshot.forEach(doc => {
-                    const data = doc.data();
-                    const date = new Date(data.timestamp).toLocaleString();
-                    const cleanFeedback = (data.feedback || "").replace(/"/g, '""').replace(/\n/g, ' ');
+                if (fbSnapshot.empty) {
+                    tbody.innerHTML = '<tr><td colspan="7" class="text-center p-8 text-slate-500 italic">El tablero está en ceros. Aún no hay calificaciones registradas.</td></tr>';
+                    return;
+                }
+
+                let rows = '';
+                // Ordenar por fecha (los más recientes arriba)
+                const sortedDocs = fbSnapshot.docs.map(d => ({id: d.id, ...d.data()})).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+                sortedDocs.forEach(data => {
+                    const dateObj = new Date(data.timestamp);
+                    const dateStr = dateObj.toLocaleDateString() + ' ' + dateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
                     
-                    csv += `"${date}","${data.judgeName}","${data.teamName}",${data.scoreVoz},${data.scoreIndagacion},${data.scoreVenta},${data.total},"${cleanFeedback}"\n`;
+                    rows += `
+                        <tr class="hover:bg-slate-700/50 transition-colors">
+                            <td class="p-4 text-xs text-slate-400 align-top">${dateStr}</td>
+                            <td class="p-4 font-bold text-emerald-300 align-top"><i class="fas fa-user-tag mr-2 text-slate-500"></i>${data.judgeName}</td>
+                            <td class="p-4 font-black text-white uppercase text-xs align-top">${data.teamName}</td>
+                            <td class="p-4 text-center font-bold text-yellow-400 align-top">${data.score1}</td>
+                            <td class="p-4 text-center font-bold text-yellow-400 align-top">${data.score2}</td>
+                            <td class="p-4 text-center font-bold text-yellow-400 align-top">${data.score3}</td>
+                            <td class="p-4 text-sm text-slate-300 italic align-top max-w-xs break-words border-l border-slate-700">"${data.feedback || 'Sin comentarios'}"</td>
+                        </tr>
+                    `;
                 });
-
-                // Descargar archivo
-                const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
-                const link = document.createElement("a");
-                const url = URL.createObjectURL(blob);
-                link.setAttribute("href", url);
-                link.setAttribute("download", "Reporte_Mundial_POLI.csv");
-                link.style.visibility = 'hidden';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-
-            } catch(e) {
-                console.error("Error exportando:", e);
-                alert("Error al generar el archivo.");
+                tbody.innerHTML = rows;
+            } catch (error) {
+                console.error("Error cargando admin: ", error);
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center p-8 text-red-500"><i class="fas fa-exclamation-triangle mr-2"></i> Error de conexión cargando los datos.</td></tr>';
             }
         }
 
-        // Arrancar
-        window.onload = init;
+        // Exportar a Excel (Admin)
+        window.exportarDatos = async function() {
+            if (!userAuth) return;
+            try {
+                const feedbacksRef = collection(db, 'artifacts', appId, 'public', 'data', 'feedbacks');
+                const fbSnapshot = await getDocs(feedbacksRef);
+                
+                let csv = "--- TABLA DE POSICIONES ---\n";
+                csv += "ID,Equipo,Puntaje Total,Votos Recibidos\n";
+                
+                const sortedTeams = [...teams].sort((a, b) => b.score - a.score);
+                sortedTeams.forEach(t => {
+                    csv += `${t.id},${t.name},${t.score},${t.matches}\n`;
+                });
+
+                csv += "\n--- REGISTRO DE FEEDBACKS (EL VAR) ---\n";
+                csv += "Fecha,Nombre Juez,Equipo Evaluado,Ptos Voz,Ptos Indagacion,Ptos Negociacion,Feedback Cualitativo\n";
+                
+                // Sort by date
+                const sortedFbs = fbSnapshot.docs.map(d => d.data()).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+                sortedFbs.forEach(data => {
+                    const date = new Date(data.timestamp).toLocaleString();
+                    const cleanFeedback = (data.feedback || "Sin comentarios").replace(/"/g, '""').replace(/\n/g, ' ');
+                    csv += `"${date}","${data.judgeName}","${data.teamName}",${data.score1},${data.score2},${data.score3},"${cleanFeedback}"\n`;
+                });
+
+                const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), csv], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement("a");
+                const url = URL.createObjectURL(blob);
+                link.setAttribute("href", url);
+                link.setAttribute("download", `Reporte_Mundial_POLI_${new Date().toLocaleDateString().replace(/\//g, '-')}.csv`);
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            } catch (error) {
+                alert("Error exportando datos.");
+            }
+        }
+
+        // Reiniciar Torneo Profundo (Admin)
+        let resetClicks = 0;
+        window.resetearTorneo = async function() {
+            if (!userAuth) return;
+            resetClicks++;
+            const btn = document.getElementById('btn-reset');
+            
+            if(resetClicks === 1) {
+                btn.innerHTML = '<i class="fas fa-exclamation-triangle mr-2"></i> ¿Borrar TODO? Clic de nuevo';
+                btn.classList.replace('bg-red-600', 'bg-orange-600');
+                setTimeout(() => {
+                    resetClicks = 0;
+                    btn.innerHTML = '<i class="fas fa-skull-crossbones mr-2"></i> Reiniciar Torneo';
+                    btn.classList.replace('bg-orange-600', 'bg-red-600');
+                }, 4000);
+            } else if (resetClicks === 2) {
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Eliminando DB...';
+                try {
+                    // 1. Resetear Equipos a 0
+                    const teamsRef = collection(db, 'artifacts', appId, 'public', 'data', 'teams');
+                    for (let team of defaultTeams) {
+                        await setDoc(doc(teamsRef, team.id.toString()), team);
+                    }
+                    
+                    // 2. Borrar historial de Feedbacks
+                    const feedbacksRef = collection(db, 'artifacts', appId, 'public', 'data', 'feedbacks');
+                    const fbSnapshot = await getDocs(feedbacksRef);
+                    for (const docSnapshot of fbSnapshot.docs) {
+                        await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'feedbacks', docSnapshot.id));
+                    }
+                    
+                    resetClicks = 0;
+                    btn.innerHTML = '<i class="fas fa-check-double mr-2"></i> Tablero en Ceros';
+                    btn.classList.replace('bg-orange-600', 'bg-emerald-600');
+                    setTimeout(() => {
+                        btn.innerHTML = '<i class="fas fa-skull-crossbones mr-2"></i> Reiniciar Torneo';
+                        btn.classList.replace('bg-emerald-600', 'bg-red-600');
+                        cargarDatosAdmin(); // Refrescar vista
+                    }, 2500);
+                } catch (error) {
+                    console.error("Error reiniciando: ", error);
+                    btn.innerHTML = '<i class="fas fa-times mr-2"></i> Error';
+                }
+            }
+        }
+
+        // ==========================================
+        // FUNCIONES DE INTERFAZ GENERALES
+        // ==========================================
+        
+        window.switchTab = function(tabId) {
+            document.getElementById('tab-calificador').classList.add('hidden');
+            document.getElementById('tab-escenarios').classList.add('hidden');
+            
+            document.getElementById('btn-calificador').classList.remove('tab-active', 'text-emerald-500');
+            document.getElementById('btn-calificador').classList.add('text-slate-400');
+            document.getElementById('btn-escenarios').classList.remove('tab-active', 'text-emerald-500');
+            document.getElementById('btn-escenarios').classList.add('text-slate-400');
+
+            document.getElementById(tabId).classList.remove('hidden');
+            let activeBtn = tabId === 'tab-calificador' ? 'btn-calificador' : 'btn-escenarios';
+            document.getElementById(activeBtn).classList.add('tab-active');
+            document.getElementById(activeBtn).classList.remove('text-slate-400');
+        }
+
+        window.spinRoulette = function(elementId, iconId, casesArray) {
+            const resultDiv = document.getElementById(elementId);
+            const icon = document.getElementById(iconId);
+            
+            icon.classList.add('fa-spin');
+            resultDiv.classList.remove('text-yellow-300', 'text-emerald-300');
+            resultDiv.classList.add('text-white', 'text-xl');
+            
+            let counter = 0;
+            const maxSpins = 15; 
+            
+            const interval = setInterval(() => {
+                const randomCase = casesArray[Math.floor(Math.random() * casesArray.length)];
+                resultDiv.innerText = randomCase;
+                counter++;
+                
+                if (counter >= maxSpins) {
+                    clearInterval(interval);
+                    icon.classList.remove('fa-spin');
+                    const finalCase = casesArray[Math.floor(Math.random() * casesArray.length)];
+                    resultDiv.innerHTML = `<span class="animate-pulse">${finalCase}</span>`;
+                    resultDiv.classList.add(elementId === 'roulette-result-2' ? 'text-yellow-300' : 'text-emerald-300');
+                }
+            }, 100); 
+        }
+
+        window.spinRouletteNivel2 = function() {
+            window.spinRoulette('roulette-result-2', 'icon-spin-2', absurdCases);
+        }
+
+        window.spinRouletteNivel3 = function() {
+            window.spinRoulette('roulette-result-3', 'icon-spin-3', realCases);
+        }
+
+        function showToast() {
+            const toast = document.getElementById('toast');
+            toast.classList.remove('translate-y-24', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-24', 'opacity-0');
+            }, 4000);
+        }
+
+        // Arrancar la aplicación
+        init();
     </script>
 </body>
 </html>
