@@ -317,7 +317,8 @@
             { id: 4, name: "Selección Delta", score: 0, matches: 0 },
             { id: 5, name: "Selección Omega", score: 0, matches: 0 },
             { id: 6, name: "Selección Sigma", score: 0, matches: 0 },
-            { id: 7, name: "Selección Zeta", score: 0, matches: 0 }
+            { id: 7, name: "Selección Zeta", score: 0, matches: 0 },
+            { id: 8, name: "Selección Theta", score: 0, matches: 0 }
         ];
 
         let teams = [];
@@ -469,10 +470,14 @@
                     // VALIDACIÓN: ¿Ya votó este juez por este equipo?
                     const feedbacksRef = collection(db, 'artifacts', appId, 'public', 'data', 'feedbacks');
                     if (currentJudgeName !== "Administrador Master") {
-                        const q = query(feedbacksRef, where("judgeName", "==", currentJudgeName), where("teamId", "==", teamId));
-                        const querySnapshot = await getDocs(q);
+                        // SOLUCIÓN: Obtenemos los feedbacks y filtramos en Javascript para evitar el bloqueo de índices de Firebase
+                        const querySnapshot = await getDocs(feedbacksRef);
+                        const yaVoto = querySnapshot.docs.some(doc => {
+                            const data = doc.data();
+                            return data.judgeName === currentJudgeName && data.teamId === teamId;
+                        });
                         
-                        if (!querySnapshot.empty) {
+                        if (yaVoto) {
                             alert(`🚨 ¡FALTA TÉCNICA! Ya registraste una calificación para la ${team.name}. Solo puedes votar una vez por equipo.`);
                             btn.disabled = false;
                             btn.innerHTML = '<i class="fas fa-cloud-upload-alt mr-2"></i> REGISTRAR PUNTAJE EN EL VAR';
