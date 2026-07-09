@@ -223,7 +223,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, onSnapshot, collection, addDoc, updateDoc, getDocs, deleteDoc, increment } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, onSnapshot, collection, addDoc, updateDoc, getDocs, deleteDoc, increment, query, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDzlh_dTR4soG9NlU_iKmcaamyJMoz3A3M",
@@ -240,7 +240,7 @@
         const appId = 'mundial-poli-app';
         let userAuth = null;
         let currentJudgeName = ""; 
-        let isOfflineMode = false; // FLAG DE MODO RESPALDO
+        let isOfflineMode = false;
 
         const defaultTeams = [
             { id: 1, name: "Selección Alfa", score: 0, matches: 0 },
@@ -271,14 +271,12 @@
             "Estudiante solicita retiro definitivo porque ya se matriculó en otra universidad presencial."
         ];
 
-        // MODO OFFLINE AUTOMÁTICO - ANTI BLOQUEOS CORPORATIVOS
         function setOfflineMode() {
             if(isOfflineMode) return;
             isOfflineMode = true;
-            console.log("Activando Modo Respaldo Local (Firewall detectado)");
-            document.getElementById('status-indicator').innerHTML = '<span class="w-3 h-3 rounded-full bg-orange-500"></span><span class="text-orange-400 font-bold text-xs uppercase" title="Red corporativa bloqueando. Datos guardados en memoria del PC.">Modo Respaldo Local</span>';
+            console.log("Modo Respaldo Local Activado.");
+            document.getElementById('status-indicator').innerHTML = '<span class="w-3 h-3 rounded-full bg-orange-500"></span><span class="text-orange-400 font-bold text-xs uppercase">Modo Respaldo Local</span>';
             
-            // Cargar de memoria si existe, sino cargar defaults
             let localTeams = JSON.parse(localStorage.getItem('poli_teams'));
             if(!localTeams) {
                 localTeams = defaultTeams;
@@ -290,15 +288,21 @@
         }
 
         async function init() {
-            // Timeout de 4 segundos para detectar firewall
+            // PROTECCIÓN 1: Si ya hay datos locales guardados, bloqueamos la nube para que no borre la pantalla
+            let localTeams = JSON.parse(localStorage.getItem('poli_teams'));
+            let hasLocalScores = localTeams && localTeams.some(t => t.score > 0);
+            
+            if (hasLocalScores) {
+                setOfflineMode();
+                return; 
+            }
+
             const authTimeout = setTimeout(() => { setOfflineMode(); }, 4000);
             
             try {
                 await signInAnonymously(auth);
-                clearTimeout(authTimeout); // Si pasa rápido, cancela el timeout
+                clearTimeout(authTimeout);
                 userAuth = auth.currentUser;
-                
-                // Si llegamos aquí, sí hay conexión real
                 document.getElementById('status-indicator').innerHTML = '<span class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></span><span class="text-emerald-400 font-bold text-xs uppercase">Conectado / Nube</span>';
                 setupFirebaseListeners();
             } catch (error) {
@@ -324,8 +328,6 @@
         function setupFirebaseListeners() {
             if (isOfflineMode) return;
             const teamsRef = collection(db, 'artifacts', appId, 'public', 'data', 'teams');
-            
-            // Si Firestore tarda más de 5s en responder al snapshot, lo forzamos a offline
             let dbTimeout = setTimeout(() => { setOfflineMode(); }, 5000);
 
             onSnapshot(teamsRef, (snapshot) => {
@@ -337,8 +339,7 @@
                     renderLeaderboard();
                     populateSelect();
                 }
-            }, (error) => {
-                console.warn("Red bloqueando OnSnapshot. Pasando a Local.");
+            }, () => {
                 setOfflineMode();
             });
         }
@@ -368,10 +369,30 @@
             if (currentSelection) select.value = currentSelection;
         }
 
-        // WRAPPER DE TIMEOUT PARA PROMESAS
+        // FUNCIÓN AUXILIAR DE GUARDADO LOCAL AUTOMÁTICO
+        function guardarPuntajeLocal(feedbackData, teamId, totalScore, teamName) {
+            let localFeedbacks = JSON.parse(localStorage.getItem('poli_fbs')) || [];
+            if (currentJudgeName !== "Administrador Master" && localFeedbacks.some(f => f.judgeName === currentJudgeName && f.teamId === teamId)) {
+                alert(`🚨 Ya votaste por ${teamName}.`);
+                return false;
+            }
+            localFeedbacks.push(feedbackData);
+            localStorage.setItem('poli_fbs', JSON.stringify(localFeedbacks));
+            
+            let teamIndex = teams.findIndex(t => t.id === teamId);
+            if(teamIndex !== -1) {
+                teams[teamIndex].score += totalScore;
+                teams[teamIndex].matches += 1;
+                localStorage.setItem('poli_teams', JSON.stringify(teams));
+            }
+            renderLeaderboard();
+            showToast("Local");
+            return true;
+        }
+
         const timeoutPromise = (ms, promise) => {
             return new Promise((resolve, reject) => {
-                const timer = setTimeout(() => { reject(new Error("TIMEOUT_CORPORATIVO")); }, ms);
+                const timer = setTimeout(() => { reject(new Error("TIMEOUT")); }, ms);
                 promise.then(value => { clearTimeout(timer); resolve(value); })
                        .catch(reason => { clearTimeout(timer); reject(reason); });
             });
@@ -379,7 +400,6 @@
 
         window.submitScore = async function() {
             if (currentJudgeName === "") { alert("Debes identificarte."); return; }
-            
             const btn = document.getElementById('btn-submit');
             btn.disabled = true;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Procesando VAR...';
@@ -398,28 +418,9 @@
 
             try {
                 if (isOfflineMode) {
-                    // GUARDADO LOCAL (Modo Seguro)
-                    let localFeedbacks = JSON.parse(localStorage.getItem('poli_fbs')) || [];
-                    // Check duplicados local
-                    if (currentJudgeName !== "Administrador Master" && localFeedbacks.some(f => f.judgeName === currentJudgeName && f.teamId === teamId)) {
-                        alert(`🚨 Ya votaste por ${team.name}.`);
-                    } else {
-                        localFeedbacks.push(feedbackData);
-                        localStorage.setItem('poli_fbs', JSON.stringify(localFeedbacks));
-                        
-                        let teamIndex = teams.findIndex(t => t.id === teamId);
-                        teams[teamIndex].score += totalScore;
-                        teams[teamIndex].matches += 1;
-                        localStorage.setItem('poli_teams', JSON.stringify(teams));
-                        
-                        renderLeaderboard();
-                        showToast("Local");
-                        resetUI();
-                    }
+                    if(guardarPuntajeLocal(feedbackData, teamId, totalScore, team.name)) resetUI();
                 } else {
-                    // GUARDADO FIREBASE (Con Timeout de 6 segundos)
                     const feedbacksRef = collection(db, 'artifacts', appId, 'public', 'data', 'feedbacks');
-                    
                     const asyncTask = async () => {
                         if (currentJudgeName !== "Administrador Master") {
                             const querySnapshot = await getDocs(feedbacksRef);
@@ -431,7 +432,6 @@
                         const teamRef = doc(db, 'artifacts', appId, 'public', 'data', 'teams', teamId.toString());
                         await updateDoc(teamRef, { score: increment(totalScore), matches: increment(1) });
                     };
-
                     await timeoutPromise(6000, asyncTask());
                     showToast("Nube");
                     resetUI();
@@ -439,13 +439,11 @@
             } catch (error) {
                 if (error.message === "DUPLICADO") {
                     alert(`🚨 Ya registraste una calificación para la ${team.name}.`);
-                } else if (error.message === "TIMEOUT_CORPORATIVO" || error.message.includes("permission") || error.message.includes("offline")) {
-                    alert("⚠️ La red corporativa bloqueó Firebase. Pasando a Modo Respaldo Local para que no pierdas información. Dale a registrar de nuevo.");
-                    setOfflineMode();
                 } else {
-                    console.error("Error general:", error);
-                    alert("⚠️ Error inesperado. Pasando a Modo Respaldo.");
+                    // PROTECCIÓN 2: Si la nube falla, lo guarda automáticamente en el PC sin hacerte dar clic de nuevo.
+                    alert("⚠️ Red inestable detectada. Se guardó el puntaje de manera automática en la Memoria Local.");
                     setOfflineMode();
+                    if(guardarPuntajeLocal(feedbackData, teamId, totalScore, team.name)) resetUI();
                 }
             } finally {
                 btn.disabled = false;
@@ -481,14 +479,12 @@
             const tbody = document.getElementById('admin-table-body');
             let rows = '';
             
-            // 1. Mostrar datos locales (si los hay)
             let localFbs = JSON.parse(localStorage.getItem('poli_fbs')) || [];
             localFbs.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).forEach(data => {
                 const dateStr = new Date(data.timestamp).toLocaleDateString() + ' ' + new Date(data.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
                 rows += `<tr class="hover:bg-slate-700/50"><td class="p-4 text-xs text-slate-400">🛑 [LOCAL]<br>${dateStr}</td><td class="p-4 font-bold text-orange-300">${data.judgeName}</td><td class="p-4 font-black uppercase text-xs">${data.teamName}</td><td class="p-4 text-center font-bold text-yellow-400">${data.score1}</td><td class="p-4 text-center font-bold text-yellow-400">${data.score2}</td><td class="p-4 text-center font-bold text-yellow-400">${data.score3}</td><td class="p-4 text-sm text-slate-300 italic">"${data.feedback}"</td></tr>`;
             });
 
-            // 2. Intentar cargar datos de Firebase
             if(!isOfflineMode) {
                 try {
                     const fbSnapshot = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'feedbacks'));
@@ -509,10 +505,8 @@
             csv += "\n--- REGISTRO DE FEEDBACKS ---\nFuente,Fecha,Nombre Juez,Equipo Evaluado,Ptos Voz,Ptos Indagacion,Ptos Negociacion,Feedback Cualitativo\n";
             
             let allFbs = [];
-            // Locales
             let localFbs = JSON.parse(localStorage.getItem('poli_fbs')) || [];
             localFbs.forEach(f => { f.fuente = "LOCAL"; allFbs.push(f); });
-            // Nube
             if(!isOfflineMode) {
                 try {
                     const fbSnapshot = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'feedbacks'));
