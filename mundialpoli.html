@@ -30,7 +30,7 @@
             <i class="fas fa-id-badge text-5xl text-emerald-500 mb-4"></i>
             <h2 class="text-3xl font-black text-white mb-2 tracking-wider">INGRESO AL VAR</h2>
             <p class="text-slate-400 mb-6 text-sm">Identifícate para calificar. Solo se permite <strong>un voto</strong> por equipo.</p>
-            <input type="text" id="judge-name-input" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-4 text-white font-bold text-center mb-6 focus:outline-none focus:border-emerald-500" placeholder="Escribe tu Nombre" onkeypress="if(event.key === 'Enter') loginVAR()">
+            <input type="text" id="judge-name-input" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-4 text-white font-bold text-center mb-6 focus:outline-none focus:border-emerald-500" placeholder="Escribe tu Nombre y Apellido" onkeypress="if(event.key === 'Enter') loginVAR()">
             <button onclick="loginVAR()" class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold py-4 rounded-lg shadow-lg">
                 <i class="fas fa-sign-in-alt mr-2"></i> ENTRAR AL TORNEO
             </button>
@@ -44,25 +44,37 @@
                 <h2 class="text-2xl font-black text-white uppercase"><i class="fas fa-user-shield text-emerald-500 mr-3"></i>Panel de Control Técnico</h2>
                 <button onclick="cerrarAdmin()" class="text-slate-400 hover:text-white transition-colors"><i class="fas fa-times text-3xl"></i></button>
             </div>
-            <div class="p-6 flex-1 overflow-hidden flex flex-col">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-lg font-bold text-emerald-400">Auditoría de Feedbacks</h3>
-                    <div class="flex gap-3">
+            <div class="p-6 flex-1 overflow-auto flex flex-col space-y-6">
+                <!-- Botones Superiores -->
+                <div class="flex flex-wrap justify-between items-center gap-4">
+                    <h3 class="text-lg font-bold text-emerald-400">Auditoría General</h3>
+                    <div class="flex flex-wrap gap-3">
                         <button onclick="sincronizarNube()" class="bg-purple-600 hover:bg-purple-500 text-white px-4 py-2 rounded font-bold shadow-[0_0_15px_rgba(147,51,234,0.5)]"><i class="fas fa-cloud-upload-alt mr-2"></i>Subir Locales a Nube</button>
                         <button onclick="cargarDatosAdmin()" class="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded font-bold"><i class="fas fa-sync-alt mr-2"></i>Refrescar</button>
                         <button onclick="exportarDatos()" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded font-bold"><i class="fas fa-file-excel mr-2"></i>Descargar Excel</button>
                         <button onclick="resetearTorneo()" id="btn-reset" class="bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded font-bold"><i class="fas fa-skull-crossbones mr-2"></i>Reiniciar Torneo</button>
                     </div>
                 </div>
-                <div class="overflow-auto rounded border border-slate-700 flex-1 bg-slate-900/50">
+
+                <!-- Resumen de Votos por Equipo -->
+                <div class="bg-slate-800/80 p-5 rounded-lg border border-slate-700">
+                    <h4 class="text-emerald-400 font-bold mb-3 border-b border-slate-600 pb-2"><i class="fas fa-users mr-2"></i>Resumen de Participación</h4>
+                    <div id="admin-summary" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
+                        <!-- Inyectado por JS -->
+                    </div>
+                </div>
+
+                <!-- Tabla de Feedbacks -->
+                <div class="overflow-auto rounded border border-slate-700 flex-1 bg-slate-900/50 min-h-[300px]">
                     <table class="w-full text-left text-sm text-slate-300">
-                        <thead class="bg-slate-800 text-emerald-500 sticky top-0">
+                        <thead class="bg-slate-800 text-emerald-500 sticky top-0 z-10">
                             <tr>
                                 <th class="p-4 font-bold">Fecha/Hora</th>
                                 <th class="p-4 font-bold">Juez</th>
                                 <th class="p-4 font-bold">Equipo</th>
                                 <th class="p-4 font-bold text-center">Pts Total</th>
                                 <th class="p-4 font-bold">Feedback</th>
+                                <th class="p-4 font-bold text-center">Acción</th>
                             </tr>
                         </thead>
                         <tbody id="admin-table-body" class="divide-y divide-slate-700"></tbody>
@@ -182,7 +194,7 @@
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, onSnapshot, getDocs, doc, setDoc, updateDoc, increment, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-        // TUS CREDENCIALES EXACTAS
+        // CREDENCIALES
         const firebaseConfig = {
             apiKey: "AIzaSyDzlh_dTR4soG9NlU_iKmcaamyJMoz3A3M",
             authDomain: "mundial-poli.firebaseapp.com",
@@ -201,6 +213,7 @@
         let currentJudgeName = "";
         let teamsList = [];
         let isConnected = false;
+        let isAdminMaster = false;
 
         const defaultTeams = [
             { id: 1, name: "Selección Alfa", score: 0, matches: 0 },
@@ -236,7 +249,16 @@
         window.loginVAR = function() {
             const name = document.getElementById('judge-name-input').value.trim();
             if (!name) { alert("Ingresa tu nombre"); return; }
-            currentJudgeName = name;
+            
+            if (name.toLowerCase() === 'poli') {
+                isAdminMaster = true;
+                currentJudgeName = "Administrador Master";
+                abrirAdmin();
+            } else {
+                isAdminMaster = false;
+                currentJudgeName = name;
+            }
+            
             document.getElementById('display-judge-name').innerText = `Juez: ${currentJudgeName}`;
             document.getElementById('auth-modal').classList.add('hidden');
         }
@@ -247,7 +269,7 @@
             container.innerHTML = '';
             const sorted = [...teamsList].sort((a, b) => b.score - a.score);
             sorted.forEach((team, index) => {
-                let badge = index === 0 ? 'bg-yellow-500 text-yellow-900' : index === 1 ? 'bg-slate-300 text-slate-800' : index === 2 ? 'bg-amber-700 text-amber-100' : 'bg-slate-700 text-slate-300';
+                let badge = index === 0 ? 'bg-yellow-500 text-yellow-900 shadow-[0_0_10px_rgba(234,179,8,0.5)]' : index === 1 ? 'bg-slate-300 text-slate-800' : index === 2 ? 'bg-amber-700 text-amber-100' : 'bg-slate-700 text-slate-300';
                 container.innerHTML += `
                     <div class="flex items-center justify-between p-3 bg-slate-800/50 rounded border border-slate-700">
                         <div class="flex items-center gap-3">
@@ -267,13 +289,13 @@
             if(currentVal) select.value = currentVal;
         }
 
-        // 4. REGISTRAR PUNTAJE 
+        // 4. REGISTRAR PUNTAJE (Con Validación de Duplicados)
         window.submitScore = async function() {
             if (!currentJudgeName) { alert("Identifícate primero."); return; }
             if (!isConnected) { alert("Esperando conexión a la base de datos..."); return; }
             
             const btn = document.getElementById('btn-submit');
-            btn.disabled = true; btn.innerHTML = 'Subiendo...';
+            btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Procesando...';
 
             try {
                 const teamId = parseInt(document.getElementById('team-select').value);
@@ -284,7 +306,22 @@
                 const total = s1 + s2 + s3;
                 const teamName = teamsList.find(t => t.id === teamId).name;
 
-                // SUBIR DATOS DIRECTO A LA NUBE (Sin bloqueo temporalmente)
+                // VALIDACIÓN DE DUPLICADOS (Si no es el Admin Master)
+                if (!isAdminMaster) {
+                    const querySnapshot = await getDocs(colFeedbacks);
+                    const yaVoto = querySnapshot.docs.some(doc => {
+                        let data = doc.data();
+                        return data.judgeName === currentJudgeName && data.teamId === teamId;
+                    });
+                    
+                    if (yaVoto) {
+                        alert(`🚨 ¡FALTA TÉCNICA! Ya registraste una calificación para la ${teamName}. Solo puedes votar una vez por equipo.`);
+                        btn.disabled = false; btn.innerHTML = '<i class="fas fa-cloud-upload-alt mr-2"></i> REGISTRAR PUNTAJE EN LA NUBE';
+                        return; // Detiene el proceso
+                    }
+                }
+
+                // SUBIR DATOS
                 await addDoc(colFeedbacks, {
                     teamId, teamName, score1: s1, score2: s2, score3: s3, totalScore: total,
                     feedback: feed, judgeName: currentJudgeName, timestamp: new Date().toISOString()
@@ -309,17 +346,37 @@
             btn.disabled = false; btn.innerHTML = '<i class="fas fa-cloud-upload-alt mr-2"></i> REGISTRAR PUNTAJE EN LA NUBE';
         }
 
-        // 5. FUNCIONES ADMIN Y SINCRONIZACIÓN MÁGICA
+        // 5. FUNCIONES ADMIN VIP
         window.abrirAdmin = function() {
-            if(prompt("Clave:") === "poli") { document.getElementById('admin-modal').classList.remove('hidden'); cargarDatosAdmin(); }
+            if(isAdminMaster || prompt("Clave de Administrador:") === "poli") { 
+                document.getElementById('admin-modal').classList.remove('hidden'); 
+                cargarDatosAdmin(); 
+            }
         }
         window.cerrarAdmin = () => document.getElementById('admin-modal').classList.add('hidden');
 
+        // Función para eliminar un voto específico por error
+        window.eliminarVoto = async function(feedbackId, teamId, totalScore, judgeName) {
+            if(confirm(`¿Estás completamente seguro de eliminar el voto de "${judgeName}"? Se restarán ${totalScore} puntos al equipo.`)) {
+                try {
+                    // Borrar el documento de feedback
+                    await deleteDoc(doc(db, "feedbacks_torneo", feedbackId));
+                    // Restarle los puntos al equipo
+                    const teamRef = doc(db, "equipos_torneo", teamId.toString());
+                    await updateDoc(teamRef, { score: increment(-totalScore), matches: increment(-1) });
+                    
+                    alert("Voto eliminado y puntos restados correctamente.");
+                    cargarDatosAdmin(); // Refrescar la tabla del admin
+                } catch (e) {
+                    alert("Error al eliminar: " + e.message);
+                }
+            }
+        }
+
         window.sincronizarNube = async function() {
             let localFbs = JSON.parse(localStorage.getItem('poli_fbs')) || [];
-            if(localFbs.length === 0) { alert("¡Excelente! No tienes datos estancados en tu PC."); return; }
-            
-            if(!confirm(`¿Quieres enviar los ${localFbs.length} registros que tienes en "PC Local" hacia la Nube?`)) return;
+            if(localFbs.length === 0) { alert("No tienes datos estancados en tu PC."); return; }
+            if(!confirm(`¿Subir ${localFbs.length} registros Locales a la Nube?`)) return;
             
             try {
                 for(let fb of localFbs) {
@@ -330,37 +387,76 @@
                     const teamRef = doc(db, "equipos_torneo", fb.teamId.toString());
                     await updateDoc(teamRef, { score: increment(fb.totalScore), matches: increment(1) });
                 }
-                
-                localStorage.removeItem('poli_fbs'); // Limpiar local tras éxito
+                localStorage.removeItem('poli_fbs'); 
                 alert("¡Datos sincronizados a la Nube con éxito!");
                 cargarDatosAdmin();
-            } catch(e) {
-                alert("Error subiendo: " + e.message);
-            }
+            } catch(e) { alert("Error subiendo: " + e.message); }
         }
 
         window.cargarDatosAdmin = async function() {
             const tbody = document.getElementById('admin-table-body');
-            tbody.innerHTML = 'Cargando...';
-            let html = '';
+            const summaryDiv = document.getElementById('admin-summary');
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center">Cargando datos...</td></tr>';
             
-            // Mostrar Locales
+            let html = '';
+            let summaryData = {};
+            
+            // Inicializar resumen
+            teamsList.forEach(t => {
+                summaryData[t.id] = { name: t.name, count: 0, voters: [] };
+            });
+
+            // Mostrar Locales (Si existen)
             let localFbs = JSON.parse(localStorage.getItem('poli_fbs')) || [];
             localFbs.forEach(d => {
                 const fecha = d.timestamp ? new Date(d.timestamp).toLocaleString() : 'Reciente';
-                html += `<tr class="bg-slate-800/50"><td class="p-4 text-xs text-orange-400">🛑 PC Local<br>${fecha}</td><td class="p-4 text-orange-400 font-bold">${d.judgeName}</td><td class="p-4 text-white">${d.teamName}</td><td class="p-4 text-yellow-400 font-bold text-center">${d.totalScore}</td><td class="p-4 italic text-slate-400">"${d.feedback}"</td></tr>`;
+                html += `<tr class="bg-slate-800/50"><td class="p-4 text-xs text-orange-400">🛑 PC Local<br>${fecha}</td><td class="p-4 text-orange-400 font-bold">${d.judgeName}</td><td class="p-4 text-white">${d.teamName}</td><td class="p-4 text-yellow-400 font-bold text-center">${d.totalScore}</td><td class="p-4 italic text-slate-400">"${d.feedback}"</td><td class="p-4 text-center"><span class="text-xs text-orange-500">Sincroniza primero</span></td></tr>`;
+                
+                if(summaryData[d.teamId]) {
+                    summaryData[d.teamId].count++;
+                    if(!summaryData[d.teamId].voters.includes(d.judgeName)) summaryData[d.teamId].voters.push(d.judgeName);
+                }
             });
 
             // Mostrar Nube
             try {
                 const fbs = await getDocs(colFeedbacks);
-                fbs.docs.map(d=>d.data()).sort((a,b)=>new Date(b.timestamp) - new Date(a.timestamp)).forEach(d => {
+                const sortedFbs = fbs.docs.map(d => ({id: d.id, ...d.data()})).sort((a,b)=>new Date(b.timestamp) - new Date(a.timestamp));
+                
+                sortedFbs.forEach(d => {
                     const fecha = new Date(d.timestamp).toLocaleString();
-                    html += `<tr><td class="p-4 text-xs text-emerald-400">☁️ Nube<br>${fecha}</td><td class="p-4 text-emerald-400 font-bold">${d.judgeName}</td><td class="p-4 text-white">${d.teamName}</td><td class="p-4 text-yellow-400 font-bold text-center">${d.totalScore}</td><td class="p-4 italic text-slate-400">"${d.feedback}"</td></tr>`;
+                    // Botón de eliminar inyectando el ID del documento
+                    const btnEliminar = `<button onclick="eliminarVoto('${d.id}', ${d.teamId}, ${d.totalScore}, '${d.judgeName.replace(/'/g, "\\'")}')" class="text-red-500 hover:text-red-400 p-2 rounded bg-red-500/10 hover:bg-red-500/20 transition-colors" title="Eliminar Voto"><i class="fas fa-trash-alt"></i></button>`;
+                    
+                    html += `<tr><td class="p-4 text-xs text-emerald-400">☁️ Nube<br>${fecha}</td><td class="p-4 text-emerald-400 font-bold">${d.judgeName}</td><td class="p-4 text-white">${d.teamName}</td><td class="p-4 text-yellow-400 font-bold text-center">${d.totalScore}</td><td class="p-4 italic text-slate-400">"${d.feedback}"</td><td class="p-4 text-center">${btnEliminar}</td></tr>`;
+                    
+                    if(summaryData[d.teamId]) {
+                        summaryData[d.teamId].count++;
+                        if(!summaryData[d.teamId].voters.includes(d.judgeName)) summaryData[d.teamId].voters.push(d.judgeName);
+                    }
                 });
             } catch(e) { console.log("Error nube:", e); }
             
-            tbody.innerHTML = html || 'Sin datos.';
+            tbody.innerHTML = html || '<tr><td colspan="6" class="text-center text-slate-500">Sin datos registrados.</td></tr>';
+
+            // Dibujar el Resumen de Participación
+            let summaryHtml = '';
+            Object.values(summaryData).forEach(team => {
+                if(team.count > 0) {
+                    summaryHtml += `
+                        <div class="bg-slate-900 p-3 rounded border border-slate-700">
+                            <div class="flex justify-between items-center mb-1">
+                                <strong class="text-emerald-400">${team.name}</strong>
+                                <span class="bg-slate-700 px-2 py-0.5 rounded text-xs text-white">${team.count} Votos</span>
+                            </div>
+                            <p class="text-xs text-slate-400 mt-1 line-clamp-2" title="${team.voters.join(', ')}">
+                                Jueces: ${team.voters.join(', ')}
+                            </p>
+                        </div>
+                    `;
+                }
+            });
+            summaryDiv.innerHTML = summaryHtml || '<p class="text-slate-500 text-sm">No hay votos registrados aún.</p>';
         }
 
         window.exportarDatos = async function() {
