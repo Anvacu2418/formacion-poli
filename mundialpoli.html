@@ -14,19 +14,9 @@
             background-image: radial-gradient(circle at top right, #1e293b, transparent), radial-gradient(circle at bottom left, #020617, transparent);
             min-height: 100vh;
         }
-        .glass-panel {
-            background: rgba(30, 41, 59, 0.7);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 1rem;
-        }
-        .neon-text {
-            text-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
-        }
-        .tab-active {
-            border-bottom: 2px solid #10b981;
-            color: #10b981;
-        }
+        .glass-panel { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 1rem; }
+        .neon-text { text-shadow: 0 0 10px rgba(16, 185, 129, 0.5); }
+        .tab-active { border-bottom: 2px solid #10b981; color: #10b981; }
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: #1e293b; }
         ::-webkit-scrollbar-thumb { background: #10b981; border-radius: 4px; }
@@ -35,14 +25,13 @@
 <body class="p-4 md:p-8">
 
     <!-- Modal: Ingreso al VAR -->
-    <div id="auth-modal" class="fixed inset-0 bg-slate-900/95 backdrop-blur-md z-[100] flex flex-col justify-center items-center p-4 transition-opacity duration-500">
+    <div id="auth-modal" class="fixed inset-0 bg-slate-900/95 backdrop-blur-md z-[100] flex flex-col justify-center items-center p-4 transition-opacity duration-300">
         <div class="bg-slate-800 border-2 border-emerald-500 rounded-2xl shadow-[0_0_30px_rgba(16,185,129,0.3)] w-full max-w-md p-8 text-center relative overflow-hidden">
-            <div class="absolute -top-10 -right-10 w-32 h-32 bg-emerald-500/20 rounded-full blur-2xl"></div>
             <i class="fas fa-id-badge text-5xl text-emerald-500 mb-4"></i>
             <h2 class="text-3xl font-black text-white mb-2 tracking-wider">INGRESO AL VAR</h2>
-            <p class="text-slate-400 mb-6 text-sm">Identifícate para calificar a los equipos. Solo se permite <strong>un voto</strong> por persona por equipo.</p>
+            <p class="text-slate-400 mb-6 text-sm">Identifícate para calificar. Solo se permite <strong>un voto</strong> por equipo.</p>
             <input type="text" id="judge-name-input" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-4 text-white font-bold text-center mb-6 focus:outline-none focus:border-emerald-500" placeholder="Escribe tu Nombre" onkeypress="if(event.key === 'Enter') loginVAR()">
-            <button onclick="loginVAR()" class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold py-4 rounded-lg shadow-lg transition-transform transform hover:scale-105">
+            <button onclick="loginVAR()" class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold py-4 rounded-lg shadow-lg">
                 <i class="fas fa-sign-in-alt mr-2"></i> ENTRAR AL TORNEO
             </button>
         </div>
@@ -56,29 +45,26 @@
                 <button onclick="cerrarAdmin()" class="text-slate-400 hover:text-white transition-colors"><i class="fas fa-times text-3xl"></i></button>
             </div>
             <div class="p-6 flex-1 overflow-hidden flex flex-col">
-                <div class="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
+                <div class="flex justify-between items-center mb-4">
                     <h3 class="text-lg font-bold text-emerald-400">Auditoría de Feedbacks</h3>
-                    <div class="flex flex-wrap justify-end gap-3">
-                        <button onclick="cargarDatosAdmin()" class="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded font-bold transition-colors"><i class="fas fa-sync-alt mr-2"></i>Refrescar</button>
-                        <button onclick="exportarDatos()" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded font-bold transition-colors shadow-lg shadow-blue-500/30"><i class="fas fa-file-excel mr-2"></i>Descargar Data (Nube + Local)</button>
-                        <button onclick="resetearTorneo()" id="btn-reset" class="bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded font-bold transition-colors shadow-lg shadow-red-500/30"><i class="fas fa-skull-crossbones mr-2"></i>Reiniciar Torneo</button>
+                    <div class="flex gap-3">
+                        <button onclick="cargarDatosAdmin()" class="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded font-bold"><i class="fas fa-sync-alt mr-2"></i>Refrescar</button>
+                        <button onclick="exportarDatos()" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded font-bold"><i class="fas fa-file-excel mr-2"></i>Descargar Excel</button>
+                        <button onclick="resetearTorneo()" id="btn-reset" class="bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded font-bold"><i class="fas fa-skull-crossbones mr-2"></i>Reiniciar Torneo</button>
                     </div>
                 </div>
                 <div class="overflow-auto rounded border border-slate-700 flex-1 bg-slate-900/50">
                     <table class="w-full text-left text-sm text-slate-300">
                         <thead class="bg-slate-800 text-emerald-500 sticky top-0">
                             <tr>
-                                <th class="p-4 border-b border-slate-700 font-bold uppercase">Fecha/Hora</th>
-                                <th class="p-4 border-b border-slate-700 font-bold uppercase">Juez</th>
-                                <th class="p-4 border-b border-slate-700 font-bold uppercase">Equipo</th>
-                                <th class="p-4 border-b border-slate-700 font-bold uppercase text-center">Pts Voz</th>
-                                <th class="p-4 border-b border-slate-700 font-bold uppercase text-center">Pts Indag.</th>
-                                <th class="p-4 border-b border-slate-700 font-bold uppercase text-center">Pts Neg.</th>
-                                <th class="p-4 border-b border-slate-700 font-bold uppercase">Observaciones</th>
+                                <th class="p-4 font-bold">Fecha/Hora</th>
+                                <th class="p-4 font-bold">Juez</th>
+                                <th class="p-4 font-bold">Equipo</th>
+                                <th class="p-4 font-bold text-center">Pts Total</th>
+                                <th class="p-4 font-bold">Feedback</th>
                             </tr>
                         </thead>
-                        <tbody id="admin-table-body" class="divide-y divide-slate-700">
-                        </tbody>
+                        <tbody id="admin-table-body" class="divide-y divide-slate-700"></tbody>
                     </table>
                 </div>
             </div>
@@ -86,7 +72,7 @@
     </div>
 
     <!-- Header Principal -->
-    <header class="flex justify-between items-center mb-8 glass-panel p-4 md:p-6 shadow-2xl border-t-4 border-t-emerald-500 relative">
+    <header class="flex justify-between items-center mb-8 glass-panel p-4 md:p-6 shadow-2xl border-t-4 border-t-emerald-500">
         <div class="flex items-center gap-4">
             <div class="bg-emerald-500 p-3 rounded-full shadow-[0_0_15px_rgba(16,185,129,0.5)] cursor-pointer hover:bg-emerald-400" ondblclick="abrirAdmin()" title="Doble clic Admin">
                 <i class="fas fa-trophy text-2xl text-slate-900"></i>
@@ -100,12 +86,11 @@
             <p class="text-slate-400 text-sm font-bold" id="display-judge-name">Juez: Pendiente</p>
             <div class="flex items-center gap-2 mt-1 justify-end" id="status-indicator">
                 <span class="w-3 h-3 rounded-full bg-yellow-500 animate-pulse"></span>
-                <span class="text-yellow-400 font-bold text-xs uppercase" id="status-text">Conectando...</span>
+                <span class="text-yellow-400 font-bold text-xs uppercase" id="status-text">Conectando a Firebase...</span>
             </div>
         </div>
     </header>
 
-    <!-- Main Grid -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Leaderboard -->
         <div class="lg:col-span-1 space-y-6">
@@ -130,101 +115,73 @@
 
             <!-- Tab Calificador -->
             <div id="tab-calificador" class="p-6 flex-1">
-                <h3 class="text-2xl font-bold mb-6 text-white flex items-center justify-between">
-                    <span>Panel de Calificación Oficial</span>
-                    <i class="fas fa-clipboard-check text-emerald-500"></i>
-                </h3>
-                
                 <div class="mb-6">
-                    <label class="block text-slate-400 mb-2 font-bold uppercase text-sm tracking-wider">Seleccionar Equipo:</label>
-                    <select id="team-select" class="w-full bg-slate-800 border-2 border-slate-600 rounded-lg p-4 text-white font-bold text-lg focus:outline-none focus:border-emerald-500"></select>
+                    <label class="block text-slate-400 mb-2 font-bold uppercase text-sm">Seleccionar Equipo:</label>
+                    <select id="team-select" class="w-full bg-slate-800 border-2 border-slate-600 rounded-lg p-4 text-white font-bold text-lg focus:border-emerald-500"></select>
                 </div>
 
                 <div class="space-y-6 bg-slate-800/50 p-6 rounded-lg border border-slate-700">
                     <div>
                         <div class="flex justify-between items-end mb-2">
-                            <label class="font-bold text-emerald-400"><i class="fas fa-microphone-alt mr-2"></i>Nivel 1: Voz</label>
-                            <span id="val-1" class="text-2xl font-black text-white bg-slate-900 px-3 py-1 rounded shadow">5</span>
+                            <label class="font-bold text-emerald-400">Nivel 1: Voz</label>
+                            <span id="val-1" class="text-2xl font-black text-white bg-slate-900 px-3 py-1 rounded">5</span>
                         </div>
                         <input type="range" id="score-1" min="0" max="10" value="5" class="w-full accent-emerald-500" oninput="document.getElementById('val-1').innerText = this.value">
                     </div>
                     <div>
                         <div class="flex justify-between items-end mb-2">
-                            <label class="font-bold text-emerald-400"><i class="fas fa-search mr-2"></i>Nivel 2: Indagación</label>
-                            <span id="val-2" class="text-2xl font-black text-white bg-slate-900 px-3 py-1 rounded shadow">5</span>
+                            <label class="font-bold text-emerald-400">Nivel 2: Indagación</label>
+                            <span id="val-2" class="text-2xl font-black text-white bg-slate-900 px-3 py-1 rounded">5</span>
                         </div>
                         <input type="range" id="score-2" min="0" max="10" value="5" class="w-full accent-emerald-500" oninput="document.getElementById('val-2').innerText = this.value">
                     </div>
                     <div>
                         <div class="flex justify-between items-end mb-2">
-                            <label class="font-bold text-emerald-400"><i class="fas fa-handshake mr-2"></i>Nivel 3: Negociación</label>
-                            <span id="val-3" class="text-2xl font-black text-white bg-slate-900 px-3 py-1 rounded shadow">5</span>
+                            <label class="font-bold text-emerald-400">Nivel 3: Negociación</label>
+                            <span id="val-3" class="text-2xl font-black text-white bg-slate-900 px-3 py-1 rounded">5</span>
                         </div>
                         <input type="range" id="score-3" min="0" max="10" value="5" class="w-full accent-emerald-500" oninput="document.getElementById('val-3').innerText = this.value">
                     </div>
                     <div class="mt-6 pt-6 border-t border-slate-700">
-                        <label class="font-bold text-emerald-400 mb-2 block"><i class="fas fa-comment-dots mr-2"></i>Oportunidades de Mejora</label>
-                        <textarea id="feedback-text" rows="3" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-4 text-white focus:outline-none focus:border-emerald-500" placeholder="Escribe aquí las observaciones..."></textarea>
+                        <label class="font-bold text-emerald-400 mb-2 block">Oportunidades de Mejora</label>
+                        <textarea id="feedback-text" rows="3" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-4 text-white focus:border-emerald-500" placeholder="Escribe aquí las observaciones..."></textarea>
                     </div>
                 </div>
-
                 <button onclick="submitScore()" id="btn-submit" class="w-full mt-6 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 text-white font-black text-lg py-5 rounded-lg shadow-lg">
-                    <i class="fas fa-cloud-upload-alt mr-2"></i> REGISTRAR PUNTAJE
+                    <i class="fas fa-cloud-upload-alt mr-2"></i> REGISTRAR PUNTAJE EN LA NUBE
                 </button>
             </div>
 
             <!-- Tab Escenarios -->
             <div id="tab-escenarios" class="p-6 hidden flex-1">
-                <h3 class="text-2xl font-bold mb-6 text-white flex items-center justify-between">
-                    <span>Instrucciones y Casos</span>
-                    <i class="fas fa-book-open text-emerald-500"></i>
-                </h3>
                 <div class="space-y-6">
-                    <div class="bg-slate-800 border-l-4 border-blue-500 p-5 rounded-r shadow-lg">
-                        <h4 class="font-bold text-blue-400 text-lg mb-2"><i class="fas fa-microphone-alt mr-2"></i>Nivel 1: El Camaleón (Voz)</h4>
-                        <p class="text-sm text-slate-300 mb-3">Un integrante lee normal. El otro aplica emoción (Narrador de fútbol o Locutor de radio).</p>
-                        <div class="bg-slate-900 p-4 rounded border border-slate-700">
-                            <p class="italic text-slate-200">"Te informamos que el plazo para la renovación de tu matrícula con el beneficio financiero vence el día de hoy a la medianoche. Si el pago no se refleja en el sistema, perderás el descuento aplicado a tu plan de estudios y se generará un recargo extemporáneo."</p>
-                        </div>
+                    <div class="bg-slate-800 border-l-4 border-blue-500 p-5 rounded-r">
+                        <h4 class="font-bold text-blue-400 text-lg mb-2">Nivel 1: El Camaleón (Voz)</h4>
+                        <p class="text-sm text-slate-300">Un integrante lee normal. El otro aplica emoción.</p>
+                        <p class="italic text-slate-200 mt-2 p-2 bg-slate-900 rounded">"Te informamos que el plazo para la renovación de tu matrícula con el beneficio financiero vence el día de hoy a la medianoche. Si el pago no se refleja en el sistema, perderás el descuento aplicado a tu plan de estudios y se generará un recargo extemporáneo."</p>
                     </div>
-                    <div class="bg-slate-800 border-l-4 border-purple-500 p-5 rounded-r shadow-lg">
-                        <h4 class="font-bold text-purple-400 text-lg mb-2"><i class="fas fa-search mr-2"></i>Nivel 2: Detective</h4>
-                        <div class="flex flex-col items-center p-4 bg-slate-900 rounded border border-slate-700 relative overflow-hidden">
-                            <button onclick="spinRouletteNivel2()" class="z-10 bg-purple-600 text-white font-bold py-3 px-8 rounded-full mb-4">
-                                <i class="fas fa-sync-alt mr-2" id="icon-spin-2"></i> Sortear Caso Absurdo
-                            </button>
-                            <div id="roulette-result-2" class="z-10 text-center w-full min-h-[100px] flex items-center justify-center text-lg font-bold text-yellow-300 border-2 border-dashed border-purple-500/50 p-4 rounded-lg">¿Qué cliente extraño tocará?</div>
-                        </div>
+                    <div class="bg-slate-800 border-l-4 border-purple-500 p-5 rounded-r">
+                        <h4 class="font-bold text-purple-400 text-lg mb-2">Nivel 2: Detective</h4>
+                        <button onclick="spinRouletteNivel2()" class="w-full bg-purple-600 text-white font-bold py-3 rounded-full mb-4"><i class="fas fa-sync-alt mr-2" id="icon-spin-2"></i> Sortear Caso</button>
+                        <div id="roulette-result-2" class="text-center font-bold text-yellow-300 border-2 border-dashed border-purple-500/50 p-4 rounded-lg">¿Qué cliente extraño tocará?</div>
                     </div>
-                    <div class="bg-slate-800 border-l-4 border-emerald-500 p-5 rounded-r shadow-lg">
-                        <h4 class="font-bold text-emerald-400 text-lg mb-2"><i class="fas fa-fist-raised mr-2"></i>Nivel 3: La Batalla Cruzada</h4>
-                        <p class="text-sm text-slate-300 mb-4">Se enfrentan dos equipos. Round 1: Asesor A vs Estudiante B. Round 2: Asesor B vs Estudiante A.</p>
-                        <div class="flex flex-col items-center p-4 bg-slate-900 rounded border border-slate-700 relative overflow-hidden">
-                            <button onclick="spinRouletteNivel3()" class="z-10 bg-emerald-600 text-white font-bold py-3 px-8 rounded-full mb-4">
-                                <i class="fas fa-sync-alt mr-2" id="icon-spin-3"></i> Sortear Caso Crítico POLI
-                            </button>
-                            <div id="roulette-result-3" class="z-10 text-center w-full min-h-[100px] flex items-center justify-center text-md font-bold text-emerald-200 border-2 border-dashed border-emerald-500/50 p-4 rounded-lg">Presiona para revelar la batalla...</div>
-                        </div>
+                    <div class="bg-slate-800 border-l-4 border-emerald-500 p-5 rounded-r">
+                        <h4 class="font-bold text-emerald-400 text-lg mb-2">Nivel 3: La Batalla Cruzada</h4>
+                        <button onclick="spinRouletteNivel3()" class="w-full bg-emerald-600 text-white font-bold py-3 rounded-full mb-4"><i class="fas fa-sync-alt mr-2" id="icon-spin-3"></i> Sortear Caso</button>
+                        <div id="roulette-result-3" class="text-center font-bold text-emerald-200 border-2 border-dashed border-emerald-500/50 p-4 rounded-lg">Presiona para revelar la batalla...</div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div id="toast" class="fixed bottom-5 right-5 bg-emerald-500 text-white px-6 py-4 rounded-lg shadow-lg transform translate-y-24 opacity-0 transition-all duration-300 font-bold z-50 flex items-center">
-        <i class="fas fa-check-circle text-2xl mr-3"></i> 
-        <div>
-            <p id="toast-title">¡Puntaje Registrado!</p>
-            <p class="text-xs font-normal" id="toast-desc">Guardado en la base de datos.</p>
-        </div>
-    </div>
-
-    <!-- FIREBASE Y LÓGICA -->
+    <!-- FIREBASE MODULE -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, onSnapshot, collection, addDoc, updateDoc, getDocs, deleteDoc, increment, query, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, getDocs, doc, setDoc, updateDoc, increment, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
+        // TUS CREDENCIALES EXACTAS
         const firebaseConfig = {
             apiKey: "AIzaSyDzlh_dTR4soG9NlU_iKmcaamyJMoz3A3M",
             authDomain: "mundial-poli.firebaseapp.com",
@@ -235,12 +192,14 @@
         };
 
         const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
         const auth = getAuth(app);
-        const appId = 'mundial-poli-app';
-        let userAuth = null;
-        let currentJudgeName = ""; 
-        let isOfflineMode = false;
+        const db = getFirestore(app);
+        const colTeams = collection(db, "equipos_torneo");
+        const colFeedbacks = collection(db, "feedbacks_torneo");
+
+        let currentJudgeName = "";
+        let teamsList = [];
+        let isAdmin = false;
 
         const defaultTeams = [
             { id: 1, name: "Selección Alfa", score: 0, matches: 0 },
@@ -253,107 +212,58 @@
             { id: 8, name: "Selección Theta", score: 0, matches: 0 }
         ];
 
-        let teams = [];
-
-        const absurdCases = [
-            "Convencer a un Vampiro (que odia el sol) de comprar una cama bronceadora.",
-            "Venderle un Smartwatch a un ermitaño que vive sin internet y odia la tecnología.",
-            "Venderle una suscripción de carnes premium a un líder vegano.",
-            "Venderle un curso intensivo de oratoria a un mimo profesional."
-        ];
-
-        const realCases = [
-            "Estudiante de 4to semestre no quiere renovar porque no aprende virtual y no tiene tiempo.",
-            "Estudiante pide cancelación por un problema de nota del semestre pasado sin solución.",
-            "Estudiante sin dinero para matrícula por pérdida de empleo, desconoce opciones de beca.",
-            "Estudiante quiere aplazar por desmotivación, no sabe que existe bienestar.",
-            "Estudiante embarazada solicita aplazamiento por orden médica de reposo absoluto.",
-            "Estudiante solicita retiro definitivo porque ya se matriculó en otra universidad presencial."
-        ];
-
-        function setOfflineMode() {
-            if(isOfflineMode) return;
-            isOfflineMode = true;
-            console.log("Modo Respaldo Local Activado.");
-            document.getElementById('status-indicator').innerHTML = '<span class="w-3 h-3 rounded-full bg-orange-500"></span><span class="text-orange-400 font-bold text-xs uppercase">Modo Respaldo Local</span>';
+        // 1. INICIAR SESIÓN ANÓNIMA Y CONECTAR DATOS
+        signInAnonymously(auth).then(() => {
+            document.getElementById('status-indicator').innerHTML = '<span class="w-3 h-3 rounded-full bg-emerald-500"></span><span class="text-emerald-400 font-bold text-xs uppercase">Conectado a Firebase</span>';
             
-            let localTeams = JSON.parse(localStorage.getItem('poli_teams'));
-            if(!localTeams) {
-                localTeams = defaultTeams;
-                localStorage.setItem('poli_teams', JSON.stringify(localTeams));
-            }
-            teams = localTeams;
-            renderLeaderboard();
-            populateSelect();
-        }
-
-        async function init() {
-            // PROTECCIÓN 1: Si ya hay datos locales guardados, bloqueamos la nube para que no borre la pantalla
-            let localTeams = JSON.parse(localStorage.getItem('poli_teams'));
-            let hasLocalScores = localTeams && localTeams.some(t => t.score > 0);
-            
-            if (hasLocalScores) {
-                setOfflineMode();
-                return; 
-            }
-
-            const authTimeout = setTimeout(() => { setOfflineMode(); }, 4000);
-            
-            try {
-                await signInAnonymously(auth);
-                clearTimeout(authTimeout);
-                userAuth = auth.currentUser;
-                document.getElementById('status-indicator').innerHTML = '<span class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></span><span class="text-emerald-400 font-bold text-xs uppercase">Conectado / Nube</span>';
-                setupFirebaseListeners();
-            } catch (error) {
-                clearTimeout(authTimeout);
-                setOfflineMode();
-            }
-        }
-
-        window.loginVAR = function() {
-            const nameInput = document.getElementById('judge-name-input').value.trim();
-            if (nameInput === "") { alert("Escribe tu nombre."); return; }
-            if (nameInput.toLowerCase() === 'poli') {
-                document.getElementById('auth-modal').classList.add('hidden');
-                abrirAdmin(true);
-                currentJudgeName = "Administrador Master";
-                return;
-            }
-            currentJudgeName = nameInput;
-            document.getElementById('display-judge-name').innerText = `Juez: ${currentJudgeName}`;
-            document.getElementById('auth-modal').classList.add('hidden');
-        }
-
-        function setupFirebaseListeners() {
-            if (isOfflineMode) return;
-            const teamsRef = collection(db, 'artifacts', appId, 'public', 'data', 'teams');
-            let dbTimeout = setTimeout(() => { setOfflineMode(); }, 5000);
-
-            onSnapshot(teamsRef, (snapshot) => {
-                clearTimeout(dbTimeout);
+            // Escuchar cambios en equipos
+            onSnapshot(colTeams, (snapshot) => {
                 if (snapshot.empty) {
-                    defaultTeams.forEach(async (team) => await setDoc(doc(teamsRef, team.id.toString()), team));
+                    // Si está vacío, cargar los 8 por defecto
+                    defaultTeams.forEach(async (t) => {
+                        await setDoc(doc(db, "equipos_torneo", t.id.toString()), t);
+                    });
                 } else {
-                    teams = snapshot.docs.map(doc => doc.data());
+                    teamsList = snapshot.docs.map(d => d.data());
                     renderLeaderboard();
                     populateSelect();
                 }
-            }, () => {
-                setOfflineMode();
+            }, (error) => {
+                alert("Error de conexión (onSnapshot): " + error.message);
             });
+        }).catch((error) => {
+            alert("Error crítico de Autenticación. Por favor, habilita 'Anónimo' en la consola de Firebase. Detalle: " + error.message);
+        });
+
+        // 2. LOGICA DE INGRESO
+        window.loginVAR = function() {
+            const name = document.getElementById('judge-name-input').value.trim();
+            if (!name) { alert("Ingresa tu nombre"); return; }
+            
+            if (name.toLowerCase() === 'poli') {
+                isAdmin = true;
+                currentJudgeName = "Administrador Master";
+                document.getElementById('auth-modal').classList.add('hidden');
+                abrirAdmin(true);
+            } else {
+                isAdmin = false;
+                currentJudgeName = name;
+                document.getElementById('auth-modal').classList.add('hidden');
+            }
+            document.getElementById('display-judge-name').innerText = `Juez: ${currentJudgeName}`;
         }
 
+        // 3. ACTUALIZAR INTERFAZ
         function renderLeaderboard() {
             const container = document.getElementById('leaderboard');
             container.innerHTML = '';
-            const sortedTeams = [...teams].sort((a, b) => b.score - a.score);
-            sortedTeams.forEach((team, index) => {
-                let badgeColor = index === 0 ? 'bg-yellow-500 text-yellow-900' : index === 1 ? 'bg-slate-300 text-slate-800' : index === 2 ? 'bg-amber-700 text-amber-100' : 'bg-slate-700 text-slate-300';
+            const sorted = [...teamsList].sort((a, b) => b.score - a.score);
+            sorted.forEach((team, index) => {
+                let badge = index === 0 ? 'bg-yellow-500 text-yellow-900' : index === 1 ? 'bg-slate-300 text-slate-800' : index === 2 ? 'bg-amber-700 text-amber-100' : 'bg-slate-700 text-slate-300';
                 container.innerHTML += `
                     <div class="flex items-center justify-between p-3 bg-slate-800/50 rounded border border-slate-700">
                         <div class="flex items-center gap-3">
-                            <span class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${badgeColor}">${index + 1}</span>
+                            <span class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${badge}">${index + 1}</span>
                             <div><h4 class="font-bold text-white uppercase text-sm">${team.name}</h4><p class="text-xs text-slate-400">${team.matches} Votos</p></div>
                         </div>
                         <div class="text-right"><span class="text-2xl font-black text-emerald-400">${team.score}</span></div>
@@ -363,223 +273,136 @@
 
         function populateSelect() {
             const select = document.getElementById('team-select');
-            const currentSelection = select.value;
+            const currentVal = select.value;
             select.innerHTML = '';
-            [...teams].sort((a, b) => a.id - b.id).forEach(team => select.innerHTML += `<option value="${team.id}">${team.name}</option>`);
-            if (currentSelection) select.value = currentSelection;
-        }
-
-        // FUNCIÓN AUXILIAR DE GUARDADO LOCAL AUTOMÁTICO
-        function guardarPuntajeLocal(feedbackData, teamId, totalScore, teamName) {
-            let localFeedbacks = JSON.parse(localStorage.getItem('poli_fbs')) || [];
-            if (currentJudgeName !== "Administrador Master" && localFeedbacks.some(f => f.judgeName === currentJudgeName && f.teamId === teamId)) {
-                alert(`🚨 Ya votaste por ${teamName}.`);
-                return false;
-            }
-            localFeedbacks.push(feedbackData);
-            localStorage.setItem('poli_fbs', JSON.stringify(localFeedbacks));
-            
-            let teamIndex = teams.findIndex(t => t.id === teamId);
-            if(teamIndex !== -1) {
-                teams[teamIndex].score += totalScore;
-                teams[teamIndex].matches += 1;
-                localStorage.setItem('poli_teams', JSON.stringify(teams));
-            }
-            renderLeaderboard();
-            showToast("Local");
-            return true;
-        }
-
-        const timeoutPromise = (ms, promise) => {
-            return new Promise((resolve, reject) => {
-                const timer = setTimeout(() => { reject(new Error("TIMEOUT")); }, ms);
-                promise.then(value => { clearTimeout(timer); resolve(value); })
-                       .catch(reason => { clearTimeout(timer); reject(reason); });
+            [...teamsList].sort((a,b) => a.id - b.id).forEach(t => {
+                select.innerHTML += `<option value="${t.id}">${t.name}</option>`;
             });
+            if(currentVal) select.value = currentVal;
         }
 
+        // 4. REGISTRAR PUNTAJE EN LA NUBE
         window.submitScore = async function() {
-            if (currentJudgeName === "") { alert("Debes identificarte."); return; }
+            if (!currentJudgeName) { alert("Identifícate primero."); return; }
+            
             const btn = document.getElementById('btn-submit');
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Procesando VAR...';
-
-            const teamId = parseInt(document.getElementById('team-select').value);
-            const score1 = parseInt(document.getElementById('score-1').value);
-            const score2 = parseInt(document.getElementById('score-2').value);
-            const score3 = parseInt(document.getElementById('score-3').value);
-            const feedbackText = document.getElementById('feedback-text').value;
-            const totalScore = score1 + score2 + score3;
-            const team = teams.find(t => t.id === teamId);
-
-            const feedbackData = {
-                teamId: teamId, teamName: team.name, score1: score1, score2: score2, score3: score3, totalScore: totalScore, feedback: feedbackText, judgeName: currentJudgeName, timestamp: new Date().toISOString()
-            };
+            btn.disabled = true; btn.innerHTML = 'Subiendo a la nube...';
 
             try {
-                if (isOfflineMode) {
-                    if(guardarPuntajeLocal(feedbackData, teamId, totalScore, team.name)) resetUI();
-                } else {
-                    const feedbacksRef = collection(db, 'artifacts', appId, 'public', 'data', 'feedbacks');
-                    const asyncTask = async () => {
-                        if (currentJudgeName !== "Administrador Master") {
-                            const querySnapshot = await getDocs(feedbacksRef);
-                            if (querySnapshot.docs.some(doc => { const data = doc.data(); return data.judgeName === currentJudgeName && data.teamId === teamId; })) {
-                                throw new Error("DUPLICADO");
-                            }
-                        }
-                        await addDoc(feedbacksRef, feedbackData);
-                        const teamRef = doc(db, 'artifacts', appId, 'public', 'data', 'teams', teamId.toString());
-                        await updateDoc(teamRef, { score: increment(totalScore), matches: increment(1) });
-                    };
-                    await timeoutPromise(6000, asyncTask());
-                    showToast("Nube");
-                    resetUI();
+                const teamId = parseInt(document.getElementById('team-select').value);
+                const s1 = parseInt(document.getElementById('score-1').value);
+                const s2 = parseInt(document.getElementById('score-2').value);
+                const s3 = parseInt(document.getElementById('score-3').value);
+                const feed = document.getElementById('feedback-text').value;
+                const total = s1 + s2 + s3;
+                const teamName = teamsList.find(t => t.id === teamId).name;
+
+                // VALIDACIÓN DE DUPLICADOS (Se salta si eres Admin/Poli)
+                if (!isAdmin) {
+                    const querySnapshot = await getDocs(colFeedbacks);
+                    const yaVoto = querySnapshot.docs.some(doc => {
+                        let data = doc.data();
+                        return data.judgeName === currentJudgeName && data.teamId === teamId;
+                    });
+                    
+                    if (yaVoto) {
+                        alert(`¡Ya votaste por ${teamName}!`);
+                        btn.disabled = false; btn.innerHTML = 'REGISTRAR PUNTAJE EN LA NUBE';
+                        return;
+                    }
                 }
+
+                // SUBIR DATOS
+                await addDoc(colFeedbacks, {
+                    teamId, teamName, score1: s1, score2: s2, score3: s3, totalScore: total,
+                    feedback: feed, judgeName: currentJudgeName, timestamp: new Date().toISOString()
+                });
+
+                // ACTUALIZAR PUNTOS
+                const teamRef = doc(db, "equipos_torneo", teamId.toString());
+                await updateDoc(teamRef, { score: increment(total), matches: increment(1) });
+
+                alert(`¡Puntaje registrado correctamente para ${teamName}!`);
+                
+                // Limpiar form
+                document.getElementById('score-1').value = 5; document.getElementById('val-1').innerText = 5;
+                document.getElementById('score-2').value = 5; document.getElementById('val-2').innerText = 5;
+                document.getElementById('score-3').value = 5; document.getElementById('val-3').innerText = 5;
+                document.getElementById('feedback-text').value = '';
+
             } catch (error) {
-                if (error.message === "DUPLICADO") {
-                    alert(`🚨 Ya registraste una calificación para la ${team.name}.`);
-                } else {
-                    // PROTECCIÓN 2: Si la nube falla, lo guarda automáticamente en el PC sin hacerte dar clic de nuevo.
-                    alert("⚠️ Red inestable detectada. Se guardó el puntaje de manera automática en la Memoria Local.");
-                    setOfflineMode();
-                    if(guardarPuntajeLocal(feedbackData, teamId, totalScore, team.name)) resetUI();
-                }
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-cloud-upload-alt mr-2"></i> REGISTRAR PUNTAJE';
+                alert("Error al subir: " + error.message + "\nPor favor revisa las Reglas de Firestore.");
             }
+
+            btn.disabled = false; btn.innerHTML = 'REGISTRAR PUNTAJE EN LA NUBE';
         }
 
-        function resetUI() {
-            document.getElementById('score-1').value = 5; document.getElementById('val-1').innerText = 5;
-            document.getElementById('score-2').value = 5; document.getElementById('val-2').innerText = 5;
-            document.getElementById('score-3').value = 5; document.getElementById('val-3').innerText = 5;
-            document.getElementById('feedback-text').value = '';
+        // 5. FUNCIONES ADMIN Y RULETAS
+        window.abrirAdmin = function(bypass = false) {
+            if(bypass) { document.getElementById('admin-modal').classList.remove('hidden'); cargarDatosAdmin(); return; }
+            if(prompt("Clave:") === "poli") { document.getElementById('admin-modal').classList.remove('hidden'); cargarDatosAdmin(); }
         }
-
-        function showToast(mode) {
-            document.getElementById('toast-desc').innerText = mode === "Nube" ? "Guardado en Firebase" : "Guardado en Memoria (Red Local)";
-            document.getElementById('toast-desc').className = mode === "Nube" ? "text-xs font-normal text-emerald-100" : "text-xs font-normal text-orange-200";
-            document.getElementById('toast').className = mode === "Nube" ? "fixed bottom-5 right-5 bg-emerald-500 text-white px-6 py-4 rounded-lg shadow-lg transform transition-all duration-300 font-bold z-50 flex items-center" : "fixed bottom-5 right-5 bg-orange-600 text-white px-6 py-4 rounded-lg shadow-lg transform transition-all duration-300 font-bold z-50 flex items-center";
-            setTimeout(() => { document.getElementById('toast').classList.add('translate-y-24', 'opacity-0'); }, 3000);
-        }
-
-        // ==========================================
-        // ADMIN VIP 
-        // ==========================================
-        const ADMIN_PASSWORD = "poli";
-        window.abrirAdmin = function(force = false) {
-            if (force) { document.getElementById('admin-modal').classList.remove('hidden'); cargarDatosAdmin(); return; }
-            if(prompt("Clave Director Técnico:") === ADMIN_PASSWORD) { document.getElementById('admin-modal').classList.remove('hidden'); cargarDatosAdmin(); }
-        }
-        window.cerrarAdmin = function() { document.getElementById('admin-modal').classList.add('hidden'); }
+        window.cerrarAdmin = () => document.getElementById('admin-modal').classList.add('hidden');
 
         window.cargarDatosAdmin = async function() {
             const tbody = document.getElementById('admin-table-body');
-            let rows = '';
-            
-            let localFbs = JSON.parse(localStorage.getItem('poli_fbs')) || [];
-            localFbs.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).forEach(data => {
-                const dateStr = new Date(data.timestamp).toLocaleDateString() + ' ' + new Date(data.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                rows += `<tr class="hover:bg-slate-700/50"><td class="p-4 text-xs text-slate-400">🛑 [LOCAL]<br>${dateStr}</td><td class="p-4 font-bold text-orange-300">${data.judgeName}</td><td class="p-4 font-black uppercase text-xs">${data.teamName}</td><td class="p-4 text-center font-bold text-yellow-400">${data.score1}</td><td class="p-4 text-center font-bold text-yellow-400">${data.score2}</td><td class="p-4 text-center font-bold text-yellow-400">${data.score3}</td><td class="p-4 text-sm text-slate-300 italic">"${data.feedback}"</td></tr>`;
-            });
-
-            if(!isOfflineMode) {
-                try {
-                    const fbSnapshot = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'feedbacks'));
-                    fbSnapshot.docs.map(d => d.data()).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).forEach(data => {
-                        const dateStr = new Date(data.timestamp).toLocaleDateString() + ' ' + new Date(data.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                        rows += `<tr class="hover:bg-slate-700/50"><td class="p-4 text-xs text-slate-400">☁️ [NUBE]<br>${dateStr}</td><td class="p-4 font-bold text-emerald-300">${data.judgeName}</td><td class="p-4 font-black uppercase text-xs">${data.teamName}</td><td class="p-4 text-center font-bold text-yellow-400">${data.score1}</td><td class="p-4 text-center font-bold text-yellow-400">${data.score2}</td><td class="p-4 text-center font-bold text-yellow-400">${data.score3}</td><td class="p-4 text-sm text-slate-300 italic">"${data.feedback}"</td></tr>`;
-                    });
-                } catch(e) {}
-            }
-            
-            tbody.innerHTML = rows || '<tr><td colspan="7" class="text-center p-8 text-slate-500">Sin datos.</td></tr>';
+            tbody.innerHTML = 'Cargando...';
+            try {
+                const fbs = await getDocs(colFeedbacks);
+                let html = '';
+                fbs.docs.map(d=>d.data()).sort((a,b)=>new Date(b.timestamp) - new Date(a.timestamp)).forEach(d => {
+                    const fecha = new Date(d.timestamp).toLocaleString();
+                    html += `<tr><td class="p-4 text-xs">${fecha}</td><td class="p-4 text-emerald-400 font-bold">${d.judgeName}</td><td class="p-4 text-white">${d.teamName}</td><td class="p-4 text-yellow-400 font-bold text-center">${d.totalScore}</td><td class="p-4 italic text-slate-400">"${d.feedback}"</td></tr>`;
+                });
+                tbody.innerHTML = html || 'Sin datos.';
+            } catch(e) { tbody.innerHTML = 'Error cargando datos: ' + e.message; }
         }
 
         window.exportarDatos = async function() {
-            let csv = "--- TABLA DE POSICIONES ---\nID,Equipo,Puntaje Total,Votos Recibidos\n";
-            [...teams].sort((a, b) => b.score - a.score).forEach(t => csv += `${t.id},${t.name},${t.score},${t.matches}\n`);
-
-            csv += "\n--- REGISTRO DE FEEDBACKS ---\nFuente,Fecha,Nombre Juez,Equipo Evaluado,Ptos Voz,Ptos Indagacion,Ptos Negociacion,Feedback Cualitativo\n";
+            let csv = "--- TABLA DE POSICIONES ---\nEquipo,Puntaje,Votos\n";
+            [...teamsList].sort((a,b)=>b.score-a.score).forEach(t => csv += `${t.name},${t.score},${t.matches}\n`);
+            csv += "\n--- FEEDBACKS ---\nFecha,Juez,Equipo,Voz,Indagacion,Negociacion,Comentario\n";
             
-            let allFbs = [];
-            let localFbs = JSON.parse(localStorage.getItem('poli_fbs')) || [];
-            localFbs.forEach(f => { f.fuente = "LOCAL"; allFbs.push(f); });
-            if(!isOfflineMode) {
-                try {
-                    const fbSnapshot = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'feedbacks'));
-                    fbSnapshot.docs.map(d=>d.data()).forEach(f => { f.fuente = "NUBE"; allFbs.push(f); });
-                } catch(e) {}
-            }
-
-            allFbs.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).forEach(data => {
-                const date = new Date(data.timestamp).toLocaleString();
-                const cleanFeedback = (data.feedback || "Sin comentarios").replace(/"/g, '""').replace(/\n/g, ' ');
-                csv += `"${data.fuente}","${date}","${data.judgeName}","${data.teamName}",${data.score1},${data.score2},${data.score3},"${cleanFeedback}"\n`;
+            const fbs = await getDocs(colFeedbacks);
+            fbs.docs.map(d=>d.data()).sort((a,b)=>new Date(b.timestamp) - new Date(a.timestamp)).forEach(d => {
+                let fClean = (d.feedback||"").replace(/"/g,'""').replace(/\n/g,' ');
+                csv += `"${new Date(d.timestamp).toLocaleString()}","${d.judgeName}","${d.teamName}",${d.score1},${d.score2},${d.score3},"${fClean}"\n`;
             });
 
             const link = document.createElement("a");
-            link.setAttribute("href", URL.createObjectURL(new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), csv], { type: 'text/csv;charset=utf-8;' })));
-            link.setAttribute("download", `Reporte_Mundial_POLI_${new Date().toLocaleDateString().replace(/\//g, '-')}.csv`);
-            document.body.appendChild(link); link.click(); document.body.removeChild(link);
+            link.href = URL.createObjectURL(new Blob(["\uFEFF"+csv], {type: 'text/csv;charset=utf-8;'}));
+            link.download = `Resultados_Mundial_POLI.csv`;
+            link.click();
         }
 
-        let resetClicks = 0;
+        let clics = 0;
         window.resetearTorneo = async function() {
-            resetClicks++;
-            const btn = document.getElementById('btn-reset');
-            if(resetClicks === 1) {
-                btn.innerHTML = '<i class="fas fa-exclamation-triangle mr-2"></i> ¿Borrar TODO? Clic de nuevo';
-                btn.classList.replace('bg-red-600', 'bg-orange-600');
-                setTimeout(() => { resetClicks = 0; btn.innerHTML = '<i class="fas fa-skull-crossbones mr-2"></i> Reiniciar Torneo'; btn.classList.replace('bg-orange-600', 'bg-red-600'); }, 4000);
-            } else if (resetClicks === 2) {
-                btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Eliminando DB...';
-                localStorage.removeItem('poli_fbs');
-                localStorage.removeItem('poli_teams');
-                teams = defaultTeams;
-                
-                if(!isOfflineMode) {
-                    try {
-                        for (let team of defaultTeams) await setDoc(doc(collection(db, 'artifacts', appId, 'public', 'data', 'teams'), team.id.toString()), team);
-                        const fbSnapshot = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'feedbacks'));
-                        for (const docSnapshot of fbSnapshot.docs) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'feedbacks', docSnapshot.id));
-                    } catch(e) {}
-                }
-                resetClicks = 0;
-                btn.innerHTML = '<i class="fas fa-check-double mr-2"></i> Tablero en Ceros';
-                btn.classList.replace('bg-orange-600', 'bg-emerald-600');
-                setTimeout(() => { location.reload(); }, 2000);
+            if(++clics === 1) {
+                document.getElementById('btn-reset').innerText = "Clic para confirmar borrado";
+                setTimeout(()=>{ clics=0; document.getElementById('btn-reset').innerText = "Reiniciar Torneo"; }, 3000);
+            } else {
+                document.getElementById('btn-reset').innerText = "Borrando...";
+                try {
+                    // Borrar Feedbacks
+                    const fbs = await getDocs(colFeedbacks);
+                    for (let d of fbs.docs) await deleteDoc(doc(db, "feedbacks_torneo", d.id));
+                    // Restaurar Equipos
+                    for (let t of defaultTeams) await setDoc(doc(db, "equipos_torneo", t.id.toString()), t);
+                    alert("Torneo reiniciado."); location.reload();
+                } catch(e) { alert("Error al borrar: " + e.message); }
             }
         }
 
-        window.switchTab = function(tabId) {
+        window.switchTab = function(id) {
             document.getElementById('tab-calificador').classList.add('hidden'); document.getElementById('tab-escenarios').classList.add('hidden');
-            document.getElementById('btn-calificador').classList.replace('tab-active', 'text-slate-400'); document.getElementById('btn-calificador').classList.remove('text-emerald-500');
-            document.getElementById('btn-escenarios').classList.replace('tab-active', 'text-slate-400'); document.getElementById('btn-escenarios').classList.remove('text-emerald-500');
-            document.getElementById(tabId).classList.remove('hidden');
-            let activeBtn = tabId === 'tab-calificador' ? 'btn-calificador' : 'btn-escenarios';
-            document.getElementById(activeBtn).classList.add('tab-active'); document.getElementById(activeBtn).classList.remove('text-slate-400');
+            document.getElementById('btn-calificador').classList.replace('tab-active','text-slate-400');
+            document.getElementById('btn-escenarios').classList.replace('tab-active','text-slate-400');
+            document.getElementById(id).classList.remove('hidden');
+            document.getElementById(id === 'tab-calificador' ? 'btn-calificador' : 'btn-escenarios').classList.add('tab-active');
         }
 
-        window.spinRoulette = function(elementId, iconId, casesArray) {
-            const resultDiv = document.getElementById(elementId); const icon = document.getElementById(iconId);
-            icon.classList.add('fa-spin'); resultDiv.className = 'z-10 text-center w-full min-h-[100px] flex items-center justify-center text-white text-xl border-2 border-dashed border-purple-500/50 p-4 rounded-lg';
-            let counter = 0;
-            const interval = setInterval(() => {
-                resultDiv.innerText = casesArray[Math.floor(Math.random() * casesArray.length)];
-                if (++counter >= 15) {
-                    clearInterval(interval); icon.classList.remove('fa-spin');
-                    resultDiv.innerHTML = `<span class="animate-pulse">${casesArray[Math.floor(Math.random() * casesArray.length)]}</span>`;
-                    resultDiv.classList.add(elementId === 'roulette-result-2' ? 'text-yellow-300' : 'text-emerald-300');
-                }
-            }, 100); 
-        }
-        window.spinRouletteNivel2 = () => window.spinRoulette('roulette-result-2', 'icon-spin-2', absurdCases);
-        window.spinRouletteNivel3 = () => window.spinRoulette('roulette-result-3', 'icon-spin-3', realCases);
-
-        init();
+        window.spinRouletteNivel2 = () => document.getElementById('roulette-result-2').innerHTML = ["Vampiro cama bronceadora", "Ermitaño Smartwatch", "Líder vegano carnes premium", "Mimo curso oratoria"][Math.floor(Math.random()*4)];
+        window.spinRouletteNivel3 = () => document.getElementById('roulette-result-3').innerHTML = ["4to semestre, no aprende virtual, trabaja.", "Pide cancelación por problema de nota sin solución.", "Sin dinero por desempleo, no conoce becas.", "Quiere aplazar por desmotivación, no conoce bienestar.", "Embarazada, agotada, reposo absoluto médico.", "Solicita retiro definitivo, matriculado en otra universidad."][Math.floor(Math.random()*6)];
     </script>
 </body>
 </html>
