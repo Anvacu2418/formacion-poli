@@ -7,6 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
+    
     <style>
         body {
             font-family: 'Poppins', sans-serif;
@@ -140,6 +141,7 @@
         }
     </style>
 </head>
+
 <body class="antialiased p-4 md:p-10">
     <!-- Encabezado PlayBook -->
     <header class="max-w-4xl mx-auto mb-16 text-center">
@@ -199,6 +201,15 @@
                     <i data-lucide="bell-ring" class="w-6 h-6 text-indigo-600 mt-1 flex-shrink-0"></i>
                     <p class="text-indigo-900">Mantente pendiente de la bandeja <strong class="font-bold">Pdte rta experto</strong> para <strong>dar prioridad</strong> a los estudiantes que ya te contestaron. Puedes manejar el mismo volumen (3 a 5 simultáneas).</p>
                 </div>
+
+                <!-- Nueva Bandeja: Pdte Cierre -->
+                <div class="bg-purple-50 border-l-4 border-purple-500 p-4 rounded-r-lg mt-4 flex items-start gap-3">
+                    <i data-lucide="archive" class="w-6 h-6 text-purple-600 mt-1 flex-shrink-0"></i>
+                    <div>
+                        <p class="text-purple-900 mb-1">Nueva Bandeja: <strong class="font-bold">Pdte Cierre</strong></p>
+                        <p class="text-purple-800 text-sm">Aquí estarán los chats que ya tipificaste en HubSpot y solo esperan el cierre final en ATOM. <br><strong class="font-semibold">¿Cómo funciona?</strong> Si no puedes cerrarlo de una vez, colócale la tipificación de seguimiento <strong class="bg-purple-200 px-2 py-0.5 rounded font-bold text-purple-900">Tipificado HS</strong> para enviarlo a esta bandeja.</p>
+                    </div>
+                </div>
                 
                 <div class="mt-5 text-center">
                     <div class="text-xs text-slate-500 mb-1 font-mono font-medium">Bandejas en ATOM</div>
@@ -227,6 +238,13 @@
                             <strong class="text-slate-900 block mb-1">Lee el resumen:</strong> 
                             El objetivo es atender la consulta que tiene el estudiante (el bot te da un resumen o puedes revisar lo que platicó con el robot). <br>
                             <span class="text-red-700 font-bold uppercase text-sm bg-red-100 px-2 py-1 rounded inline-block mt-2 border border-red-200">¡Prohibido preguntar "en qué le puedo ayudar"!</span>
+                        </div>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <i data-lucide="bot" class="w-5 h-5 text-indigo-500 mt-1 flex-shrink-0"></i>
+                        <div>
+                            <strong class="text-slate-900 block mb-1">No repitas información del bot:</strong> 
+                            Es importantísimo <strong>no volver a enviar información</strong> que el bot ya le proporcionó al estudiante. Revisa bien el historial para continuar la atención desde donde quedó.
                         </div>
                     </li>
                 </ul>
@@ -276,14 +294,14 @@
                 <div class="space-y-6">
                     <div class="flex gap-2 justify-center bg-slate-50 p-4 rounded-2xl border border-slate-200">
                         <img src="tipificar.jpg" alt="Icono T" class="h-12 w-auto shadow-sm rounded" onerror="this.style.display='none'">
-                        <img src="tipificar3.png" alt="Fin positivo" class="h-12 w-auto shadow-sm rounded" onerror="this.style.display='none'">
+                        <img src="tipificar2.png" alt="Fin positivo" class="h-12 w-auto shadow-sm rounded" onerror="this.style.display='none'">
                     </div>
 
                     <div class="bg-red-50 border-2 border-red-200 rounded-2xl p-5 text-center shadow-lg shadow-red-100/50">
                         <i data-lucide="siren" class="w-10 h-10 text-red-500 mx-auto mb-2 animate-pulse"></i>
                         <h4 class="font-black text-red-700 text-lg mb-2">¡ALERTA ROJA EN FIN POSITIVO!</h4>
                         <p class="text-slate-800 mb-4 text-sm">Al seleccionar <em class="font-bold">Fin Positivo</em>, <strong class="text-red-700 underline decoration-red-400 decoration-2 text-base">NO debes dejar ningún comentario</strong>. Solo selecciónalo y da clic en Tipificar.</p>
-                        <img src="tipificar2.png" alt="Sin Comentario" class="mx-auto rounded border border-red-200 w-full max-w-[250px] shadow-sm" onerror="this.style.display='none'">
+                        <img src="tipificar3.png" alt="Sin Comentario" class="mx-auto rounded border border-red-200 w-full max-w-[250px] shadow-sm" onerror="this.style.display='none'">
                     </div>
                 </div>
             </div>
