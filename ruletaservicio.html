@@ -234,9 +234,11 @@
             mistakes: [] // Para guardar qué salió mal
         };
 
+        let currentRotation = 0; // NUEVA VARIABLE PARA ACUMULAR EL GIRO
+
         const questionsDB = [
             {
-                id: 1, text: "¿Qué emoji apareció en los comunicados oficiales enviados el martes 28 de julio?",
+                id: 1, text: "¿Qué emoji apareció en los comunicados oficiales enviados el día martes 28 de julio?",
                 options: ["🦁 Un leoncito.", "🚀 Un cohete espacial."],
                 correctIndex: 0,
                 feedback: "Era el leoncito. Estar atentos a las comunicaciones nos mantiene alineados."
@@ -300,9 +302,14 @@
             btn.disabled = true;
             btn.classList.add('opacity-50', 'cursor-not-allowed');
             const wheel = document.getElementById('wheel');
+            
+            // CORRECCIÓN 1: Acumulamos los grados sumándolos al currentRotation
             const spins = 5; 
-            const degrees = (spins * 360) + Math.floor(Math.random() * 360);
-            wheel.style.transform = `rotate(${degrees}deg)`;
+            const randomDegrees = Math.floor(Math.random() * 360);
+            currentRotation += (spins * 360) + randomDegrees;
+            
+            wheel.style.transform = `rotate(${currentRotation}deg)`;
+            
             setTimeout(() => {
                 btn.disabled = false;
                 btn.classList.remove('opacity-50', 'cursor-not-allowed');
@@ -394,8 +401,13 @@
             modal.classList.remove('hidden-screen');
             btn.onclick = () => {
                 modal.classList.add('hidden-screen');
-                if (gameState.questionsAnswered < gameState.totalQuestions) showScreen('screen-roulette');
-                else finishGame();
+                if (gameState.questionsAnswered < gameState.totalQuestions) {
+                    // CORRECCIÓN 2: Actualizamos el texto del HTML con el número del caso actual
+                    document.getElementById('q-counter').textContent = gameState.questionsAnswered + 1;
+                    showScreen('screen-roulette');
+                } else {
+                    finishGame();
+                }
             };
         }
     </script>
