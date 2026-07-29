@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La Ruleta del Servicio - Poli</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --poli-blue: #08324f;
+            --poli-magenta: #e4007d;
+            --poli-turquoise: #00bacb;
+            --poli-lime: #a5d045;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            color: #1f2937;
+            overflow-x: hidden;
+        }
+
+        .bg-poli-blue { background-color: var(--poli-blue); }
+        .text-poli-magenta { color: var(--poli-magenta); }
+        .bg-poli-magenta { background-color: var(--poli-magenta); }
+        .border-poli-magenta { border-color: var(--poli-magenta); }
+
+        /* Estilos de la Ruleta */
+        .roulette-container {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            margin: 0 auto;
+        }
+
+        .roulette-wheel {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 8px solid var(--poli-blue);
+            background: conic-gradient(
+                var(--poli-magenta) 0deg 72deg,
+                var(--poli-turquoise) 72deg 144deg,
+                var(--poli-lime) 144deg 216deg,
+                var(--poli-blue) 216deg 288deg,
+                #64748b 288deg 360deg
+            );
+            transition: transform 3s cubic-bezier(0.25, 0.1, 0.25, 1);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .roulette-pointer {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 15px solid transparent;
+            border-right: 15px solid transparent;
+            border-top: 30px solid var(--poli-magenta);
+            z-index: 10;
+        }
+
+        .roulette-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40px;
+            height: 40px;
+            background-color: #ffffff;
+            border-radius: 50%;
+            border: 4px solid var(--poli-blue);
+            z-index: 5;
+        }
+
+        .hidden-screen { display: none !important; }
+        .fade-in { animation: fadeIn 0.5s ease-in forwards; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .option-btn { transition: all 0.2s ease; }
+        .option-btn:hover { transform: translateY(-2px); }
+        
+        .modal-overlay {
+            background-color: rgba(8, 50, 79, 0.8);
+            backdrop-filter: blur(4px);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="bg-poli-blue text-white p-4 shadow-md w-full">
+        <div class="max-w-4xl mx-auto flex justify-between items-center">
+            <div class="font-bold text-xl flex items-center gap-2">
+                <i class="fa-solid fa-graduation-cap text-poli-lime"></i>
+                <span>Politécnico Grancolombiano</span>
+            </div>
+            <div id="score-display" class="hidden font-semibold bg-white text-poli-blue px-4 py-1 rounded-full">
+                Polipuntos: <span id="current-score">0</span> / 100
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow flex items-center justify-center p-4">
+        
+        <!-- PANTALLA 1: Inicio -->
+        <section id="screen-login" class="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full fade-in text-center border-t-8 border-poli-magenta">
+            <div class="mb-6 text-poli-magenta">
+                <i class="fa-solid fa-rocket text-6xl"></i>
+            </div>
+            <h1 class="text-3xl font-bold text-poli-blue mb-2">Misión Cierre de Julio</h1>
+            <p class="text-gray-600 mb-8">Pon a prueba tu agilidad mental y los procesos críticos en esta simulación de servicio.</p>
+            
+            <div class="mb-6 text-left">
+                <label for="agent-name" class="block text-sm font-semibold text-gray-700 mb-2">Ingresa tu nombre:</label>
+                <input type="text" id="agent-name" placeholder="Ej. Angie..." class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-poli-turquoise outline-none transition-all">
+            </div>
+            
+            <button onclick="startGame()" class="w-full bg-poli-magenta hover:bg-pink-700 text-white font-bold py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2">
+                <span>Ingresar a la Misión</span>
+                <i class="fa-solid fa-arrow-right"></i>
+            </button>
+        </section>
+
+        <!-- PANTALLA 2: Ruleta -->
+        <section id="screen-roulette" class="hidden-screen bg-white rounded-2xl shadow-xl p-8 max-w-lg w-full text-center border-t-8 border-poli-turquoise">
+            <h2 class="text-2xl font-bold text-poli-blue mb-2">Hola, <span id="display-name" class="text-poli-magenta"></span>!</h2>
+            <p class="text-gray-600 mb-8">Gira la ruleta para recibir tu próximo desafío.</p>
+            
+            <div class="roulette-container mb-8">
+                <div class="roulette-pointer"></div>
+                <div class="roulette-wheel" id="wheel"></div>
+                <div class="roulette-center"></div>
+            </div>
+            
+            <p class="text-sm font-medium text-gray-500 mb-4">Caso <span id="q-counter">1</span> de 5</p>
+            
+            <button id="spin-btn" onclick="spinRoulette()" class="bg-poli-turquoise hover:bg-cyan-600 text-white font-bold py-3 px-8 rounded-full shadow-lg text-lg transition-transform transform hover:scale-105">
+                ¡GIRAR RULETA!
+            </button>
+        </section>
+
+        <!-- PANTALLA 3: Pregunta -->
+        <section id="screen-question" class="hidden-screen bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden border-t-8 border-poli-blue">
+            <div class="bg-poli-blue text-white p-6">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-xs font-bold uppercase tracking-wider bg-poli-turquoise px-2 py-1 rounded text-poli-blue">Expediente Asignado</span>
+                    <span class="text-sm"><i class="fa-solid fa-coins text-poli-lime"></i> 20 Polipuntos</span>
+                </div>
+                <h2 id="question-text" class="text-lg font-medium leading-relaxed">¿Texto?</h2>
+            </div>
+            
+            <div class="p-6">
+                <p class="text-sm text-gray-500 mb-4 font-semibold"><i class="fa-solid fa-list-check"></i> Selecciona la acción correcta:</p>
+                <div class="flex flex-col gap-4" id="options-container"></div>
+            </div>
+        </section>
+
+        <!-- PANTALLA 4: Resultados -->
+        <section id="screen-results" class="hidden-screen bg-white rounded-2xl shadow-xl p-8 max-w-md w-full text-center border-t-8 border-poli-lime">
+            <div id="result-icon" class="mb-4"></div>
+            <h2 class="text-3xl font-bold text-poli-blue mb-2">¡Misión Completada!</h2>
+            
+            <div class="bg-gray-50 rounded-xl p-6 border border-gray-100 mb-6">
+                <p class="text-sm text-gray-500 uppercase tracking-wider font-bold mb-1">Puntaje Final</p>
+                <p class="text-5xl font-black text-poli-blue"><span id="final-score">0</span><span class="text-2xl">/100</span></p>
+            </div>
+            
+            <!-- Contenedor de retroalimentación -->
+            <div id="feedback-container" class="mb-6 text-left hidden">
+                <h3 class="font-bold text-poli-magenta mb-2 border-b border-poli-magenta pb-1">Análisis de Errores (Repaso):</h3>
+                <ul id="mistakes-list" class="space-y-2 text-sm text-gray-700"></ul>
+            </div>
+            
+            <button onclick="location.reload()" class="w-full text-poli-blue font-semibold py-3 px-4 rounded-lg border-2 border-poli-blue hover:bg-poli-blue hover:text-white transition-colors">
+                Finalizar y Cerrar
+            </button>
+        </section>
+
+    </main>
+
+    <!-- MODAL -->
+    <div id="custom-modal" class="fixed inset-0 modal-overlay z-50 flex items-center justify-center hidden-screen px-4">
+        <div class="bg-white rounded-xl shadow-2xl max-w-md w-full overflow-hidden transform transition-all">
+            <div id="modal-header" class="p-4 text-white text-center font-bold text-lg"></div>
+            <div class="p-6 text-center">
+                <div id="modal-icon" class="text-5xl mb-4"></div>
+                <p id="modal-message" class="text-gray-700 text-base mb-6"></p>
+                <button id="modal-btn" class="w-full font-semibold py-2 px-6 rounded hover:opacity-90 transition-opacity">
+                    Continuar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let gameState = {
+            userName: "",
+            score: 0,
+            currentQuestionIndex: 0,
+            questionsAnswered: 0,
+            totalQuestions: 5,
+            pointsPerQuestion: 20,
+            unansweredQuestions: [],
+            mistakes: [] // Para guardar qué salió mal
+        };
+
+        const questionsDB = [
+            {
+                id: 1, text: "¿Qué emoji apareció en los comunicados oficiales enviados el día de ayer?",
+                options: ["🦁 Un leoncito.", "🚀 Un cohete espacial."],
+                correctIndex: 0,
+                feedback: "Era el leoncito. Estar atentos a las comunicaciones nos mantiene alineados."
+            },
+            {
+                id: 2, text: "Estudiante de Ing. Industrial Virtual se va a graduar y el sistema no le permite pagar la profesional porque debe la tecnología. ¿Qué debes hacer?",
+                options: ["Crear un ticket por el proceso de grados para que Back Office ayude.", "Orientarlo a: Smart Campus > Trámites académicos > Nueva solicitud > Trámite de grado > Pago de derechos de grado. Seleccionar tecnología y descargar orden en Pagos."],
+                correctIndex: 1,
+                feedback: "La autogestión es clave. Empoderar al estudiante a generar su propia orden desde Trámites Académicos es el proceso correcto."
+            },
+            {
+                id: 3, text: "Un estudiante quiere realizar el pago de sus derechos de grado a través de sus cesantías (ej. Fondo Nacional del Ahorro). ¿Qué haces?",
+                options: ["Indicarle que NO se reciben pagos de FNA, cesantías o transferencias no autorizadas. Únicamente en línea o en banco de Bogotá.", "Compartirle la certificación de Bancolombia para transferencia y pedirle que legalice."],
+                correctIndex: 0,
+                feedback: "Para derechos de grado las reglas son estrictas. La empatía suaviza la negativa de los medios de pago no aceptados."
+            },
+            {
+                id: 4, text: "Un estudiante solicita facilidad de pago 50/50. ¿Cómo gestionas esto operativamente?",
+                options: ["A través de Banner, ingresas a SAPSEP (TZABSEC) para generar la división de la orden en dos.", "Solicitar a través del chat de apoyo en Teams a los Back Office que generen media matrícula."],
+                correctIndex: 0,
+                feedback: "Como asesores 360, gestionamos directamente en Banner (SAPSEP) sin triangular solicitudes simples."
+            },
+            {
+                id: 5, text: "¿Cuál es la ruta correcta para consultar a Gian (el asistente IA) en HubSpot?",
+                options: ["Parte superior derecha en Asistentes > Seleccionar 'Asistentes' nuevamente > Gian servicio.", "Parte superior derecha en Asistentes > Carpeta 'Proyecciones' > 'Compartidos conmigo' > Seleccionar Gian servicio."],
+                correctIndex: 1,
+                feedback: "Dominar las rutas tecnológicas acelera el tiempo de respuesta. Es en la carpeta 'Proyecciones' > 'Compartidos conmigo'."
+            }
+        ];
+
+        function initGame() {
+            gameState.unansweredQuestions = [0, 1, 2, 3, 4];
+        }
+
+        function showScreen(screenId) {
+            ['screen-login', 'screen-roulette', 'screen-question', 'screen-results'].forEach(id => {
+                document.getElementById(id).classList.add('hidden-screen');
+                document.getElementById(id).classList.remove('fade-in');
+            });
+            const activeScreen = document.getElementById(screenId);
+            activeScreen.classList.remove('hidden-screen');
+            void activeScreen.offsetWidth; 
+            activeScreen.classList.add('fade-in');
+        }
+
+        function startGame() {
+            const nameInput = document.getElementById('agent-name').value.trim();
+            if(nameInput === "") {
+                showModal("Error de Acceso", "Por favor, ingresa tu nombre.", "error");
+                return;
+            }
+            gameState.userName = nameInput;
+            document.getElementById('display-name').textContent = gameState.userName;
+            document.getElementById('score-display').classList.remove('hidden');
+            initGame();
+            showScreen('screen-roulette');
+        }
+
+        function spinRoulette() {
+            const btn = document.getElementById('spin-btn');
+            btn.disabled = true;
+            btn.classList.add('opacity-50', 'cursor-not-allowed');
+            const wheel = document.getElementById('wheel');
+            const spins = 5; 
+            const degrees = (spins * 360) + Math.floor(Math.random() * 360);
+            wheel.style.transform = `rotate(${degrees}deg)`;
+            setTimeout(() => {
+                btn.disabled = false;
+                btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                loadRandomQuestion();
+            }, 3000);
+        }
+
+        function loadRandomQuestion() {
+            if (gameState.unansweredQuestions.length === 0) {
+                finishGame();
+                return;
+            }
+            const randIdx = Math.floor(Math.random() * gameState.unansweredQuestions.length);
+            const questionIdx = gameState.unansweredQuestions[randIdx];
+            gameState.unansweredQuestions.splice(randIdx, 1);
+            const currentQ = questionsDB[questionIdx];
+
+            document.getElementById('question-text').textContent = currentQ.text;
+            const container = document.getElementById('options-container');
+            container.innerHTML = '';
+            
+            let shuffled = currentQ.options.map((opt, i) => ({ text: opt, originalIndex: i }))
+                                     .sort(() => Math.random() - 0.5);
+
+            shuffled.forEach((opt, index) => {
+                const btn = document.createElement('button');
+                btn.className = "option-btn text-left w-full border border-gray-200 p-4 rounded-lg hover:bg-gray-100 font-medium text-gray-700 bg-white flex items-start gap-3";
+                btn.innerHTML = `<span class="bg-poli-blue text-white rounded-full w-8 h-8 flex-shrink-0 flex items-center justify-center font-bold">${index === 0 ? 'A' : 'B'}</span><span class="pt-1">${opt.text}</span>`;
+                btn.onclick = () => checkAnswer(opt.originalIndex, currentQ.correctIndex, currentQ.feedback, currentQ.text);
+                container.appendChild(btn);
+            });
+            showScreen('screen-question');
+        }
+
+        function checkAnswer(selectedIndex, correctIndex, feedbackTxt, questionText) {
+            gameState.questionsAnswered++;
+            if (selectedIndex === correctIndex) {
+                gameState.score += gameState.pointsPerQuestion;
+                document.getElementById('current-score').textContent = gameState.score;
+                showModal("¡Misión Exitosa!", feedbackTxt, "success");
+            } else {
+                // Guardar error para retroalimentación final
+                gameState.mistakes.push(`<strong>Pregunta:</strong> ${questionText.substring(0, 50)}... <br><span class="text-red-600">Contexto correcto:</span> ${feedbackTxt}`);
+                showModal("Análisis Requerido", "La opción no fue la óptima.<br><br><span class='font-bold'>Contexto: </span>" + feedbackTxt, "error");
+            }
+        }
+
+        function finishGame() {
+            document.getElementById('final-score').textContent = gameState.score;
+            const icon = document.getElementById('result-icon');
+            
+            // Icono final
+            if (gameState.score === 100) icon.innerHTML = '<i class="fa-solid fa-trophy text-6xl text-poli-lime"></i>';
+            else if (gameState.score >= 60) icon.innerHTML = '<i class="fa-solid fa-circle-check text-6xl text-poli-turquoise"></i>';
+            else icon.innerHTML = '<i class="fa-solid fa-book-open text-6xl text-gray-400"></i>';
+
+            // Mostrar errores si existen
+            const feedbackContainer = document.getElementById('feedback-container');
+            const list = document.getElementById('mistakes-list');
+            if (gameState.mistakes.length > 0) {
+                feedbackContainer.classList.remove('hidden');
+                list.innerHTML = gameState.mistakes.map(m => `<li class="bg-red-50 p-2 rounded">${m}</li>`).join('');
+            }
+
+            showScreen('screen-results');
+        }
+
+        function showModal(title, message, type) {
+            const modal = document.getElementById('custom-modal');
+            const header = document.getElementById('modal-header');
+            const icon = document.getElementById('modal-icon');
+            const msgEl = document.getElementById('modal-message');
+            const btn = document.getElementById('modal-btn');
+
+            msgEl.innerHTML = message;
+            
+            if (type === 'success') {
+                header.className = "p-4 text-white text-center font-bold text-xl bg-poli-lime";
+                header.innerText = title;
+                icon.innerHTML = '<i class="fa-solid fa-circle-check text-poli-lime"></i>';
+                btn.className = "w-full bg-poli-lime text-white font-bold py-2 rounded";
+            } else {
+                header.className = "p-4 text-white text-center font-bold text-xl bg-poli-magenta";
+                header.innerText = title;
+                icon.innerHTML = '<i class="fa-solid fa-triangle-exclamation text-poli-magenta"></i>';
+                btn.className = "w-full bg-poli-magenta text-white font-bold py-2 rounded";
+            }
+
+            modal.classList.remove('hidden-screen');
+            btn.onclick = () => {
+                modal.classList.add('hidden-screen');
+                if (gameState.questionsAnswered < gameState.totalQuestions) showScreen('screen-roulette');
+                else finishGame();
+            };
+        }
+    </script>
+</body>
+</html>
