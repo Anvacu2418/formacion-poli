@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laboratorio Consultivo: Cero Reprocesos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+        :root {
+            --poli-blue: #0033a0;
+            --poli-blue-light: #2563eb;
+            --poli-magenta: #e4002b;
+            --bg-main: #f8fafc;
+            --card-bg: #ffffff;
+            --text-dark: #1e293b;
+            --text-gray: #64748b;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--poli-blue-light);
+            background-image: radial-gradient(#3b82f6 1px, transparent 1px);
+            background-size: 20px 20px;
+            color: var(--text-dark);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            overflow-x: hidden;
+            user-select: none;
+        }
+
+        .btn-primary {
+            background-color: var(--poli-magenta); color: white; font-weight: 700;
+            padding: 14px 32px; border-radius: 9999px; transition: all 0.2s ease;
+            box-shadow: 0 4px 14px rgba(228, 0, 43, 0.4); border: none; cursor: pointer;
+        }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(228, 0, 43, 0.6); }
+        .btn-primary:disabled { background-color: #cbd5e1; box-shadow: none; cursor: not-allowed; transform: none; }
+        
+        .btn-secondary {
+            background-color: white; color: var(--poli-blue-light); font-weight: 700;
+            padding: 14px 32px; border-radius: 9999px; transition: all 0.2s ease;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1); border: 2px solid white; cursor: pointer;
+        }
+        .btn-secondary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15); border-color: var(--poli-blue-light); }
+
+        .view-section { 
+            display: none; opacity: 0; transition: opacity 0.5s ease, transform 0.5s ease; 
+            transform: translateY(20px); width: 100%; max-width: 1000px; margin: 0 auto;
+        }
+        .view-section.active { display: flex; flex-direction: column; opacity: 1; transform: translateY(0); }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px);
+            border-radius: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.5); padding: 40px;
+        }
+
+        .stack-dnd-container { display: flex; justify-content: space-between; align-items: stretch; width: 100%; height: 400px; position: relative; gap: 20px;}
+        
+        .drop-zone {
+            flex: 1; border: 3px dashed #cbd5e1; border-radius: 20px;
+            display: flex; flex-direction: column; align-items: center; padding: 20px; 
+            color: var(--text-gray); transition: all 0.3s; background: rgba(255,255,255,0.5);
+            position: relative; overflow: hidden;
+        }
+        .drop-zone.drag-over { border-color: var(--poli-blue-light); background: #eff6ff; transform: scale(1.02); }
+        .drop-zone-header { text-align: center; margin-bottom: 15px; width: 100%; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;}
+        
+        .dropped-items-container { display: flex; flex-direction: column; gap: 8px; width: 100%; flex-grow: 1; overflow-y: auto; padding: 5px; }
+        .mini-card {
+            background: white; border-left: 4px solid var(--poli-magenta); padding: 10px;
+            border-radius: 8px; font-size: 0.75rem; font-weight: 600; color: var(--text-dark);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05); animation: popIn 0.3s ease;
+        }
+        @keyframes popIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
+        .cards-stack { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 280px; height: 180px; z-index: 50; }
+        .stack-card {
+            position: absolute; width: 100%; height: 100%; background: var(--poli-magenta); border-radius: 16px;
+            padding: 24px; display: flex; align-items: center; justify-content: center; text-align: center;
+            font-weight: 700; font-size: 0.95rem; color: white; cursor: grab;
+            border: 2px solid rgba(255,255,255,0.2); transition: all 0.2s ease;
+            box-shadow: 0 4px 10px rgba(228, 0, 43, 0.3), 0 8px 0 -3px #be122c, 0 16px 0 -6px #9f1239;
+        }
+        .stack-card:hover { transform: translateY(-10px) !important; box-shadow: 0 0 25px rgba(228, 0, 43, 0.5), 0 12px 0 -3px #be122c, 0 20px 0 -6px #9f1239; }
+        .stack-card:active { cursor: grabbing; transform: scale(0.95) !important; box-shadow: none;}
+
+        .match-container { display: flex; justify-content: space-between; gap: 40px; position: relative; min-height: 400px;}
+        .match-col { flex: 1; display: flex; flex-direction: column; gap: 15px; z-index: 10; }
+        .match-item {
+            background: white; color: var(--text-dark); padding: 16px 20px; border-radius: 16px;
+            font-weight: 600; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 15px;
+            transition: all 0.2s; border: 2px solid #e2e8f0; box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+        }
+        .match-item:hover { border-color: var(--poli-blue-light); transform: translateX(5px); }
+        .match-item.selected { border-color: var(--poli-magenta); background: #fff1f2; transform: scale(1.02); }
+        .match-item.matched { background-color: #f8fafc; border-color: #10b981; color: #10b981; opacity: 0.8; pointer-events: none; }
+        
+        .match-indicator {
+            width: 32px; height: 32px; border-radius: 50%; background: #f1f5f9; display: flex; flex-shrink: 0;
+            justify-content: center; align-items: center; font-weight: 800; color: var(--text-gray);
+        }
+        .match-item.selected .match-indicator { background: var(--poli-magenta); color: white; }
+        .match-item.matched .match-indicator { background: #10b981; color: white; }
+
+        .chat-container { display: flex; flex-direction: column; gap: 20px; margin-bottom: 30px; }
+        .chat-bubble { padding: 16px 20px; border-radius: 20px; max-width: 80%; font-size: 0.95rem; line-height: 1.6; position: relative; }
+        .chat-student { background: #f1f5f9; color: var(--text-dark); align-self: flex-start; border-bottom-left-radius: 4px; border: 1px solid #e2e8f0;}
+        .chat-expert { background: #eff6ff; color: var(--poli-blue); align-self: flex-end; border-bottom-right-radius: 4px; border: 1px solid #bfdbfe; font-weight: 500;}
+        
+        .blank-slot {
+            display: inline-block; min-width: 100px; height: 30px; border-bottom: 2px dashed var(--poli-blue-light);
+            margin: 0 5px; vertical-align: middle; text-align: center; color: var(--poli-magenta); font-weight: 700;
+            cursor: pointer; transition: all 0.2s; padding: 0 10px; line-height: 30px;
+        }
+        .blank-slot.filled { border-bottom-style: solid; border-color: var(--poli-magenta); background: rgba(228, 0, 43, 0.05); border-radius: 4px; }
+        .blank-slot.shake { animation: shake 0.4s ease-in-out; border-color: red; color: red;}
+
+        .word-bank { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; padding: 20px; background: #f8fafc; border-radius: 16px; border: 2px dashed #cbd5e1;}
+        .word-pill {
+            background: white; border: 2px solid #e2e8f0; color: var(--text-dark); padding: 8px 16px;
+            border-radius: 999px; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.2s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+        .word-pill:hover { border-color: var(--poli-blue-light); color: var(--poli-blue-light); transform: translateY(-2px); }
+        .word-pill.used { opacity: 0; pointer-events: none; transform: scale(0.8); }
+
+        .sort-list { display: flex; flex-direction: column; gap: 10px; width: 100%; margin-bottom: 20px;}
+        .sort-item { 
+            background: white; border: 2px solid #e2e8f0; padding: 16px; border-radius: 12px;
+            display: flex; align-items: center; justify-content: space-between; gap: 15px;
+            font-weight: 600; font-size: 0.9rem; color: var(--text-dark); cursor: grab;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .sort-item.dragging { opacity: 0.5; background: #eff6ff; }
+        .sort-item:active { cursor: grabbing; }
+        .sort-controls { display: flex; flex-direction: column; gap: 5px; }
+        .sort-btn { background: #f1f5f9; border: none; border-radius: 4px; cursor: pointer; padding: 4px; color: var(--text-gray); transition: background 0.2s;}
+        .sort-btn:hover { background: #e2e8f0; color: var(--poli-blue); }
+
+        .mcq-container { display: flex; flex-direction: column; gap: 20px; }
+        .mcq-card { background: white; border: 2px solid #e2e8f0; border-radius: 16px; padding: 20px; transition: all 0.2s; cursor: pointer;}
+        .mcq-card:hover { border-color: var(--poli-blue-light); transform: translateX(5px); }
+        .mcq-card.selected { border-color: var(--poli-magenta); background: #fff1f2; }
+        .mcq-card.wrong { animation: shake 0.4s ease-in-out; border-color: red; background: #fef2f2;}
+
+        @keyframes shake { 0%, 100% {transform: translateX(0);} 25% {transform: translateX(-5px);} 75% {transform: translateX(5px);} }
+
+        #toast {
+            position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%);
+            background: var(--poli-magenta); color: white; padding: 16px 30px; border-radius: 9999px;
+            font-weight: 700; box-shadow: 0 10px 25px rgba(228, 0, 43, 0.4);
+            transition: bottom 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 1000;
+        }
+        #toast.show { bottom: 40px; }
+        
+        .pill-badge { background: #eff6ff; color: var(--poli-blue-light); padding: 4px 12px; border-radius: 9999px; font-size: 0.75rem; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; }
+    </style>
+</head>
+<body>
+
+    <div id="toast"></div>
+
+    <header class="w-full p-6 flex justify-between items-center absolute top-0 z-50">
+        <div class="flex items-center gap-3 glass-card !p-3 !rounded-full">
+            <div class="w-8 h-8 rounded-full bg-blue-900 flex justify-center items-center text-white font-bold">P</div>
+            <div class="font-bold text-sm text-slate-800 tracking-tight pr-4">Lab <span class="text-blue-600">Consultivo</span></div>
+        </div>
+        <div id="progress-indicator" class="hidden glass-card !p-3 !rounded-full font-bold text-sm text-slate-600">
+            Fase <span id="current-phase" class="text-blue-600">1</span> / 3
+        </div>
+    </header>
+
+    <main class="w-full min-h-screen flex flex-col justify-center items-center p-4 pt-24 pb-12">
+        
+        <section id="view-intro" class="view-section active items-center">
+            <div class="glass-card w-full max-w-xl text-center">
+                <div class="w-24 h-24 bg-blue-50 rounded-3xl flex items-center justify-center mx-auto mb-6 transform rotate-3 shadow-sm border border-blue-100">
+                    <span class="text-5xl">🧠</span>
+                </div>
+                <h1 class="text-4xl font-extrabold text-slate-800 mb-4 tracking-tight">Cero Reprocesos</h1>
+                <p class="text-slate-600 mb-8 leading-relaxed font-medium">
+                    Bienvenido al simulador. Aquí probaremos tu dominio normativo real. Analiza cada caso, clasifica y evita derivar tickets innecesarios. Un solo intento definirá tu precisión.
+                </p>
+                <div class="flex flex-col gap-3 text-left mb-8 max-w-sm mx-auto">
+                    <label class="text-xs font-bold text-slate-500 uppercase tracking-wider ml-2">Identificación del Experto:</label>
+                    <input type="text" id="agent-name" placeholder="Tu nombre y apellido" class="w-full bg-slate-50 border-2 border-slate-200 rounded-xl p-4 text-slate-800 focus:outline-none focus:border-blue-500 transition-colors font-semibold">
+                </div>
+                <button onclick="appState.goTo('view-p1-intro')" class="btn-primary text-lg w-full max-w-sm">Iniciar Simulador</button>
+            </div>
+        </section>
+
+        <!-- ================= FASE 1: LINEAMIENTOS ================= -->
+        <section id="view-p1-intro" class="view-section items-center">
+            <div class="glass-card w-full max-w-2xl text-center">
+                <span class="pill-badge mb-4 inline-block">Fase 1</span>
+                <h2 class="text-3xl font-extrabold text-slate-800 mb-4">Lineamientos de Créditos</h2>
+                <p class="text-slate-600 mb-8 mx-auto">En esta fase vamos a revisar qué tan claro tienes todo el proceso de ajuste de créditos y media matrícula. Presta mucha atención a los detalles de cada programa.</p>
+                <button onclick="appState.goTo('view-p1-dnd')" class="btn-primary">Comenzar Actividad 1</button>
+            </div>
+        </section>
+
+        <section id="view-p1-dnd" class="view-section items-center">
+            <div class="glass-card w-full">
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <span class="pill-badge">Actividad 1</span>
+                        <h3 class="text-2xl font-bold text-slate-800 mt-2">Clasificador de Matrícula</h3>
+                        <p class="text-slate-500 text-sm mt-1">Arrastra la tarjeta magenta a la zona correcta de aplicación.</p>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-sm font-bold text-slate-400 uppercase">Tarjetas Restantes</span>
+                        <div class="text-3xl font-black text-blue-600" id="p1-counter">5</div>
+                    </div>
+                </div>
+                
+                <div class="stack-dnd-container" id="p1-dnd-container">
+                    <div class="drop-zone" data-target="media">
+                        <div class="drop-zone-header">
+                            <h4 class="font-bold text-xl text-blue-800">Media Matrícula</h4>
+                            <p class="text-xs">Corresponde ajuste y cobro del 50%</p>
+                        </div>
+                        <div class="dropped-items-container" id="drop-media"></div>
+                    </div>
+                    
+                    <div class="cards-stack" id="p1-stack"></div>
+
+                    <div class="drop-zone" data-target="completa">
+                        <div class="drop-zone-header">
+                            <h4 class="font-bold text-xl text-slate-700">Matrícula Completa</h4>
+                            <p class="text-xs">Debe pagar el 100% (No aplica media)</p>
+                        </div>
+                        <div class="dropped-items-container" id="drop-completa"></div>
+                    </div>
+                </div>
+
+                <div class="mt-8 text-center hidden" id="p1-dnd-next">
+                    <button onclick="appState.goTo('view-p1-match')" class="btn-primary">Siguiente Actividad →</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="view-p1-match" class="view-section">
+            <div class="glass-card w-full">
+                <div class="text-center mb-8">
+                    <span class="pill-badge">Actividad 2</span>
+                    <h3 class="text-2xl font-bold text-slate-800 mt-2">Conexión de Casuística</h3>
+                    <p class="text-slate-500 text-sm mt-1">Selecciona el síntoma (Izquierda) y únelo con la resolución correcta (Derecha).</p>
+                </div>
+                
+                <div class="match-container" id="p1-match">
+                    <svg id="svg-p1" class="absolute top-0 left-0 w-full h-full pointer-events-none z-0"></svg>
+                    <div class="match-col" id="p1-match-left"></div>
+                    <div class="match-col" id="p1-match-right"></div>
+                </div>
+
+                <div class="mt-8 text-center hidden" id="p1-match-next">
+                    <button onclick="appState.goTo('view-p2-intro')" class="btn-primary">Avanzar a Fase 2 →</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= FASE 2: MANEJO DE CASOS (CHAT FILL-IN) ================= -->
+        <section id="view-p2-intro" class="view-section items-center">
+            <div class="glass-card w-full max-w-2xl text-center">
+                <span class="pill-badge mb-4 inline-block">Fase 2</span>
+                <h2 class="text-3xl font-extrabold text-slate-800 mb-4">Manejo de Casos</h2>
+                <p class="text-slate-600 mb-8 mx-auto">Evaluaremos tu capacidad para interpretar los mensajes de error en inscripción y dar la respuesta exacta. Haz clic en las palabras para completar el mensaje sugerido de asesoría.</p>
+                <button onclick="appState.goTo('view-p2-chat')" class="btn-primary">Iniciar Fase 2</button>
+            </div>
+        </section>
+
+        <section id="view-p2-chat" class="view-section">
+            <div class="glass-card w-full max-w-3xl mx-auto">
+                <div class="flex justify-between items-center mb-6 border-b pb-4">
+                    <div>
+                        <span class="pill-badge">Asesoría en Vivo</span>
+                        <h3 class="text-xl font-bold text-slate-800 mt-2">Completa el diagnóstico</h3>
+                    </div>
+                    <div class="text-sm font-bold text-slate-400 bg-slate-50 px-4 py-2 rounded-lg">
+                        Caso <span id="chat-counter-current" class="text-blue-600 text-lg">1</span> de <span id="chat-counter-total">5</span>
+                    </div>
+                </div>
+
+                <div class="chat-container" id="chat-bubbles-container">
+                    <!-- Injected via JS -->
+                </div>
+
+                <div class="text-center text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 mt-6">Banco de Palabras</div>
+                <div class="word-bank" id="chat-word-bank">
+                    <!-- Injected via JS -->
+                </div>
+
+                <div class="mt-8 text-center">
+                    <button id="btn-check-chat" onclick="mechanics.checkChat()" class="btn-primary w-full max-w-sm disabled:opacity-50" disabled>Comprobar Respuesta ✓</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= FASE 3: PROFUNDIZACIÓN E INGLÉS ================= -->
+        <section id="view-p3-intro" class="view-section items-center">
+            <div class="glass-card w-full max-w-2xl text-center">
+                <span class="pill-badge mb-4 inline-block">Fase 3</span>
+                <h2 class="text-3xl font-extrabold text-slate-800 mb-4">Profundización e Idiomas</h2>
+                <p class="text-slate-600 mb-8 mx-auto">Evalúemos la estructura de opciones de grado (Profundización) y las políticas específicas de Inglés para Administración.</p>
+                <button onclick="appState.goTo('view-p3-sort')" class="btn-primary">Iniciar Fase 3</button>
+            </div>
+        </section>
+
+        <section id="view-p3-sort" class="view-section">
+            <div class="glass-card w-full max-w-2xl mx-auto">
+                <div class="text-center mb-6">
+                    <span class="pill-badge">Actividad 1: El Flujo Correcto</span>
+                    <h3 class="text-xl font-bold text-slate-800 mt-2">Organiza las Prioridades</h3>
+                    <p class="text-sm text-slate-500 mt-2">Estudiante de Ingeniería de Software pregunta por Cursos de Profundización. Arrastra los pasos o usa las flechas para ordenar el proceso de validación del 1 (Primero) al 4 (Último).</p>
+                </div>
+
+                <div class="sort-list" id="p3-sort-list">
+                    <!-- Injected via JS -->
+                </div>
+
+                <div class="mt-8 text-center">
+                    <button onclick="mechanics.checkSort()" class="btn-primary w-full max-w-sm">Comprobar Orden ✓</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="view-p3-mcq" class="view-section">
+            <div class="glass-card w-full max-w-3xl mx-auto">
+                <div class="flex justify-between items-center mb-6 border-b pb-4">
+                    <div>
+                        <span class="pill-badge">Actividad 2: Decisiones Críticas</span>
+                        <h3 class="text-xl font-bold text-slate-800 mt-2" id="mcq-title">Analiza el Caso</h3>
+                    </div>
+                    <div class="text-sm font-bold text-slate-400 bg-slate-50 px-4 py-2 rounded-lg">
+                        Caso <span id="mcq-counter-current" class="text-blue-600 text-lg">1</span> de <span id="mcq-counter-total">3</span>
+                    </div>
+                </div>
+
+                <div class="mb-6 p-4 bg-slate-50 rounded-xl border border-slate-200 text-slate-700 font-medium" id="mcq-context">
+                    <!-- Context Injected -->
+                </div>
+
+                <div class="mcq-container" id="mcq-options-container">
+                    <!-- Options Injected -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= RESULTADOS ================= -->
+        <section id="view-results" class="view-section items-center">
+             <div class="glass-card w-full max-w-2xl text-center border-t-8 border-t-green-500">
+                <div class="w-24 h-24 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm">
+                    <span class="text-5xl">✅</span>
+                </div>
+                <h2 class="text-3xl font-extrabold text-slate-800 mb-2">Simulación Completada</h2>
+                <p class="text-slate-500 mb-8 font-medium">Tus respuestas han sido procesadas. Recuerda que no hay botón de reinicio.</p>
+                
+                <div class="bg-slate-50 p-6 rounded-2xl text-left border border-slate-200">
+                    <h3 class="font-bold text-slate-700 mb-4 flex items-center gap-2">
+                        <span class="text-xl">📋</span> Feedback de Oportunidades:
+                    </h3>
+                    <ul id="feedback-list" class="text-sm text-slate-600 space-y-4 list-none">
+                        <!-- Errors injected here -->
+                    </ul>
+                    <div id="perfect-score" class="hidden font-bold text-green-700 text-center py-4 bg-green-100 rounded-xl border border-green-200">
+                        ¡Impecable! Eres un verdadero Consultor. Cero reprocesos detectados.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        const DATA_P1_STACK = [
+            { id: 's1', text: "Estudiante de último semestre. Le hacen falta dos asignaturas: la opción de grado y finanzas.", target: 'media', doc: "Lineamientos Ampliación (Último semestre - 2 asignaturas)" },
+            { id: 's2', text: "Estudiante de Diseño Gráfico de último semestre. Debe cursar dos asignaturas, y una de ellas es opción de grado.", target: 'media', doc: "Lineamientos Ampliación (Caso 2: Diseño Gráfico)" }, 
+            { id: 's3', text: "Estudiante convenio SENA TA (Adm. Empresas). Le hacen falta tres asignaturas para finalizar su último semestre.", target: 'media', doc: "Lineamientos Ampliación (Caso 5: SENA TA)" },
+            { id: 's4', text: "Estudiante Lic. en Ciencias Sociales. Debe realizar Práctica 5, Práctica 6 y Semillero de Investigación.", target: 'completa', doc: "Lineamientos Ampliación (Caso 4: Licenciaturas)" },
+            { id: 's5', text: "Estudiante Lic. en Educación Infantil. Solamente va a cursar su Práctica 5 y 6.", target: 'completa', doc: "Lineamientos Ampliación (Caso 4: Licenciaturas - Excepción)" }
+        ];
+
+        const DATA_P1_MATCH_L = [
+            { id: 'm1l1', text: "Únicamente está permitido autorizar la ampliación de máximo dos créditos y solo en casos especiales." },
+            { id: 'm1l2', text: "Estudiante de Tecnología en Gestión de Servicios para Aerolíneas en último semestre, solo debe cursar la Práctica." },
+            { id: 'm1l3', text: "El sistema le asignó 18 créditos, pero para este semestre solo debe ver cinco materias." },
+            { id: 'm1l4', text: "El sistema asignó menos créditos de los que corresponden al semestre según el plan de estudios." },
+            { id: 'm1l5', text: "Estudiante solicita media matrícula porque cumple con todas las condiciones normativas." },
+            { id: 'm1l6', text: "Estudiante de último semestre realizó el pago completo, pero le falta una sola materia bloqueada." }
+        ];
+
+        const DATA_P1_MATCH_R = [
+            { id: 'm1r1', match: 'm1l1', text: "Aplica cuando se debe ver 6 materias, pero solo habilitaron 15 créditos." },
+            { id: 'm1r2', match: 'm1l2', text: "Debido a la estructura del plan, se debe emitir orden de pago de última materia." },
+            { id: 'm1r3', match: 'm1l3', text: "No se deben disminuir los créditos, la parametrización se mantiene como está." },
+            { id: 'm1r4', match: 'm1l4', text: "Sí se debe ajustar aumentando la cantidad de créditos permitidos en el sistema." },
+            { id: 'm1r5', match: 'm1l5', text: "Se debe pedir a través de Teams con el back office, no crear ticket." },
+            { id: 'm1r6', match: 'm1l6', text: "De acuerdo al artículo 47, puede acogerse al pago de una asignatura adicional." }
+        ];
+
+        const DATA_P2_CHATS = [
+            {
+                student: "Me sale un error que dice 'Tiene retenciones que impiden la inscripción', razón financiero, matrícula.",
+                expertParts: ["Debes revisar en ", " que efectivamente registre el pago del estudiante y en caso de que no aparezca matriculado, se debe validar cómo y cuándo realizó el pago para generar una solicitud de ", "."],
+                correct: ["Analytics", "legalización de matrícula"],
+                distractors: ["Banner", "Ticket a financiera", "esperar 24 horas"]
+            },
+            {
+                student: "Ya ingresé a la proyección y veo la materia, pero la pestaña de 'Agregar' me aparece apagada.",
+                expertParts: ["Verificar que efectivamente estemos dentro de las ", ". Si todo está correcto, crear un ", " a ", "."],
+                correct: ["fechas de inscripción", "ticket en derivación", "Mesa de Ayuda Alumno"],
+                distractors: ["fechas de cierre", "ticket en primer contacto", "Back Office"]
+            },
+            {
+                student: "El sistema dice: 'su solicitud no se procesará si su total de horas créditos cae por debajo del mínimo permitido'.",
+                expertParts: ["Debes solicitar el soporte y verificar si el mínimo de créditos tiene un límite mayor a cero. Si es así, se debe crear un ", " a ", " para realizar el ajuste como se indica en el diccionario. El tiempo de respuesta es de ", "."],
+                correct: ["ticket en derivación", "Mesa de Ayuda Alumno", "24 a 72 horas"],
+                distractors: ["ticket en primer contacto", "Área Global", "1 a 2 horas"]
+            },
+            {
+                student: "No me aparecen las proyecciones, la ventanita está apagada y no veo materias.",
+                expertParts: ["Debes verificar en Analytics, en la sección de inscripción de asignaturas, qué periodo académico aparece en las proyecciones. Si evidencias que no está para el ", ", debes crear un ticket en derivación para que ejecuten el ", " y la proyección."],
+                correct: ["2026-2", "CAPP"],
+                distractors: ["2026-1", "SFAREGS", "ticket en primer contacto"]
+            },
+            {
+                student: "Soy de la sede Medellín y al intentar inscribir me sale 'Restricción de sede, busca el grupo NRC que corresponda'.",
+                expertParts: ["Se revisa el soporte que envía el estudiante del error y le indicamos que se debe a que está intentando inscribir la materia en el ", " y como él está matriculado en la sede Medellín, pues le aparece ese error. En este caso, invitamos al estudiante a que por favor revise si está en horario del ", "."],
+                correct: ["campus de Bogotá", "campus de Medellín"],
+                distractors: ["campus virtual", "ticket de sobrepaso", "ticket a mesa de ayuda"]
+            },
+            {
+                student: "Soy estudiante presencial y el sistema no me deja inscribir 2 materias virtuales. A mis amigos sí los dejó.",
+                expertParts: ["Debes validar que ambas materias no sumen más de ", ". También es importante que verifiques el informe de ", " para confirmar que no exija cursarse en ", " obligatoriamente."],
+                correct: ["7 créditos virtuales", "asignaturas con restricción", "modalidad presencial"],
+                distractors: ["10 créditos", "ticket a mesa de ayuda", "modalidad virtual"]
+            }
+        ];
+
+        const DATA_P3_SORT = [
+            { id: 'ps1', text: "Verificar en Analytics el periodo de ingreso (2023-10 o anterior)." },
+            { id: 'ps2', text: "Validar la continuidad académica del estudiante." },
+            { id: 'ps3', text: "Confirmar si existe un curso previo aprobado de profundización." },
+            { id: 'ps4', text: "Indicar al estudiante cuáles son las asignaturas que debe inscribir." }
+        ];
+
+        const DATA_P3_MCQ = [
+            {
+                context: "Estudiante de Periodismo cursó y aprobó en el 2022-60 los cursos de profundización, pero aplazó en el 2023-10. En este momento le registra pendiente la opción de grado debido a que perdió uno de los dos cursos. Él quiere volver a tomar este curso de profundización que tiene pendiente.",
+                options: [
+                    { text: "Sí se permite. Como caso excepcional, ya que había aprobado uno de los cursos cuando estaba vigente, se le habilita la oferta del curso faltante.", isCorrect: true },
+                    { text: "No aplica. Al aplazar pierde el beneficio y debe acogerse al nuevo reglamento de opción de grado.", isCorrect: false }
+                ],
+                errorMsg: "Fase 3 (Profundización): Error en Caso Excepcional. Recuerda revisar 'Cursos de Profundización OG-2026-60'."
+            },
+            {
+                context: "Estudiante VIRTUAL de Adm. Empresas solicita levantar prerrequisito para ver Inglés 1 e Inglés 3 al mismo tiempo.",
+                options: [
+                    { text: "Se autoriza el levantamiento para llevar Inglés 1 y 3. Se crea ticket a mesa de ayuda alumno con tiempo de respuesta de 24 a 72 horas.", isCorrect: false },
+                    { text: "Se aclara que la autorización es para llevar (1 y 2) o (3 y 4). El primer nivel va en bloque 1 y el segundo nivel en bloque 2. Se crea ticket a mesa de ayuda alumno para el levantamiento del prerrequisito.", isCorrect: true }
+                ],
+                errorMsg: "Fase 3 (Idiomas): Error en normativa virtual. Revisa 'Inscripcion Ingles Administracion de empresas'."
+            },
+            {
+                context: "Estudiante PRESENCIAL de Adm. Empresas manifiesta que quiere llevar Inglés 3 y 4 al mismo tiempo de forma PRESENCIAL.",
+                options: [
+                    { text: "Se le indica que la autorización de levantamiento existe, pero las asignaturas de inglés deben ser inscritas obligatoriamente en modalidad VIRTUAL: el Inglés 3 debe inscribirlo en primer bloque y el 4 en segundo bloque.", isCorrect: true },
+                    { text: "Sí, claro, no hay ningún problema. Vamos a realizar la solicitud y voy a ayudarte a crear el ticket a mesa de ayuda alumno con tiempo de respuesta de 24 a 72 horas para que te ayuden con el levantamiento de forma presencial.", isCorrect: false }
+                ],
+                errorMsg: "Fase 3 (Idiomas): Error en normativa presencial. Revisa 'Inscripcion Ingles Administracion de empresas'."
+            }
+        ];
+
+
+        const appState = {
+            user: '',
+            errors: [], 
+            currentChatIdx: 0,
+            currentMCQIdx: 0,
+            
+            showToast: function(msg) {
+                const t = document.getElementById('toast');
+                t.innerText = msg; t.classList.add('show');
+                setTimeout(() => t.classList.remove('show'), 3500);
+            },
+            
+            recordError: function(fase, docDesc) { 
+                this.errors.push(`<b>${fase}</b>: Te faltó aplicar correctamente -> <i>${docDesc}</i>`); 
+            },
+
+            goTo: function(viewId) {
+                if(viewId === 'view-p1-intro') {
+                    const name = document.getElementById('agent-name').value.trim();
+                    if(!name) return this.showToast("Ingresa tu nombre y apellido para comenzar.");
+                    this.user = name;
+                    document.getElementById('progress-indicator').classList.remove('hidden');
+                }
+
+                // Phase 1 Nav
+                if(viewId === 'view-p1-dnd') mechanics.initStack('p1-stack', DATA_P1_STACK, () => document.getElementById('p1-dnd-next').classList.remove('hidden'));
+                if(viewId === 'view-p1-match') mechanics.initMatch('p1-match-left', 'p1-match-right', DATA_P1_MATCH_L, DATA_P1_MATCH_R, 'svg-p1', () => document.getElementById('p1-match-next').classList.remove('hidden'), "Fase 1: Conexión");
+                
+                // Phase 2 Nav
+                if(viewId === 'view-p2-intro') document.getElementById('current-phase').innerText = '2';
+                if(viewId === 'view-p2-chat') mechanics.renderChat(this.currentChatIdx);
+
+                // Phase 3 Nav
+                if(viewId === 'view-p3-intro') document.getElementById('current-phase').innerText = '3';
+                if(viewId === 'view-p3-sort') mechanics.initSort();
+                if(viewId === 'view-p3-mcq') mechanics.renderMCQ(this.currentMCQIdx);
+
+                if(viewId === 'view-results') this.buildResults();
+
+                document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+                setTimeout(() => document.getElementById(viewId).classList.add('active'), 50); 
+            },
+
+            buildResults: function() {
+                const ul = document.getElementById('feedback-list');
+                ul.innerHTML = '';
+                if(this.errors.length === 0) {
+                    document.getElementById('perfect-score').classList.remove('hidden');
+                } else {
+                    [...new Set(this.errors)].forEach(err => {
+                        let li = document.createElement('li'); 
+                        li.className = "flex gap-2 items-start";
+                        li.innerHTML = `<span class="text-red-500 font-bold mt-1">✗</span> <span>${err}</span>`; 
+                        ul.appendChild(li);
+                    });
+                }
+            }
+        };
+
+        const mechanics = {
+            
+            // --- Phase 1: Stack Drag & Drop ---
+            initStack: function(containerId, dataArray, onCompleteCallback) {
+                const container = document.getElementById(containerId);
+                const counter = document.getElementById('p1-counter');
+                container.innerHTML = '';
+                document.getElementById('drop-media').innerHTML = '';
+                document.getElementById('drop-completa').innerHTML = '';
+                
+                let remaining = dataArray.length;
+                counter.innerText = remaining;
+
+                const shuffled = [...dataArray].sort(() => Math.random() - 0.5);
+
+                shuffled.forEach((item, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'stack-card';
+                    card.innerText = item.text; card.id = item.id; card.draggable = true;
+                    card.style.zIndex = 100 - index;
+                    card.style.transform = `rotate(${Math.random() * 6 - 3}deg) translate(${Math.random()*4-2}px, ${Math.random()*4-2}px)`;
+
+                    card.addEventListener('dragstart', (e) => {
+                        e.dataTransfer.setData('text/plain', item.id);
+                        setTimeout(() => card.style.opacity = '0.01', 0);
+                    });
+                    card.addEventListener('dragend', () => {
+                        card.style.opacity = '1';
+                        document.querySelectorAll('.drop-zone').forEach(z => z.classList.remove('drag-over'));
+                    });
+                    container.appendChild(card);
+                });
+
+                if(!window.dndZonesSetup) {
+                    document.querySelectorAll('.drop-zone').forEach(zone => {
+                        zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
+                        zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+                        zone.addEventListener('drop', e => {
+                            e.preventDefault(); zone.classList.remove('drag-over');
+                            const draggedId = e.dataTransfer.getData('text/plain');
+                            if(!draggedId) return;
+                            
+                            const itemData = dataArray.find(d => d.id === draggedId);
+                            const cardEl = document.getElementById(draggedId);
+
+                            if(itemData.target === zone.getAttribute('data-target')) {
+                                const miniCard = document.createElement('div');
+                                miniCard.className = 'mini-card'; miniCard.innerText = itemData.text;
+                                zone.querySelector('.dropped-items-container').appendChild(miniCard);
+                                
+                                cardEl.remove(); remaining--; counter.innerText = remaining;
+                                if(remaining === 0) onCompleteCallback();
+                            } else {
+                                appState.showToast(`Revisa bien la normativa para este caso.`);
+                                appState.recordError("Fase 1: Clasificador", itemData.doc);
+                            }
+                        });
+                    });
+                    window.dndZonesSetup = true;
+                }
+            },
+
+            // --- Phase 1: Matching ---
+            initMatch: function(leftId, rightId, dataL, dataR, svgId, onComplete, faseNombre) {
+                const lCol = document.getElementById(leftId); const rCol = document.getElementById(rightId);
+                lCol.innerHTML = ''; rCol.innerHTML = '';
+                let localState = { left: null, right: null };
+                let remaining = dataL.length;
+
+                const shuffR = [...dataR].sort(() => Math.random() - 0.5);
+
+                const createItem = (item, side, prefix) => {
+                    const div = document.createElement('div');
+                    div.className = 'match-item';
+                    div.innerHTML = `<div class="match-indicator">${prefix}</div> <div class="flex-1">${item.text}</div>`;
+                    
+                    div.onclick = () => {
+                        if(div.classList.contains('matched')) return;
+                        div.parentElement.querySelectorAll('.match-item').forEach(el => el.classList.remove('selected'));
+                        div.classList.add('selected');
+                        localState[side] = { el: div, data: item };
+
+                        if(localState.left && localState.right) {
+                            const isCorrect = (localState.left.data.id === localState.right.data.match);
+                            
+                            if(isCorrect) {
+                                localState.left.el.classList.replace('selected', 'matched');
+                                localState.right.el.classList.replace('selected', 'matched');
+                                this.drawCurve(localState.left.el, localState.right.el, svgId);
+                                remaining--; if(remaining===0) onComplete();
+                            } else {
+                                localState.left.el.classList.remove('selected'); localState.right.el.classList.remove('selected');
+                                appState.showToast("Conexión incorrecta. Analiza el caso de nuevo.");
+                                appState.recordError(faseNombre, `Error al asociar el caso: "${localState.left.data.text}"`);
+                            }
+                            localState = { left: null, right: null };
+                        }
+                    };
+                    return div;
+                };
+
+                dataL.forEach((item, i) => lCol.appendChild(createItem(item, 'left', i+1)));
+                shuffR.forEach((item, i) => rCol.appendChild(createItem(item, 'right', String.fromCharCode(65+i))));
+            },
+
+            drawCurve: function(el1, el2, svgId) {
+                const svg = document.getElementById(svgId);
+                const container = svg.parentElement;
+                const r1 = el1.getBoundingClientRect(); const r2 = el2.getBoundingClientRect(); const cRect = container.getBoundingClientRect();
+                const x1 = r1.right - cRect.left; const y1 = r1.top + (r1.height/2) - cRect.top;
+                const x2 = r2.left - cRect.left; const y2 = r2.top + (r2.height/2) - cRect.top;
+                
+                const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                path.setAttribute('d', `M ${x1} ${y1} C ${x1 + 50} ${y1}, ${x2 - 50} ${y2}, ${x2} ${y2}`);
+                path.setAttribute('stroke', '#10b981'); path.setAttribute('stroke-width', '3'); 
+                path.setAttribute('fill', 'none'); path.setAttribute('stroke-dasharray', '5,5');
+                svg.appendChild(path);
+            },
+
+            // --- Phase 2: Chat Fill-in-the-blank ---
+            renderChat: function(idx) {
+                const data = DATA_P2_CHATS[idx];
+                document.getElementById('chat-counter-current').innerText = idx + 1;
+                document.getElementById('chat-counter-total').innerText = DATA_P2_CHATS.length;
+                document.getElementById('btn-check-chat').disabled = true;
+                
+                const container = document.getElementById('chat-bubbles-container');
+                container.innerHTML = `
+                    <div class="chat-bubble chat-student">
+                        <div class="text-xs font-bold text-slate-400 mb-1">Estudiante dice:</div>
+                        ${data.student}
+                    </div>
+                `;
+
+                // Build Expert bubble with blanks
+                let expertHTML = `<div class="chat-bubble chat-expert"><div class="text-xs font-bold text-blue-400 mb-1">Tu gestión:</div>`;
+                data.expertParts.forEach((part, i) => {
+                    expertHTML += part;
+                    if(i < data.expertParts.length - 1) {
+                        expertHTML += `<span class="blank-slot" data-index="${i}" onclick="mechanics.removeWord(this)">___</span>`;
+                    }
+                });
+                expertHTML += `</div>`;
+                container.innerHTML += expertHTML;
+
+                // Build Word Bank
+                const bank = document.getElementById('chat-word-bank');
+                bank.innerHTML = '';
+                const allWords = [...data.correct, ...data.distractors].sort(() => Math.random() - 0.5);
+                
+                allWords.forEach((word, i) => {
+                    const pill = document.createElement('div');
+                    pill.className = 'word-pill';
+                    pill.innerText = word;
+                    pill.id = `pill-${i}`;
+                    pill.onclick = () => this.fillNextBlank(pill);
+                    bank.appendChild(pill);
+                });
+            },
+
+            fillNextBlank: function(pillEl) {
+                const slots = document.querySelectorAll('.blank-slot');
+                for(let slot of slots) {
+                    if(!slot.classList.contains('filled')) {
+                        slot.innerText = pillEl.innerText;
+                        slot.classList.add('filled');
+                        slot.setAttribute('data-pill-id', pillEl.id);
+                        pillEl.classList.add('used');
+                        this.checkIfAllFilled();
+                        break;
+                    }
+                }
+            },
+
+            removeWord: function(slotEl) {
+                if(!slotEl.classList.contains('filled')) return;
+                const pillId = slotEl.getAttribute('data-pill-id');
+                document.getElementById(pillId).classList.remove('used');
+                slotEl.innerText = '___';
+                slotEl.classList.remove('filled');
+                slotEl.removeAttribute('data-pill-id');
+                document.getElementById('btn-check-chat').disabled = true;
+            },
+
+            checkIfAllFilled: function() {
+                const emptySlots = document.querySelectorAll('.blank-slot:not(.filled)');
+                if(emptySlots.length === 0) {
+                    document.getElementById('btn-check-chat').disabled = false;
+                }
+            },
+
+            checkChat: function() {
+                const data = DATA_P2_CHATS[appState.currentChatIdx];
+                const slots = document.querySelectorAll('.blank-slot');
+                let isCorrect = true;
+
+                slots.forEach((slot, i) => {
+                    if(slot.innerText !== data.correct[i]) {
+                        isCorrect = false;
+                        slot.classList.add('shake');
+                        setTimeout(() => slot.classList.remove('shake'), 400);
+                    }
+                });
+
+                if(isCorrect) {
+                    appState.currentChatIdx++;
+                    if(appState.currentChatIdx < DATA_P2_CHATS.length) {
+                        this.renderChat(appState.currentChatIdx);
+                    } else {
+                        appState.goTo('view-p3-intro');
+                    }
+                } else {
+                    appState.showToast("La respuesta no tiene sentido normativo. Corrige los espacios en rojo.");
+                    appState.recordError("Fase 2: Manejo de Casos", `Error en escenario: "${data.student}"`);
+                }
+            },
+
+            // --- Phase 3: Sorting (Drag & Drop List) ---
+            initSort: function() {
+                const container = document.getElementById('p3-sort-list');
+                container.innerHTML = '';
+                
+                // Shuffle initial data
+                let items = [...DATA_P3_SORT].sort(() => Math.random() - 0.5);
+                
+                const renderList = () => {
+                    container.innerHTML = '';
+                    items.forEach((item, index) => {
+                        const el = document.createElement('div');
+                        el.className = 'sort-item';
+                        el.draggable = true;
+                        el.innerHTML = `
+                            <div class="flex items-center gap-4">
+                                <span class="text-slate-400 font-bold w-6 text-center">${index + 1}.</span>
+                                <span>${item.text}</span>
+                            </div>
+                            <div class="sort-controls">
+                                <button class="sort-btn" onclick="mechanics.moveItem(${index}, -1)">▲</button>
+                                <button class="sort-btn" onclick="mechanics.moveItem(${index}, 1)">▼</button>
+                            </div>
+                        `;
+                        
+                        // Drag Events
+                        el.addEventListener('dragstart', (e) => {
+                            e.dataTransfer.setData('text/plain', index);
+                            setTimeout(() => el.classList.add('dragging'), 0);
+                        });
+                        el.addEventListener('dragend', () => el.classList.remove('dragging'));
+                        el.addEventListener('dragover', (e) => e.preventDefault());
+                        el.addEventListener('drop', (e) => {
+                            e.preventDefault();
+                            const draggedIdx = parseInt(e.dataTransfer.getData('text/plain'));
+                            if(draggedIdx !== index) mechanics.swapItems(draggedIdx, index);
+                        });
+
+                        container.appendChild(el);
+                    });
+                };
+
+                this.currentSortItems = items;
+                this.renderSortList = renderList;
+                renderList();
+            },
+
+            moveItem: function(idx, dir) {
+                const newIdx = idx + dir;
+                if(newIdx >= 0 && newIdx < this.currentSortItems.length) {
+                    this.swapItems(idx, newIdx);
+                }
+            },
+
+            swapItems: function(i, j) {
+                const temp = this.currentSortItems[i];
+                this.currentSortItems[i] = this.currentSortItems[j];
+                this.currentSortItems[j] = temp;
+                this.renderSortList();
+            },
+
+            checkSort: function() {
+                let isCorrect = true;
+                // Check if current order matches original DATA_P3_SORT order
+                this.currentSortItems.forEach((item, i) => {
+                    if(item.id !== DATA_P3_SORT[i].id) isCorrect = false;
+                });
+
+                if(isCorrect) {
+                    appState.goTo('view-p3-mcq');
+                } else {
+                    appState.showToast("El orden no es correcto. Revisa el procedimiento lógico.");
+                    appState.recordError("Fase 3: Orden de Procesos", "Flujo de validación para Cursos de Profundización.");
+                }
+            },
+
+            // --- Phase 3: MCQ Cards ---
+            renderMCQ: function(idx) {
+                const data = DATA_P3_MCQ[idx];
+                document.getElementById('mcq-counter-current').innerText = idx + 1;
+                document.getElementById('mcq-counter-total').innerText = DATA_P3_MCQ.length;
+                document.getElementById('mcq-context').innerText = data.context;
+
+                const container = document.getElementById('mcq-options-container');
+                container.innerHTML = '';
+                
+                // Shuffle options
+                const options = [...data.options].sort(() => Math.random() - 0.5);
+
+                options.forEach((opt, i) => {
+                    const card = document.createElement('div');
+                    card.className = 'mcq-card';
+                    card.innerHTML = `<div class="flex items-start gap-4">
+                        <div class="match-indicator mt-1">${String.fromCharCode(65+i)}</div>
+                        <div class="flex-1 pt-1">${opt.text}</div>
+                    </div>`;
+
+                    card.onclick = () => {
+                        if(opt.isCorrect) {
+                            card.classList.add('selected');
+                            setTimeout(() => {
+                                appState.currentMCQIdx++;
+                                if(appState.currentMCQIdx < DATA_P3_MCQ.length) {
+                                    this.renderMCQ(appState.currentMCQIdx);
+                                } else {
+                                    appState.goTo('view-results');
+                                }
+                            }, 600);
+                        } else {
+                            card.classList.add('wrong');
+                            appState.showToast("Decisión incorrecta.");
+                            appState.recordError("Fase 3: Decisiones Críticas", data.errorMsg);
+                            setTimeout(() => card.classList.remove('wrong'), 500);
+                        }
+                    };
+                    container.appendChild(card);
+                });
+            }
+        };
+    </script>
+</body>
+</html>
