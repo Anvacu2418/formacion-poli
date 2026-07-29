@@ -5,6 +5,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>La Ruleta del Servicio - Poli</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        poli: {
+                            blue: '#08324f',
+                            magenta: '#e4007d',
+                            turquoise: '#00bacb',
+                            lime: '#a5d045'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -228,7 +249,7 @@
             },
             {
                 id: 3, text: "Un estudiante quiere realizar el pago de sus derechos de grado a través de sus cesantías (ej. Fondo Nacional del Ahorro). ¿Qué haces?",
-                options: ["Indicarle que NO se reciben pagos de FNA, cesantías o transferencias no autorizadas. Únicamente en línea o en efectivo en el banco de Bogotá.", "Compartirle la certificación de Bancolombia para transferencia y pedirle que legalice."],
+                options: ["Indicarle que NO se reciben pagos de FNA, cesantías o transferencias no autorizadas. Únicamente en línea o en banco de Bogotá.", "Compartirle la certificación de Bancolombia para transferencia y pedirle que legalice."],
                 correctIndex: 0,
                 feedback: "Para derechos de grado las reglas son estrictas. La empatía suaviza la negativa de los medios de pago no aceptados."
             },
