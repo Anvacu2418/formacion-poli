@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Playbook: Gestión de Rematrícula</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        brand: {
+                            purple: '#6B46C1',
+                            pink: '#EC4899',
+                            blue: '#3B82F6',
+                            dark: '#0F172A',
+                            light: '#F8FAFC'
+                        }
+                    },
+                    boxShadow: {
+                        'glow-purple': '0 0 20px rgba(107, 70, 193, 0.15)',
+                        'glow-pink': '0 0 20px rgba(236, 72, 153, 0.15)',
+                        'glow-blue': '0 0 20px rgba(59, 130, 246, 0.15)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { background-color: #F8FAFC; scroll-behavior: smooth; }
+        
+        /* Acordeones limpios */
+        details > summary { list-style: none; }
+        details > summary::-webkit-details-marker { display: none; }
+        details[open] summary ~ * { animation: slideDown 0.3s ease-in-out; }
+        @keyframes slideDown {
+            0% { opacity: 0; transform: translateY(-5px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Tarjetas Giratorias */
+        .flip-card { background-color: transparent; perspective: 1000px; height: 320px; }
+        .flip-card-inner {
+            position: relative; width: 100%; height: 100%; text-align: center;
+            transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1); transform-style: preserve-3d;
+        }
+        .flip-card:hover .flip-card-inner { transform: rotateY(180deg); }
+        .flip-card-front, .flip-card-back {
+            position: absolute; width: 100%; height: 100%; backface-visibility: hidden;
+            border-radius: 1rem; padding: 1.5rem; display: flex; flex-direction: column; justify-content: center;
+        }
+        .flip-card-front { background-color: white; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+        .flip-card-back { background: linear-gradient(135deg, #6B46C1, #EC4899); color: white; transform: rotateY(180deg); }
+
+        /* Step Line Connector */
+        .step-line::before {
+            content: ''; position: absolute; left: 24px; top: 60px; bottom: -40px;
+            width: 2px; background: #e2e8f0; z-index: 0;
+        }
+        .step-line:last-child::before { display: none; }
+    </style>
+</head>
+<body class="text-gray-800 antialiased selection:bg-brand-pink selection:text-white">
+
+    <header class="bg-white/80 backdrop-blur-md shadow-sm sticky top-0 z-40 border-b border-gray-100">
+        <div class="max-w-4xl mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 bg-brand-dark rounded flex items-center justify-center text-white text-sm">
+                    <i class="fa-solid fa-bolt"></i>
+                </div>
+                <h1 class="text-lg font-bold text-brand-dark tracking-tight">Playbook Rematrícula</h1>
+            </div>
+            <div class="text-sm font-semibold text-gray-400 uppercase tracking-widest">
+                Ruta Formativa
+            </div>
+        </div>
+    </header>
+
+    <section class="max-w-4xl mx-auto px-4 pt-12 pb-8 text-center">
+        <span class="inline-block py-1 px-3 rounded-full bg-brand-pink/10 text-brand-pink text-xs font-bold uppercase tracking-wider mb-4 border border-brand-pink/20">
+            Metodología Obligatoria
+        </span>
+        <h2 class="text-4xl md:text-5xl font-black text-brand-dark leading-tight mb-4">
+            Guía Paso a Paso para <br>
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-purple to-brand-pink">Gestión de la Frustración</span>
+        </h2>
+        <p class="text-lg text-gray-500 max-w-2xl mx-auto">
+            Esta es tu receta diaria. Deja de reaccionar y empieza a gestionar. Aplica estos 3 pasos en cada llamada y transforma la presión en compromiso.
+        </p>
+    </section>
+
+    <section class="max-w-4xl mx-auto px-4 py-8 relative">
+        
+        <div class="relative step-line mb-12 z-10">
+            <div class="flex items-start gap-6">
+                <!-- Número del paso -->
+                <div class="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-brand-purple to-brand-blue rounded-full flex items-center justify-center text-white font-black text-xl shadow-lg relative z-10">
+                    1
+                </div>
+                
+                <!-- Contenido de la tarjeta -->
+                <div class="flex-grow bg-white rounded-2xl p-6 md:p-8 shadow-glow-purple border border-purple-50">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-2">Escuchar antes de resolver</h3>
+                    <p class="text-gray-600 mb-6">
+                        Oír no es escuchar. Si respondes a la defensiva, perdiste el control. 
+                        Apaga tus problemas, ignora el ruido a tu alrededor y enfócate 100% en el estudiante.
+                    </p>
+
+                    <!-- La Fórmula Visual (Light y Directa) -->
+                    <div class="bg-gray-50 rounded-xl p-5 mb-6 border border-gray-100 flex flex-col md:flex-row items-center justify-center gap-4 text-center">
+                        <div>
+                            <i class="fa-solid fa-microphone-slash text-2xl text-brand-purple mb-2"></i>
+                            <h4 class="font-bold text-sm">Silencio Atento</h4>
+                            <p class="text-xs text-gray-500">Deja que se desahogue. No interrumpas.</p>
+                        </div>
+                        <div class="text-2xl text-gray-300 font-bold hidden md:block">+</div>
+                        <div>
+                            <i class="fa-solid fa-check-double text-2xl text-brand-blue mb-2"></i>
+                            <h4 class="font-bold text-sm">Validación Genuina</h4>
+                            <p class="text-xs text-gray-500">Hazle saber que su problema importa.</p>
+                        </div>
+                    </div>
+
+                    <!-- Acordeón para profundizar sin recargar -->
+                    <details class="group bg-white border border-purple-100 rounded-lg overflow-hidden [&_summary::-webkit-details-marker]:hidden">
+                        <summary class="flex items-center justify-between p-4 cursor-pointer hover:bg-purple-50/50 transition font-semibold text-brand-purple">
+                            <span><i class="fa-solid fa-eye mr-2"></i> ¿Cómo dejo de ponerme a la defensiva?</span>
+                            <span class="transition group-open:rotate-180"><i class="fa-solid fa-chevron-down"></i></span>
+                        </summary>
+                        <div class="p-4 bg-purple-50/30 text-sm text-gray-700 border-t border-purple-100">
+                            <ul class="space-y-3">
+                                <li class="flex gap-2"><i class="fa-solid fa-xmark text-red-500 mt-1"></i> <strong>Error:</strong> Escuchar para responder ("Sí, pero es que el reglamento dice..."). Rompes la relación.</li>
+                                <li class="flex gap-2"><i class="fa-solid fa-check text-green-500 mt-1"></i> <strong>Acierto:</strong> Escuchar para entender ("Comprendo la frustración que esto te genera, déjame revisar tu caso..."). Tomas el control.</li>
+                            </ul>
+                        </div>
+                    </details>
+                </div>
+            </div>
+        </div>
+
+        <div class="relative step-line mb-12 z-10">
+            <div class="flex items-start gap-6">
+                <!-- Número del paso -->
+                <div class="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-brand-pink to-orange-400 rounded-full flex items-center justify-center text-white font-black text-xl shadow-lg relative z-10">
+                    2
+                </div>
+                
+                <!-- Contenido de la tarjeta -->
+                <div class="flex-grow bg-white rounded-2xl p-6 md:p-8 shadow-glow-pink border border-pink-50">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-2">Separar la emoción de la solución</h3>
+                    <p class="text-gray-600 mb-6">
+                        El estudiante no está enojado contigo, está frustrado con su situación (dinero, plataformas, etc.). 
+                        <strong>Tu trabajo es ser el filtro:</strong> absorbe la emoción y devuelve gestión.
+                    </p>
+
+                    <!-- NUEVA HERRAMIENTA: El Escudo Mental -->
+                    <div class="bg-orange-50 rounded-xl p-5 mb-6 border border-orange-100">
+                        <h4 class="font-bold text-orange-600 mb-2 flex items-center"><i class="fa-solid fa-shield-halved mr-2"></i> Herramienta: El Escudo Mental (Anclaje)</h4>
+                        <p class="text-sm text-gray-700 mb-3">Saberlo es fácil, hacerlo cuando el estudiante alza la voz es difícil. Si sientes que pierdes el control, aplica la regla de los 3 segundos:</p>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+                            <div class="bg-white p-3 rounded shadow-sm border border-orange-50">
+                                <span class="font-bold text-gray-800 block mb-1">1. Pausa (Respira)</span>
+                                <span class="text-gray-500 text-xs">No respondas de inmediato. Ese segundo de silencio frena tu reactividad.</span>
+                            </div>
+                            <div class="bg-white p-3 rounded shadow-sm border border-orange-50">
+                                <span class="font-bold text-gray-800 block mb-1">2. Despersonaliza</span>
+                                <span class="text-gray-500 text-xs">Repite en tu mente: <em>"El tono no es el mensaje. Está frustrado con su situación"</em>.</span>
+                            </div>
+                            <div class="bg-white p-3 rounded shadow-sm border border-orange-50">
+                                <span class="font-bold text-gray-800 block mb-1">3. Baja el Volumen</span>
+                                <span class="text-gray-500 text-xs">Responde con un tono de voz deliberadamente más suave y pausado que el suyo.</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- La Fórmula Visual (Light y Directa) -->
+                    <div class="bg-pink-50/50 rounded-xl p-5 mb-6 border border-pink-100 flex flex-col sm:flex-row items-center gap-4">
+                        <div class="bg-white p-3 rounded-lg shadow-sm border border-pink-100 flex-1 w-full">
+                            <span class="block text-xs font-bold text-brand-pink uppercase mb-1">Paso A: Amortigua</span>
+                            <p class="text-sm font-medium text-gray-800">"Entiendo perfectamente lo que me comentas..."</p>
+                        </div>
+                        <i class="fa-solid fa-arrow-right text-brand-pink hidden sm:block"></i>
+                        <div class="bg-white p-3 rounded-lg shadow-sm border border-pink-100 flex-1 w-full">
+                            <span class="block text-xs font-bold text-brand-dark uppercase mb-1">Paso B: Gestiona</span>
+                            <p class="text-sm font-medium text-gray-800">"Permíteme revisar las opciones que tenemos desde aquí."</p>
+                        </div>
+                    </div>
+
+                    <!-- Acordeón para profundizar sin recargar -->
+                    <details class="group bg-white border border-pink-100 rounded-lg overflow-hidden [&_summary::-webkit-details-marker]:hidden">
+                        <summary class="flex items-center justify-between p-4 cursor-pointer hover:bg-pink-50/50 transition font-semibold text-brand-pink">
+                            <span><i class="fa-solid fa-comment-dots mr-2"></i> Mis frases de "Blindaje Emocional"</span>
+                            <span class="transition group-open:rotate-180"><i class="fa-solid fa-chevron-down"></i></span>
+                        </summary>
+                        <div class="p-4 bg-pink-50/30 text-sm text-gray-700 border-t border-pink-100">
+                            <p class="mb-3 font-medium">Usa estos "microcierres de contención" antes de intentar resolver el problema:</p>
+                            <ul class="space-y-2">
+                                <li>👉 "Gracias por compartirme esto, es muy importante."</li>
+                                <li>👉 "Es una situación delicada, vamos a revisarla juntos."</li>
+                                <li>👉 "Mi objetivo hoy es que este próximo periodo sea diferente para ti."</li>
+                            </ul>
+                        </div>
+                    </details>
+                </div>
+            </div>
+        </div>
+
+        <div class="relative z-10">
+            <div class="flex items-start gap-6">
+                <!-- Número del paso -->
+                <div class="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-brand-dark to-gray-700 rounded-full flex items-center justify-center text-white font-black text-xl shadow-lg relative z-10">
+                    3
+                </div>
+                
+                <!-- Contenido de la tarjeta -->
+                <div class="flex-grow bg-white rounded-2xl p-6 md:p-8 shadow-xl border border-gray-200">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-2">La Fórmula del Cierre Consultivo</h3>
+                    <p class="text-gray-600 mb-6">
+                        Olvida el cliché de <em>"¿Vas a pagar hoy o mañana?"</em>. Esa pregunta genera presión y rechazo. 
+                        Un cierre experto guía al estudiante a tomar el compromiso por sí mismo conectando la solución con su beneficio.
+                    </p>
+
+                    <!-- La Receta Matemática Visual -->
+                    <div class="bg-brand-dark rounded-xl p-6 mb-8 text-white flex flex-col md:flex-row justify-between items-center gap-4 text-center">
+                        <div class="flex-1 w-full bg-white/10 p-3 rounded-lg backdrop-blur-sm">
+                            <span class="block text-brand-pink font-bold text-xs uppercase mb-1">Paso 1</span>
+                            <span class="text-sm font-medium">Validar su Beneficio</span>
+                        </div>
+                        <div class="text-xl text-gray-500 font-black">+</div>
+                        <div class="flex-1 w-full bg-white/10 p-3 rounded-lg backdrop-blur-sm">
+                            <span class="block text-brand-purple font-bold text-xs uppercase mb-1">Paso 2</span>
+                            <span class="text-sm font-medium">Acción que Destraba</span>
+                        </div>
+                        <div class="text-xl text-gray-500 font-black">+</div>
+                        <div class="flex-1 w-full bg-white/10 p-3 rounded-lg backdrop-blur-sm">
+                            <span class="block text-brand-blue font-bold text-xs uppercase mb-1">Paso 3</span>
+                            <span class="text-sm font-medium">Micro-Acuerdo</span>
+                        </div>
+                    </div>
+
+                    <!-- Acordeones de Ejemplos y Práctica -->
+                    <div class="space-y-3">
+                        <details class="group border border-gray-200 rounded-lg overflow-hidden [&_summary::-webkit-details-marker]:hidden">
+                            <summary class="flex items-center justify-between p-4 cursor-pointer bg-gray-50 hover:bg-gray-100 transition font-semibold text-gray-700">
+                                <span><i class="fa-solid fa-book-open text-brand-purple mr-2"></i> Ejemplo: Problema Económico</span>
+                                <span class="transition group-open:rotate-180"><i class="fa-solid fa-chevron-down"></i></span>
+                            </summary>
+                            <div class="p-4 bg-white border-t border-gray-200 text-sm">
+                                <p class="text-brand-pink font-bold">1. Beneficio:</p>
+                                <p class="mb-3 text-gray-600">"Andrés, ya que tu prioridad es no atrasarte con tu promoción de grado..."</p>
+                                <p class="text-brand-purple font-bold">2. Acción:</p>
+                                <p class="mb-3 text-gray-600">"...lo que podemos hacer es activar el financiamiento en 3 cuotas para aliviar este mes."</p>
+                                <p class="text-brand-blue font-bold">3. Micro-Acuerdo:</p>
+                                <p class="text-gray-600">"...¿Te parece si dejamos configurada la primera cuota para el viernes y aseguras tus materias?"</p>
+                            </div>
+                        </details>
+
+                        <details class="group border border-gray-200 rounded-lg overflow-hidden [&_summary::-webkit-details-marker]:hidden">
+                            <summary class="flex items-center justify-between p-4 cursor-pointer bg-gray-50 hover:bg-gray-100 transition font-semibold text-gray-700">
+                                <span><i class="fa-solid fa-clock-rotate-left text-brand-purple mr-2"></i> Ejemplo: Mala Experiencia Pasada</span>
+                                <span class="transition group-open:rotate-180"><i class="fa-solid fa-chevron-down"></i></span>
+                            </summary>
+                            <div class="p-4 bg-white border-t border-gray-200 text-sm">
+                                <p class="text-brand-pink font-bold">1. Beneficio:</p>
+                                <p class="mb-3 text-gray-600">"María, entiendo tu molestia anterior, y como mi objetivo es que este periodo sea totalmente diferente para ti..."</p>
+                                <p class="text-brand-purple font-bold">2. Acción:</p>
+                                <p class="mb-3 text-gray-600">"...voy a encargarme personalmente de escalar tu ticket a soporte y darle seguimiento prioritario."</p>
+                                <p class="text-brand-blue font-bold">3. Micro-Acuerdo:</p>
+                                <p class="text-gray-600">"...¿Estás de acuerdo si iniciamos tu rematrícula hoy para que yo pueda radicar esa solicitud de inmediato?"</p>
+                            </div>
+                        </details>
+
+                        <!-- Dinámica: Workspace -->
+                        <details class="group border border-brand-pink rounded-lg overflow-hidden [&_summary::-webkit-details-marker]:hidden" open>
+                            <summary class="flex items-center justify-between p-4 cursor-pointer bg-pink-50 hover:bg-pink-100 transition font-bold text-brand-pink">
+                                <span><i class="fa-solid fa-pen-nib mr-2"></i> Taller: ¡Crea el tuyo! (Para la dinámica)</span>
+                                <span class="transition group-open:rotate-180"><i class="fa-solid fa-chevron-down"></i></span>
+                            </summary>
+                            <div class="p-4 bg-white border-t border-pink-100">
+                                <p class="text-sm text-gray-500 mb-4">Usa este espacio en la sesión para armar el cierre de tu llamada de prueba:</p>
+                                <div class="space-y-3">
+                                    <input type="text" placeholder="1. Beneficio: 'Ya que lo más importante para ti es...'" class="w-full p-3 text-sm bg-gray-50 border border-gray-200 rounded focus:outline-none focus:border-brand-pink focus:ring-1 focus:ring-brand-pink">
+                                    <input type="text" placeholder="2. Acción: 'Lo que yo puedo ofrecerte ahora es...'" class="w-full p-3 text-sm bg-gray-50 border border-gray-200 rounded focus:outline-none focus:border-brand-purple focus:ring-1 focus:ring-brand-purple">
+                                    <input type="text" placeholder="3. Micro-Acuerdo: '¿Estás de acuerdo si avanzamos con...?'" class="w-full p-3 text-sm bg-gray-50 border border-gray-200 rounded focus:outline-none focus:border-brand-blue focus:ring-1 focus:ring-brand-blue">
+                                </div>
+                            </div>
+                        </details>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </section>
+
+    <section class="max-w-5xl mx-auto px-4 py-12 border-t border-gray-200 mt-8">
+        <div class="text-center mb-10">
+            <h3 class="text-2xl font-bold text-gray-900">Aprende con Casos Reales</h3>
+            <p class="text-gray-500 mt-2">Pasa el mouse (o toca) cada tarjeta para ver cómo transformar el error en una gestión exitosa.</p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            
+            <!-- Caso 1 -->
+            <div class="flip-card cursor-pointer">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front border border-gray-100 border-b-4 border-b-brand-pink rounded-2xl flex flex-col justify-center items-center px-4 py-6 shadow-sm">
+                        <div class="w-12 h-12 bg-gray-100 text-gray-600 rounded-full flex items-center justify-center mx-auto mb-4 text-xl">
+                            <i class="fa-solid fa-user-tie"></i>
+                        </div>
+                        <h4 class="font-bold text-gray-800 text-base mb-4 px-2">"Quiero hablar con tu supervisor"</h4>
+                        <div class="mt-auto">
+                            <span class="text-sm font-bold text-red-500 block mb-1">× Error común:</span>
+                            <p class="text-sm text-gray-500 leading-snug">Escalar la llamada de inmediato o tomarlo personal.</p>
+                        </div>
+                    </div>
+                    <div class="flip-card-back rounded-2xl flex flex-col justify-center text-center p-6 shadow-lg">
+                        <h4 class="font-bold text-white mb-4 text-xl leading-tight">Mindset: Quiere seguridad</h4>
+                        <span class="text-sm font-bold text-white block mb-3">Respuesta Consultiva:</span>
+                        <p class="text-sm italic mb-auto text-white/95 leading-relaxed">"Claro, con gusto te apoyo. Antes de eso, cuéntame qué ha pasado para poder ayudarte de la mejor manera desde aquí..."</p>
+                        <p class="text-xs font-medium text-white/90 mt-4"><i class="fa-solid fa-lightbulb text-yellow-300 mr-1"></i> Retén el control sin negarte.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Caso 2 -->
+            <div class="flip-card cursor-pointer">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front border border-gray-100 border-b-4 border-b-brand-pink rounded-2xl flex flex-col justify-center items-center px-4 py-6 shadow-sm">
+                        <div class="w-12 h-12 bg-gray-100 text-gray-600 rounded-full flex items-center justify-center mx-auto mb-4 text-xl">
+                            <i class="fa-solid fa-wallet"></i>
+                        </div>
+                        <h4 class="font-bold text-gray-800 text-base mb-4 px-2">"No tengo dinero"</h4>
+                        <div class="mt-auto">
+                            <span class="text-sm font-bold text-red-500 block mb-1">× Error común:</span>
+                            <p class="text-sm text-gray-500 leading-snug">Rendirse rápido o parecer un robot repitiendo los precios.</p>
+                        </div>
+                    </div>
+                    <div class="flip-card-back rounded-2xl flex flex-col justify-center text-center p-6 shadow-lg">
+                        <h4 class="font-bold text-white mb-4 text-xl leading-tight">Mindset: Faltan alternativas</h4>
+                        <span class="text-sm font-bold text-white block mb-3">Respuesta Consultiva:</span>
+                        <p class="text-sm italic mb-auto text-white/95 leading-relaxed">"Entiendo, es una situación importante. Cuéntame, de todas las opciones, ¿qué es lo que más te preocupa cubrir en este momento?"</p>
+                        <p class="text-xs font-medium text-white/90 mt-4"><i class="fa-solid fa-lightbulb text-yellow-300 mr-1"></i> No cierres desde precio, cierra desde continuidad.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Caso 3 -->
+            <div class="flip-card cursor-pointer">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front border border-gray-100 border-b-4 border-b-brand-pink rounded-2xl flex flex-col justify-center items-center px-4 py-6 shadow-sm">
+                        <div class="w-12 h-12 bg-gray-100 text-gray-600 rounded-full flex items-center justify-center mx-auto mb-4 text-xl">
+                            <i class="fa-solid fa-face-frown"></i>
+                        </div>
+                        <h4 class="font-bold text-gray-800 text-base mb-4 px-2">Mala experiencia previa</h4>
+                        <div class="mt-auto">
+                            <span class="text-sm font-bold text-red-500 block mb-1">× Error común:</span>
+                            <p class="text-sm text-gray-500 leading-snug">Justificar a la institución o minimizar el dolor del estudiante.</p>
+                        </div>
+                    </div>
+                    <div class="flip-card-back rounded-2xl flex flex-col justify-center text-center p-6 shadow-lg">
+                        <h4 class="font-bold text-white mb-4 text-xl leading-tight">Mindset: Necesita ser escuchado</h4>
+                        <span class="text-sm font-bold text-white block mb-3">Respuesta Consultiva:</span>
+                        <p class="text-sm italic mb-auto text-white/95 leading-relaxed">"Gracias por decírmelo, es muy importante. Cuéntame qué pasó exactamente... Mi objetivo es que este próximo periodo sea totalmente diferente para ti."</p>
+                        <p class="text-xs font-medium text-white/90 mt-4"><i class="fa-solid fa-lightbulb text-yellow-300 mr-1"></i> Empatía antes que defensa institucional.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Caso 4 -->
+            <div class="flip-card cursor-pointer">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front border border-gray-100 border-b-4 border-b-brand-pink rounded-2xl flex flex-col justify-center items-center px-4 py-6 shadow-sm">
+                        <div class="w-12 h-12 bg-gray-100 text-gray-600 rounded-full flex items-center justify-center mx-auto mb-4 text-xl">
+                            <i class="fa-solid fa-door-open"></i>
+                        </div>
+                        <h4 class="font-bold text-gray-800 text-base mb-4 px-2">"No quiero seguir"</h4>
+                        <div class="mt-auto">
+                            <span class="text-sm font-bold text-red-500 block mb-1">× Error común:</span>
+                            <p class="text-sm text-gray-500 leading-snug">Aceptar la deserción de inmediato sin indagar en el motivo real.</p>
+                        </div>
+                    </div>
+                    <div class="flip-card-back rounded-2xl flex flex-col justify-center text-center p-6 shadow-lg">
+                        <h4 class="font-bold text-white mb-4 text-xl leading-tight">Mindset: Momento emocional</h4>
+                        <span class="text-sm font-bold text-white block mb-3">Respuesta Consultiva:</span>
+                        <p class="text-sm italic mb-auto text-white/95 leading-relaxed">"Te entiendo, a veces el proceso se vuelve pesado. Cuéntame, ¿qué te llevó a tomar esa decisión el día de hoy?"</p>
+                        <p class="text-xs font-medium text-white/90 mt-4"><i class="fa-solid fa-lightbulb text-yellow-300 mr-1"></i> Reconectar con el propósito inicial del alumno.</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <footer class="bg-white border-t border-gray-200 py-8 text-center">
+        <p class="text-sm text-gray-400 font-medium">Rematrícula Sales Academy - Metodología de Cierre Consultivo</p>
+    </footer>
+
+</body>
+</html>
