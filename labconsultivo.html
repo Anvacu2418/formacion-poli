@@ -56,6 +56,8 @@
             background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px);
             border-radius: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.1);
             border: 1px solid rgba(255,255,255,0.5); padding: 40px;
+            position: relative;
+            overflow: hidden; /* Necesario para contener el watermark */
         }
 
         .stack-dnd-container { display: flex; justify-content: space-between; align-items: stretch; width: 100%; height: 400px; position: relative; gap: 20px;}
@@ -107,7 +109,7 @@
         .match-item.matched .match-indicator { background: #10b981; color: white; }
 
         .chat-container { display: flex; flex-direction: column; gap: 20px; margin-bottom: 30px; }
-        .chat-bubble { padding: 16px 20px; border-radius: 20px; max-width: 80%; font-size: 0.95rem; line-height: 1.6; position: relative; }
+        .chat-bubble { padding: 16px 20px; border-radius: 20px; max-width: 80%; font-size: 0.95rem; line-height: 1.6; position: relative; z-index: 10;}
         .chat-student { background: #f1f5f9; color: var(--text-dark); align-self: flex-start; border-bottom-left-radius: 4px; border: 1px solid #e2e8f0;}
         .chat-expert { background: #eff6ff; color: var(--poli-blue); align-self: flex-end; border-bottom-right-radius: 4px; border: 1px solid #bfdbfe; font-weight: 500;}
         
@@ -119,7 +121,7 @@
         .blank-slot.filled { border-bottom-style: solid; border-color: var(--poli-magenta); background: rgba(228, 0, 43, 0.05); border-radius: 4px; }
         .blank-slot.shake { animation: shake 0.4s ease-in-out; border-color: red; color: red;}
 
-        .word-bank { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; padding: 20px; background: #f8fafc; border-radius: 16px; border: 2px dashed #cbd5e1;}
+        .word-bank { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; padding: 20px; background: #f8fafc; border-radius: 16px; border: 2px dashed #cbd5e1; position: relative; z-index: 10;}
         .word-pill {
             background: white; border: 2px solid #e2e8f0; color: var(--text-dark); padding: 8px 16px;
             border-radius: 999px; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.2s;
@@ -133,7 +135,7 @@
             background: white; border: 2px solid #e2e8f0; padding: 16px; border-radius: 12px;
             display: flex; align-items: center; justify-content: space-between; gap: 15px;
             font-weight: 600; font-size: 0.9rem; color: var(--text-dark); cursor: grab;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: transform 0.2s, box-shadow 0.2s; z-index: 10; position: relative;
         }
         .sort-item.dragging { opacity: 0.5; background: #eff6ff; }
         .sort-item:active { cursor: grabbing; }
@@ -141,7 +143,7 @@
         .sort-btn { background: #f1f5f9; border: none; border-radius: 4px; cursor: pointer; padding: 4px; color: var(--text-gray); transition: background 0.2s;}
         .sort-btn:hover { background: #e2e8f0; color: var(--poli-blue); }
 
-        .mcq-container { display: flex; flex-direction: column; gap: 20px; }
+        .mcq-container { display: flex; flex-direction: column; gap: 20px; position: relative; z-index: 10; }
         .mcq-card { background: white; border: 2px solid #e2e8f0; border-radius: 16px; padding: 20px; transition: all 0.2s; cursor: pointer;}
         .mcq-card:hover { border-color: var(--poli-blue-light); transform: translateX(5px); }
         .mcq-card.selected { border-color: var(--poli-magenta); background: #fff1f2; }
@@ -157,25 +159,64 @@
         }
         #toast.show { bottom: 40px; }
         
-        .pill-badge { background: #eff6ff; color: var(--poli-blue-light); padding: 4px 12px; border-radius: 9999px; font-size: 0.75rem; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; }
+        .pill-badge { background: #eff6ff; color: var(--poli-blue-light); padding: 4px 12px; border-radius: 9999px; font-size: 0.75rem; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; position: relative; z-index: 10; }
+
+        /* Estilos nuevos para Sistema Anti-Screenshot y Puntaje */
+        .watermark-overlay {
+            position: absolute;
+            top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            pointer-events: none;
+            opacity: 0.03; /* Muy sutil para no estorbar, pero visible en fotos */
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--poli-blue);
+            transform: rotate(-30deg);
+            z-index: 0;
+            display: flex;
+            flex-wrap: wrap;
+            align-content: flex-start;
+            line-height: 2;
+            animation: watermarkMove 30s linear infinite;
+        }
+
+        @keyframes watermarkMove {
+            0% { transform: rotate(-30deg) translateY(0); }
+            100% { transform: rotate(-30deg) translateY(-20%); }
+        }
+
+        .score-circle {
+            width: 120px; height: 120px;
+            border-radius: 50%;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            font-weight: 900; color: white; margin: 0 auto 20px auto;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            transition: all 0.5s ease;
+        }
+        .score-excellent { background: linear-gradient(135deg, #10b981, #059669); }
+        .score-good { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .score-poor { background: linear-gradient(135deg, var(--poli-magenta), #9f1239); }
+        
+        .content-front { position: relative; z-index: 10; }
     </style>
 </head>
 <body>
 
     <div id="toast"></div>
 
-    <header class="w-full p-6 flex justify-between items-center absolute top-0 z-50">
-        <div class="flex items-center gap-3 glass-card !p-3 !rounded-full">
+    <header class="w-full p-6 flex justify-between items-center absolute top-0 z-50 pointer-events-none">
+        <div class="flex items-center gap-3 glass-card !p-3 !rounded-full pointer-events-auto">
             <div class="w-8 h-8 rounded-full bg-blue-900 flex justify-center items-center text-white font-bold">P</div>
             <div class="font-bold text-sm text-slate-800 tracking-tight pr-4">Lab <span class="text-blue-600">Consultivo</span></div>
         </div>
-        <div id="progress-indicator" class="hidden glass-card !p-3 !rounded-full font-bold text-sm text-slate-600">
+        <div id="progress-indicator" class="hidden glass-card !p-3 !rounded-full font-bold text-sm text-slate-600 pointer-events-auto">
             Fase <span id="current-phase" class="text-blue-600">1</span> / 3
         </div>
     </header>
 
     <main class="w-full min-h-screen flex flex-col justify-center items-center p-4 pt-24 pb-12">
         
+        <!-- ================= INTRODUCCIÓN ================= -->
         <section id="view-intro" class="view-section active items-center">
             <div class="glass-card w-full max-w-xl text-center">
                 <div class="w-24 h-24 bg-blue-50 rounded-3xl flex items-center justify-center mx-auto mb-6 transform rotate-3 shadow-sm border border-blue-100">
@@ -183,13 +224,13 @@
                 </div>
                 <h1 class="text-4xl font-extrabold text-slate-800 mb-4 tracking-tight">Cero Reprocesos</h1>
                 <p class="text-slate-600 mb-8 leading-relaxed font-medium">
-                    Bienvenido al simulador. Aquí probaremos tu dominio normativo real. Analiza cada caso, clasifica y evita derivar tickets innecesarios. Un solo intento definirá tu precisión.
+                    Bienvenido al simulador. Analiza cada caso, clasifica y evita derivar tickets innecesarios. Tienes <strong>100 Puntos Polipuntos</strong> iniciales. Por cada reproceso o error técnico, perderás 5 puntos. ¡Demuestra tu pericia!
                 </p>
-                <div class="flex flex-col gap-3 text-left mb-8 max-w-sm mx-auto">
+                <div class="flex flex-col gap-3 text-left mb-8 max-w-sm mx-auto relative z-10">
                     <label class="text-xs font-bold text-slate-500 uppercase tracking-wider ml-2">Identificación del Experto:</label>
-                    <input type="text" id="agent-name" placeholder="Tu nombre y apellido" class="w-full bg-slate-50 border-2 border-slate-200 rounded-xl p-4 text-slate-800 focus:outline-none focus:border-blue-500 transition-colors font-semibold">
+                    <input type="text" id="agent-name" placeholder="Tu nombre y apellido" class="w-full bg-slate-50 border-2 border-slate-200 rounded-xl p-4 text-slate-800 focus:outline-none focus:border-blue-500 transition-colors font-semibold" autocomplete="off">
                 </div>
-                <button onclick="appState.goTo('view-p1-intro')" class="btn-primary text-lg w-full max-w-sm">Iniciar Simulador</button>
+                <button onclick="appState.goTo('view-p1-intro')" class="btn-primary text-lg w-full max-w-sm relative z-10">Iniciar Simulador</button>
             </div>
         </section>
 
@@ -197,15 +238,15 @@
         <section id="view-p1-intro" class="view-section items-center">
             <div class="glass-card w-full max-w-2xl text-center">
                 <span class="pill-badge mb-4 inline-block">Fase 1</span>
-                <h2 class="text-3xl font-extrabold text-slate-800 mb-4">Lineamientos de Créditos</h2>
-                <p class="text-slate-600 mb-8 mx-auto">En esta fase vamos a revisar qué tan claro tienes todo el proceso de ajuste de créditos y media matrícula. Presta mucha atención a los detalles de cada programa.</p>
-                <button onclick="appState.goTo('view-p1-dnd')" class="btn-primary">Comenzar Actividad 1</button>
+                <h2 class="text-3xl font-extrabold text-slate-800 mb-4 content-front">Lineamientos de Créditos</h2>
+                <p class="text-slate-600 mb-8 mx-auto content-front">En esta fase vamos a revisar qué tan claro tienes todo el proceso de ajuste de créditos y media matrícula. Presta mucha atención a los detalles de cada programa.</p>
+                <button onclick="appState.goTo('view-p1-dnd')" class="btn-primary content-front">Comenzar Actividad 1</button>
             </div>
         </section>
 
         <section id="view-p1-dnd" class="view-section items-center">
             <div class="glass-card w-full">
-                <div class="flex justify-between items-center mb-6">
+                <div class="flex justify-between items-center mb-6 content-front">
                     <div>
                         <span class="pill-badge">Actividad 1</span>
                         <h3 class="text-2xl font-bold text-slate-800 mt-2">Clasificador de Matrícula</h3>
@@ -217,7 +258,7 @@
                     </div>
                 </div>
                 
-                <div class="stack-dnd-container" id="p1-dnd-container">
+                <div class="stack-dnd-container content-front" id="p1-dnd-container">
                     <div class="drop-zone" data-target="media">
                         <div class="drop-zone-header">
                             <h4 class="font-bold text-xl text-blue-800">Media Matrícula</h4>
@@ -237,7 +278,7 @@
                     </div>
                 </div>
 
-                <div class="mt-8 text-center hidden" id="p1-dnd-next">
+                <div class="mt-8 text-center hidden content-front" id="p1-dnd-next">
                     <button onclick="appState.goTo('view-p1-match')" class="btn-primary">Siguiente Actividad →</button>
                 </div>
             </div>
@@ -245,19 +286,19 @@
 
         <section id="view-p1-match" class="view-section">
             <div class="glass-card w-full">
-                <div class="text-center mb-8">
+                <div class="text-center mb-8 content-front">
                     <span class="pill-badge">Actividad 2</span>
                     <h3 class="text-2xl font-bold text-slate-800 mt-2">Conexión de Casuística</h3>
                     <p class="text-slate-500 text-sm mt-1">Selecciona el síntoma (Izquierda) y únelo con la resolución correcta (Derecha).</p>
                 </div>
                 
-                <div class="match-container" id="p1-match">
+                <div class="match-container content-front" id="p1-match">
                     <svg id="svg-p1" class="absolute top-0 left-0 w-full h-full pointer-events-none z-0"></svg>
                     <div class="match-col" id="p1-match-left"></div>
                     <div class="match-col" id="p1-match-right"></div>
                 </div>
 
-                <div class="mt-8 text-center hidden" id="p1-match-next">
+                <div class="mt-8 text-center hidden content-front" id="p1-match-next">
                     <button onclick="appState.goTo('view-p2-intro')" class="btn-primary">Avanzar a Fase 2 →</button>
                 </div>
             </div>
@@ -267,15 +308,15 @@
         <section id="view-p2-intro" class="view-section items-center">
             <div class="glass-card w-full max-w-2xl text-center">
                 <span class="pill-badge mb-4 inline-block">Fase 2</span>
-                <h2 class="text-3xl font-extrabold text-slate-800 mb-4">Manejo de Casos</h2>
-                <p class="text-slate-600 mb-8 mx-auto">Evaluaremos tu capacidad para interpretar los mensajes de error en inscripción y dar la respuesta exacta. Haz clic en las palabras para completar el mensaje sugerido de asesoría.</p>
-                <button onclick="appState.goTo('view-p2-chat')" class="btn-primary">Iniciar Fase 2</button>
+                <h2 class="text-3xl font-extrabold text-slate-800 mb-4 content-front">Manejo de Casos</h2>
+                <p class="text-slate-600 mb-8 mx-auto content-front">Evaluaremos tu capacidad para interpretar los mensajes de error en inscripción y dar la respuesta exacta. Haz clic en las palabras para completar el mensaje sugerido de asesoría.</p>
+                <button onclick="appState.goTo('view-p2-chat')" class="btn-primary content-front">Iniciar Fase 2</button>
             </div>
         </section>
 
         <section id="view-p2-chat" class="view-section">
             <div class="glass-card w-full max-w-3xl mx-auto">
-                <div class="flex justify-between items-center mb-6 border-b pb-4">
+                <div class="flex justify-between items-center mb-6 border-b pb-4 content-front">
                     <div>
                         <span class="pill-badge">Asesoría en Vivo</span>
                         <h3 class="text-xl font-bold text-slate-800 mt-2">Completa el diagnóstico</h3>
@@ -285,16 +326,16 @@
                     </div>
                 </div>
 
-                <div class="chat-container" id="chat-bubbles-container">
+                <div class="chat-container content-front" id="chat-bubbles-container">
                     <!-- Injected via JS -->
                 </div>
 
-                <div class="text-center text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 mt-6">Banco de Palabras</div>
-                <div class="word-bank" id="chat-word-bank">
+                <div class="text-center text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 mt-6 content-front">Banco de Palabras</div>
+                <div class="word-bank content-front" id="chat-word-bank">
                     <!-- Injected via JS -->
                 </div>
 
-                <div class="mt-8 text-center">
+                <div class="mt-8 text-center content-front">
                     <button id="btn-check-chat" onclick="mechanics.checkChat()" class="btn-primary w-full max-w-sm disabled:opacity-50" disabled>Comprobar Respuesta ✓</button>
                 </div>
             </div>
@@ -304,25 +345,25 @@
         <section id="view-p3-intro" class="view-section items-center">
             <div class="glass-card w-full max-w-2xl text-center">
                 <span class="pill-badge mb-4 inline-block">Fase 3</span>
-                <h2 class="text-3xl font-extrabold text-slate-800 mb-4">Profundización e Idiomas</h2>
-                <p class="text-slate-600 mb-8 mx-auto">Evalúemos la estructura de opciones de grado (Profundización) y las políticas específicas de Inglés para Administración.</p>
-                <button onclick="appState.goTo('view-p3-sort')" class="btn-primary">Iniciar Fase 3</button>
+                <h2 class="text-3xl font-extrabold text-slate-800 mb-4 content-front">Profundización e Idiomas</h2>
+                <p class="text-slate-600 mb-8 mx-auto content-front">Evalúemos la estructura de opciones de grado (Profundización) y las políticas específicas de Inglés para Administración.</p>
+                <button onclick="appState.goTo('view-p3-sort')" class="btn-primary content-front">Iniciar Fase 3</button>
             </div>
         </section>
 
         <section id="view-p3-sort" class="view-section">
             <div class="glass-card w-full max-w-2xl mx-auto">
-                <div class="text-center mb-6">
+                <div class="text-center mb-6 content-front">
                     <span class="pill-badge">Actividad 1: El Flujo Correcto</span>
                     <h3 class="text-xl font-bold text-slate-800 mt-2">Organiza las Prioridades</h3>
                     <p class="text-sm text-slate-500 mt-2">Estudiante de Ingeniería de Software pregunta por Cursos de Profundización. Arrastra los pasos o usa las flechas para ordenar el proceso de validación del 1 (Primero) al 4 (Último).</p>
                 </div>
 
-                <div class="sort-list" id="p3-sort-list">
+                <div class="sort-list content-front" id="p3-sort-list">
                     <!-- Injected via JS -->
                 </div>
 
-                <div class="mt-8 text-center">
+                <div class="mt-8 text-center content-front">
                     <button onclick="mechanics.checkSort()" class="btn-primary w-full max-w-sm">Comprobar Orden ✓</button>
                 </div>
             </div>
@@ -330,7 +371,7 @@
 
         <section id="view-p3-mcq" class="view-section">
             <div class="glass-card w-full max-w-3xl mx-auto">
-                <div class="flex justify-between items-center mb-6 border-b pb-4">
+                <div class="flex justify-between items-center mb-6 border-b pb-4 content-front">
                     <div>
                         <span class="pill-badge">Actividad 2: Decisiones Críticas</span>
                         <h3 class="text-xl font-bold text-slate-800 mt-2" id="mcq-title">Analiza el Caso</h3>
@@ -340,11 +381,11 @@
                     </div>
                 </div>
 
-                <div class="mb-6 p-4 bg-slate-50 rounded-xl border border-slate-200 text-slate-700 font-medium" id="mcq-context">
+                <div class="mb-6 p-4 bg-slate-50 rounded-xl border border-slate-200 text-slate-700 font-medium content-front" id="mcq-context">
                     <!-- Context Injected -->
                 </div>
 
-                <div class="mcq-container" id="mcq-options-container">
+                <div class="mcq-container content-front" id="mcq-options-container">
                     <!-- Options Injected -->
                 </div>
             </div>
@@ -352,22 +393,33 @@
 
         <!-- ================= RESULTADOS ================= -->
         <section id="view-results" class="view-section items-center">
-             <div class="glass-card w-full max-w-2xl text-center border-t-8 border-t-green-500">
-                <div class="w-24 h-24 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm">
-                    <span class="text-5xl">✅</span>
-                </div>
-                <h2 class="text-3xl font-extrabold text-slate-800 mb-2">Simulación Completada</h2>
-                <p class="text-slate-500 mb-8 font-medium">Tus respuestas han sido procesadas. Recuerda que no hay botón de reinicio.</p>
+             <div class="glass-card w-full max-w-3xl text-center border-t-8 border-t-green-500 overflow-hidden relative">
                 
-                <div class="bg-slate-50 p-6 rounded-2xl text-left border border-slate-200">
-                    <h3 class="font-bold text-slate-700 mb-4 flex items-center gap-2">
-                        <span class="text-xl">📋</span> Feedback de Oportunidades:
-                    </h3>
-                    <ul id="feedback-list" class="text-sm text-slate-600 space-y-4 list-none">
-                        <!-- Errors injected here -->
-                    </ul>
-                    <div id="perfect-score" class="hidden font-bold text-green-700 text-center py-4 bg-green-100 rounded-xl border border-green-200">
-                        ¡Impecable! Eres un verdadero Consultor. Cero reprocesos detectados.
+                <!-- Watermark Anti-Screenshot -->
+                <div id="dynamic-watermark" class="watermark-overlay"></div>
+
+                <div class="content-front">
+                    <div class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-2" id="result-date"></div>
+                    <h2 class="text-3xl font-extrabold text-slate-800 mb-2">Simulación Completada</h2>
+                    <div class="text-xl text-slate-600 mb-6">Experto en Formación: <span id="result-name" class="font-bold text-blue-700"></span></div>
+                    
+                    <div id="score-container" class="score-circle score-excellent">
+                        <span class="text-4xl" id="final-score">100</span>
+                        <span class="text-xs uppercase opacity-80 mt-1">Puntos</span>
+                    </div>
+
+                    <p class="text-slate-500 mb-8 font-medium max-w-md mx-auto">Tus respuestas han sido procesadas de acuerdo a la matriz normativa vigente.</p>
+                    
+                    <div class="bg-white/90 p-6 rounded-2xl text-left border border-slate-200 shadow-sm">
+                        <h3 class="font-bold text-slate-700 mb-4 flex items-center gap-2">
+                            <span class="text-xl">📋</span> Registro de Oportunidades (Feedback):
+                        </h3>
+                        <ul id="feedback-list" class="text-sm text-slate-600 space-y-4 list-none">
+                            <!-- Errors injected here -->
+                        </ul>
+                        <div id="perfect-score" class="hidden font-bold text-green-700 text-center py-4 bg-green-100 rounded-xl border border-green-200">
+                            ¡Impecable! Eres un verdadero Consultor Master. Cero reprocesos detectados en toda tu gestión.
+                        </div>
                     </div>
                 </div>
             </div>
@@ -453,7 +505,7 @@
                 context: "Estudiante de Periodismo cursó y aprobó en el 2022-60 los cursos de profundización, pero aplazó en el 2023-10. En este momento le registra pendiente la opción de grado debido a que perdió uno de los dos cursos. Él quiere volver a tomar este curso de profundización que tiene pendiente.",
                 options: [
                     { text: "Sí se permite. Como caso excepcional, ya que había aprobado uno de los cursos cuando estaba vigente, se le habilita la oferta del curso faltante.", isCorrect: true },
-                    { text: "No aplica. Al aplazar pierde el beneficio y debe acogerse al nuevo reglamento de opción de grado.", isCorrect: false }
+                    { text: "No aplica. Ya que la excepción solo es válida cuando el estudiante nunca inscribio el otro curso, en este caso como si lo inscribio, pero perdío la materia debe seleccionar otra opción .", isCorrect: false }
                 ],
                 errorMsg: "Fase 3 (Profundización): Error en Caso Excepcional. Recuerda revisar 'Cursos de Profundización OG-2026-60'."
             },
@@ -478,6 +530,7 @@
 
         const appState = {
             user: '',
+            score: 100, // Sistema de Gamificación: Puntuación Inicial
             errors: [], 
             currentChatIdx: 0,
             currentMCQIdx: 0,
@@ -490,6 +543,8 @@
             
             recordError: function(fase, docDesc) { 
                 this.errors.push(`<b>${fase}</b>: Te faltó aplicar correctamente -> <i>${docDesc}</i>`); 
+                // Resta de puntos (Minimo 0)
+                this.score = Math.max(0, this.score - 5);
             },
 
             goTo: function(viewId) {
@@ -520,6 +575,30 @@
             },
 
             buildResults: function() {
+                document.getElementById('progress-indicator').classList.add('hidden');
+                
+                // Setear Identidad del Jugador
+                document.getElementById('result-name').innerText = this.user;
+                
+                // Fecha y Hora (Parte del Watermark para evitar pantallazos reciclados)
+                const now = new Date();
+                const dateTimeStr = now.toLocaleDateString() + ' ' + now.toLocaleTimeString();
+                document.getElementById('result-date').innerText = dateTimeStr;
+
+                // Generar Watermark
+                const wmString = `${this.user} - ${this.score} Pts - ${dateTimeStr} • `;
+                document.getElementById('dynamic-watermark').innerText = wmString.repeat(150);
+
+                // UI de Puntuación (Feedback visual según puntaje)
+                const scoreContainer = document.getElementById('score-container');
+                document.getElementById('final-score').innerText = this.score;
+                
+                scoreContainer.classList.remove('score-excellent', 'score-good', 'score-poor');
+                if(this.score >= 90) scoreContainer.classList.add('score-excellent');
+                else if(this.score >= 70) scoreContainer.classList.add('score-good');
+                else scoreContainer.classList.add('score-poor');
+
+                // Lista de Errores
                 const ul = document.getElementById('feedback-list');
                 ul.innerHTML = '';
                 if(this.errors.length === 0) {
@@ -588,7 +667,7 @@
                                 cardEl.remove(); remaining--; counter.innerText = remaining;
                                 if(remaining === 0) onCompleteCallback();
                             } else {
-                                appState.showToast(`Revisa bien la normativa para este caso.`);
+                                appState.showToast(`Revisa bien la normativa para este caso (-5 Puntos)`);
                                 appState.recordError("Fase 1: Clasificador", itemData.doc);
                             }
                         });
@@ -627,7 +706,7 @@
                                 remaining--; if(remaining===0) onComplete();
                             } else {
                                 localState.left.el.classList.remove('selected'); localState.right.el.classList.remove('selected');
-                                appState.showToast("Conexión incorrecta. Analiza el caso de nuevo.");
+                                appState.showToast("Conexión incorrecta. (-5 Puntos)");
                                 appState.recordError(faseNombre, `Error al asociar el caso: "${localState.left.data.text}"`);
                             }
                             localState = { left: null, right: null };
@@ -669,7 +748,6 @@
                     </div>
                 `;
 
-                // Build Expert bubble with blanks
                 let expertHTML = `<div class="chat-bubble chat-expert"><div class="text-xs font-bold text-blue-400 mb-1">Tu gestión:</div>`;
                 data.expertParts.forEach((part, i) => {
                     expertHTML += part;
@@ -680,7 +758,6 @@
                 expertHTML += `</div>`;
                 container.innerHTML += expertHTML;
 
-                // Build Word Bank
                 const bank = document.getElementById('chat-word-bank');
                 bank.innerHTML = '';
                 const allWords = [...data.correct, ...data.distractors].sort(() => Math.random() - 0.5);
@@ -747,7 +824,7 @@
                         appState.goTo('view-p3-intro');
                     }
                 } else {
-                    appState.showToast("La respuesta no tiene sentido normativo. Corrige los espacios en rojo.");
+                    appState.showToast("Diagnóstico incorrecto. Revisa y corrige. (-5 Puntos)");
                     appState.recordError("Fase 2: Manejo de Casos", `Error en escenario: "${data.student}"`);
                 }
             },
@@ -757,7 +834,6 @@
                 const container = document.getElementById('p3-sort-list');
                 container.innerHTML = '';
                 
-                // Shuffle initial data
                 let items = [...DATA_P3_SORT].sort(() => Math.random() - 0.5);
                 
                 const renderList = () => {
@@ -777,7 +853,6 @@
                             </div>
                         `;
                         
-                        // Drag Events
                         el.addEventListener('dragstart', (e) => {
                             e.dataTransfer.setData('text/plain', index);
                             setTimeout(() => el.classList.add('dragging'), 0);
@@ -815,7 +890,6 @@
 
             checkSort: function() {
                 let isCorrect = true;
-                // Check if current order matches original DATA_P3_SORT order
                 this.currentSortItems.forEach((item, i) => {
                     if(item.id !== DATA_P3_SORT[i].id) isCorrect = false;
                 });
@@ -823,7 +897,7 @@
                 if(isCorrect) {
                     appState.goTo('view-p3-mcq');
                 } else {
-                    appState.showToast("El orden no es correcto. Revisa el procedimiento lógico.");
+                    appState.showToast("El orden no es correcto. Repasa el proceso. (-5 Puntos)");
                     appState.recordError("Fase 3: Orden de Procesos", "Flujo de validación para Cursos de Profundización.");
                 }
             },
@@ -838,7 +912,6 @@
                 const container = document.getElementById('mcq-options-container');
                 container.innerHTML = '';
                 
-                // Shuffle options
                 const options = [...data.options].sort(() => Math.random() - 0.5);
 
                 options.forEach((opt, i) => {
@@ -862,7 +935,7 @@
                             }, 600);
                         } else {
                             card.classList.add('wrong');
-                            appState.showToast("Decisión incorrecta.");
+                            appState.showToast("Decisión incorrecta. (-5 Puntos)");
                             appState.recordError("Fase 3: Decisiones Críticas", data.errorMsg);
                             setTimeout(() => card.classList.remove('wrong'), 500);
                         }
