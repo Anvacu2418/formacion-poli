@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Seguimiento Coaching ATOM</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8 min-h-screen">
+
+    <div class="max-w-7xl mx-auto space-y-6">
+        
+        <!-- Header -->
+        <div class="flex flex-col md:flex-row justify-between items-center bg-indigo-700 text-white rounded-2xl p-6 shadow-lg">
+            <div>
+                <h1 class="text-3xl font-bold tracking-tight">Dashboard de Coaching ATOM 🚀</h1>
+                <p class="text-indigo-200 mt-1">Evolución de la Venta Consultiva y Experiencia del Estudiante</p>
+            </div>
+            <div class="mt-4 md:mt-0 text-right">
+                <p class="text-sm text-indigo-200 uppercase tracking-wide font-semibold">Meta Principal</p>
+                <p class="text-xl font-bold">100% Transición Fluida (Bot a Humano)</p>
+            </div>
+        </div>
+
+        <!-- KPI Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Card 1 -->
+            <div class="glass-card rounded-2xl p-6 shadow-sm border border-gray-100 flex items-center">
+                <div class="p-3 rounded-full bg-blue-100 text-blue-600 mr-4">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500 font-medium">Asesores en el Equipo</p>
+                    <p class="text-3xl font-bold text-gray-800">13</p>
+                </div>
+            </div>
+            <!-- Card 2 -->
+            <div class="glass-card rounded-2xl p-6 shadow-sm border border-gray-100 flex items-center">
+                <div class="p-3 rounded-full bg-green-100 text-green-600 mr-4">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500 font-medium">Asesores con Coaching</p>
+                    <p class="text-3xl font-bold text-gray-800">10 <span class="text-sm font-normal text-gray-400">/ 13</span></p>
+                </div>
+            </div>
+            <!-- Card 3 -->
+            <div class="glass-card rounded-2xl p-6 shadow-sm border border-gray-100 flex items-center">
+                <div class="p-3 rounded-full bg-purple-100 text-purple-600 mr-4">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500 font-medium">Foco de Evaluación</p>
+                    <p class="text-lg font-bold text-gray-800 leading-tight">Uso de IA + Análisis en Hubspot</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <!-- Chart & List Section -->
+            <div class="glass-card rounded-2xl p-6 shadow-sm border border-gray-100 lg:col-span-1 flex flex-col">
+                <h2 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2">Cobertura de Coaching</h2>
+                <div class="w-full h-[200px] relative mb-6">
+                    <canvas id="coachingChart"></canvas>
+                    <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                        <span class="text-3xl font-bold text-gray-800 mt-6">77%</span>
+                        <span class="text-[10px] text-gray-500 font-semibold uppercase tracking-wide">Avance</span>
+                    </div>
+                </div>
+                
+                <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Equipo Gestionado</h3>
+                <div class="flex-1 overflow-y-auto custom-scrollbar pr-2 space-y-2 max-h-[180px]">
+                    <!-- Items de asesores -->
+                    <div class="flex items-center justify-between bg-indigo-50 p-2 rounded-lg border border-indigo-100">
+                        <span class="text-sm font-medium text-gray-700">Valentina Cuellar</span>
+                        <span class="text-xs font-bold text-indigo-600 bg-indigo-200 px-2 py-1 rounded-full">2 Sesiones</span>
+                    </div>
+                    <div class="flex items-center justify-between bg-indigo-50 p-2 rounded-lg border border-indigo-100">
+                        <span class="text-sm font-medium text-gray-700">Carol</span>
+                        <span class="text-xs font-bold text-indigo-600 bg-indigo-200 px-2 py-1 rounded-full">2 Sesiones</span>
+                    </div>
+                    <div class="flex items-center justify-between bg-indigo-50 p-2 rounded-lg border border-indigo-100">
+                        <span class="text-sm font-medium text-gray-700">Laura (Lau)</span>
+                        <span class="text-xs font-bold text-indigo-600 bg-indigo-200 px-2 py-1 rounded-full">2 Sesiones</span>
+                    </div>
+                    <div class="flex items-center text-sm text-gray-600 p-2"><span class="text-green-500 mr-2">✓</span> Katerine (Kate)</div>
+                    <div class="flex items-center text-sm text-gray-600 p-2"><span class="text-green-500 mr-2">✓</span> Juan</div>
+                    <div class="flex items-center text-sm text-gray-600 p-2"><span class="text-green-500 mr-2">✓</span> Diego</div>
+                    <div class="flex items-center text-sm text-gray-600 p-2"><span class="text-green-500 mr-2">✓</span> Andrés Judex</div>
+                    <div class="flex items-center text-sm text-gray-600 p-2"><span class="text-green-500 mr-2">✓</span> María Camila</div>
+                    <div class="flex items-center text-sm text-gray-600 p-2"><span class="text-green-500 mr-2">✓</span> Gabriel</div>
+                    <div class="flex items-center text-sm text-gray-600 p-2"><span class="text-green-500 mr-2">✓</span> Giselle</div>
+                </div>
+                <div class="mt-4 pt-3 border-t">
+                    <p class="text-xs text-gray-500"><strong>Pendientes:</strong> Jonathan, Mayra, Diana.</p>
+                </div>
+            </div>
+
+            <!-- Hallazgos & Metodología -->
+            <div class="glass-card rounded-2xl p-6 shadow-sm border border-gray-100 lg:col-span-2 flex flex-col">
+                <h2 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2">Hallazgos y Estrategia de Coaching</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1">
+                    <div>
+                        <h3 class="text-sm font-bold text-indigo-600 uppercase mb-2">Dinámica de las Sesiones</h3>
+                        <p class="text-sm text-gray-600 mb-3">Estamos aplicando un modelo preventivo uno a uno. No es una auditoría punitiva, sino un entrenamiento en vivo (Coaching). Utilizamos la reflexión para que el asesor entienda <em>por qué</em> invertir 3 minutos analizando Hubspot le ahorra 10 minutos de chat.</p>
+                        
+                        <h3 class="text-sm font-bold text-orange-500 uppercase mt-4 mb-2">Oportunidades Detectadas</h3>
+                        <p class="text-sm text-gray-600 mb-2">Existe resistencia arraigada a abandonar el saludo operativo ("¿En qué te puedo ayudar?"). En las <strong>segundas sesiones</strong> hemos notado que algunos asesores prefieren repetir preguntas en lugar de confiar en el resumen de la IA y buscar en Hubspot, generando reprocesos y una experiencia fragmentada.</p>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-bold text-green-600 uppercase mb-2">Nuestra Estrategia Correctiva</h3>
+                        <ul class="space-y-3 text-sm text-gray-600">
+                            <li class="flex items-start bg-gray-50 p-3 rounded-lg border border-gray-100">
+                                <span class="text-green-500 mr-2 text-lg">🎯</span> 
+                                <div><strong>Cambio de Chip:</strong> Pasar de "contestar rápido para salir del chat" a "analizar Hubspot para FCR (resolución al primer contacto)".</div>
+                            </li>
+                            <li class="flex items-start bg-gray-50 p-3 rounded-lg border border-gray-100">
+                                <span class="text-green-500 mr-2 text-lg">⚡</span> 
+                                <div><strong>Uso de Herramientas:</strong> Implementación estricta de las Notas Rápidas y Guías del PlayBook ATOM para estandarizar la calidad.</div>
+                            </li>
+                            <li class="flex items-start bg-gray-50 p-3 rounded-lg border border-gray-100">
+                                <span class="text-green-500 mr-2 text-lg">🤝</span> 
+                                <div><strong>Conversación Única:</strong> Conectar la información de Geeko (IA) con la respuesta humana sin hacer que el estudiante empiece de cero.</div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hall of Fame / Referentes -->
+        <div class="bg-gradient-to-r from-yellow-50 to-orange-50 rounded-2xl p-6 shadow-sm border border-yellow-100">
+            <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
+                <span class="text-2xl mr-2">🏆</span> Hall of Fame: Referentes del Equipo
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-white rounded-xl p-4 shadow-sm flex flex-col border-t-4 border-yellow-400">
+                    <div class="flex items-center mb-2">
+                        <span class="text-2xl mr-2">🌟</span>
+                        <h3 class="font-bold text-gray-800">Lau</h3>
+                    </div>
+                    <p class="text-sm text-gray-600">Gestión impecable. Comprende perfectamente la conexión, creando tickets y logrando soluciones resolutivas en poquísimos mensajes. Un referente absoluto.</p>
+                </div>
+                <div class="bg-white rounded-xl p-4 shadow-sm flex flex-col border-t-4 border-orange-400">
+                    <div class="flex items-center mb-2">
+                        <span class="text-2xl mr-2">⚡</span>
+                        <h3 class="font-bold text-gray-800">Cami</h3>
+                    </div>
+                    <p class="text-sm text-gray-600">Dominio de la plataforma. Pionera en el uso de notas y mensajes rápidos. Genera conexión inmediata y agiliza sus tiempos de atención de forma espectacular.</p>
+                </div>
+                <div class="bg-white rounded-xl p-4 shadow-sm flex flex-col border-t-4 border-blue-400">
+                    <div class="flex items-center mb-2">
+                        <span class="text-2xl mr-2">🎙️</span>
+                        <h3 class="font-bold text-gray-800">Gabriel</h3>
+                    </div>
+                    <p class="text-sm text-gray-600">Excelente evolución. Lee el resumen de la IA para indagar y está utilizando estratégicamente los audios para dar calidez y claridad a la asesoría.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const ctx = document.getElementById('coachingChart').getContext('2d');
+            
+            const totalTeam = 13;
+            const completedSessions = 10;
+            const pendingSessions = totalTeam - completedSessions;
+
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Con Coaching', 'Pendientes'],
+                    datasets: [{
+                        data: [completedSessions, pendingSessions],
+                        backgroundColor: ['#4f46e5', '#e5e7eb'],
+                        hoverBackgroundColor: ['#4338ca', '#d1d5db'],
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '75%',
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(17, 24, 39, 0.9)',
+                            titleFont: { family: "'Inter', sans-serif", size: 13 },
+                            bodyFont: { family: "'Inter', sans-serif", size: 13 },
+                            padding: 10,
+                            cornerRadius: 8
+                        }
+                    },
+                    animation: { animateScale: true, animateRotate: true }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
