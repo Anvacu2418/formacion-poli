@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Poli-Ball: Misión Experto Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a; /* Slate 900 */
+            touch-action: none; /* Prevent scroll on touch devices */
+        }
+        
+        #gameCanvas {
+            display: block;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        /* Glassmorphism utility classes */
+        .glass {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Animations */
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+        .animate-float {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes pulse-glow {
+            0% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.4); }
+            70% { box-shadow: 0 0 0 15px rgba(56, 189, 248, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0); }
+        }
+        .btn-glow {
+            animation: pulse-glow 2s infinite;
+        }
+
+        /* Custom Scrollbar for text areas */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05); 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(56, 189, 248, 0.5); 
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="text-white selection:bg-sky-500 selection:text-white">
+
+    <!-- Game Canvas -->
+    <canvas id="gameCanvas"></canvas>
+
+    <!-- UI Overlay: HUD -->
+    <div id="hud" class="absolute top-0 left-0 w-full p-4 flex justify-between items-start pointer-events-none z-10 hidden">
+        <div class="glass px-4 py-2 rounded-xl flex items-center gap-3">
+            <div class="text-2xl">❤️ <span id="livesDisplay" class="font-bold">3</span></div>
+        </div>
+        <div class="glass px-4 py-2 rounded-xl flex items-center gap-3">
+            <div class="text-sm text-sky-200 font-semibold uppercase tracking-wider">Polipuntos</div>
+            <div id="scoreDisplay" class="text-2xl font-bold text-sky-400">0</div>
+        </div>
+    </div>
+
+    <!-- Mobile Controls (Touch) -->
+    <div id="mobileControls" class="absolute bottom-6 left-0 w-full px-6 flex justify-between items-end pointer-events-none z-10 hidden md:hidden">
+        <div class="flex gap-4 pointer-events-auto">
+            <button id="btnLeft" class="glass w-16 h-16 rounded-full flex justify-center items-center active:bg-white/20 transition-colors">
+                <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+            </button>
+            <button id="btnRight" class="glass w-16 h-16 rounded-full flex justify-center items-center active:bg-white/20 transition-colors">
+                <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+            </button>
+        </div>
+        <div class="pointer-events-auto">
+            <button id="btnJump" class="glass w-20 h-20 rounded-full flex justify-center items-center active:bg-white/20 transition-colors">
+                <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path></svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- Start Screen Modal -->
+    <div id="startScreen" class="absolute inset-0 flex items-center justify-center z-50 p-4 bg-slate-900/90 backdrop-blur-md transition-opacity duration-300">
+        <div class="glass-panel p-6 md:p-10 rounded-3xl max-w-lg w-full text-center relative overflow-hidden shadow-[0_0_50px_rgba(56,189,248,0.2)] border-sky-500/30">
+            <!-- Decorative blur blobs -->
+            <div class="absolute -top-10 -left-10 w-40 h-40 bg-sky-500 rounded-full mix-blend-screen filter blur-[40px] opacity-40 animate-pulse"></div>
+            <div class="absolute -bottom-10 -right-10 w-40 h-40 bg-blue-600 rounded-full mix-blend-screen filter blur-[40px] opacity-40 animate-pulse" style="animation-delay: 1s;"></div>
+            
+            <!-- Poli Character SVG -->
+            <div class="relative z-10 flex justify-center mb-4">
+                <svg width="80" height="80" viewBox="0 0 100 100" class="animate-bounce drop-shadow-xl">
+                    <circle cx="50" cy="50" r="45" fill="#ef4444" />
+                    <!-- Highlight -->
+                    <path d="M 20 40 Q 50 10 80 40" fill="none" stroke="white" stroke-width="6" stroke-linecap="round" opacity="0.3"/>
+                    <!-- Eyes -->
+                    <circle cx="35" cy="45" r="12" fill="white" />
+                    <circle cx="65" cy="45" r="12" fill="white" />
+                    <!-- Pupils -->
+                    <circle cx="35" cy="45" r="5" fill="#0f172a" />
+                    <circle cx="65" cy="45" r="5" fill="#0f172a" />
+                </svg>
+            </div>
+            
+            <h1 class="relative z-10 text-5xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white via-sky-300 to-blue-500 mb-1 drop-shadow-sm tracking-tight">Poli-Ball</h1>
+            <h2 class="relative z-10 text-xl md:text-2xl text-sky-400 font-bold mb-6 tracking-widest uppercase shadow-sky-500/50">Experto Pro</h2>
+            
+            <p class="relative z-10 text-slate-200 mb-6 text-base md:text-lg font-medium leading-relaxed">
+                ¡El equipo te necesita! Demuestra tu empatía y estrategia. Resuelve los 4 casos, evita los errores y alcanza los <span class="text-yellow-400 font-black text-xl bg-yellow-400/10 px-2 py-1 rounded border border-yellow-400/30 inline-block transform -rotate-2 mt-1">100 Puntos</span> perfectos.
+            </p>
+            
+            <!-- Accordion -->
+            <div class="relative z-10 mb-8 text-left bg-slate-800/50 border border-sky-500/20 rounded-2xl overflow-hidden backdrop-blur-sm">
+                <button id="btnInstructions" class="w-full flex justify-between items-center p-4 text-sky-200 font-bold hover:bg-sky-500/20 transition-all duration-300">
+                    <span class="flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        Instrucciones de Misión
+                    </span>
+                    <svg id="iconAccordion" class="w-5 h-5 transform transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+                <div id="contentInstructions" class="hidden p-4 border-t border-sky-500/20 text-slate-300 text-sm md:text-base space-y-3 bg-black/40">
+                    <p class="flex items-center gap-2"><span class="text-xl">🎮</span> Usa las <strong class="text-sky-300">Flechas o A/D</strong> para moverte.</p>
+                    <p class="flex items-center gap-2"><span class="text-xl">⬆️</span> Usa <strong class="text-sky-300">Espacio o W</strong> para saltar (¡Doble salto!).</p>
+                    <p class="flex items-center gap-2"><span class="text-xl">❓</span> Encuentra los <strong class="text-yellow-400">Nodos de Sabiduría</strong> y decide.</p>
+                    <p class="flex items-center gap-2"><span class="text-xl">❤️</span> Si te equivocas, perderás una vida y retrocederás.</p>
+                </div>
+            </div>
+            
+            <button id="btnStartGame" class="relative z-10 w-full py-4 rounded-2xl bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white font-black text-xl shadow-[0_10px_20px_rgba(56,189,248,0.3)] transform transition hover:-translate-y-1 btn-glow">
+                ¡ACEPTAR EL RETO!
+            </button>
+        </div>
+    </div>
+
+    <!-- Quiz Modal -->
+    <div id="quizScreen" class="absolute inset-0 flex items-center justify-center z-50 p-4 bg-slate-900/90 backdrop-blur-md hidden transition-opacity duration-300">
+        <div class="glass-panel p-6 md:p-8 rounded-3xl max-w-2xl w-full relative">
+            <div class="flex items-center gap-3 mb-6 border-b border-white/10 pb-4">
+                <div class="w-10 h-10 rounded-full bg-sky-500/20 flex items-center justify-center text-sky-400">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </div>
+                <h2 class="text-2xl font-bold text-white">Análisis de Caso</h2>
+            </div>
+            
+            <p id="quizQuestion" class="text-lg md:text-xl text-slate-200 mb-8 leading-relaxed font-medium">
+                Pregunta dinámica aquí...
+            </p>
+            
+            <div class="space-y-4 flex flex-col">
+                <button id="btnOptionA" class="quiz-option group relative w-full text-left p-5 rounded-xl border border-white/10 bg-white/5 hover:bg-sky-500/20 hover:border-sky-500/50 transition-all duration-200 overflow-hidden">
+                    <div class="absolute inset-0 bg-gradient-to-r from-sky-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div class="flex gap-4 items-start relative z-10">
+                        <span class="flex-shrink-0 w-8 h-8 rounded-full bg-slate-800 border border-slate-600 flex items-center justify-center text-sm font-bold text-slate-400 group-hover:text-sky-400 group-hover:border-sky-400 transition-colors">A</span>
+                        <span id="textOptionA" class="text-slate-300 group-hover:text-white transition-colors pt-1">Opción A</span>
+                    </div>
+                </button>
+                
+                <button id="btnOptionB" class="quiz-option group relative w-full text-left p-5 rounded-xl border border-white/10 bg-white/5 hover:bg-sky-500/20 hover:border-sky-500/50 transition-all duration-200 overflow-hidden">
+                    <div class="absolute inset-0 bg-gradient-to-r from-sky-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div class="flex gap-4 items-start relative z-10">
+                        <span class="flex-shrink-0 w-8 h-8 rounded-full bg-slate-800 border border-slate-600 flex items-center justify-center text-sm font-bold text-slate-400 group-hover:text-sky-400 group-hover:border-sky-400 transition-colors">B</span>
+                        <span id="textOptionB" class="text-slate-300 group-hover:text-white transition-colors pt-1">Opción B</span>
+                    </div>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Feedback Modal -->
+    <div id="feedbackScreen" class="absolute inset-0 flex items-center justify-center z-50 p-4 bg-slate-900/80 backdrop-blur-sm hidden transition-opacity duration-300">
+        <div id="feedbackPanel" class="glass-panel p-8 rounded-3xl max-w-lg w-full text-center border-t-4">
+            <div id="feedbackIcon" class="text-6xl mb-4 animate-bounce">💡</div>
+            <h2 id="feedbackTitle" class="text-3xl font-bold mb-4">¡Atención!</h2>
+            <p id="feedbackMessage" class="text-slate-300 mb-8 text-lg"></p>
+            <button id="btnFeedbackContinue" class="w-full py-4 rounded-xl bg-slate-700 hover:bg-slate-600 text-white font-bold text-lg shadow-lg transition-colors">
+                Entendido
+            </button>
+        </div>
+    </div>
+
+    <!-- Game Over / Victory Screen -->
+    <div id="endScreen" class="absolute inset-0 flex items-center justify-center z-50 p-4 bg-slate-900/90 backdrop-blur-md hidden transition-opacity duration-300">
+        <div class="glass-panel p-10 rounded-3xl max-w-lg w-full text-center relative overflow-hidden">
+            <h1 id="endTitle" class="text-5xl font-extrabold mb-4"></h1>
+            <p id="endMessage" class="text-xl text-slate-300 mb-6"></p>
+            
+            <div class="bg-white/5 rounded-2xl p-6 mb-8 border border-white/10 inline-block">
+                <div class="text-sm text-sky-200 uppercase tracking-widest mb-1">Puntuación Final</div>
+                <div id="endScore" class="text-5xl font-bold text-sky-400 drop-shadow-[0_0_15px_rgba(56,189,248,0.5)]">0</div>
+            </div>
+            
+            <button id="btnRestartGame" class="w-full py-4 rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white font-bold text-lg shadow-lg transform transition hover:-translate-y-1">
+                Jugar de Nuevo
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // === GAME SCRIPT ===
+        
+        // --- 1. DOM Elements ---
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        const ui = {
+            hud: document.getElementById('hud'),
+            mobileControls: document.getElementById('mobileControls'),
+            startScreen: document.getElementById('startScreen'),
+            quizScreen: document.getElementById('quizScreen'),
+            feedbackScreen: document.getElementById('feedbackScreen'),
+            endScreen: document.getElementById('endScreen'),
+            livesDisplay: document.getElementById('livesDisplay'),
+            scoreDisplay: document.getElementById('scoreDisplay'),
+            questionText: document.getElementById('quizQuestion'),
+            textA: document.getElementById('textOptionA'),
+            textB: document.getElementById('textOptionB'),
+            btnA: document.getElementById('btnOptionA'),
+            btnB: document.getElementById('btnOptionB'),
+            feedbackPanel: document.getElementById('feedbackPanel'),
+            feedbackIcon: document.getElementById('feedbackIcon'),
+            feedbackTitle: document.getElementById('feedbackTitle'),
+            feedbackMessage: document.getElementById('feedbackMessage'),
+            endTitle: document.getElementById('endTitle'),
+            endMessage: document.getElementById('endMessage'),
+            endScore: document.getElementById('endScore'),
+            btnStartGame: document.getElementById('btnStartGame'),
+            btnRestartGame: document.getElementById('btnRestartGame'),
+            btnFeedbackContinue: document.getElementById('btnFeedbackContinue'),
+            btnInstructions: document.getElementById('btnInstructions'),
+            contentInstructions: document.getElementById('contentInstructions'),
+            iconAccordion: document.getElementById('iconAccordion')
+        };
+
+        // --- 2. Game Data & Pedagogy (The Core) ---
+        // Aquí estructuramos las directrices en retos lógicos
+        const questionsData = [
+            {
+                id: 1,
+                question: "Un estudiante solicita la devolución de su matrícula, la cual fue pagada en su totalidad por su empresa patrocinadora. ¿A quién se le hace el reembolso?",
+                options: [
+                    { text: "Al estudiante, ya que es el titular del proceso académico y del servicio.", isCorrect: false },
+                    { text: "A la empresa patrocinadora, el dinero siempre retorna a la fuente de origen.", isCorrect: true }
+                ],
+                feedbackError: "¡Cuidado! El dinero no se le devuelve al estudiante. Toda devolución por pagos de empresas, ICETEX o entidades financiadoras retorna directamente a la entidad origen."
+            },
+            {
+                id: 2,
+                question: "Un estudiante llama angustiado mencionando que el reciente sismo afectó su vivienda. ¿Cuál es tu rol como Estratega en esta primera interacción?",
+                options: [
+                    { text: "Escuchar con empatía sin asumir, orientarlo sobre Credipoli (intereses como saldo) y apoyarlo a escribir a Plan Huella.", isCorrect: true },
+                    { text: "Crear rápidamente un caso genérico de 'Afectación Sismo' para que otras áreas evalúen qué le pueden dar.", isCorrect: false }
+                ],
+                feedbackError: "¡Falta Filtro de Empatía! Tu rol no es solo operativo. Debes escuchar, orientar asertivamente sobre Credipoli y canalizar al correo directo de Plan Huella. Eres su respaldo."
+            },
+            {
+                id: 3,
+                question: "Llega un caso inusual sobre un proceso que no recuerdas bien. Quieres evitar escalar casos innecesarios o preguntar cosas básicas. ¿Qué haces?",
+                options: [
+                    { text: "Pregunto de inmediato en el chat de apoyo grupal de Teams para que un compañero o líder me dé la respuesta rápida.", isCorrect: false },
+                    { text: "Consulto primero la página web, en GIAN, en el canal de Teams de Soporte Servicio o la Matriz. Si tras investigar no está, documento bien el ticket y escalo.", isCorrect: true }
+                ],
+                feedbackError: "¡Fomentemos la autogestión! El chat de apoyo es el último recurso. Acostúmbrate a investigar en GIAN y documentar el caso; así aprendes y reduces el ruido en los canales."
+            },
+            {
+                id: 4,
+                question: "Un estudiante vuelve a contactarnos por una solicitud cuyo caso original ya fue cerrado. ¿Cómo gestionas esta interacción en el sistema?",
+                options: [
+                    { text: "Creo un NUEVO caso, asegurándome de revisar rigurosamente la matriz de tipificación o GIAN para derivarlo correcto.", isCorrect: true },
+                    { text: "Registro un recontacto sobre el caso anterior para mantener el historial, aunque esté cerrado.", isCorrect: false }
+                ],
+                feedbackError: "¡Error de procedimiento! Si hay recontacto sobre un caso cerrado, SE DEBE CREAR UN NUEVO CASO, consultando siempre la matriz para no equivocarnos en la tipificación."
+            }
+        ];
+
+        // --- 3. Game State ---
+        let gameState = 'START'; // START, PLAYING, QUIZ, FEEDBACK, END
+        let animationId;
+        let lastTime = 0;
+        
+        let score = 0;
+        let lives = 3;
+        
+        let camera = { x: 0, y: 0 };
+        let activeNodeId = null;
+
+        // --- 4. Input Handling ---
+        const keys = { left: false, right: false, up: false };
+        
+        window.addEventListener('keydown', (e) => {
+            if (gameState !== 'PLAYING') return;
+            if (e.code === 'ArrowLeft' || e.code === 'KeyA') keys.left = true;
+            if (e.code === 'ArrowRight' || e.code === 'KeyD') keys.right = true;
+            if (e.code === 'ArrowUp' || e.code === 'KeyW' || e.code === 'Space') {
+                if(!keys.up) handleJump();
+                keys.up = true;
+            }
+        });
+
+        window.addEventListener('keyup', (e) => {
+            if (e.code === 'ArrowLeft' || e.code === 'KeyA') keys.left = false;
+            if (e.code === 'ArrowRight' || e.code === 'KeyD') keys.right = false;
+            if (e.code === 'ArrowUp' || e.code === 'KeyW' || e.code === 'Space') keys.up = false;
+        });
+
+        // Touch Controls
+        const bindTouch = (btnId, keyName) => {
+            const btn = document.getElementById(btnId);
+            const press = (e) => { e.preventDefault(); if(gameState === 'PLAYING') { keys[keyName] = true; if(keyName === 'up') handleJump(); } };
+            const release = (e) => { e.preventDefault(); keys[keyName] = false; };
+            btn.addEventListener('touchstart', press, {passive: false});
+            btn.addEventListener('touchend', release);
+            btn.addEventListener('mousedown', press);
+            btn.addEventListener('mouseup', release);
+            btn.addEventListener('mouseleave', release);
+        };
+        bindTouch('btnLeft', 'left');
+        bindTouch('btnRight', 'right');
+        bindTouch('btnJump', 'up');
+
+        // --- 5. Entities ---
+        const player = {
+            x: 100, y: 300, radius: 18,
+            vx: 0, vy: 0, speed: 6, maxFall: 12, jumpForce: -12, gravity: 0.5,
+            grounded: false, jumpsLeft: 2, maxJumps: 2,
+            facingRight: true, color: '#ef4444' // Red-500
+        };
+
+        let checkpoint = { x: 100, y: 300 };
+
+        // Level Design (Tile/Block based)
+        // types: solid, hazard, node (question), goal
+        let blocks = [];
+        let particles = [];
+
+        function initLevel() {
+            blocks = [
+                // Ground
+                { x: 0, y: 500, w: 800, h: 500, type: 'solid' },
+                
+                // Gap 1
+                { x: 800, y: 550, w: 200, h: 100, type: 'hazard' }, // Lava/Spikes below
+                
+                // Platform 1 (Node 1)
+                { x: 1000, y: 500, w: 600, h: 500, type: 'solid' },
+                { x: 1300, y: 400, w: 50, h: 50, type: 'node', id: 1 },
+                
+                // Gap 2 with platforms
+                { x: 1600, y: 600, w: 600, h: 200, type: 'hazard' },
+                { x: 1700, y: 400, w: 100, h: 20, type: 'solid' },
+                { x: 1950, y: 300, w: 100, h: 20, type: 'solid' },
+                
+                // Platform 2 (Node 2)
+                { x: 2200, y: 500, w: 500, h: 500, type: 'solid' },
+                { x: 2450, y: 400, w: 50, h: 50, type: 'node', id: 2 },
+                
+                // Wall climb
+                { x: 2700, y: 350, w: 150, h: 500, type: 'solid' },
+                { x: 2900, y: 200, w: 100, h: 20, type: 'solid' },
+                { x: 3100, y: 100, w: 100, h: 20, type: 'solid' },
+                
+                // Platform 3 (Node 3)
+                { x: 3300, y: 300, w: 600, h: 500, type: 'solid' },
+                { x: 3500, y: 200, w: 50, h: 50, type: 'node', id: 3 },
+                
+                // Tricky hazard corridor
+                { x: 3900, y: 300, w: 200, h: 500, type: 'solid' },
+                { x: 4100, y: 500, w: 500, h: 500, type: 'hazard' },
+                { x: 4200, y: 350, w: 80, h: 20, type: 'solid' },
+                { x: 4400, y: 250, w: 80, h: 20, type: 'solid' },
+                
+                // Platform 4 (Node 4)
+                { x: 4600, y: 400, w: 500, h: 500, type: 'solid' },
+                { x: 4850, y: 300, w: 50, h: 50, type: 'node', id: 4 },
+                
+                // Final stretch
+                { x: 5100, y: 600, w: 300, h: 500, type: 'hazard' },
+                { x: 5400, y: 500, w: 800, h: 500, type: 'solid' },
+                // Goal
+                { x: 5800, y: 350, w: 100, h: 150, type: 'goal' },
+                
+                // Boundaries (Invisible walls)
+                { x: -50, y: -1000, w: 50, h: 2000, type: 'solid' }
+            ];
+            
+            // Mark all nodes as inactive initially, we manage state separately
+            blocks.forEach(b => {
+                if(b.type === 'node') b.active = true;
+            });
+        }
+
+        // --- 6. Physics & Core Logic ---
+        function handleJump() {
+            if (player.jumpsLeft > 0) {
+                player.vy = player.jumpForce;
+                player.jumpsLeft--;
+                player.grounded = false;
+                createParticles(player.x, player.y + player.radius, 10, '#ffffff'); // Jump dust
+            }
+        }
+
+        function updatePhysics() {
+            // Horizontal movement
+            if (keys.left) { player.vx = -player.speed; player.facingRight = false; }
+            else if (keys.right) { player.vx = player.speed; player.facingRight = true; }
+            else { player.vx *= 0.8; } // Friction
+
+            // Vertical movement (Gravity)
+            player.vy += player.gravity;
+            if (player.vy > player.maxFall) player.vy = player.maxFall;
+
+            // Store previous position for collision resolution
+            let prevX = player.x;
+            let prevY = player.y;
+
+            // Apply X
+            player.x += player.vx;
+            checkCollisions(true);
+
+            // Apply Y
+            player.y += player.vy;
+            player.grounded = false;
+            checkCollisions(false);
+            
+            // Death plane (fell off map)
+            if (player.y > 1000) {
+                die("¡Cuidado con el abismo! Mantén el foco en tus procesos.");
+            }
+        }
+
+        function checkCollisions(isHorizontal) {
+            let pr = player.radius;
+            let px = player.x;
+            let py = player.y;
+
+            for (let block of blocks) {
+                // AABB for Circle vs Rect (Simplified to AABB of Circle)
+                let rectX = block.x;
+                let rectY = block.y;
+                let rectW = block.w;
+                let rectH = block.h;
+
+                if (px + pr > rectX && px - pr < rectX + rectW &&
+                    py + pr > rectY && py - pr < rectY + rectH) {
+                    
+                    if (block.type === 'solid') {
+                        if (isHorizontal) {
+                            if (player.vx > 0) { player.x = rectX - pr; player.vx = 0; }
+                            else if (player.vx < 0) { player.x = rectX + rectW + pr; player.vx = 0; }
+                        } else {
+                            if (player.vy > 0) { 
+                                player.y = rectY - pr; 
+                                player.vy = 0; 
+                                player.grounded = true;
+                                player.jumpsLeft = player.maxJumps;
+                            }
+                            else if (player.vy < 0) { 
+                                player.y = rectY + rectH + pr; 
+                                player.vy = 0; 
+                            }
+                        }
+                    } 
+                    else if (block.type === 'hazard') {
+                        die("¡Tocaste un área inestable! Recuerda pisar firme sobre los protocolos.");
+                    }
+                    else if (block.type === 'node' && block.active) {
+                        triggerQuiz(block);
+                    }
+                    else if (block.type === 'goal') {
+                        winGame();
+                    }
+                }
+            }
+        }
+
+        function die(msg) {
+            lives--;
+            updateHUD();
+            createParticles(player.x, player.y, 30, player.color);
+            
+            if (lives <= 0) {
+                showEndScreen(false);
+            } else {
+                showFeedback(msg, false);
+                // Reset to checkpoint
+                player.x = checkpoint.x;
+                player.y = checkpoint.y;
+                player.vx = 0;
+                player.vy = 0;
+            }
+        }
+
+        
+        // --- 7. Quiz & Pedagogy Logic ---
+        function triggerQuiz(nodeBlock) {
+            gameState = 'QUIZ';
+            activeNodeId = nodeBlock.id;
+            keys.left = keys.right = keys.up = false; // Reset inputs
+            
+            const qData = questionsData.find(q => q.id === nodeBlock.id);
+            if(!qData) return;
+
+            ui.questionText.textContent = qData.question;
+            
+            // Randomize options
+            const shuffled = [...qData.options].sort(() => Math.random() - 0.5);
+            
+            ui.textA.textContent = shuffled[0].text;
+            ui.btnA.onclick = () => handleAnswer(shuffled[0], nodeBlock);
+            
+            ui.textB.textContent = shuffled[1].text;
+            ui.btnB.onclick = () => handleAnswer(shuffled[1], nodeBlock);
+            
+            ui.quizScreen.classList.remove('hidden');
+        }
+
+        function handleAnswer(selectedOption, nodeBlock) {
+            ui.quizScreen.classList.add('hidden');
+            const qData = questionsData.find(q => q.id === nodeBlock.id);
+            
+            if (selectedOption.isCorrect) {
+                // Success
+                score += 25; // 4 preguntas = 100 puntos máximo
+                updateHUD();
+                nodeBlock.active = false; // Disable node
+                checkpoint = { x: player.x, y: player.y - 50 }; // New checkpoint
+                
+                // Wow factor visual
+                createParticles(nodeBlock.x + 25, nodeBlock.y + 25, 50, '#38bdf8'); // Cyan burst
+                
+                showFeedback("¡Excelente análisis! Estrategia aplicada correctamente.", true);
+            } else {
+                // Fail
+                die(qData.feedbackError);
+            }
+        }
+
+        // --- 8. Visual Effects (Particles) ---
+        function createParticles(x, y, count, color) {
+            for(let i=0; i<count; i++) {
+                particles.push({
+                    x: x, y: y,
+                    vx: (Math.random() - 0.5) * 10,
+                    vy: (Math.random() - 0.5) * 10,
+                    life: 1,
+                    color: color,
+                    size: Math.random() * 4 + 2
+                });
+            }
+        }
+
+        function updateParticles() {
+            for(let i = particles.length -1; i >= 0; i--) {
+                let p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += 0.2; // Gravity
+                p.life -= 0.02;
+                if(p.life <= 0) particles.splice(i, 1);
+            }
+        }
+
+        function drawParticles() {
+            particles.forEach(p => {
+                ctx.globalAlpha = p.life;
+                ctx.fillStyle = p.color;
+                ctx.beginPath();
+                ctx.arc(p.x - camera.x, p.y - camera.y, p.size, 0, Math.PI*2);
+                ctx.fill();
+            });
+            ctx.globalAlpha = 1;
+        }
+
+        // --- 9. Rendering ---
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        function drawBackground() {
+            // Gradient Sky
+            let grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            grad.addColorStop(0, '#0f172a'); // slate-900
+            grad.addColorStop(1, '#1e293b'); // slate-800
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Subtle grid or background elements could go here
+        }
+
+        function drawBlocks() {
+            blocks.forEach(b => {
+                let rx = b.x - camera.x;
+                let ry = b.y - camera.y;
+                
+                // Culling (don't draw offscreen)
+                if (rx + b.w < 0 || rx > canvas.width) return;
+
+                if (b.type === 'solid') {
+                    // Glassy Platforms
+                    ctx.fillStyle = 'rgba(30, 41, 59, 0.9)'; // Slate 800
+                    ctx.fillRect(rx, ry, b.w, b.h);
+                    ctx.strokeStyle = 'rgba(56, 189, 248, 0.5)'; // Sky 400 border
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(rx, ry, b.w, b.h);
+                    
+                    // Top highlight
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+                    ctx.fillRect(rx, ry, b.w, 4);
+                } 
+                else if (b.type === 'hazard') {
+                    // Lava / Spikes (Orange/Red theme)
+                    ctx.fillStyle = 'rgba(239, 68, 68, 0.8)'; // Red 500
+                    ctx.fillRect(rx, ry, b.w, b.h);
+                    // Draw spike triangles at top
+                    ctx.fillStyle = '#f87171'; // Red 400
+                    for(let i=0; i<b.w; i+=20) {
+                        ctx.beginPath();
+                        ctx.moveTo(rx + i, ry);
+                        ctx.lineTo(rx + i + 10, ry - 10);
+                        ctx.lineTo(rx + i + 20, ry);
+                        ctx.fill();
+                    }
+                }
+                else if (b.type === 'node') {
+                    if (b.active) {
+                        // Floating Question Mark Box
+                        let bobOffset = Math.sin(Date.now() / 300) * 5;
+                        
+                        // Glow
+                        ctx.shadowColor = '#facc15';
+                        ctx.shadowBlur = 15;
+                        
+                        ctx.fillStyle = '#facc15'; // Yellow 400
+                        ctx.fillRect(rx, ry + bobOffset, b.w, b.h);
+                        
+                        ctx.shadowBlur = 0; // reset
+                        
+                        // ? text
+                        ctx.fillStyle = '#854d0e'; // Yellow 800
+                        ctx.font = 'bold 30px Inter';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText('?', rx + b.w/2, ry + b.h/2 + bobOffset);
+                    }
+                }
+                else if (b.type === 'goal') {
+                    // Goal Portal
+                    ctx.shadowColor = '#38bdf8';
+                    ctx.shadowBlur = 20 + Math.sin(Date.now()/200)*10;
+                    
+                    let grad = ctx.createLinearGradient(rx, ry, rx+b.w, ry+b.h);
+                    grad.addColorStop(0, 'rgba(56, 189, 248, 0.2)');
+                    grad.addColorStop(1, 'rgba(56, 189, 248, 0.8)');
+                    ctx.fillStyle = grad;
+                    ctx.fillRect(rx, ry, b.w, b.h);
+                    
+                    ctx.shadowBlur = 0;
+                    ctx.fillStyle = '#ffffff';
+                    ctx.font = 'bold 20px Inter';
+                    ctx.fillText('META', rx + b.w/2, ry - 20);
+                }
+            });
+        }
+
+        function drawPlayer() {
+            let px = player.x - camera.x;
+            let py = player.y - camera.y;
+
+            // Body
+            ctx.shadowColor = player.color;
+            ctx.shadowBlur = 10;
+            ctx.fillStyle = player.color;
+            ctx.beginPath();
+            ctx.arc(px, py, player.radius, 0, Math.PI*2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            // Eyes (Poli-Ball personality)
+            ctx.fillStyle = 'white';
+            let eyeOffsetX = player.facingRight ? 5 : -5;
+            
+            // White part
+            ctx.beginPath();
+            ctx.arc(px + eyeOffsetX - 4, py - 3, 5, 0, Math.PI*2);
+            ctx.arc(px + eyeOffsetX + 6, py - 3, 5, 0, Math.PI*2);
+            ctx.fill();
+            
+            // Pupils
+            ctx.fillStyle = '#0f172a';
+            let pupilOffsetX = keys.right ? 2 : (keys.left ? -2 : 0);
+            let pupilOffsetY = keys.up ? -2 : 0;
+            ctx.beginPath();
+            ctx.arc(px + eyeOffsetX - 4 + pupilOffsetX, py - 3 + pupilOffsetY, 2.5, 0, Math.PI*2);
+            ctx.arc(px + eyeOffsetX + 6 + pupilOffsetX, py - 3 + pupilOffsetY, 2.5, 0, Math.PI*2);
+            ctx.fill();
+        }
+
+        // --- 10. UI & State Management ---
+        function updateHUD() {
+            ui.livesDisplay.textContent = lives;
+            ui.scoreDisplay.textContent = score;
+        }
+
+        function showFeedback(msg, isSuccess) {
+            gameState = 'FEEDBACK';
+            ui.feedbackMessage.textContent = msg;
+            
+            ui.feedbackPanel.className = `glass-panel p-8 rounded-3xl max-w-lg w-full text-center border-t-8 shadow-2xl transform transition-transform ${isSuccess ? 'border-sky-400' : 'border-red-500'}`;
+            ui.feedbackIcon.textContent = isSuccess ? '🌟' : '⚠️';
+            ui.feedbackTitle.textContent = isSuccess ? '¡Bien Hecho!' : 'Oportunidad de Mejora';
+            ui.feedbackTitle.className = `text-3xl font-bold mb-4 ${isSuccess ? 'text-sky-400' : 'text-red-400'}`;
+            
+            ui.feedbackScreen.classList.remove('hidden');
+        }
+
+        ui.btnFeedbackContinue.onclick = () => {
+            ui.feedbackScreen.classList.add('hidden');
+            gameState = 'PLAYING';
+        };
+
+        function showEndScreen(won) {
+            gameState = 'END';
+            ui.endTitle.textContent = won ? '¡Misión Cumplida!' : 'Misión Fallida';
+            ui.endTitle.className = `text-5xl font-extrabold mb-4 text-transparent bg-clip-text bg-gradient-to-r ${won ? 'from-sky-300 to-blue-500' : 'from-red-400 to-rose-600'}`;
+            
+            let finalMsg = won 
+                ? "¡Eres un verdadero Experto Pro! Has dominado los procesos y demostrado gran empatía."
+                : "No te rindas. Revisa la matriz, estudia los casos y vuelve a intentarlo.";
+            ui.endMessage.textContent = finalMsg;
+            
+            ui.endScore.textContent = score;
+            
+            if(won && score === 100) {
+                ui.endMessage.innerHTML += `<br><span class="text-yellow-400 font-bold mt-2 block animate-pulse">¡Puntuación Perfecta! 🏆</span>`;
+            }
+
+            ui.hud.classList.add('hidden');
+            ui.mobileControls.classList.add('hidden');
+            ui.endScreen.classList.remove('hidden');
+        }
+
+        function winGame() {
+            showEndScreen(true);
+        }
+
+        function startGame() {
+            initLevel();
+            score = 0;
+            lives = 3;
+            player.x = 100;
+            player.y = 300;
+            player.vx = 0;
+            player.vy = 0;
+            checkpoint = { x: 100, y: 300 };
+            particles = [];
+            
+            updateHUD();
+            ui.startScreen.classList.add('hidden');
+            ui.endScreen.classList.add('hidden');
+            ui.hud.classList.remove('hidden');
+            
+            // Show mobile controls if touch device
+            if('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+                ui.mobileControls.classList.remove('hidden');
+            }
+            
+            gameState = 'PLAYING';
+        }
+
+        ui.btnStartGame.onclick = startGame;
+        ui.btnRestartGame.onclick = startGame;
+        
+        // Accordion logic
+        if (ui.btnInstructions) {
+            ui.btnInstructions.addEventListener('click', () => {
+                ui.contentInstructions.classList.toggle('hidden');
+                ui.iconAccordion.classList.toggle('rotate-180');
+            });
+        }
+
+        // --- 11. Game Loop ---
+        function gameLoop(timestamp) {
+            // Calculate delta time if needed (currently using fixed step for simplicity)
+            // let dt = timestamp - lastTime;
+            // lastTime = timestamp;
+
+            if (gameState === 'PLAYING') {
+                updatePhysics();
+                
+                // Camera logic (smooth follow)
+                let targetCamX = player.x - canvas.width / 3;
+                let targetCamY = player.y - canvas.height / 1.5;
+                
+                // Clamp camera
+                if (targetCamX < 0) targetCamX = 0;
+                
+                camera.x += (targetCamX - camera.x) * 0.1;
+                camera.y += (targetCamY - camera.y) * 0.1;
+            }
+
+            if (gameState === 'PLAYING' || gameState === 'FEEDBACK' || gameState === 'QUIZ') {
+                updateParticles();
+                
+                // Render
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                drawBackground();
+                drawBlocks();
+                drawParticles();
+                drawPlayer();
+            }
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Start loop
+        requestAnimationFrame(gameLoop);
+
+    </script>
+</body>
+</html>
