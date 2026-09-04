@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El Escáner Consultivo | Playbook Septiembre</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        medical: {
+                            dark: '#0F172A',
+                            blue: '#0EA5E9',
+                            teal: '#14B8A6',
+                            light: '#F0F9FF',
+                            alert: '#F43F5E'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { background-color: #e2e8f0; font-family: 'Inter', sans-serif; overflow: hidden; }
+        
+        /* Transition Logic for Slides */
+        .slide { 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            opacity: 0; visibility: hidden; transition: all 0.5s ease-in-out; 
+            transform: translateY(20px);
+        }
+        .slide.active { 
+            opacity: 1; visibility: visible; transform: translateY(0); z-index: 10;
+        }
+
+        /* Flip Cards (Slide 4) */
+        .flip-card { background-color: transparent; perspective: 1000px; height: 180px; }
+        .flip-card-inner {
+            position: relative; width: 100%; height: 100%; text-align: center;
+            transition: transform 0.6s; transform-style: preserve-3d; border-radius: 0.75rem;
+        }
+        .flip-card:hover .flip-card-inner { transform: rotateY(180deg); }
+        .flip-card-front, .flip-card-back {
+            position: absolute; width: 100%; height: 100%; backface-visibility: hidden;
+            border-radius: 0.75rem; display: flex; flex-direction: column; justify-content: center; align-items: center;
+            padding: 1rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .flip-card-front { background-color: white; border: 2px solid #e0f2fe; }
+        .flip-card-back { background: linear-gradient(135deg, #0EA5E9, #14B8A6); color: white; transform: rotateY(180deg); }
+
+        /* Custom Accordion (Slide 5) */
+        details > summary { list-style: none; }
+        details > summary::-webkit-details-marker { display: none; }
+        details[open] summary ~ * { animation: slideDown 0.3s ease-in-out; }
+        @keyframes slideDown {
+            0% { opacity: 0; transform: translateY(-5px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen">
+
+    <div class="relative w-full max-w-5xl h-[650px] bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col">
+        
+        <!-- Header -->
+        <header class="flex justify-between items-center px-8 py-4 bg-medical-dark text-white z-20 shadow-md">
+            <div class="flex items-center gap-3">
+                <i class="fa-solid fa-heart-pulse text-medical-teal text-2xl"></i>
+                <h1 class="font-bold text-lg tracking-wide uppercase">El Escáner Consultivo</h1>
+            </div>
+            <div class="text-sm font-medium text-gray-400 bg-white/10 px-3 py-1 rounded-full">
+                Plan de Sesión: Septiembre
+            </div>
+        </header>
+
+        <!-- Slides Container -->
+        <main class="relative flex-grow bg-medical-light/30">
+            
+            <!-- Slide 1: El Puente (Recap) -->
+            <div class="slide active px-12 py-10 flex flex-col justify-center items-center text-center" id="slide-0">
+                <div class="w-24 h-24 bg-white rounded-full flex items-center justify-center shadow-lg border-4 border-medical-blue mb-6">
+                    <i class="fa-solid fa-bridge-water text-4xl text-medical-blue"></i>
+                </div>
+                <h2 class="text-4xl font-black text-medical-dark mb-4">El Puente: De la Emoción a la Razón</h2>
+                <p class="text-xl text-gray-600 max-w-2xl mx-auto mb-8">
+                    En Agosto aprendimos a usar el <strong>Escudo Mental</strong>. Logramos que el estudiante baje la voz y nos escuche. <br><br>
+                    <span class="text-medical-blue font-bold italic">"¿Pero ahora qué le decimos para que no nos diga que NO?"</span>
+                </p>
+                <div class="flex gap-4 items-center bg-white px-6 py-3 rounded-xl shadow-sm border border-gray-200">
+                    <span class="text-gray-400 font-bold">Agosto:</span> <span class="bg-medical-dark text-white px-3 py-1 rounded">Calmar el Dolor</span>
+                    <i class="fa-solid fa-arrow-right text-medical-blue"></i>
+                    <span class="text-gray-400 font-bold">Septiembre:</span> <span class="bg-medical-teal text-white px-3 py-1 rounded">Diagnosticar la Enfermedad</span>
+                </div>
+            </div>
+
+            <!-- Slide 2: La Objeción es un Síntoma -->
+            <div class="slide px-12 py-10" id="slide-1">
+                <div class="grid grid-cols-2 gap-8 h-full items-center">
+                    <div>
+                        <h2 class="text-3xl font-black text-medical-dark mb-4">La Objeción es solo un Síntoma</h2>
+                        <p class="text-gray-600 mb-6 text-lg">
+                            Calidad nos dice que estamos fallando en el manejo de objeciones. ¿La verdad? <strong>La objeción no se maneja, se previene.</strong>
+                        </p>
+                        <ul class="space-y-4">
+                            <li class="flex items-start gap-3">
+                                <i class="fa-solid fa-xmark text-medical-alert mt-1"></i>
+                                <span class="text-gray-700">Si un estudiante te lanza una objeción dura al final...</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <i class="fa-solid fa-stethoscope text-medical-blue mt-1"></i>
+                                <span class="text-gray-700">...es porque fallaste en el diagnóstico (Perfilamiento) al inicio.</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <!-- Iceberg Graphic -->
+                    <div class="relative bg-white rounded-xl shadow-lg border border-gray-100 p-6 flex flex-col items-center">
+                        <div class="bg-medical-alert/10 text-medical-alert border border-medical-alert/20 font-bold px-4 py-2 rounded-lg w-full text-center mb-2 relative z-10">
+                            "Es muy caro / No tengo tiempo" <br> <span class="text-xs uppercase">(Lo que se ve)</span>
+                        </div>
+                        <div class="w-full border-t-2 border-dashed border-gray-300 my-2"></div>
+                        <div class="bg-medical-blue/10 text-medical-blue border border-medical-blue/20 font-medium px-4 py-4 rounded-b-lg w-full text-center mt-[-10px]">
+                            <ul class="text-sm space-y-2 text-left px-4">
+                                <li><i class="fa-solid fa-caret-right"></i> Falta de alternativas flexibles.</li>
+                                <li><i class="fa-solid fa-caret-right"></i> Frustración académica (perdió materias).</li>
+                                <li><i class="fa-solid fa-caret-right"></i> Desconocimiento de herramientas.</li>
+                            </ul>
+                            <div class="mt-3 text-xs uppercase font-bold text-medical-teal">(La Raíz / Lo que está bajo el agua)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 3: El Escáner Consultivo -->
+            <div class="slide px-12 py-10 flex flex-col justify-center text-center" id="slide-2">
+                <h2 class="text-3xl font-black text-medical-dark mb-2">El Escáner Consultivo</h2>
+                <p class="text-gray-500 mb-8">No podemos lanzar la orden de pago como una receta sin haber preguntado qué le duele.</p>
+                
+                <div class="grid grid-cols-2 gap-6 max-w-4xl mx-auto w-full">
+                    <div class="bg-white p-6 rounded-xl shadow-md border-l-4 border-medical-blue text-left">
+                        <div class="w-10 h-10 bg-medical-blue/10 rounded-full flex items-center justify-center text-medical-blue mb-4">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                        </div>
+                        <h3 class="font-bold text-medical-dark mb-2">Preguntas de Situación (Presente)</h3>
+                        <p class="text-sm text-gray-600 italic">"De todas las opciones financieras o de horario... ¿cuál es la que más te preocupa cubrir o solucionar hoy?"</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-md border-l-4 border-medical-teal text-left">
+                        <div class="w-10 h-10 bg-medical-teal/10 rounded-full flex items-center justify-center text-medical-teal mb-4">
+                            <i class="fa-solid fa-rocket"></i>
+                        </div>
+                        <h3 class="font-bold text-medical-dark mb-2">Preguntas de Proyección (Futuro)</h3>
+                        <p class="text-sm text-gray-600 italic">"Si logramos solucionar este impase hoy, ¿cuántas materias tienes pensadas adelantar para tu próximo bloque?"</p>
+                    </div>
+                </div>
+                <div class="mt-8 bg-medical-alert/10 text-medical-alert px-4 py-3 rounded-lg font-bold text-sm mx-auto inline-block border border-medical-alert/20">
+                    <i class="fa-solid fa-triangle-exclamation mr-2"></i> LEY: Prohibido ofrecer la solución antes de escanear (preguntar mínimo 3 veces).
+                </div>
+            </div>
+
+            <!-- Slide 4: El Antídoto (Diferenciales) -->
+            <div class="slide px-10 py-8" id="slide-3">
+                <div class="text-center mb-6">
+                    <h2 class="text-3xl font-black text-medical-dark">El Antídoto: Diferenciales del Poli</h2>
+                    <p class="text-gray-500 text-sm mt-2">Pasa el mouse para ver la cura a cada síntoma diagnosticado.</p>
+                </div>
+
+                <div class="grid grid-cols-3 gap-4">
+                    <div class="flip-card">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front">
+                                <i class="fa-solid fa-sack-dollar text-3xl text-gray-400 mb-3"></i>
+                                <h4 class="font-bold text-medical-dark text-sm">"No tengo el dinero completo hoy"</h4>
+                            </div>
+                            <div class="flip-card-back">
+                                <i class="fa-solid fa-pills text-2xl mb-2 text-white/80"></i>
+                                <span class="font-bold text-sm block mb-1">Flexibilidad de Pago</span>
+                                <p class="text-xs">Pago por bloques, convenios, cesantías. No cierres por precio, cierra por continuidad.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flip-card">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front">
+                                <i class="fa-solid fa-clock text-3xl text-gray-400 mb-3"></i>
+                                <h4 class="font-bold text-medical-dark text-sm">"No tengo tiempo / Perdí materias"</h4>
+                            </div>
+                            <div class="flip-card-back">
+                                <i class="fa-solid fa-pills text-2xl mb-2 text-white/80"></i>
+                                <span class="font-bold text-sm block mb-1">Modelo Modular</span>
+                                <p class="text-xs">Arma tu horario. Materias por bloques (1 y 2). Tutorías y acompañamiento académico.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flip-card">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front">
+                                <i class="fa-solid fa-laptop-medical text-3xl text-gray-400 mb-3"></i>
+                                <h4 class="font-bold text-medical-dark text-sm">"La modalidad virtual es difícil"</h4>
+                            </div>
+                            <div class="flip-card-back">
+                                <i class="fa-solid fa-pills text-2xl mb-2 text-white/80"></i>
+                                <span class="font-bold text-sm block mb-1">Herramientas y Prácticas</span>
+                                <p class="text-xs">Simuladores, Consultorio Jurídico, Laboratorios virtuales. No estás solo.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 5: Reglas de la Dinámica -->
+            <div class="slide px-12 py-8" id="slide-4">
+                <h2 class="text-3xl font-black text-medical-dark mb-6 text-center">Dinámica: El Quirófano a Ciegas</h2>
+                
+                <div class="space-y-3 max-w-3xl mx-auto">
+                    <details class="bg-white rounded-lg shadow-sm border border-gray-200 group" open>
+                        <summary class="p-4 font-bold text-medical-blue cursor-pointer flex justify-between items-center hover:bg-gray-50">
+                            <span><i class="fa-solid fa-users mr-2"></i> Los Roles (Grupos de 3 a 4 personas)</span>
+                            <i class="fa-solid fa-chevron-down transition group-open:rotate-180"></i>
+                        </summary>
+                        <div class="p-4 pt-0 text-sm text-gray-600 border-t border-gray-100 bg-gray-50/50">
+                            <ul class="list-disc pl-5 space-y-2 mt-2">
+                                <li><strong>El Paciente (Estudiante):</strong> Tiene la tarjeta confidencial. Solo da el síntoma inicial de su objeción.</li>
+                                <li><strong>El Médico (Experto):</strong> Atiende la llamada. Debe perfilar (hacer preguntas) para descubrir la verdad.</li>
+                                <li><strong>El VAR / Analista:</strong> Pita falta si el Médico lanza un recibo antes de hacer 3 preguntas. Al final, sugiere el "Diferencial Poli" ideal para cerrar.</li>
+                                <li><strong>El Observador (Si hay 4):</strong> Evalúa en silencio si el Médico mantuvo el Escudo Mental y no se alteró.</li>
+                            </ul>
+                        </div>
+                    </details>
+                    
+                    <details class="bg-white rounded-lg shadow-sm border border-gray-200 group">
+                        <summary class="p-4 font-bold text-medical-teal cursor-pointer flex justify-between items-center hover:bg-gray-50">
+                            <span><i class="fa-solid fa-gavel mr-2"></i> La Regla de Oro</span>
+                            <i class="fa-solid fa-chevron-down transition group-open:rotate-180"></i>
+                        </summary>
+                        <div class="p-4 pt-0 text-sm text-gray-600 border-t border-gray-100 bg-gray-50/50">
+                            <p class="mt-2 text-medical-dark font-medium">Si el experto responde inmediatamente al primer síntoma: <em>"Entiendo, mira, te ofrezco el pago por bloques..."</em> <strong>¡PIERDE!</strong> Falló el perfilamiento. Debe indagar primero.</p>
+                        </div>
+                    </details>
+                </div>
+                
+                <div class="text-center mt-8">
+                    <button class="bg-medical-dark hover:bg-medical-blue transition-colors text-white font-bold py-3 px-8 rounded-full shadow-lg" onclick="alert('¡Revisa el chat de Teams! El Facilitador te enviará tu Tarjeta Clínica.')">
+                        ¡Iniciar Dinámica!
+                    </button>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- Footer Controls -->
+        <footer class="bg-white border-t border-gray-200 p-4 flex justify-between items-center z-20">
+            <button id="btnPrev" class="px-5 py-2 rounded-lg font-semibold text-gray-500 hover:bg-gray-100 transition disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-2">
+                <i class="fa-solid fa-arrow-left"></i> Anterior
+            </button>
+            
+            <!-- Indicators -->
+            <div class="flex gap-2" id="indicators">
+                <span class="w-2.5 h-2.5 rounded-full bg-medical-blue transition-all"></span>
+                <span class="w-2.5 h-2.5 rounded-full bg-gray-300 transition-all"></span>
+                <span class="w-2.5 h-2.5 rounded-full bg-gray-300 transition-all"></span>
+                <span class="w-2.5 h-2.5 rounded-full bg-gray-300 transition-all"></span>
+                <span class="w-2.5 h-2.5 rounded-full bg-gray-300 transition-all"></span>
+            </div>
+
+            <button id="btnNext" class="px-5 py-2 rounded-lg font-semibold text-white bg-medical-blue hover:bg-medical-teal transition disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-2 shadow-md">
+                Siguiente <i class="fa-solid fa-arrow-right"></i>
+            </button>
+        </footer>
+    </div>
+
+    <!-- Logic for Slides -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            let currentSlide = 0;
+            const slides = document.querySelectorAll('.slide');
+            const indicators = document.getElementById('indicators').children;
+            const btnPrev = document.getElementById('btnPrev');
+            const btnNext = document.getElementById('btnNext');
+            const totalSlides = slides.length;
+
+            function updateUI() {
+                // Update slides visibility
+                slides.forEach((slide, index) => {
+                    if (index === currentSlide) {
+                        slide.classList.add('active');
+                    } else {
+                        slide.classList.remove('active');
+                    }
+                });
+
+                // Update indicators
+                Array.from(indicators).forEach((dot, index) => {
+                    if (index === currentSlide) {
+                        dot.className = "w-4 h-2.5 rounded-full bg-medical-blue transition-all";
+                    } else {
+                        dot.className = "w-2.5 h-2.5 rounded-full bg-gray-300 transition-all";
+                    }
+                });
+
+                // Update buttons
+                btnPrev.disabled = currentSlide === 0;
+                
+                if (currentSlide === totalSlides - 1) {
+                    btnNext.innerHTML = 'Finalizar <i class="fa-solid fa-check"></i>';
+                    btnNext.classList.remove('bg-medical-blue');
+                    btnNext.classList.add('bg-medical-teal');
+                } else {
+                    btnNext.innerHTML = 'Siguiente <i class="fa-solid fa-arrow-right"></i>';
+                    btnNext.classList.remove('bg-medical-teal');
+                    btnNext.classList.add('bg-medical-blue');
+                }
+            }
+
+            btnPrev.addEventListener('click', () => {
+                if (currentSlide > 0) {
+                    currentSlide--;
+                    updateUI();
+                }
+            });
+
+            btnNext.addEventListener('click', () => {
+                if (currentSlide < totalSlides - 1) {
+                    currentSlide++;
+                    updateUI();
+                }
+            });
+
+            // Initialize
+            updateUI();
+        });
+    </script>
+</body>
+</html>
