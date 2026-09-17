@@ -14,12 +14,13 @@
                 extend: {
                     fontFamily: { sans: ['Inter', 'sans-serif'] },
                     colors: {
-                        medical: {
-                            dark: '#0F172A',
-                            blue: '#0EA5E9',
-                            teal: '#14B8A6',
-                            light: '#F0F9FF',
-                            alert: '#F43F5E'
+                        poli: {
+                            navy: '#10385b',    // Azul Oscuro Institucional
+                            blue: '#44aed8',    // Azul Claro
+                            green: '#a3cb36',   // Verde Lima
+                            yellow: '#fbb017',  // Amarillo/Dorado
+                            magenta: '#d8066b', // Magenta/Fucsia
+                            light: '#F8FAFC'
                         }
                     }
                 }
@@ -28,7 +29,7 @@
     </script>
 
     <style>
-        body { background-color: #e2e8f0; font-family: 'Inter', sans-serif; overflow: hidden; }
+        body { background-color: #e2e8f0; font-family: 'Inter', sans-serif; overflow-x: hidden; }
         
         /* Transition Logic for Slides */
         .slide { 
@@ -41,19 +42,19 @@
         }
 
         /* Flip Cards (Slide 4) */
-        .flip-card { background-color: transparent; perspective: 1000px; height: 180px; }
+        .flip-card { background-color: transparent; perspective: 1000px; height: 210px; }
         .flip-card-inner {
             position: relative; width: 100%; height: 100%; text-align: center;
-            transition: transform 0.6s; transform-style: preserve-3d; border-radius: 0.75rem;
+            transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1); transform-style: preserve-3d; border-radius: 0.75rem;
         }
         .flip-card:hover .flip-card-inner { transform: rotateY(180deg); }
         .flip-card-front, .flip-card-back {
             position: absolute; width: 100%; height: 100%; backface-visibility: hidden;
             border-radius: 0.75rem; display: flex; flex-direction: column; justify-content: center; align-items: center;
-            padding: 1rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            padding: 1.2rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
-        .flip-card-front { background-color: white; border: 2px solid #e0f2fe; }
-        .flip-card-back { background: linear-gradient(135deg, #0EA5E9, #14B8A6); color: white; transform: rotateY(180deg); }
+        .flip-card-front { background-color: white; border: 2px solid #e2e8f0; }
+        .flip-card-back { color: white; transform: rotateY(180deg); }
 
         /* Custom Accordion (Slide 5) */
         details > summary { list-style: none; }
@@ -63,197 +64,194 @@
             0% { opacity: 0; transform: translateY(-5px); }
             100% { opacity: 1; transform: translateY(0); }
         }
+
+        /* Screenshot Card Style */
+        .screenshot-card {
+            background-image: url('data:image/svg+xml,%3Csvg width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="%23f8fafc" fill-opacity="0.4" fill-rule="evenodd"%3E%3Ccircle cx="3" cy="3" r="3"/%3E%3Ccircle cx="13" cy="13" r="3"/%3E%3C/g%3E%3C/svg%3E');
+        }
     </style>
 </head>
-<body class="flex items-center justify-center min-h-screen">
+<body class="flex flex-col items-center min-h-screen py-10">
 
-    <div class="relative w-full max-w-5xl h-[650px] bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col">
+    <!-- MAIN PRESENTATION CONTAINER -->
+    <div class="relative w-full max-w-5xl h-[650px] bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col mb-16">
         
-        <!-- Header -->
-        <header class="flex justify-between items-center px-8 py-4 bg-medical-dark text-white z-20 shadow-md">
+        <header class="flex justify-between items-center px-8 py-4 bg-poli-navy text-white z-20 shadow-md border-b-4 border-poli-magenta">
             <div class="flex items-center gap-3">
-                <i class="fa-solid fa-heart-pulse text-medical-teal text-2xl"></i>
+                <i class="fa-solid fa-heart-pulse text-poli-blue text-2xl"></i>
                 <h1 class="font-bold text-lg tracking-wide uppercase">El Escáner Consultivo</h1>
             </div>
-            <div class="text-sm font-medium text-gray-400 bg-white/10 px-3 py-1 rounded-full">
+            <div class="text-sm font-medium text-poli-navy bg-poli-yellow px-3 py-1 rounded-full shadow-sm">
                 Plan de Sesión: Septiembre
             </div>
         </header>
 
         <!-- Slides Container -->
-        <main class="relative flex-grow bg-medical-light/30">
+        <main class="relative flex-grow bg-poli-light/30">
             
-            <!-- Slide 1: El Puente (Recap) -->
             <div class="slide active px-12 py-10 flex flex-col justify-center items-center text-center" id="slide-0">
-                <div class="w-24 h-24 bg-white rounded-full flex items-center justify-center shadow-lg border-4 border-medical-blue mb-6">
-                    <i class="fa-solid fa-bridge-water text-4xl text-medical-blue"></i>
+                <div class="w-24 h-24 bg-white rounded-full flex items-center justify-center shadow-lg border-4 border-poli-blue mb-6">
+                    <i class="fa-solid fa-bridge-water text-4xl text-poli-blue"></i>
                 </div>
-                <h2 class="text-4xl font-black text-medical-dark mb-4">El Puente: De la Emoción a la Razón</h2>
+                <h2 class="text-4xl font-black text-poli-navy mb-4">El Puente: De la Emoción a la Razón</h2>
                 <p class="text-xl text-gray-600 max-w-2xl mx-auto mb-8">
                     En Agosto aprendimos a usar el <strong>Escudo Mental</strong>. Logramos que el estudiante baje la voz y nos escuche. <br><br>
-                    <span class="text-medical-blue font-bold italic">"¿Pero ahora qué le decimos para que no nos diga que NO?"</span>
+                    <span class="text-poli-magenta font-bold italic">"¿Pero ahora qué le decimos para que no nos diga que NO?"</span>
                 </p>
                 <div class="flex gap-4 items-center bg-white px-6 py-3 rounded-xl shadow-sm border border-gray-200">
-                    <span class="text-gray-400 font-bold">Agosto:</span> <span class="bg-medical-dark text-white px-3 py-1 rounded">Calmar el Dolor</span>
-                    <i class="fa-solid fa-arrow-right text-medical-blue"></i>
-                    <span class="text-gray-400 font-bold">Septiembre:</span> <span class="bg-medical-teal text-white px-3 py-1 rounded">Diagnosticar la Enfermedad</span>
+                    <span class="text-gray-400 font-bold">Agosto:</span> <span class="bg-poli-navy text-white px-3 py-1 rounded">Calmar el Dolor</span>
+                    <i class="fa-solid fa-arrow-right text-poli-magenta"></i>
+                    <span class="text-gray-400 font-bold">Septiembre:</span> <span class="bg-poli-green text-poli-navy font-bold px-3 py-1 rounded">Diagnosticar la Enfermedad</span>
                 </div>
             </div>
 
-            <!-- Slide 2: La Objeción es un Síntoma -->
             <div class="slide px-12 py-10" id="slide-1">
                 <div class="grid grid-cols-2 gap-8 h-full items-center">
                     <div>
-                        <h2 class="text-3xl font-black text-medical-dark mb-4">La Objeción es solo un Síntoma</h2>
+                        <h2 class="text-3xl font-black text-poli-navy mb-4">La Objeción es solo un Síntoma</h2>
                         <p class="text-gray-600 mb-6 text-lg">
-                            Calidad nos dice que estamos fallando en el manejo de objeciones. ¿La verdad? <strong>La objeción no se maneja, se previene.</strong>
+                            Nos quedamos paralizados ante problemas personales. ¿La verdad? <strong>La objeción dura no se maneja, se previene.</strong>
                         </p>
                         <ul class="space-y-4">
                             <li class="flex items-start gap-3">
-                                <i class="fa-solid fa-xmark text-medical-alert mt-1"></i>
-                                <span class="text-gray-700">Si un estudiante te lanza una objeción dura al final...</span>
+                                <i class="fa-solid fa-xmark text-poli-magenta mt-1 text-xl"></i>
+                                <span class="text-gray-700">Si un estudiante te lanza una excusa de tiempo o salud al final para irse...</span>
                             </li>
                             <li class="flex items-start gap-3">
-                                <i class="fa-solid fa-stethoscope text-medical-blue mt-1"></i>
-                                <span class="text-gray-700">...es porque fallaste en el diagnóstico (Perfilamiento) al inicio.</span>
+                                <i class="fa-solid fa-stethoscope text-poli-blue mt-1 text-xl"></i>
+                                <span class="text-gray-700">...es porque fallaste en el diagnóstico (Perfilamiento) al inicio y no hallaste su necesidad real.</span>
                             </li>
                         </ul>
                     </div>
                     <!-- Iceberg Graphic -->
                     <div class="relative bg-white rounded-xl shadow-lg border border-gray-100 p-6 flex flex-col items-center">
-                        <div class="bg-medical-alert/10 text-medical-alert border border-medical-alert/20 font-bold px-4 py-2 rounded-lg w-full text-center mb-2 relative z-10">
-                            "Es muy caro / No tengo tiempo" <br> <span class="text-xs uppercase">(Lo que se ve)</span>
+                        <div class="bg-poli-magenta/10 text-poli-magenta border border-poli-magenta/20 font-bold px-4 py-3 rounded-lg w-full text-center mb-2 relative z-10">
+                            "Me cambiaron el turno en el trabajo, no tengo tiempo." <br> <span class="text-xs uppercase">(Lo que se ve / La excusa)</span>
                         </div>
                         <div class="w-full border-t-2 border-dashed border-gray-300 my-2"></div>
-                        <div class="bg-medical-blue/10 text-medical-blue border border-medical-blue/20 font-medium px-4 py-4 rounded-b-lg w-full text-center mt-[-10px]">
-                            <ul class="text-sm space-y-2 text-left px-4">
-                                <li><i class="fa-solid fa-caret-right"></i> Falta de alternativas flexibles.</li>
-                                <li><i class="fa-solid fa-caret-right"></i> Frustración académica (perdió materias).</li>
-                                <li><i class="fa-solid fa-caret-right"></i> Desconocimiento de herramientas.</li>
+                        <div class="bg-poli-blue/10 text-poli-navy border border-poli-blue/30 font-medium px-4 py-4 rounded-b-lg w-full text-center mt-[-10px]">
+                            <ul class="text-sm space-y-2 text-left px-4 font-semibold text-poli-navy">
+                                <li><i class="fa-solid fa-magnifying-glass text-poli-blue mr-2"></i> Ignora que puede estudiar asincrónicamente.</li>
+                                <li><i class="fa-solid fa-magnifying-glass text-poli-blue mr-2"></i> No usa la App Canvas en el transporte.</li>
+                                <li><i class="fa-solid fa-magnifying-glass text-poli-blue mr-2"></i> Está abrumado, pero SÍ quiere el título.</li>
                             </ul>
-                            <div class="mt-3 text-xs uppercase font-bold text-medical-teal">(La Raíz / Lo que está bajo el agua)</div>
+                            <div class="mt-4 text-xs uppercase font-bold text-poli-blue tracking-wide">(La Raíz / Lo que descubres preguntando)</div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Slide 3: El Escáner Consultivo -->
             <div class="slide px-12 py-10 flex flex-col justify-center text-center" id="slide-2">
-                <h2 class="text-3xl font-black text-medical-dark mb-2">El Escáner Consultivo</h2>
-                <p class="text-gray-500 mb-8">No podemos lanzar la orden de pago como una receta sin haber preguntado qué le duele.</p>
+                <h2 class="text-3xl font-black text-poli-navy mb-2">El Escáner Consultivo</h2>
+                <p class="text-gray-500 mb-8">No podemos lanzar la cancelación o congelar el semestre como un robot sin haber preguntado qué le duele realmente.</p>
                 
                 <div class="grid grid-cols-2 gap-6 max-w-4xl mx-auto w-full">
-                    <div class="bg-white p-6 rounded-xl shadow-md border-l-4 border-medical-blue text-left">
-                        <div class="w-10 h-10 bg-medical-blue/10 rounded-full flex items-center justify-center text-medical-blue mb-4">
+                    <div class="bg-white p-6 rounded-xl shadow-md border-t-4 border-t-poli-blue text-left hover:shadow-lg transition">
+                        <div class="w-10 h-10 bg-poli-blue/10 rounded-full flex items-center justify-center text-poli-blue mb-4">
                             <i class="fa-solid fa-magnifying-glass"></i>
                         </div>
-                        <h3 class="font-bold text-medical-dark mb-2">Preguntas de Situación (Presente)</h3>
-                        <p class="text-sm text-gray-600 italic">"De todas las opciones financieras o de horario... ¿cuál es la que más te preocupa cubrir o solucionar hoy?"</p>
+                        <h3 class="font-bold text-poli-navy mb-2">Preguntas de Situación (Presente)</h3>
+                        <p class="text-sm text-gray-600 italic">"Entiendo lo pesado del nuevo turno... cuéntame, en esos trayectos de tu casa a la oficina, ¿cuánto tiempo inviertes diariamente en transporte?"</p>
                     </div>
-                    <div class="bg-white p-6 rounded-xl shadow-md border-l-4 border-medical-teal text-left">
-                        <div class="w-10 h-10 bg-medical-teal/10 rounded-full flex items-center justify-center text-medical-teal mb-4">
+                    <div class="bg-white p-6 rounded-xl shadow-md border-t-4 border-t-poli-green text-left hover:shadow-lg transition">
+                        <div class="w-10 h-10 bg-poli-green/30 rounded-full flex items-center justify-center text-poli-navy mb-4">
                             <i class="fa-solid fa-rocket"></i>
                         </div>
-                        <h3 class="font-bold text-medical-dark mb-2">Preguntas de Proyección (Futuro)</h3>
-                        <p class="text-sm text-gray-600 italic">"Si logramos solucionar este impase hoy, ¿cuántas materias tienes pensadas adelantar para tu próximo bloque?"</p>
+                        <h3 class="font-bold text-poli-navy mb-2">Preguntas de Proyección (Futuro)</h3>
+                        <p class="text-sm text-gray-600 italic">"Si logramos que la universidad te reduzca la carga a solo 1 o 2 materias, para que estudies a tu ritmo sin asfixiarte, ¿te gustaría continuar?"</p>
                     </div>
                 </div>
-                <div class="mt-8 bg-medical-alert/10 text-medical-alert px-4 py-3 rounded-lg font-bold text-sm mx-auto inline-block border border-medical-alert/20">
-                    <i class="fa-solid fa-triangle-exclamation mr-2"></i> LEY: Prohibido ofrecer la solución antes de escanear (preguntar mínimo 3 veces).
+                <div class="mt-8 bg-poli-yellow/20 text-poli-navy px-5 py-3 rounded-lg font-bold text-sm mx-auto inline-block border border-poli-yellow/50">
+                    <i class="fa-solid fa-triangle-exclamation mr-2 text-lg text-poli-magenta"></i> LEY DE LÍNEA: Prohibido ofrecer la solución transaccional antes de escanear (preguntar).
                 </div>
             </div>
 
-            <!-- Slide 4: El Antídoto (Diferenciales) -->
             <div class="slide px-10 py-8" id="slide-3">
                 <div class="text-center mb-6">
-                    <h2 class="text-3xl font-black text-medical-dark">El Antídoto: Diferenciales del Poli</h2>
-                    <p class="text-gray-500 text-sm mt-2">Pasa el mouse para ver la cura a cada síntoma diagnosticado.</p>
+                    <h2 class="text-3xl font-black text-poli-navy">El Antídoto: Diferenciales ante Casos Personales</h2>
+                    <p class="text-gray-500 text-sm mt-2">Pasa el mouse para ver cómo la universidad se adapta a la vida del estudiante.</p>
                 </div>
 
                 <div class="grid grid-cols-3 gap-4">
                     <div class="flip-card">
                         <div class="flip-card-inner">
                             <div class="flip-card-front">
-                                <i class="fa-solid fa-sack-dollar text-3xl text-gray-400 mb-3"></i>
-                                <h4 class="font-bold text-medical-dark text-sm">"No tengo el dinero completo hoy"</h4>
+                                <i class="fa-solid fa-crutch text-3xl text-poli-magenta mb-3"></i>
+                                <h4 class="font-bold text-poli-navy text-sm">"Tuve un accidente / Incapacidad Médica"</h4>
+                                <p class="text-xs text-gray-400 mt-2 text-center">Teme perder por fallas o no poder conectarse.</p>
                             </div>
-                            <div class="flip-card-back">
-                                <i class="fa-solid fa-pills text-2xl mb-2 text-white/80"></i>
-                                <span class="font-bold text-sm block mb-1">Flexibilidad de Pago</span>
-                                <p class="text-xs">Pago por bloques, convenios, cesantías. No cierres por precio, cierra por continuidad.</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="flip-card">
-                        <div class="flip-card-inner">
-                            <div class="flip-card-front">
-                                <i class="fa-solid fa-clock text-3xl text-gray-400 mb-3"></i>
-                                <h4 class="font-bold text-medical-dark text-sm">"No tengo tiempo / Perdí materias"</h4>
-                            </div>
-                            <div class="flip-card-back">
-                                <i class="fa-solid fa-pills text-2xl mb-2 text-white/80"></i>
-                                <span class="font-bold text-sm block mb-1">Modelo Modular</span>
-                                <p class="text-xs">Arma tu horario. Materias por bloques (1 y 2). Tutorías y acompañamiento académico.</p>
+                            <div class="flip-card-back bg-gradient-to-br from-poli-magenta to-poli-navy border border-poli-navy">
+                                <i class="fa-solid fa-pills text-2xl mb-2 text-white"></i>
+                                <span class="font-bold text-sm block mb-1">Modelo 100% Asincrónico</span>
+                                <p class="text-xs text-white/90">No hay clases obligatorias en vivo. Puede estudiar a su ritmo desde la cama. Sugiere ver solo 1 materia en Bloque 2 como terapia mental.</p>
                             </div>
                         </div>
                     </div>
                     <div class="flip-card">
                         <div class="flip-card-inner">
                             <div class="flip-card-front">
-                                <i class="fa-solid fa-laptop-medical text-3xl text-gray-400 mb-3"></i>
-                                <h4 class="font-bold text-medical-dark text-sm">"La modalidad virtual es difícil"</h4>
+                                <i class="fa-solid fa-baby text-3xl text-poli-blue mb-3"></i>
+                                <h4 class="font-bold text-poli-navy text-sm">"Embarazo / Reciente Maternidad"</h4>
+                                <p class="text-xs text-gray-400 mt-2 text-center">Se siente asfixiada con su nuevo rol y el tiempo.</p>
                             </div>
-                            <div class="flip-card-back">
-                                <i class="fa-solid fa-pills text-2xl mb-2 text-white/80"></i>
-                                <span class="font-bold text-sm block mb-1">Herramientas y Prácticas</span>
-                                <p class="text-xs">Simuladores, Consultorio Jurídico, Laboratorios virtuales. No estás solo.</p>
+                            <div class="flip-card-back bg-gradient-to-br from-poli-blue to-poli-navy">
+                                <i class="fa-solid fa-pills text-2xl mb-2 text-poli-yellow"></i>
+                                <span class="font-bold text-sm block mb-1">Carga Académica Modular</span>
+                                <p class="text-xs text-white/90">Reducción de carga académica. Invítala a ver solo 1 o 2 asignaturas por bloque. Avanza lento en su meta profesional, pero no renuncia.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flip-card">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front">
+                                <i class="fa-solid fa-plane-departure text-3xl text-poli-green mb-3"></i>
+                                <h4 class="font-bold text-poli-navy text-sm">"Viaje Laboral / Personal Imprevisto"</h4>
+                                <p class="text-xs text-gray-400 mt-2 text-center">Cree que si se va un mes, pierde todo el semestre.</p>
+                            </div>
+                            <div class="flip-card-back bg-gradient-to-br from-poli-green to-poli-navy">
+                                <i class="fa-solid fa-pills text-2xl mb-2 text-poli-yellow"></i>
+                                <span class="font-bold text-sm block mb-1">Estructura por Bloques</span>
+                                <p class="text-xs text-white/90">Puede no ver materias en el Bloque 1 (mientras viaja o se instala) y matricular toda su carga solo para el Bloque 2. La App Canvas funciona offline.</p>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Slide 5: Reglas de la Dinámica -->
             <div class="slide px-12 py-8" id="slide-4">
-                <h2 class="text-3xl font-black text-medical-dark mb-6 text-center">Dinámica: El Quirófano a Ciegas</h2>
+                <h2 class="text-3xl font-black text-poli-navy mb-6 text-center">Dinámica: El Quirófano en Vivo</h2>
                 
-                <div class="space-y-3 max-w-3xl mx-auto">
+                <div class="space-y-4 max-w-3xl mx-auto">
                     <details class="bg-white rounded-lg shadow-sm border border-gray-200 group" open>
-                        <summary class="p-4 font-bold text-medical-blue cursor-pointer flex justify-between items-center hover:bg-gray-50">
-                            <span><i class="fa-solid fa-users mr-2"></i> Los Roles (Grupos de 3 a 4 personas)</span>
+                        <summary class="p-4 font-bold text-poli-blue cursor-pointer flex justify-between items-center hover:bg-gray-50 transition">
+                            <span><i class="fa-solid fa-users mr-2"></i> Los Roles en el Grupo (3-4 personas)</span>
                             <i class="fa-solid fa-chevron-down transition group-open:rotate-180"></i>
                         </summary>
                         <div class="p-4 pt-0 text-sm text-gray-600 border-t border-gray-100 bg-gray-50/50">
                             <ul class="list-disc pl-5 space-y-2 mt-2">
-                                <li><strong>El Paciente (Estudiante):</strong> Tiene la tarjeta confidencial. Solo da el síntoma inicial de su objeción.</li>
-                                <li><strong>El Médico (Experto):</strong> Atiende la llamada. Debe perfilar (hacer preguntas) para descubrir la verdad.</li>
-                                <li><strong>El VAR / Analista:</strong> Pita falta si el Médico lanza un recibo antes de hacer 3 preguntas. Al final, sugiere el "Diferencial Poli" ideal para cerrar.</li>
-                                <li><strong>El Observador (Si hay 4):</strong> Evalúa en silencio si el Médico mantuvo el Escudo Mental y no se alteró.</li>
+                                <li><strong>🤒 El Paciente:</strong> Recibe el caso por chat interno. Su meta es NO soltar la verdad fácil. Hágase el difícil al inicio con su excusa.</li>
+                                <li><strong>👨‍⚕️ El Médico:</strong> Atiende la llamada en vivo a ciegas. Debe <strong>perfilar</strong> (mínimo 2 preguntas) para descubrir el verdadero dolor.</li>
+                                <li><strong>🚨 El Analista (VAR):</strong> Tiene prohibido hablar. Escribe en el chat de Teams una ❌ si el médico lanza la solución antes de investigar.</li>
                             </ul>
                         </div>
                     </details>
                     
-                    <details class="bg-white rounded-lg shadow-sm border border-gray-200 group">
-                        <summary class="p-4 font-bold text-medical-teal cursor-pointer flex justify-between items-center hover:bg-gray-50">
-                            <span><i class="fa-solid fa-gavel mr-2"></i> La Regla de Oro</span>
-                            <i class="fa-solid fa-chevron-down transition group-open:rotate-180"></i>
-                        </summary>
-                        <div class="p-4 pt-0 text-sm text-gray-600 border-t border-gray-100 bg-gray-50/50">
-                            <p class="mt-2 text-medical-dark font-medium">Si el experto responde inmediatamente al primer síntoma: <em>"Entiendo, mira, te ofrezco el pago por bloques..."</em> <strong>¡PIERDE!</strong> Falló el perfilamiento. Debe indagar primero.</p>
-                        </div>
-                    </details>
+                    <div class="bg-poli-magenta/10 border-l-4 border-poli-magenta p-4 rounded-r-lg">
+                        <p class="text-sm text-poli-navy font-semibold">
+                            <i class="fa-solid fa-trophy text-poli-magenta mr-2 text-lg"></i> El Facilitador evaluará: Que el Experto mantenga un tono de empatía y formule preguntas de "Situación" o "Proyección" antes de ofrecer cancelar el semestre.
+                        </p>
+                    </div>
                 </div>
                 
-                <div class="text-center mt-8">
-                    <button class="bg-medical-dark hover:bg-medical-blue transition-colors text-white font-bold py-3 px-8 rounded-full shadow-lg" onclick="alert('¡Revisa el chat de Teams! El Facilitador te enviará tu Tarjeta Clínica.')">
-                        ¡Iniciar Dinámica!
+                <div class="text-center mt-6">
+                    <button class="bg-poli-magenta hover:bg-poli-navy transition-colors text-white font-bold py-3 px-8 rounded-full shadow-lg" onclick="alert('¡Atentos a sus chats privados de Teams!')">
+                        ¡Iniciar Roleplays!
                     </button>
                 </div>
             </div>
 
         </main>
 
-        <!-- Footer Controls -->
         <footer class="bg-white border-t border-gray-200 p-4 flex justify-between items-center z-20">
             <button id="btnPrev" class="px-5 py-2 rounded-lg font-semibold text-gray-500 hover:bg-gray-100 transition disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-2">
                 <i class="fa-solid fa-arrow-left"></i> Anterior
@@ -261,20 +259,127 @@
             
             <!-- Indicators -->
             <div class="flex gap-2" id="indicators">
-                <span class="w-2.5 h-2.5 rounded-full bg-medical-blue transition-all"></span>
+                <span class="w-2.5 h-2.5 rounded-full bg-poli-magenta transition-all"></span>
                 <span class="w-2.5 h-2.5 rounded-full bg-gray-300 transition-all"></span>
                 <span class="w-2.5 h-2.5 rounded-full bg-gray-300 transition-all"></span>
                 <span class="w-2.5 h-2.5 rounded-full bg-gray-300 transition-all"></span>
                 <span class="w-2.5 h-2.5 rounded-full bg-gray-300 transition-all"></span>
             </div>
 
-            <button id="btnNext" class="px-5 py-2 rounded-lg font-semibold text-white bg-medical-blue hover:bg-medical-teal transition disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-2 shadow-md">
+            <button id="btnNext" class="px-5 py-2 rounded-lg font-semibold text-white bg-poli-magenta hover:bg-opacity-90 transition disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-2 shadow-md">
                 Siguiente <i class="fa-solid fa-arrow-right"></i>
             </button>
         </footer>
     </div>
 
-    <!-- Logic for Slides -->
+
+    <!-- 
+    ======================================================================
+    SECCIÓN OCULTA PARA EL FACILITADOR (SCREENSHOTS)
+    Esta sección queda debajo de la presentación para que puedas
+    tomar pantallazos fácilmente antes de iniciar tu sesión.
+    ======================================================================
+    -->
+    <div class="w-full max-w-5xl mt-10 p-8 border-t-2 border-dashed border-gray-400">
+        <div class="mb-8 text-center">
+            <h3 class="text-2xl font-black text-gray-400 uppercase tracking-widest"><i class="fa-solid fa-camera mr-2"></i> Zona de Recortes (Solo Facilitador)</h3>
+            <p class="text-gray-500 text-sm mt-2">Usa Windows + Shift + S para recortar estas tarjetas y enviarlas por interno al asesor "Paciente".</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            <!-- Screenshot Card 1 -->
+            <div class="screenshot-card bg-poli-navy rounded-xl p-1 shadow-lg">
+                <div class="bg-white rounded-lg p-6 h-full flex flex-col">
+                    <div class="flex items-center gap-3 mb-4 border-b pb-3">
+                        <div class="w-10 h-10 rounded-full bg-poli-blue text-white flex items-center justify-center font-bold"><i class="fa-solid fa-briefcase"></i></div>
+                        <div>
+                            <h4 class="font-bold text-poli-navy">CASO 1: Cambio de Turno Laboral</h4>
+                            <span class="text-xs text-poli-magenta font-bold uppercase tracking-wide">Rol: Paciente</span>
+                        </div>
+                    </div>
+                    <p class="text-sm font-semibold text-gray-800 mb-2">💬 Tu queja al iniciar la llamada:</p>
+                    <p class="text-sm text-gray-600 italic bg-gray-50 p-3 rounded border border-gray-100 mb-4">"Necesito cancelar todo. Me cambiaron el turno en la empresa, entro a las 7 AM y salgo a las 8 PM. Imposible conectarme a estudiar así, no me da la vida."</p>
+                    
+                    <p class="text-sm font-semibold text-gray-800 mb-2">🔒 Tu secreto (NO LO DIGAS DE INMEDIATO):</p>
+                    <p class="text-sm text-gray-600 mb-4">Tu trayecto en Transmilenio/Metro dura 1 hora y media de ida y lo mismo de vuelta. Ignoras que puedes descargar clases en la App de Canvas y estudiar asincrónicamente en el bus.</p>
+                    
+                    <div class="mt-auto bg-poli-blue/10 text-poli-navy border border-poli-blue/30 p-3 rounded-lg text-xs font-bold">
+                        <i class="fa-solid fa-circle-info mr-1 text-poli-blue"></i> Instrucción: Solo ríndete si el experto te pregunta "¿Cuánto tiempo tardas en el transporte diario?" o te explica cómo estudiar offline.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Screenshot Card 2 -->
+            <div class="screenshot-card bg-poli-navy rounded-xl p-1 shadow-lg">
+                <div class="bg-white rounded-lg p-6 h-full flex flex-col">
+                    <div class="flex items-center gap-3 mb-4 border-b pb-3">
+                        <div class="w-10 h-10 rounded-full bg-poli-green text-poli-navy flex items-center justify-center font-bold"><i class="fa-solid fa-baby"></i></div>
+                        <div>
+                            <h4 class="font-bold text-poli-navy">CASO 2: Reciente Maternidad</h4>
+                            <span class="text-xs text-poli-magenta font-bold uppercase tracking-wide">Rol: Paciente</span>
+                        </div>
+                    </div>
+                    <p class="text-sm font-semibold text-gray-800 mb-2">💬 Tu queja al iniciar la llamada:</p>
+                    <p class="text-sm text-gray-600 italic bg-gray-50 p-3 rounded border border-gray-100 mb-4">"No voy a generar la rematrícula. Tuve a mi bebé hace un mes, estoy colapsada, no duermo, la universidad queda pausada definitivamente."</p>
+                    
+                    <p class="text-sm font-semibold text-gray-800 mb-2">🔒 Tu secreto (NO LO DIGAS DE INMEDIATO):</p>
+                    <p class="text-sm text-gray-600 mb-4">En el fondo no quieres retrasar tu título porque estudias por tu hijo. Lo que pasa es que crees que tienes que ver las 5 o 6 materias al mismo tiempo y eso te asfixia.</p>
+                    
+                    <div class="mt-auto bg-poli-green/20 text-poli-navy border border-poli-green/50 p-3 rounded-lg text-xs font-bold">
+                        <i class="fa-solid fa-circle-info mr-1"></i> Instrucción: Solo acepta la solución si el asesor tiene empatía con tu embarazo y te sugiere reducir la carga a 1 o 2 materias máximo por bloque.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Screenshot Card 3 -->
+            <div class="screenshot-card bg-poli-navy rounded-xl p-1 shadow-lg">
+                <div class="bg-white rounded-lg p-6 h-full flex flex-col">
+                    <div class="flex items-center gap-3 mb-4 border-b pb-3">
+                        <div class="w-10 h-10 rounded-full bg-poli-magenta text-white flex items-center justify-center font-bold"><i class="fa-solid fa-crutch"></i></div>
+                        <div>
+                            <h4 class="font-bold text-poli-navy">CASO 3: Accidente / Incapacidad</h4>
+                            <span class="text-xs text-poli-magenta font-bold uppercase tracking-wide">Rol: Paciente</span>
+                        </div>
+                    </div>
+                    <p class="text-sm font-semibold text-gray-800 mb-2">💬 Tu queja al iniciar la llamada:</p>
+                    <p class="text-sm text-gray-600 italic bg-gray-50 p-3 rounded border border-gray-100 mb-4">"Amigo/a, necesito congelar semestre y anular el recibo. Me accidenté/Me operan la otra semana, tengo 1 mes de incapacidad. Por salud no puedo."</p>
+                    
+                    <p class="text-sm font-semibold text-gray-800 mb-2">🔒 Tu secreto (NO LO DIGAS DE INMEDIATO):</p>
+                    <p class="text-sm text-gray-600 mb-4">Vas a estar en cama aburrido/a. Estás cancelando porque tienes pánico de perder por "fallas de asistencia", asumiendo erróneamente que la virtualidad del Poli exige conectarse en vivo en un horario fijo.</p>
+                    
+                    <div class="mt-auto bg-poli-magenta/10 text-poli-magenta border border-poli-magenta/20 p-3 rounded-lg text-xs font-bold">
+                        <i class="fa-solid fa-circle-info mr-1"></i> Instrucción: Solo di la verdad si el experto te valida (desea pronta recuperación) y te hace preguntas sobre qué harás durante ese mes en casa.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Screenshot Card 4 -->
+            <div class="screenshot-card bg-poli-navy rounded-xl p-1 shadow-lg">
+                <div class="bg-white rounded-lg p-6 h-full flex flex-col">
+                    <div class="flex items-center gap-3 mb-4 border-b pb-3">
+                        <div class="w-10 h-10 rounded-full bg-poli-yellow text-poli-navy flex items-center justify-center font-bold"><i class="fa-solid fa-plane"></i></div>
+                        <div>
+                            <h4 class="font-bold text-poli-navy">CASO 4: Viaje Imprevisto</h4>
+                            <span class="text-xs text-poli-magenta font-bold uppercase tracking-wide">Rol: Paciente</span>
+                        </div>
+                    </div>
+                    <p class="text-sm font-semibold text-gray-800 mb-2">💬 Tu queja al iniciar la llamada:</p>
+                    <p class="text-sm text-gray-600 italic bg-gray-50 p-3 rounded border border-gray-100 mb-4">"Bloquéame la orden. Me salió un viaje a España/USA imprevisto. Me voy en 15 días y estaré por fuera dos meses, imposible estudiar así."</p>
+                    
+                    <p class="text-sm font-semibold text-gray-800 mb-2">🔒 Tu secreto (NO LO DIGAS DE INMEDIATO):</p>
+                    <p class="text-sm text-gray-600 mb-4">Estás emocionado por el viaje, pero ignoras totalmente que el semestre se divide en Bloque 1 y Bloque 2. Crees que si te vas ahora, pierdes todo el semestre.</p>
+                    
+                    <div class="mt-auto bg-poli-yellow/20 text-poli-navy border border-poli-yellow/50 p-3 rounded-lg text-xs font-bold">
+                        <i class="fa-solid fa-circle-info mr-1 text-poli-magenta"></i> Instrucción: No se la dejes fácil. Solo acepta el cierre si el experto te descubre y te ofrece descansar el Bloque 1 y matricularte solo para el Bloque 2 a tu regreso.
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             let currentSlide = 0;
@@ -297,7 +402,7 @@
                 // Update indicators
                 Array.from(indicators).forEach((dot, index) => {
                     if (index === currentSlide) {
-                        dot.className = "w-4 h-2.5 rounded-full bg-medical-blue transition-all";
+                        dot.className = "w-4 h-2.5 rounded-full bg-poli-magenta transition-all";
                     } else {
                         dot.className = "w-2.5 h-2.5 rounded-full bg-gray-300 transition-all";
                     }
@@ -308,12 +413,12 @@
                 
                 if (currentSlide === totalSlides - 1) {
                     btnNext.innerHTML = 'Finalizar <i class="fa-solid fa-check"></i>';
-                    btnNext.classList.remove('bg-medical-blue');
-                    btnNext.classList.add('bg-medical-teal');
+                    btnNext.classList.remove('bg-poli-magenta');
+                    btnNext.classList.add('bg-poli-yellow', 'text-poli-navy'); // Yellow finish button
                 } else {
                     btnNext.innerHTML = 'Siguiente <i class="fa-solid fa-arrow-right"></i>';
-                    btnNext.classList.remove('bg-medical-teal');
-                    btnNext.classList.add('bg-medical-blue');
+                    btnNext.classList.remove('bg-poli-yellow', 'text-poli-navy');
+                    btnNext.classList.add('bg-poli-magenta', 'text-white');
                 }
             }
 
