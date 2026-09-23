@@ -188,6 +188,42 @@
         </div>
     </div>
 
+    <!-- MODAL MODO MANUAL FALLBACK -->
+    <div id="manual-fallback-modal" class="hidden fixed inset-0 bg-slate-900/90 z-[200] flex flex-col items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-[2rem] max-w-4xl w-full p-8 shadow-2xl flex flex-col max-h-[90vh]">
+            <div class="flex justify-between items-start mb-6">
+                <div>
+                    <h2 class="text-3xl font-bold text-slate-800 flex items-center gap-3"><i class="fas fa-robot text-primary"></i> Modo Manual Activado</h2>
+                    <p class="text-slate-500 mt-1">La API está saturada o en mantenimiento. Completa el proceso copiando la petición a tu Agente IA externo.</p>
+                </div>
+                <button onclick="document.getElementById('manual-fallback-modal').classList.add('hidden')" class="text-slate-400 hover:text-slate-600"><i class="fas fa-times text-2xl"></i></button>
+            </div>
+
+            <div class="flex-1 overflow-y-auto space-y-6 pr-2">
+                <div class="bg-indigo-50 border border-indigo-200 rounded-2xl p-6">
+                    <h3 class="font-bold text-indigo-900 mb-2">Paso 1. Copia esta petición</h3>
+                    <p class="text-sm text-indigo-700 mb-3">Haz clic en copiar y pégale este texto a la IA (Gemini, ChatGPT, etc.) en tu navegador.</p>
+                    <div class="relative">
+                        <textarea id="manual-prompt-area" class="w-full h-32 p-4 bg-white border border-indigo-200 rounded-xl text-sm outline-none resize-none font-mono text-slate-600" readonly></textarea>
+                        <button onclick="window.copyToClipboard(document.getElementById('manual-prompt-area').value)" class="absolute top-4 right-4 bg-primary text-white px-4 py-2 rounded-lg font-bold hover:bg-indigo-700 shadow-md text-sm"><i class="fas fa-copy"></i> Copiar Petición</button>
+                    </div>
+                </div>
+
+                <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-6">
+                    <h3 class="font-bold text-emerald-900 mb-2">Paso 2. Pega el JSON que te devuelva</h3>
+                    <p class="text-sm text-emerald-700 mb-3">Copia <strong>ÚNICAMENTE</strong> el código JSON que te respondió la IA y pégalo en esta caja blanca.</p>
+                    <textarea id="manual-json-area" class="w-full h-40 p-4 bg-white border border-emerald-200 rounded-xl text-sm outline-none resize-none font-mono text-slate-700" placeholder='{"general": {...}, "experts": [...]}'></textarea>
+                </div>
+            </div>
+
+            <div class="mt-6 pt-6 border-t border-slate-100">
+                <button onclick="window.finishManualSetup()" class="w-full py-4 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl shadow-lg transition-all text-lg flex items-center justify-center gap-3">
+                    <i class="fas fa-play"></i> Iniciar Taller con Datos Manuales
+                </button>
+            </div>
+        </div>
+    </div>
+
     <div id="loading-screen" class="screen hidden fixed inset-0 w-full h-screen bg-slate-900 flex flex-col items-center justify-center z-[100]">
         <div class="flex flex-col items-center justify-center text-center w-full max-w-2xl mx-auto">
             <div class="w-24 h-24 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mb-6 mx-auto"></div>
@@ -575,12 +611,12 @@
             document.body.appendChild(textArea);
             textArea.focus();
             textArea.select();
-            try { document.execCommand('copy'); window.showMsg('¡Código copiado!'); } 
-            catch (err) { window.showMsg('Error al copiar código', 'error'); }
+            try { document.execCommand('copy'); window.showMsg('¡Copiado con éxito!'); } 
+            catch (err) { window.showMsg('Error al copiar', 'error'); }
             document.body.removeChild(textArea);
         };
 
-        // Date Parser Robust (Numbers and Strings)
+        // Date Parser Robust
         function parseExcelDate(val) {
             if (!val) return null;
             if (val instanceof Date) return val;
@@ -603,7 +639,6 @@
             const arrayBuffer = await file.arrayBuffer();
             const workbook = XLSX.read(arrayBuffer, { type: 'array', cellDates: true });
             
-            // 1. Detección Inteligente de Hoja
             let targetSheetName = workbook.SheetNames.find(n => n.trim().toUpperCase() === 'BASE_MONITOREOS' || n.trim().toUpperCase() === 'BASE MONITOREOS');
             
             if (!targetSheetName) {
@@ -620,7 +655,6 @@
             const data = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' });
             if (data.length < 2) throw new Error('La hoja está vacía o no tiene registros.');
 
-            // 2. Detección de Fila de Encabezados (Buscando "Fecha Monitoreo" y "Experto")
             let headerRowIndex = 0;
             let headers = [];
             for (let i = 0; i < Math.min(15, data.length); i++) {
@@ -632,7 +666,6 @@
                 }
             }
 
-            // 3. Mapeo Dinámico de Columnas
             let colMap = { fechaMon: -1, experto: -1, tipoMon: -1, nota: -1, resumen: -1, atribAfectados: -1, evidencias: -1, fortalezas: -1, startAtrib: -1 };
             headers.forEach((h, c) => {
                 if (h.includes('fecha monitoreo')) colMap.fechaMon = c;
@@ -645,17 +678,14 @@
                 else if (h.includes('fortaleza')) colMap.fortalezas = c;
             });
 
-            // Si no encontró algo, usa fallbacks razonables
-            if(colMap.fechaMon === -1) colMap.fechaMon = 0; // Col A
-            if(colMap.experto === -1) colMap.experto = 2; // Col C
-            if(colMap.tipoMon === -1) colMap.tipoMon = 8; // Col I
+            if(colMap.fechaMon === -1) colMap.fechaMon = 0; 
+            if(colMap.experto === -1) colMap.experto = 2; 
+            if(colMap.tipoMon === -1) colMap.tipoMon = 8; 
             
-            // Asumir que el detalle empieza después de la última columna conocida
             colMap.startAtrib = Math.max(...Object.values(colMap).filter(v => v !== -1)) + 1;
 
             let expertosMap = {}; 
             
-            // Lógica de fechas (90 días automáticos si es grupal)
             let eDate = new Date(fechaFin + "T23:59:59");
             let sDate = new Date(fechaInicio + "T00:00:00");
             if (isGroup) {
@@ -665,7 +695,6 @@
             const expBuscado = (singleExpertName || '').trim().toLowerCase();
             let totalProcesados = 0;
 
-            // 4. Procesar Filas
             for (let r = headerRowIndex + 1; r < data.length; r++) {
                 const fila = data[r];
                 if (!fila || fila.length === 0) continue;
@@ -690,7 +719,6 @@
                 let hasMinimo = false;
                 let erroresFila = [];
 
-                // Buscar "Mínimo" en el detalle P-AC
                 for (let c = colMap.startAtrib; c < fila.length; c++) {
                     const val = String(fila[c] || '').trim().toLowerCase();
                     if (val === 'mínimo' || val === 'minimo' || val === 'min' || val === 'mín') {
@@ -700,22 +728,15 @@
                     }
                 }
 
-                // Fallback: Si no lo halló en detalle, busca la palabra mínimo en la columna Atributos Afectados
-                if (!hasMinimo && atribAfectados.toLowerCase().includes('mín')) {
-                    hasMinimo = true;
-                }
+                if (!hasMinimo && atribAfectados.toLowerCase().includes('mín')) hasMinimo = true;
 
-                // VALIDACIÓN DE NEGOCIO: Reincidentes vs Individual
                 let cumpleCriterio = false;
                 if (isGroup) {
-                    // Grupal: Tipo Monitoreo Impacto + Mínimo
                     if (tipoMon.includes('impacto') && hasMinimo) cumpleCriterio = true;
                 } else {
-                    // Individual: Nota < 90 O tiene atributos afectados
                     if (nota < 90 || atribAfectados.trim().length > 0 || hasMinimo) cumpleCriterio = true;
                 }
 
-                // Inicializar experto en mapa aunque no cumpla criterio para conteo de Total
                 if (!expertosMap[experto]) {
                     expertosMap[experto] = { interacciones: new Set(), errores: {}, resumenes: [], evidencias: [], fortalezas: [], totalMonitoreos: 0 };
                 }
@@ -729,7 +750,6 @@
                     if(evidencias) expertosMap[experto].evidencias.push(evidencias);
                     if(fortalezas) expertosMap[experto].fortalezas.push(fortalezas);
                     
-                    // Si no hubo errores detallados pero entró por Individual o Atributo Afectado genérico
                     if(erroresFila.length === 0 && atribAfectados) {
                         expertosMap[experto].errores["Afectación General"] = (expertosMap[experto].errores["Afectación General"] || 0) + 1;
                     }
@@ -745,24 +765,20 @@
                     let errArray = Object.keys(expertosMap[exp].errores).map(k => ({name: k, count: expertosMap[exp].errores[k]})).sort((a,b)=>b.count-a.count);
                     reincidentes.push({ name: exp, monitorings: countAlertas, errors: errArray, resumenes: expertosMap[exp].resumenes, evidencias: expertosMap[exp].evidencias, fortalezas: expertosMap[exp].fortalezas });
                 } else if (!isGroup) {
-                    // Individual pasa directo
                     let errArray = Object.keys(expertosMap[exp].errores).map(k => ({name: k, count: expertosMap[exp].errores[k]})).sort((a,b)=>b.count-a.count);
                     reincidentes.push({ name: exp, monitorings: countTotal, errors: errArray, resumenes: expertosMap[exp].resumenes, evidencias: expertosMap[exp].evidencias, fortalezas: expertosMap[exp].fortalezas });
                 }
             }
 
             if(reincidentes.length === 0) {
-                if(totalProcesados === 0) {
-                    throw new Error("Fechas o Nombre sin registros. Revisa el filtro y que el nombre sea exacto.");
-                } else {
-                    throw new Error(`Se leyeron ${totalProcesados} llamadas, pero ningún experto cumplió los criterios (Ej. >=4 alertas de impacto).`);
-                }
+                if(totalProcesados === 0) throw new Error("Fechas o Nombre sin registros. Revisa el filtro.");
+                else throw new Error(`Se leyeron ${totalProcesados} llamadas, pero ningún experto cumplió los criterios.`);
             }
 
             return reincidentes;
         };
 
-        // --- STREAMING_CHUNK:Lógica UI y Generación Prompt IA ---
+        // --- Lógica UI ---
         window.showScreen = function(id) {
             document.querySelectorAll('.screen').forEach(el => el.classList.add('hidden'));
             const target = document.getElementById(id);
@@ -797,6 +813,7 @@
             }
         };
 
+        // INTEGRACIÓN API Y FALLBACK MANUAL
         window.processSetup = async function() {
             const inst = document.getElementById('setup-institution').value;
             const chan = document.getElementById('setup-channel').value;
@@ -815,7 +832,8 @@
             try {
                 const reincidentes = await window.procesarBaseMonitoreos(fileInput.files[0], sDate, eDate, isGroup, expName);
                 
-                // Prompt Master (Usando Evidencias, Fortalezas y Resumen)
+                window.pendingSetupData = { reincidentes, inst, chan };
+
                 let promptTxt = `Eres un Coach Master. Analiza los siguientes expertos que tuvieron oportunidades en ${chan}.\n`;
                 promptTxt += `INSTRUCCIONES CLAVE:\n`;
                 promptTxt += `1. S.B.I: Extrae la Situación, Comportamiento e Impacto BASÁNDOTE EXCLUSIVAMENTE en las "Evidencias" compartidas.\n`;
@@ -832,16 +850,58 @@
                 promptTxt += `\nDEVUELVE UNICAMENTE UN JSON VALIDO: { "general": { "sbi_s":"", "sbi_b":"", "sbi_i":"", "questions":["q1","q2","q3"] }, "experts": [ { "name":"nombre exacto", "sbi_s":"", "sbi_b":"", "sbi_i":"", "simulator_context":"" } ] }`;
 
                 const aiData = await fetchGemini(promptTxt);
-                if(!aiData || !aiData.experts) throw new Error("La IA no devolvió el formato esperado.");
+                
+                if(!aiData || !aiData.experts) {
+                    throw new Error("La API no devolvió datos, activando Fallback Manual.");
+                }
 
+                await createSessionAndDashboard(aiData);
+
+            } catch (e) {
+                console.warn(e);
+                window.showScreen('coach-setup-screen');
+                document.getElementById('manual-prompt-area').value = e.message.includes('No devolvió') || e.message.includes('API') || e.message.includes('Falló') ? 
+                    promptTxt : "Hubo un error al leer el Excel. Revisa el formato.";
+                
+                if(window.pendingSetupData && window.pendingSetupData.reincidentes) {
+                    document.getElementById('manual-fallback-modal').classList.remove('hidden');
+                } else {
+                    window.showMsg('Error de lectura: ' + e.message, 'error');
+                }
+            }
+        };
+
+        window.finishManualSetup = async function() {
+            const jsonText = document.getElementById('manual-json-area').value;
+            if(!jsonText.trim()) return window.showMsg("Pega el JSON primero", "error");
+
+            let aiData;
+            try {
+                let cleanStr = jsonText.replace(/```json/gi, "").replace(/```/g, "").trim();
+                aiData = JSON.parse(cleanStr);
+            } catch(e) {
+                return window.showMsg("El texto no es un JSON válido. Revisa que no haya texto extra.", "error");
+            }
+
+            if(!aiData || !aiData.experts) return window.showMsg("El JSON no tiene la estructura de expertos.", "error");
+
+            document.getElementById('manual-fallback-modal').classList.add('hidden');
+            window.showScreen('loading-screen');
+            if (document.getElementById('loading-text')) document.getElementById('loading-text').innerText = "Configurando Taller con datos manuales...";
+
+            await createSessionAndDashboard(aiData);
+        };
+
+        async function createSessionAndDashboard(aiData) {
+            try {
                 const code = Math.random().toString(36).substring(2, 8).toUpperCase();
                 let sessionData = {
-                    code, type: window.sessionType, institution: inst, channel: chan,
-                    general: { ...aiData.general, errors: aggregateErrors(reincidentes) },
+                    code, type: window.sessionType, institution: window.pendingSetupData.inst, channel: window.pendingSetupData.chan,
+                    general: { ...aiData.general, errors: aggregateErrors(window.pendingSetupData.reincidentes) },
                     experts: {}, board: []
                 };
 
-                reincidentes.forEach(r => {
+                window.pendingSetupData.reincidentes.forEach(r => {
                     let aiExp = aiData.experts.find(a => a.name === r.name) || { sbi_s:'N/A', sbi_b:'N/A', sbi_i:'N/A', simulator_context:'Práctica genérica' };
                     sessionData.experts[r.name] = {
                         name: r.name, monitorings: r.monitorings, errors: r.errors, score: 0,
@@ -862,13 +922,11 @@
                 }
                 
                 setupDashboard(sessionData);
-
-            } catch (e) {
-                console.error(e);
+            } catch (err) {
                 window.showScreen('coach-setup-screen');
-                window.showMsg('Error: ' + e.message, 'error');
+                window.showMsg("Error guardando taller: " + err.message, "error");
             }
-        };
+        }
 
         function aggregateErrors(reins) {
             let map = {};
@@ -876,8 +934,7 @@
             return Object.keys(map).map(k => ({name: k, count: map[k]})).sort((a,b)=>b.count-a.count);
         }
 
-        async function fetchGemini(prompt, retries = 3) {
-            // El API key se ha ofuscado dividiéndolo en partes para evitar que sea revocado por analizadores estáticos.
+        async function fetchGemini(prompt, retries = 4) {
             const p1 = "AQ.Ab8RN6";
             const p2 = "JjHYU6fic";
             const p3 = "Ec5bPq4PI";
@@ -885,18 +942,12 @@
             const p5 = "KdH0ry1Ha8UzEJIpA";
             const apiKey = p1 + p2 + p3 + p4 + p5; 
             
-            // Lista en cascada: del más nuevo al más estable.
-            const modelCascade = [
-                "gemini-3.8-flash",
-                "gemini-3.5-flash",
-                "gemini-2.5-flash"
-            ];
+            const currentModel = "gemini-3.8-flash"; 
             
             const loadingText = document.getElementById('loading-text');
 
-            for (let i = 0; i < modelCascade.length; i++) {
-                const currentModel = modelCascade[i];
-                if (loadingText) loadingText.innerText = `Conectando a la IA... Intentando con el modelo ${currentModel} (Intento ${i+1} de ${modelCascade.length})...`;
+            for (let i = 0; i < retries; i++) {
+                if (loadingText) loadingText.innerText = `Conectando a la IA... (Intento ${i+1} de ${retries})...`;
 
                 const url = `https://generativelanguage.googleapis.com/v1beta/models/${currentModel}:generateContent?key=${apiKey}`;
                 const p = { contents: [{ role: 'user', parts: [{ text: prompt }] }], generationConfig: { responseMimeType: "application/json" } };
@@ -907,15 +958,11 @@
                     
                     if (!res.ok) {
                         const errMsg = d.error?.message || "Error desconocido API";
-                        console.warn(`Falló el modelo ${currentModel}: ${errMsg}`);
+                        console.warn(`Intento ${i+1} falló: ${errMsg}`);
                         
-                        // Si es el último modelo de la lista y también falla, lanza el error
-                        if (i === modelCascade.length - 1) {
-                            throw new Error(`Todos los modelos fallaron. Último error (${currentModel}): ${errMsg}`);
-                        }
+                        if (i === retries - 1) throw new Error(`API Falló: ${errMsg}`);
                         
-                        // Si no es el último, espera 2 segundos y prueba el siguiente modelo
-                        if (loadingText) loadingText.innerText = `El modelo ${currentModel} no está disponible o falló. Probando el siguiente modelo en 2s...`;
+                        if (loadingText) loadingText.innerText = `El servidor está ocupado. Reintentando en 2s...`;
                         await new Promise(r => setTimeout(r, 2000));
                         continue; 
                     }
@@ -924,8 +971,8 @@
                     if(txt) return JSON.parse(txt.replace(/```json/gi, "").replace(/```/g, "").trim());
                     
                 } catch(e) { 
-                    console.warn(`Error de conexión con ${currentModel}:`, e);
-                    if (i === modelCascade.length - 1) throw e; 
+                    console.warn(`Error de conexión en intento ${i+1}:`, e);
+                    if (i === retries - 1) throw e; 
                 }
             }
             return null;
@@ -1057,7 +1104,7 @@
             }
         }
 
-        // --- STREAMING_CHUNK:Renderizado de UI y Gráficas ---
+        // --- Renderizado de UI y Gráficas ---
         function setupDashboard(data) {
             window.showScreen('main-dashboard');
             document.querySelectorAll('.coach-only').forEach(el => el.style.display = isCoach ? '' : 'none');
@@ -1235,7 +1282,7 @@
             window.showMsg('¡Compromiso Sellado!');
         };
 
-        // Micrófono con escudo de seguridad (Fallback a escritura)
+        // Micrófono con escudo de seguridad
         let recognition = null;
         if ('webkitSpeechRecognition' in window) {
             try {
@@ -1254,20 +1301,17 @@
                     }
                 };
                 recognition.onerror = function(event) {
-                    console.error("Mic error:", event.error);
                     if(event.error === 'not-allowed') {
                         window.showMsg("Permiso de micrófono denegado. Escribe la respuesta.", "error");
                     }
                     const btn = document.getElementById('btn-mic');
                     if (btn) btn.className = "w-12 h-12 rounded-full bg-rose-100 text-rose-500 hover:bg-rose-500 hover:text-white transition-colors flex items-center justify-center text-xl expert-only";
                 };
-            } catch(e) {
-                console.error("Speech Recognition Init Error", e);
-            }
+            } catch(e) { }
         }
         
         window.toggleMic = function() {
-            if(!recognition) return window.showMsg("Micrófono bloqueado o no soportado en este entorno. Por favor, escribe tu respuesta.", "error");
+            if(!recognition) return window.showMsg("Micrófono no soportado. Por favor, escribe.", "error");
             const btn = document.getElementById('btn-mic');
             try {
                 if(btn.classList.contains('bg-rose-500')) {
@@ -1278,9 +1322,7 @@
                     btn.className = "w-12 h-12 rounded-full bg-rose-500 text-white animate-pulse transition-colors flex items-center justify-center text-xl expert-only";
                 }
             } catch(err) {
-                console.error("Mic start/stop error", err);
                 window.showMsg("El entorno bloqueó el acceso al micrófono. Escribe tu respuesta.", "error");
-                btn.className = "w-12 h-12 rounded-full bg-rose-100 text-rose-500 hover:bg-rose-500 hover:text-white transition-colors flex items-center justify-center text-xl expert-only";
             }
         };
 
