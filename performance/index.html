@@ -548,7 +548,7 @@
                     </div>
                 </div>
 
-                <!-- TAB 6: REPORTE FINAL (SOLO COACH) -->
+                <!-- TAB 6: REPORTE FINAL (SOLO COACH) - ¡ACTUALIZADO A ANCHO COMPLETO! -->
                 <div id="tab-report" class="tab-content hidden coach-only">
                     <div id="export-report-area" class="bg-white p-10 rounded-[2rem] shadow-lg border border-slate-200">
                         <div class="flex justify-between items-start mb-10 border-b-2 border-poli-blue pb-4">
@@ -558,19 +558,22 @@
                             </div>
                         </div>
 
-                        <div class="grid md:grid-cols-3 gap-8">
-                            <div class="border border-slate-200 rounded-2xl p-6 flex flex-col relative group">
-                                <h3 class="font-bold text-slate-700 mb-6 text-center">Resultados de Evaluación</h3>
-                                <button type="button" onclick="window.downloadChart('chart-score', 'Score_Evaluacion.png')" class="absolute top-4 right-4 text-slate-400 hover:text-primary opacity-0 group-hover:opacity-100 transition-opacity"><i class="fas fa-download"></i></button>
-                                <div class="w-full h-72 relative">
+                        <!-- Cambiado a grid-cols-1 para que ocupen todo el ancho y se apilen hacia abajo -->
+                        <div class="grid grid-cols-1 gap-10">
+                            <!-- Gráfica 1: Resultados (Ocupa 100% del ancho) -->
+                            <div class="border border-slate-200 rounded-2xl p-8 flex flex-col relative group">
+                                <h3 class="font-bold text-slate-700 mb-6 text-center text-xl">Resultados de Evaluación de Reincidentes</h3>
+                                <button type="button" onclick="window.downloadChart('chart-score', 'Score_Evaluacion.png')" class="absolute top-6 right-6 text-slate-400 hover:text-poli-magenta opacity-0 group-hover:opacity-100 transition-opacity text-xl"><i class="fas fa-download"></i></button>
+                                <div class="w-full h-80 relative">
                                     <canvas id="chart-score"></canvas>
                                 </div>
                             </div>
                             
-                            <div class="md:col-span-2 border border-slate-200 rounded-2xl p-6 relative group">
-                                <h3 class="font-bold text-slate-700 mb-6 text-center">Cantidad de Mínimos Consolidado</h3>
-                                <button type="button" onclick="window.downloadChart('chart-pareto', 'Pareto_Minimos.png')" class="absolute top-4 right-4 text-slate-400 hover:text-primary opacity-0 group-hover:opacity-100 transition-opacity"><i class="fas fa-download"></i></button>
-                                <div class="w-full h-72 relative">
+                            <!-- Gráfica 2: Pareto (Ocupa 100% del ancho) -->
+                            <div class="border border-slate-200 rounded-2xl p-8 flex flex-col relative group">
+                                <h3 class="font-bold text-slate-700 mb-6 text-center text-xl">Cantidad de Mínimos Consolidado</h3>
+                                <button type="button" onclick="window.downloadChart('chart-pareto', 'Pareto_Minimos.png')" class="absolute top-6 right-6 text-slate-400 hover:text-poli-blue opacity-0 group-hover:opacity-100 transition-opacity text-xl"><i class="fas fa-download"></i></button>
+                                <div class="w-full h-80 relative">
                                     <canvas id="chart-pareto"></canvas>
                                 </div>
                             </div>
@@ -614,6 +617,20 @@
             try { document.execCommand('copy'); window.showMsg('¡Copiado con éxito!'); } 
             catch (err) { window.showMsg('Error al copiar', 'error'); }
             document.body.removeChild(textArea);
+        };
+
+        // Formateador de nombres inteligente para las gráficas
+        window.formatDisplayName = function(nameStr) {
+            if (!nameStr) return '';
+            let cleanName = nameStr;
+            // Si tiene arroba, quitamos el dominio y cambiamos puntos/guiones por espacios
+            if (cleanName.includes('@')) {
+                cleanName = cleanName.split('@')[0].replace(/[\._-]/g, ' ');
+            }
+            // Retornamos máximo 2 palabras (Nombre Apellido), con la primera letra en mayúscula
+            return cleanName.trim().split(/\s+/).slice(0, 2).map(word => 
+                word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+            ).join(' ');
         };
 
         // Date Parser Robust
@@ -943,11 +960,10 @@
             const p5 = "KdH0ry1Ha8UzEJIpA";
             const apiKey = p1 + p2 + p3 + p4 + p5; 
             
-            // Orden de cascada: Primero el de 15 RPM, luego el de 10 RPM, al final el de 5 RPM (3.8)
             const modelosDisponibles = [
                 "gemini-3.1-flash-lite", // 15 peticiones por minuto
                 "gemini-2.5-flash-lite", // 10 peticiones por minuto
-                "gemini-3.8-flash"       // 5 peticiones por minuto (Suele saturarse)
+                "gemini-3.8-flash"       // 5 peticiones por minuto
             ];
             
             const loadingText = document.getElementById('loading-text');
@@ -968,10 +984,8 @@
                         const errMsg = d.error?.message || "Error desconocido API";
                         console.warn(`El modelo ${currentModel} falló: ${errMsg}`);
                         
-                        // Si es el último modelo de la lista y falla, rompemos el ciclo para ir al Plan B
                         if (m === modelosDisponibles.length - 1) throw new Error(`Todos los modelos fallaron. Último error: ${errMsg}`);
                         
-                        // Si falla (ej. límite de cuota o 404), espera 1 segundo y pasa al siguiente modelo
                         if (loadingText) loadingText.innerText = `Modelo saturado. Saltando a la alternativa de respaldo...`;
                         await new Promise(r => setTimeout(r, 1000));
                         continue; 
@@ -1050,7 +1064,8 @@
                 document.getElementById('expert-step-2').classList.remove('hidden');
                 document.getElementById('expert-login-desc').innerText = "Selecciona tu nombre de la lista.";
                 const sel = document.getElementById('expert-name-select');
-                sel.innerHTML = '<option value="">Selecciona...</option>' + Object.keys(data.experts).map(k => `<option value="${k}">${k}</option>`).join('');
+                // Formateamos los nombres en la lista de selección para que se vean bonitos
+                sel.innerHTML = '<option value="">Selecciona...</option>' + Object.keys(data.experts).map(k => `<option value="${k}">${window.formatDisplayName(k)}</option>`).join('');
             } else {
                 myExpertName = Object.keys(data.experts)[0];
                 window.joinSessionFinal();
@@ -1124,12 +1139,13 @@
             
             if(isCoach) {
                 const sel = document.getElementById('coach-expert-selector');
-                sel.innerHTML = '<option value="general">Vista General (Equipo)</option>' + Object.keys(data.experts).map(k => `<option value="${k}">${k}</option>`).join('');
+                // Formateamos los nombres en el selector del coach
+                sel.innerHTML = '<option value="general">Vista General (Equipo)</option>' + Object.keys(data.experts).map(k => `<option value="${k}">${window.formatDisplayName(k)}</option>`).join('');
                 currentExpertView = 'general';
                 window.switchTab('tab-sbi');
                 initCharts(data);
             } else {
-                document.getElementById('dash-expert-name').innerText = myExpertName;
+                document.getElementById('dash-expert-name').innerText = window.formatDisplayName(myExpertName);
                 currentExpertView = myExpertName;
                 window.switchTab('tab-board');
             }
@@ -1172,9 +1188,10 @@
                     document.getElementById('data-view-general').classList.remove('hidden');
                     document.getElementById('data-view-individual').classList.add('hidden');
                     const tbody = document.getElementById('reincidentes-table-body');
+                    // Formateamos los nombres en la tabla
                     tbody.innerHTML = Object.values(data.experts).map(e => `
                         <tr class="border-b border-slate-50 hover:bg-slate-50">
-                            <td class="py-3 font-semibold text-slate-800">${e.name}</td>
+                            <td class="py-3 font-semibold text-slate-800">${window.formatDisplayName(e.name)}</td>
                             <td class="py-3 text-center">${e.monitorings}</td>
                             <td class="py-3 text-center text-rose-500 font-bold">${e.errors.reduce((a,b)=>a+b.count,0)}</td>
                             <td class="py-3 text-slate-500 truncate max-w-[200px]">${e.errors[0]?.name || ''}</td>
@@ -1185,7 +1202,7 @@
                 } else {
                     document.getElementById('data-view-general').classList.add('hidden');
                     document.getElementById('data-view-individual').classList.remove('hidden');
-                    document.getElementById('data-ind-title').innerText = `Oportunidades: ${viewData.name}`;
+                    document.getElementById('data-ind-title').innerText = `Oportunidades: ${window.formatDisplayName(viewData.name)}`;
                     document.getElementById('input-ind-score').value = viewData.score || 0;
                     
                     const maxCount = Math.max(...viewData.errors.map(e=>e.count), 1);
@@ -1202,7 +1219,7 @@
 
             document.getElementById('board-canvas').innerHTML = (data.board || []).map(n => `
                 <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 mb-3 inline-block max-w-[85%] ${n.sender==='Coach'?'ml-auto border-indigo-200 bg-indigo-50':'mr-auto'}">
-                    <p class="text-[10px] font-bold text-slate-400 mb-1 uppercase">${n.sender}</p>
+                    <p class="text-[10px] font-bold text-slate-400 mb-1 uppercase">${n.sender==='Coach'?'Coach':window.formatDisplayName(n.sender)}</p>
                     <p class="text-sm text-slate-700">${n.text}</p>
                 </div>
             `).join('');
@@ -1336,22 +1353,53 @@
             }
         };
 
+        // INICIALIZACIÓN DE GRÁFICAS CORREGIDA PARA VISTA HORIZONTAL
         window.initCharts = function(data) {
             if (window.chartPareto) window.chartPareto.destroy();
             if (window.chartScore) window.chartScore.destroy();
 
+            // Gráfica Pareto
             const ctxP = document.getElementById('chart-pareto').getContext('2d');
             window.chartPareto = new Chart(ctxP, {
                 type: 'bar',
                 data: { labels: [], datasets: [{ data: [], backgroundColor: '#10385b', borderRadius: 4, barThickness: 24 }] },
-                options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend:{display:false} }, scales: { x:{beginAtZero:true}, y:{ticks:{font:{size:10}}} } }
+                options: { 
+                    indexAxis: 'y', 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    plugins: { legend:{display:false} }, 
+                    scales: { 
+                        x:{beginAtZero:true}, 
+                        y:{ticks:{font:{size:11}}} 
+                    } 
+                }
             });
 
+            // Gráfica de Score (Color Magenta, Etiquetas Horizontales y Símbolo de %)
             const ctxS = document.getElementById('chart-score').getContext('2d');
             window.chartScore = new Chart(ctxS, {
                 type: 'bar',
-                data: { labels: [], datasets: [{ data: [], backgroundColor: '#e0016e', barThickness: 40 }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend:{display:false} }, scales: { y:{min:0, max:100} } }
+                data: { labels: [], datasets: [{ data: [], backgroundColor: '#e0016e', barThickness: 50, borderRadius: 4 }] },
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    plugins: { legend:{display:false} }, 
+                    scales: { 
+                        y:{
+                            min:0, 
+                            max:100,
+                            ticks: { callback: function(value) { return value + "%" } }
+                        },
+                        x: {
+                            ticks: {
+                                maxRotation: 0, // Fuerza que no se pongan en diagonal
+                                minRotation: 0,
+                                font: { size: 12, weight: 'bold' },
+                                color: '#475569'
+                            }
+                        }
+                    } 
+                }
             });
             updateCharts(data);
         };
@@ -1363,7 +1411,8 @@
             window.chartPareto.update();
 
             const exps = Object.values(data.experts);
-            window.chartScore.data.labels = exps.map(e=>e.name.split(' ')[0]);
+            // USAMOS EL FORMATEADOR PARA ENVIAR SOLO EL NOMBRE A LA GRÁFICA
+            window.chartScore.data.labels = exps.map(e=>window.formatDisplayName(e.name));
             window.chartScore.data.datasets[0].data = exps.map(e=>e.score||0);
             window.chartScore.update();
         }
