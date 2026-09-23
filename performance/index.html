@@ -1,0 +1,1224 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coach Performance Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- LIBRERÍA SHEETJS PARA LEER EL EXCEL DE CALIDAD LOCALMENTE -->
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; overflow: hidden; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        .editable-field:hover { background-color: #f8fafc; border-radius: 0.375rem; cursor: text; outline: 1px dashed #cbd5e1; }
+        .editable-field { transition: all 0.2s; padding: 4px; border: 1px solid transparent; min-height: 1.5rem; }
+        .editable-field:focus { outline: 2px solid #4f46e5; background-color: white; border-radius: 0.375rem; }
+
+        input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: #4f46e5; cursor: pointer; margin-top: -6px; }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: #e2e8f0; border-radius: 2px; }
+
+        .bg-dots { background-color: #f8fafc; background-image: radial-gradient(#cbd5e1 1.5px, transparent 1.5px); background-size: 24px 24px; }
+        
+        /* Colores Institucionales */
+        .bg-primary { background-color: #4f46e5 !important; }
+        .text-primary { color: #4f46e5 !important; }
+        .border-primary { border-color: #4f46e5 !important; }
+        
+        .poli-magenta { color: #e0016e; }
+        .bg-poli-magenta { background-color: #e0016e; }
+        .poli-blue { color: #10385b; }
+        .bg-poli-blue { background-color: #10385b; }
+
+        .nav-btn { display: flex; align-items: center; gap: 0.75rem; padding: 1rem 1.5rem; border-radius: 0.75rem; font-weight: 500; transition: all 0.2s; cursor: pointer; color: #94a3b8; margin-bottom: 0.25rem; }
+        .nav-btn:hover { background-color: rgba(255,255,255,0.05); color: white; }
+        .nav-btn.active { background-color: rgba(255,255,255,0.1); color: white; border-left: 4px solid #4f46e5; }
+        
+        /* Custom Toast Notification */
+        #custom-toast { transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55); }
+    </style>
+</head>
+<body class="h-screen w-full flex text-slate-800">
+
+    <!-- Notificador Toast en lugar de Alert -->
+    <div id="custom-toast" class="fixed bottom-5 right-5 p-4 rounded-xl shadow-2xl text-white font-bold z-50 transform translate-y-20 opacity-0 flex items-center gap-3">
+        <i class="fas fa-info-circle"></i> <span id="toast-msg">Mensaje</span>
+    </div>
+
+    <!-- 1. PANTALLA DE INICIO (Diseño Original Restaurado y Centrado) -->
+    <div id="login-screen" class="screen flex w-full h-full bg-slate-50 items-center justify-center p-6 relative overflow-hidden">
+        <div class="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-indigo-500 via-transparent to-transparent"></div>
+        <div class="max-w-5xl w-full grid md:grid-cols-2 gap-12 items-center justify-center relative z-10 mx-auto">
+            <div class="space-y-6 flex flex-col justify-center">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-100 text-primary text-sm font-semibold mb-2 self-start">
+                    <span class="w-2 h-2 rounded-full bg-primary animate-pulse" id="global-sync-status"></span> SISTEMA ACTIVO
+                </div>
+                <h1 class="text-6xl font-bold leading-tight text-slate-900">Performance<br><span class="text-primary">Hub</span></h1>
+                <p class="text-lg text-slate-600">Bienvenido a la plataforma de desarrollo y calibración. Selecciona tu rol para ingresar al entorno colaborativo.</p>
+                
+                <div class="flex flex-col gap-4 mt-8">
+                    <!-- Botón Coach (Lleva a selección de modalidad) -->
+                    <button type="button" onclick="window.showScreen('coach-mode-select-screen')" class="flex items-center justify-between w-full p-5 rounded-2xl bg-primary hover:bg-indigo-700 text-white font-medium transition-all shadow-lg shadow-indigo-200">
+                        <div class="flex items-center gap-4"><i class="fas fa-chart-line text-2xl"></i> <span class="text-lg">Entrar como Coach (Admin)</span></div>
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+                    <!-- Botón Experto -->
+                    <button type="button" onclick="window.showScreen('expert-login-screen')" class="flex items-center justify-between w-full p-5 rounded-2xl bg-white border border-slate-200 hover:border-indigo-300 hover:shadow-md text-slate-700 font-medium transition-all">
+                        <div class="flex items-center gap-4"><i class="fas fa-rocket text-2xl text-rose-500"></i> <span class="text-lg">Entrar como Experto</span></div>
+                        <i class="fas fa-arrow-right text-slate-400"></i>
+                    </button>
+                </div>
+                
+                <!-- Retomar Sesión Coach -->
+                <div class="mt-4 pt-4 border-t border-slate-200 flex items-center justify-between">
+                    <span class="text-sm text-slate-500">¿Ya tienes una sesión activa?</span>
+                    <div class="flex gap-2">
+                        <input type="text" id="coach-resume-code" placeholder="CÓDIGO" class="w-24 p-2 text-center font-mono font-bold bg-white border border-slate-300 rounded-lg outline-none uppercase text-sm">
+                        <button type="button" onclick="window.resumeCoachSession()" class="bg-slate-800 text-white px-4 rounded-lg hover:bg-slate-700 transition-colors text-sm font-bold">Retomar</button>
+                    </div>
+                </div>
+            </div>
+            <div class="hidden md:flex justify-center items-center">
+                <div class="bg-white p-10 rounded-[2.5rem] shadow-xl border border-slate-100 text-center w-full max-w-md mx-auto">
+                    <div class="w-32 h-32 bg-indigo-50 rounded-full flex items-center justify-center mx-auto mb-8 shadow-inner">
+                        <span class="text-6xl">🤝</span>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-3 text-slate-800">Desarrollo en Tiempo Real</h3>
+                    <p class="text-slate-500">Sesiones sincronizadas, pizarras colaborativas y simuladores para transformar el desempeño.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. SELECCIÓN DE MODALIDAD COACH -->
+    <div id="coach-mode-select-screen" class="screen hidden w-full h-full bg-slate-50 items-center justify-center p-6 relative overflow-hidden">
+        <button type="button" onclick="window.showScreen('login-screen')" class="absolute top-8 left-8 text-slate-400 hover:text-slate-600 transition-colors flex items-center gap-2 font-medium">
+            <i class="fas fa-arrow-left"></i> Volver al Inicio
+        </button>
+        
+        <div class="max-w-4xl w-full relative z-10 mx-auto">
+            <div class="text-center mb-12">
+                <h2 class="text-4xl font-bold text-slate-800 mb-4">Configuración de Sesión</h2>
+                <p class="text-slate-500 text-lg">La plataforma procesará automáticamente la matriz de Calidad.</p>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-8">
+                <div onclick="window.showSetup('individual')" class="bg-white p-8 rounded-3xl shadow-md border border-slate-200 hover:border-indigo-400 hover:shadow-xl transition-all cursor-pointer group text-center flex flex-col items-center">
+                    <div class="w-20 h-20 bg-indigo-50 rounded-2xl flex items-center justify-center text-primary text-3xl mb-6 group-hover:scale-110 transition-transform">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-slate-800 mb-2">Coach Individual</h3>
+                    <p class="text-slate-500 mb-6">Sesión personalizada para un solo experto. Extrae el análisis y genera el simulador con IA.</p>
+                    <span class="text-primary font-medium mt-auto group-hover:underline">Seleccionar <i class="fas fa-arrow-right ml-1"></i></span>
+                </div>
+
+                <div onclick="window.showSetup('group')" class="bg-white p-8 rounded-3xl shadow-md border border-slate-200 hover:border-poli-magenta hover:shadow-xl transition-all cursor-pointer group text-center flex flex-col items-center relative overflow-hidden">
+                    <div class="absolute top-4 right-4 bg-rose-100 text-poli-magenta text-xs font-bold px-3 py-1 rounded-full animate-pulse">MASIVO</div>
+                    <div class="w-20 h-20 bg-rose-50 rounded-2xl flex items-center justify-center text-poli-magenta text-3xl mb-6 group-hover:scale-110 transition-transform">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-slate-800 mb-2">Taller de Reincidentes</h3>
+                    <p class="text-slate-500 mb-6">Sesión compartida. Identifica automáticamente a los asesores con >=4 monitoreos y alertas mínimas.</p>
+                    <span class="text-poli-magenta font-medium mt-auto group-hover:underline">Seleccionar <i class="fas fa-arrow-right ml-1"></i></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. FORMULARIO UNIFICADO (INDIVIDUAL / GRUPAL) -->
+    <div id="coach-setup-screen" class="screen hidden w-full h-full bg-slate-50 overflow-y-auto py-10 px-4 flex-col items-center">
+        <div class="max-w-3xl w-full mx-auto bg-white rounded-3xl shadow-md border border-slate-200 p-10 mt-auto mb-auto">
+            <button type="button" onclick="window.showScreen('coach-mode-select-screen')" class="text-slate-400 hover:text-slate-600 mb-6 flex items-center gap-2">
+                <i class="fas fa-arrow-left"></i> Cambiar Modalidad
+            </button>
+            
+            <div class="mb-8 border-b border-slate-100 pb-6">
+                <h2 class="text-3xl font-bold text-slate-800" id="setup-title">Coach Individual</h2>
+                <p class="text-slate-500 mt-1">Sube la matriz de Excel para procesar los datos con Inteligencia Artificial.</p>
+            </div>
+            
+            <div class="space-y-6">
+                <div class="grid grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Institución</label>
+                        <select id="setup-institution" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="poli">Politécnico Grancolombiano</option>
+                            <option value="andina">Areandina</option>
+                            <option value="usan">U San Marcos</option>
+                            <option value="udi">UDI</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Canal de Atención</label>
+                        <select id="setup-channel" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="linea">Línea Telefónica</option>
+                            <option value="redes">Redes Sociales / Chat</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="expert-name-container">
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Nombre Exacto del Experto (Como en Excel)</label>
+                    <input type="text" id="setup-expert-name" placeholder="Ej. Ayde Carolina Borja" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+
+                <div class="grid grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Fecha Inicio (Filtro)</label>
+                        <input type="date" id="setup-start-date" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Fecha Fin (Filtro)</label>
+                        <input type="date" id="setup-end-date" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Archivo de Calidad (Base Excel)</label>
+                    <div class="relative border-2 border-dashed border-slate-300 rounded-xl p-8 text-center hover:bg-slate-50 transition-colors">
+                        <input type="file" id="setup-excel-file" accept=".xlsx, .xlsm, .csv" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                        <i class="fas fa-file-excel text-4xl text-emerald-500 mb-3"></i>
+                        <p class="text-sm font-medium text-slate-700">Haz clic o arrastra el archivo aquí</p>
+                        <p class="text-xs text-slate-500 mt-1" id="file-name-display">El sistema buscará automáticamente la hoja de datos.</p>
+                    </div>
+                </div>
+
+                <button type="button" onclick="window.processSetup()" class="w-full py-4 bg-primary hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg transition-all mt-6 text-lg flex items-center justify-center gap-3">
+                    <i class="fas fa-magic"></i> Analizar y Generar Sesión
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PANTALLA DE CARGA -->
+    <div id="loading-screen" class="screen hidden fixed inset-0 w-full h-screen bg-slate-900 flex-col items-center justify-center z-[100]">
+        <div class="flex flex-col items-center justify-center text-center w-full max-w-2xl mx-auto">
+            <div class="w-24 h-24 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mb-6 mx-auto"></div>
+            <h2 class="text-3xl font-bold text-white mb-4">Construyendo Sesión...</h2>
+            <p class="text-indigo-300 text-lg leading-relaxed" id="loading-text">Leyendo Excel, calculando Reincidentes y generando modelos S.B.I y Simuladores personalizados con IA.</p>
+        </div>
+    </div>
+
+    <!-- PANTALLA EXPERTO (INGRESO) -->
+    <div id="expert-login-screen" class="screen hidden w-full h-full bg-slate-50 items-center justify-center p-6 relative overflow-hidden">
+        <div class="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-blue-500 via-transparent to-transparent"></div>
+        <div class="max-w-md w-full bg-white rounded-3xl shadow-xl border border-slate-100 p-10 text-center relative z-10 mx-auto">
+            <button type="button" onclick="window.showScreen('login-screen')" class="absolute top-6 left-6 text-slate-400 hover:text-slate-600 transition-colors">
+                <i class="fas fa-arrow-left text-xl"></i>
+            </button>
+            <div class="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
+                <i class="fas fa-user-astronaut text-3xl text-blue-500"></i>
+            </div>
+            <h2 class="text-3xl font-bold mb-2 text-slate-800">Tu Espacio</h2>
+            <p class="text-slate-500 text-sm mb-8" id="expert-login-desc">Ingresa el código proporcionado por tu Coach.</p>
+            
+            <div id="expert-step-1">
+                <input type="text" id="join-session-code" placeholder="CÓDIGO" class="w-full p-4 text-center text-2xl tracking-[0.3em] font-mono font-bold bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 mb-6 uppercase">
+                <button type="button" onclick="window.validateExpertCode()" class="w-full py-4 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl transition-all shadow-lg text-lg">
+                    Validar Código
+                </button>
+            </div>
+
+            <!-- Paso 2: Seleccionar Nombre (Solo si es grupal) -->
+            <div id="expert-step-2" class="hidden">
+                <select id="expert-name-select" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 mb-6 text-lg font-medium text-slate-700">
+                    <option value="">Selecciona tu nombre...</option>
+                </select>
+                <button type="button" onclick="window.joinSessionFinal()" class="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-all shadow-lg text-lg">
+                    Ingresar a la Sesión
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. DASHBOARD PRINCIPAL -->
+    <div id="main-dashboard" class="screen hidden w-full h-full bg-white flex">
+        
+        <!-- Panel Lateral (Izquierdo) -->
+        <div class="w-72 bg-[#0f172a] h-full flex flex-col p-6 shadow-2xl relative z-20 flex-shrink-0">
+            <div class="flex items-center gap-3 mb-6">
+                <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                    <i class="fas fa-chart-line text-white"></i>
+                </div>
+                <div>
+                    <h2 class="text-white font-bold leading-tight">Performance</h2>
+                    <p class="text-indigo-300 text-xs font-medium">Hub</p>
+                </div>
+            </div>
+
+            <!-- Código Destacado -->
+            <div class="bg-slate-800 border border-slate-700 rounded-xl p-4 mb-4 text-center shadow-inner relative group coach-only">
+                <p class="text-xs text-slate-400 font-semibold mb-1 uppercase tracking-wider">CÓDIGO DE SESIÓN</p>
+                <div class="text-2xl font-mono font-bold text-white tracking-[0.2em]" id="display-session-code">------</div>
+                <button type="button" onclick="window.copyToClipboard(document.getElementById('display-session-code').innerText)" class="absolute inset-0 w-full h-full flex items-center justify-center bg-indigo-600/90 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity">
+                    <span class="text-white font-bold text-sm"><i class="fas fa-copy mr-1"></i> Copiar</span>
+                </button>
+            </div>
+
+            <!-- Selector de Experto (Coach) / Info Experto -->
+            <div class="mb-6">
+                <div class="coach-only">
+                    <p class="text-xs text-slate-400 font-semibold mb-1">Visualizando Datos de:</p>
+                    <select id="coach-expert-selector" onchange="window.changeExpertView(this.value)" class="w-full bg-slate-800 text-white border border-slate-600 rounded-lg p-2 outline-none focus:border-indigo-500 text-sm font-medium">
+                        <option value="general">Vista General (Equipo)</option>
+                    </select>
+                </div>
+                <div class="expert-only hidden">
+                    <p class="text-xs text-slate-400 font-semibold mb-1">Experto</p>
+                    <h3 class="text-white font-bold truncate" id="dash-expert-name">Cargando...</h3>
+                    <div class="mt-2 flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <span class="text-xs text-slate-300 font-medium">Conectado</span>
+                    </div>
+                </div>
+            </div>
+
+            <nav class="flex-1 flex flex-col gap-1 overflow-y-auto no-scrollbar">
+                <button type="button" onclick="window.switchTab('tab-sbi')" id="nav-sbi" class="nav-btn active coach-only"><span class="w-6 text-center text-sm"><i class="fas fa-bullseye"></i></span> 1. Tu Potencial</button>
+                <button type="button" onclick="window.switchTab('tab-data')" id="nav-data" class="nav-btn coach-only"><span class="w-6 text-center text-sm"><i class="fas fa-chart-pie"></i></span> 2. Datos y Casos</button>
+                <button type="button" onclick="window.switchTab('tab-board')" id="nav-board" class="nav-btn"><span class="w-6 text-center text-sm"><i class="fas fa-chalkboard"></i></span> 3. Pizarra de Reflexión</button>
+                <button type="button" onclick="window.switchTab('tab-sim')" id="nav-sim" class="nav-btn"><span class="w-6 text-center text-sm"><i class="fas fa-headset"></i></span> 4. Práctica de Caso</button>
+                <button type="button" onclick="window.switchTab('tab-commitment')" id="nav-commitment" class="nav-btn"><span class="w-6 text-center text-sm"><i class="fas fa-handshake"></i></span> 5. Tu Compromiso</button>
+                <button type="button" onclick="window.switchTab('tab-report')" id="nav-report" class="nav-btn coach-only"><span class="w-6 text-center text-sm"><i class="fas fa-file-invoice"></i></span> 6. Reporte Final</button>
+            </nav>
+
+            <div class="mt-auto pt-6 border-t border-slate-700/50 flex flex-col gap-2">
+                <button type="button" onclick="window.showScreen('coach-mode-select-screen')" class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-medium rounded-lg transition-colors coach-only flex items-center justify-center gap-2">
+                    <i class="fas fa-cog"></i> Ajustar IA / Reiniciar
+                </button>
+                <button type="button" onclick="location.reload()" class="w-full py-3 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 font-medium rounded-xl transition-colors flex items-center justify-center gap-2">
+                    <i class="fas fa-sign-out-alt"></i> Salir de Sesión
+                </button>
+            </div>
+        </div>
+
+        <!-- Área de Contenido Principal -->
+        <div class="flex-1 bg-[#f8fafc] overflow-y-auto relative p-8 md:p-12">
+            <!-- Header Dinámico -->
+            <div class="max-w-5xl mx-auto flex justify-between items-center mb-8 border-b border-slate-200 pb-6">
+                <div>
+                    <h1 class="text-4xl font-bold text-slate-800" id="header-title">Tu Potencial</h1>
+                    <p class="text-slate-500 mt-1" id="header-desc">Modelo S.B.I. generado para enfocar el desarrollo.</p>
+                </div>
+                <div class="flex gap-3" id="header-badges"></div>
+            </div>
+
+            <!-- CONTENEDORES DE PESTAÑAS (Centrados max-w-5xl) -->
+            <div class="max-w-5xl mx-auto">
+                
+                <!-- TAB 1: S.B.I -->
+                <div id="tab-sbi" class="tab-content block space-y-6">
+                    <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-200">
+                        <div class="flex items-start gap-6">
+                            <div class="w-16 h-16 rounded-2xl bg-indigo-50 flex items-center justify-center flex-shrink-0"><i class="fas fa-map-marker-alt text-2xl text-primary"></i></div>
+                            <div class="flex-1">
+                                <h3 class="text-xl font-bold text-slate-800 mb-2">Situación <span class="text-slate-400 text-sm font-normal ml-2">(Contexto)</span> <i class="fas fa-pencil-alt text-xs text-slate-300 ml-2 coach-only"></i></h3>
+                                <div class="editable-field text-slate-600 leading-relaxed min-h-[3rem]" id="val-sbi-s" contenteditable="true" onblur="window.saveField('sbi_s', this.innerText)">Cargando...</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-200">
+                        <div class="flex items-start gap-6">
+                            <div class="w-16 h-16 rounded-2xl bg-rose-50 flex items-center justify-center flex-shrink-0"><i class="fas fa-exclamation-circle text-2xl text-rose-500"></i></div>
+                            <div class="flex-1">
+                                <h3 class="text-xl font-bold text-slate-800 mb-2">Comportamiento <span class="text-slate-400 text-sm font-normal ml-2">(Observado)</span> <i class="fas fa-pencil-alt text-xs text-slate-300 ml-2 coach-only"></i></h3>
+                                <div class="editable-field text-slate-600 leading-relaxed min-h-[3rem]" id="val-sbi-b" contenteditable="true" onblur="window.saveField('sbi_b', this.innerText)">Cargando...</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-200">
+                        <div class="flex items-start gap-6">
+                            <div class="w-16 h-16 rounded-2xl bg-emerald-50 flex items-center justify-center flex-shrink-0"><i class="fas fa-wave-square text-2xl text-emerald-500"></i></div>
+                            <div class="flex-1">
+                                <h3 class="text-xl font-bold text-slate-800 mb-2">Impacto <span class="text-slate-400 text-sm font-normal ml-2">(Consecuencia)</span> <i class="fas fa-pencil-alt text-xs text-slate-300 ml-2 coach-only"></i></h3>
+                                <div class="editable-field text-slate-600 leading-relaxed min-h-[3rem]" id="val-sbi-i" contenteditable="true" onblur="window.saveField('sbi_i', this.innerText)">Cargando...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 2: DATOS Y CASOS (Coach Only) -->
+                <div id="tab-data" class="tab-content hidden space-y-6">
+                    <!-- Vista General: Tabla de Reincidentes -->
+                    <div id="data-view-general" class="bg-white p-8 rounded-3xl shadow-sm border border-slate-200">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-xl font-bold text-slate-800">Tablero de Reincidentes</h3>
+                            <span class="text-xs font-bold px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full">>= 4 Monitoreos con Alertas</span>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="border-b border-slate-200 text-slate-500 text-sm">
+                                        <th class="py-3 font-semibold">Experto</th>
+                                        <th class="py-3 font-semibold text-center">Monitoreos</th>
+                                        <th class="py-3 font-semibold text-center">Alertas Tot.</th>
+                                        <th class="py-3 font-semibold">Top Error</th>
+                                        <th class="py-3 font-semibold text-center">Nota Sesión</th>
+                                        <th class="py-3 font-semibold text-center">Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="reincidentes-table-body" class="text-sm">
+                                    <!-- Filas generadas dinámicamente -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Vista Individual: Barras de Pareto -->
+                    <div id="data-view-individual" class="hidden bg-white p-8 rounded-3xl shadow-sm border border-slate-200">
+                        <div class="flex justify-between items-end mb-6">
+                            <h3 class="text-xl font-bold text-slate-800" id="data-ind-title">Oportunidades Identificadas</h3>
+                            <span class="text-xs font-bold px-3 py-1 bg-rose-100 text-poli-magenta rounded-full">ALERTAS DETECTADAS</span>
+                        </div>
+                        <div id="errors-container" class="space-y-5">
+                            <!-- Barras estéticas generadas dinámicamente -->
+                        </div>
+                        <div class="mt-10 pt-6 border-t border-slate-100 flex items-center justify-between">
+                            <div>
+                                <h4 class="font-bold text-slate-800 text-lg">Evaluación Final del Experto</h4>
+                                <p class="text-sm text-slate-500">Asigna la nota al finalizar la sesión.</p>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <input type="number" id="input-ind-score" min="0" max="100" class="w-24 p-3 text-xl font-bold text-center bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-primary" onblur="window.saveIndScore(this.value)">
+                                <span class="font-bold text-slate-400 text-xl">%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 3: PIZARRA C.R.E.C.E -->
+                <div id="tab-board" class="tab-content hidden">
+                    <div class="grid md:grid-cols-3 gap-6">
+                        <!-- Pizarra compartida -->
+                        <div class="md:col-span-2 bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden flex flex-col h-[600px]">
+                            <div class="p-6 border-b border-slate-100 bg-slate-50 flex gap-3">
+                                <input type="text" id="board-input" placeholder="Ej: 'Siento que la plataforma se bloquea mucho...'" class="flex-1 p-3 bg-white border border-slate-200 rounded-xl outline-none focus:border-indigo-500">
+                                <button type="button" onclick="window.addBoardNote()" class="bg-slate-800 text-white px-6 rounded-xl font-bold hover:bg-slate-700">Plasmar</button>
+                            </div>
+                            <div class="flex-1 bg-dots p-6 overflow-y-auto" id="board-canvas">
+                                <!-- Notas -->
+                            </div>
+                        </div>
+
+                        <!-- Panel Privado (Solo Coach) -->
+                        <div class="bg-indigo-50/50 rounded-3xl border border-indigo-100 p-6 flex flex-col h-[600px] coach-only">
+                            <h3 class="font-bold text-indigo-900 mb-4 flex items-center gap-2"><i class="fas fa-lightbulb text-amber-500"></i> Preguntas Poderosas</h3>
+                            <div id="coach-questions-container" class="space-y-3 flex-1 overflow-y-auto pr-2">
+                                <!-- Preguntas IA -->
+                            </div>
+                            <div class="mt-4 pt-4 border-t border-indigo-200">
+                                <h4 class="font-bold text-indigo-900 text-sm mb-2"><i class="fas fa-lock text-slate-400"></i> Mis Notas (Privado)</h4>
+                                <textarea class="w-full h-32 p-3 rounded-xl border border-indigo-200 bg-white text-sm outline-none resize-none focus:ring-2 focus:ring-indigo-500" placeholder="Escribe tus observaciones..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 4: SIMULADOR -->
+                <div id="tab-sim" class="tab-content hidden space-y-6">
+                    <div id="sim-warning" class="bg-amber-50 border border-amber-200 text-amber-800 p-6 rounded-2xl text-center hidden">
+                        <i class="fas fa-exclamation-triangle text-2xl mb-2"></i>
+                        <p class="font-bold">Selecciona un Experto Específico</p>
+                        <p class="text-sm">Para realizar la práctica, selecciona al experto en el menú lateral izquierdo.</p>
+                    </div>
+
+                    <div id="sim-content">
+                        <div class="bg-indigo-50/50 p-8 rounded-3xl border border-indigo-100 relative mb-6">
+                            <div class="absolute top-8 right-8 text-4xl text-indigo-200" id="sim-icon"><i class="fas fa-headset"></i></div>
+                            <h3 class="text-xl font-bold text-indigo-900 mb-2">Rol del Cliente (Simulación) <i class="fas fa-pencil-alt text-xs text-indigo-300 ml-2 coach-only"></i></h3>
+                            <div class="editable-field text-indigo-800 leading-relaxed pr-12 text-lg coach-only" id="val-sim-context" contenteditable="true" onblur="window.saveField('simulator_context', this.innerText)">Cargando...</div>
+                            <div class="text-indigo-800 leading-relaxed pr-12 text-lg hidden expert-only" id="val-sim-context-read">Cargando...</div>
+                        </div>
+
+                        <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-200">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-xl font-bold text-slate-800">Consola de Práctica</h3>
+                                <button type="button" id="btn-mic" onclick="window.toggleMic()" class="w-12 h-12 rounded-full bg-rose-100 text-rose-500 hover:bg-rose-500 hover:text-white transition-colors flex items-center justify-center text-xl expert-only">
+                                    <i class="fas fa-microphone"></i>
+                                </button>
+                            </div>
+                            <p class="text-sm text-slate-500 mb-4 expert-only">Usa el micrófono o escribe directamente tu respuesta a la situación.</p>
+                            <p class="text-sm text-slate-500 mb-4 coach-only">La respuesta del experto aparecerá aquí en tiempo real.</p>
+                            
+                            <textarea id="val-expert-response" placeholder="Escribe tu respuesta aquí..." class="w-full h-48 p-6 bg-slate-50 border border-slate-200 rounded-2xl outline-none text-lg text-slate-700 resize-none focus:ring-2 focus:ring-indigo-500 expert-only"></textarea>
+                            
+                            <!-- Botón Enviar (Experto) -->
+                            <div class="flex justify-end mt-4 expert-only">
+                                <button type="button" onclick="window.sendSimResponse()" class="bg-primary hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-xl shadow-md transition-colors flex items-center gap-2">
+                                    <i class="fas fa-paper-plane"></i> Enviar Respuesta
+                                </button>
+                            </div>
+                            
+                            <!-- Vista Coach -->
+                            <div id="coach-view-response" class="w-full h-48 p-6 bg-slate-50 border border-slate-200 rounded-2xl text-lg text-slate-700 overflow-y-auto italic coach-only">
+                                Esperando que el experto inicie la práctica...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 5: COMPROMISO -->
+                <div id="tab-commitment" class="tab-content hidden">
+                    <div id="com-warning" class="bg-amber-50 border border-amber-200 text-amber-800 p-6 rounded-2xl text-center hidden mb-6">
+                        <i class="fas fa-exclamation-triangle text-2xl mb-2"></i>
+                        <p class="font-bold">Selecciona un Experto Específico</p>
+                        <p class="text-sm">Para ver o sellar un compromiso, selecciona al experto en el menú lateral.</p>
+                    </div>
+
+                    <div id="com-content">
+                        <div class="text-center mb-10">
+                            <h2 class="text-3xl font-bold text-slate-800">Sella tu Compromiso</h2>
+                            <p class="text-slate-500 mt-2">Una sola acción clara hace la diferencia.</p>
+                        </div>
+
+                        <div class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                            <!-- Readiness -->
+                            <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-200 flex flex-col">
+                                <h3 class="font-bold text-slate-800 mb-6 text-lg">Tu Nivel de Disposición</h3>
+                                <div class="space-y-6 flex-1 expert-only">
+                                    <div>
+                                        <div class="flex justify-between text-sm mb-2"><span class="font-medium text-slate-600">Consciencia de mejora</span><span class="font-bold text-primary" id="val-read-1">5</span></div>
+                                        <input type="range" min="1" max="10" value="5" oninput="document.getElementById('val-read-1').innerText=this.value; window.calcReadiness()">
+                                    </div>
+                                    <div>
+                                        <div class="flex justify-between text-sm mb-2"><span class="font-medium text-slate-600">Claridad para resolverlo</span><span class="font-bold text-primary" id="val-read-2">5</span></div>
+                                        <input type="range" min="1" max="10" value="5" oninput="document.getElementById('val-read-2').innerText=this.value; window.calcReadiness()">
+                                    </div>
+                                    <div>
+                                        <div class="flex justify-between text-sm mb-2"><span class="font-medium text-slate-600">Motivación</span><span class="font-bold text-primary" id="val-read-3">5</span></div>
+                                        <input type="range" min="1" max="10" value="5" oninput="document.getElementById('val-read-3').innerText=this.value; window.calcReadiness()">
+                                    </div>
+                                </div>
+                                <div class="mt-8 bg-slate-50 rounded-2xl p-6 text-center border border-slate-100">
+                                    <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">ÍNDICE READINESS</p>
+                                    <div class="text-5xl font-bold text-primary" id="readiness-score">50%</div>
+                                </div>
+                            </div>
+
+                            <!-- Plan -->
+                            <div class="bg-poli-blue p-8 rounded-3xl shadow-lg text-white flex flex-col">
+                                <h3 class="font-bold text-xl mb-2">Mi Plan de Acción</h3>
+                                
+                                <div class="space-y-5 flex-1 expert-only">
+                                    <div>
+                                        <label class="block text-sm font-medium text-slate-300 mb-2">¿QUÉ voy a hacer diferente?</label>
+                                        <textarea id="commit-action" class="w-full bg-white/10 border border-white/20 rounded-xl p-4 text-white placeholder-slate-400 outline-none focus:bg-white/20 h-28 resize-none"></textarea>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-sm font-medium text-slate-300 mb-2">¿CUÁNDO comienzo?</label>
+                                            <input type="date" id="commit-date" class="w-full bg-white/10 border border-white/20 rounded-xl p-3 text-white outline-none">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-slate-300 mb-2">Tus Iniciales</label>
+                                            <input type="text" id="commit-sign" class="w-full bg-white/10 border border-white/20 rounded-xl p-3 text-white text-center uppercase outline-none">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="space-y-4 flex-1 coach-only hidden" id="coach-view-commitment">
+                                    <div class="bg-white/10 rounded-xl p-4 min-h-[100px] italic text-slate-300">Esperando compromiso...</div>
+                                </div>
+
+                                <button type="button" onclick="window.saveCommitment()" class="w-full py-4 mt-6 bg-white text-poli-blue hover:bg-slate-100 font-bold rounded-xl shadow-lg transition-colors expert-only">
+                                    Guardar y Sellar Compromiso
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 6: REPORTE FINAL (SOLO COACH) -->
+                <div id="tab-report" class="tab-content hidden coach-only">
+                    <div id="export-report-area" class="bg-white p-10 rounded-[2rem] shadow-lg border border-slate-200">
+                        <div class="flex justify-between items-start mb-10 border-b-2 border-poli-blue pb-4">
+                            <div>
+                                <h2 class="text-2xl font-bold text-poli-blue" id="report-title">Reporte Consolidado: Taller</h2>
+                                <p class="text-sm text-slate-500">Análisis de participación y evaluación de conocimientos</p>
+                            </div>
+                        </div>
+
+                        <div class="grid md:grid-cols-3 gap-8">
+                            <!-- Gráfica Score -->
+                            <div class="border border-slate-200 rounded-2xl p-6 flex flex-col relative group">
+                                <h3 class="font-bold text-slate-700 mb-6 text-center">Resultados de Evaluación</h3>
+                                <button type="button" onclick="window.downloadChart('chart-score', 'Score_Evaluacion.png')" class="absolute top-4 right-4 text-slate-400 hover:text-primary opacity-0 group-hover:opacity-100 transition-opacity"><i class="fas fa-download"></i></button>
+                                <div class="w-full h-72 relative">
+                                    <canvas id="chart-score"></canvas>
+                                </div>
+                            </div>
+                            
+                            <!-- Gráfica Pareto -->
+                            <div class="md:col-span-2 border border-slate-200 rounded-2xl p-6 relative group">
+                                <h3 class="font-bold text-slate-700 mb-6 text-center">Cantidad de Mínimos Consolidado</h3>
+                                <button type="button" onclick="window.downloadChart('chart-pareto', 'Pareto_Minimos.png')" class="absolute top-4 right-4 text-slate-400 hover:text-primary opacity-0 group-hover:opacity-100 transition-opacity"><i class="fas fa-download"></i></button>
+                                <div class="w-full h-72 relative">
+                                    <canvas id="chart-pareto"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Script de Inicialización y Lógica -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, onSnapshot, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        let db = null;
+        let sessionRef = null;
+        let isCoach = false;
+        let currentSessionData = {};
+        let currentExpertView = "general"; // 'general' or specific expert name
+        let myExpertName = ""; // Para el experto cuando se loguea
+
+        // Mostrar mensajes (Reemplaza a alert)
+        window.showMsg = function(text, type='info') {
+            const el = document.getElementById('custom-toast');
+            document.getElementById('toast-msg').innerText = text;
+            el.className = `fixed bottom-5 right-5 p-4 rounded-xl shadow-2xl text-white font-bold z-50 transform transition-all duration-300 flex items-center gap-3 ${type==='error'?'bg-rose-600':'bg-emerald-600'}`;
+            el.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => el.classList.add('translate-y-20', 'opacity-0'), 4000);
+        };
+
+        // Función para copiar al portapapeles compatible con iFrames
+        window.copyToClipboard = function(text) {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            // Evitar scroll hacia abajo
+            textArea.style.position = "fixed";
+            textArea.style.left = "-9999px";
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            
+            try {
+                document.execCommand('copy');
+                window.showMsg('¡Código copiado!');
+            } catch (err) {
+                console.error('Error al copiar', err);
+                window.showMsg('Error al copiar código', 'error');
+            }
+            
+            document.body.removeChild(textArea);
+        };
+
+        // --- Procesamiento de Excel (SheetJS) ---
+        window.procesarBaseMonitoreos = async function(file, fechaInicio, fechaFin, isGroup, singleExpertName) {
+            const arrayBuffer = await file.arrayBuffer();
+            const workbook = XLSX.read(arrayBuffer, { type: 'array', cellDates: true });
+            
+            let targetSheetName = workbook.SheetNames.find(n => n.trim().toUpperCase() === 'BASE MONITOREOS' || n.trim().toUpperCase() === 'BASE_MONITOREOS');
+            if (!targetSheetName) targetSheetName = workbook.SheetNames[0]; // Fallback seguro
+            
+            const worksheet = workbook.Sheets[targetSheetName];
+            const data = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' });
+            if (data.length < 2) throw new Error('La hoja está vacía.');
+
+            const headers = data[0];
+            const COL_EXP = 2, COL_FECHA = 4, COL_RESUMEN = 9, COL_START = 15, COL_END = 28;
+
+            let expertosMap = {}; 
+            
+            // Lógica de fechas (90 días automáticos para Reincidentes)
+            let eDate = new Date(fechaFin + "T23:59:59");
+            let sDate = new Date(fechaInicio + "T00:00:00");
+            
+            if (isGroup) {
+                // Si es reincidentes, forzamos 90 días hacia atrás desde la fecha fin
+                sDate = new Date(eDate.getTime() - (90 * 24 * 60 * 60 * 1000));
+            }
+
+            const expBuscado = (singleExpertName || '').trim().toLowerCase();
+
+            for (let r = 1; r < data.length; r++) {
+                const fila = data[r];
+                if (!fila || fila.length === 0) continue;
+                
+                const fecha = fila[COL_FECHA] instanceof Date ? fila[COL_FECHA] : new Date(fila[COL_FECHA]);
+                if (isNaN(fecha.getTime()) || fecha < sDate || fecha > eDate) continue;
+
+                const experto = String(fila[COL_EXP] || '').trim();
+                if (!experto) continue;
+
+                // En Individual, debe coincidir el nombre (ignorando mayúsculas y espacios extra)
+                if (!isGroup && experto.toLowerCase() !== expBuscado) continue;
+
+                let hasMinimo = false;
+                let erroresFila = [];
+                for (let c = COL_START; c <= COL_END; c++) {
+                    const val = String(fila[c] || '').trim().toLowerCase();
+                    if (val.includes('mínimo') || val.includes('minimo')) {
+                        hasMinimo = true;
+                        erroresFila.push(String(headers[c] || `Error Col ${c}`).trim());
+                    }
+                }
+
+                // Para individual traemos TODO, para grupal solo si tiene mínimos
+                if (hasMinimo || !isGroup) {
+                    if (!expertosMap[experto]) expertosMap[experto] = { interacciones: new Set(), errores: {}, resumenes: [], totalMonitoreos: 0 };
+                    
+                    expertosMap[experto].totalMonitoreos++;
+                    
+                    if (hasMinimo) {
+                        expertosMap[experto].interacciones.add(fecha.getTime() + "_" + fila[COL_RESUMEN]);
+                        erroresFila.forEach(e => {
+                            expertosMap[experto].errores[e] = (expertosMap[experto].errores[e] || 0) + 1;
+                        });
+                    }
+                    
+                    if(fila[COL_RESUMEN]) expertosMap[experto].resumenes.push(fila[COL_RESUMEN]);
+                }
+            }
+
+            // Filtrar Reincidentes o Individual
+            let reincidentes = [];
+            for (let exp in expertosMap) {
+                const countMinimos = expertosMap[exp].interacciones.size;
+                const countTotal = expertosMap[exp].totalMonitoreos;
+                
+                if (isGroup && countMinimos >= 4) {
+                    let errArray = Object.keys(expertosMap[exp].errores).map(k => ({name: k, count: expertosMap[exp].errores[k]})).sort((a,b)=>b.count-a.count);
+                    reincidentes.push({ name: exp, monitorings: countMinimos, errors: errArray, resumenes: expertosMap[exp].resumenes });
+                } else if (!isGroup) {
+                    // En individual pasamos aunque no tenga los 4 mínimos
+                    let errArray = Object.keys(expertosMap[exp].errores).map(k => ({name: k, count: expertosMap[exp].errores[k]})).sort((a,b)=>b.count-a.count);
+                    reincidentes.push({ name: exp, monitorings: countTotal, errors: errArray, resumenes: expertosMap[exp].resumenes });
+                }
+            }
+
+            return reincidentes;
+        };
+
+        // --- Configuración UI Inicial ---
+        window.showScreen = function(id) {
+            document.querySelectorAll('.screen').forEach(el => el.classList.add('hidden'));
+            const target = document.getElementById(id);
+            if(target) {
+                target.classList.remove('hidden');
+                if(id === 'main-dashboard') target.classList.add('flex');
+            }
+        };
+
+        window.showSetup = function(type) {
+            window.sessionType = type;
+            document.getElementById('setup-title').innerText = type === 'group' ? 'Taller de Reincidentes' : 'Coach Individual';
+            document.getElementById('expert-name-container').style.display = type === 'group' ? 'none' : 'block';
+            window.showScreen('coach-setup-screen');
+        };
+
+        window.processSetup = async function() {
+            const inst = document.getElementById('setup-institution').value;
+            const chan = document.getElementById('setup-channel').value;
+            const sDate = document.getElementById('setup-start-date').value;
+            const eDate = document.getElementById('setup-end-date').value;
+            const fileInput = document.getElementById('setup-excel-file');
+            const isGroup = window.sessionType === 'group';
+            const expName = document.getElementById('setup-expert-name').value;
+
+            if(!isGroup && !expName) return window.showMsg('Ingresa el nombre del experto', 'error');
+            if(!sDate || !eDate || !fileInput.files.length) return window.showMsg('Completa fechas y archivo', 'error');
+
+            window.showScreen('loading-screen');
+            isCoach = true;
+
+            try {
+                const reincidentes = await window.procesarBaseMonitoreos(fileInput.files[0], sDate, eDate, isGroup, expName);
+                
+                if(reincidentes.length === 0) {
+                    window.showScreen('coach-setup-screen');
+                    return window.showMsg('No se hallaron reincidentes (>=4 monitoreos) o no coincide el nombre.', 'error');
+                }
+
+                // Generar Prompt masivo o individual
+                let promptTxt = `Eres un Coach Master. Analiza los siguientes expertos que tuvieron errores de calidad en ${chan}.\n`;
+                if(isGroup) promptTxt += `Extrae un S.B.I general (Situación, Comportamiento, Impacto) y 3 preguntas poderosas generales.\n`;
+                
+                promptTxt += `Para cada experto, genera su propio S.B.I y un "simulator_context" (un rol de cliente ofuscado de 2 lineas basado en sus errores) para que practiquen.\n\nDATA:\n`;
+                reincidentes.forEach(r => {
+                    promptTxt += `- Experto: ${r.name}. Errores Top: ${r.errors.slice(0,2).map(e=>e.name).join(', ')}. Resumen llamadas: ${r.resumenes.slice(0,2).join('. ')}\n`;
+                });
+                
+                promptTxt += `\nDEVUELVE UNICAMENTE UN JSON VALIDO: { "general": { "sbi_s":"", "sbi_b":"", "sbi_i":"", "questions":["q1","q2","q3"] }, "experts": [ { "name":"nombre exacto", "sbi_s":"", "sbi_b":"", "sbi_i":"", "simulator_context":"" } ] }`;
+
+                const aiData = await fetchGemini(promptTxt);
+                if(!aiData || !aiData.experts) throw new Error("La IA no devolvió el formato esperado.");
+
+                // Construir Sesión
+                const code = Math.random().toString(36).substring(2, 8).toUpperCase();
+                let sessionData = {
+                    code, type: window.sessionType, institution: inst, channel: chan,
+                    general: { ...aiData.general, errors: aggregateErrors(reincidentes) },
+                    experts: {}, board: []
+                };
+
+                reincidentes.forEach(r => {
+                    let aiExp = aiData.experts.find(a => a.name === r.name) || { sbi_s:'N/A', sbi_b:'N/A', sbi_i:'N/A', simulator_context:'Práctica genérica' };
+                    sessionData.experts[r.name] = {
+                        name: r.name, monitorings: r.monitorings, errors: r.errors, score: 0,
+                        sbi_s: aiExp.sbi_s, sbi_b: aiExp.sbi_b, sbi_i: aiExp.sbi_i, simulator_context: aiExp.simulator_context,
+                        expertResponse: "", commitment: {}, readiness: "50%"
+                    };
+                });
+
+                window.currentCode = code;
+                await connectFirebase();
+                if(db) {
+                    sessionRef = doc(db, 'coach_sessions', code);
+                    await setDoc(sessionRef, sessionData);
+                    listenSession(code);
+                } else {
+                    localStorage.setItem(`cs_${code}`, JSON.stringify(sessionData));
+                    listenLocal(code);
+                }
+                
+                setupDashboard(sessionData);
+
+            } catch (e) {
+                console.error(e);
+                window.showScreen('coach-setup-screen');
+                window.showMsg('Error: ' + e.message, 'error');
+            }
+        };
+
+        function aggregateErrors(reins) {
+            let map = {};
+            reins.forEach(r => r.errors.forEach(e => map[e.name] = (map[e.name]||0) + e.count));
+            return Object.keys(map).map(k => ({name: k, count: map[k]})).sort((a,b)=>b.count-a.count);
+        }
+
+        async function fetchGemini(prompt) {
+            // Reemplaza el texto entre las comillas con la clave que acabas de copiar
+            const apiKey = "AQ.Ab8RN6JALzU1Cd6ZEl11lMflXXNDYL51Dzi4ImnvoU3pPC7Ogw"; 
+            
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+            const p = { contents: [{ role: 'user', parts: [{ text: prompt }] }], generationConfig: { responseMimeType: "application/json" } };
+            try {
+                const res = await fetch(url, { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(p) });
+                const d = await res.json();
+                let txt = d?.candidates?.[0]?.content?.parts?.[0]?.text;
+                if(txt) return JSON.parse(txt.replace(/```json/gi, "").replace(/```/g, "").trim());
+            } catch(e) { console.error(e); }
+            return null;
+        }
+
+        // --- Firebase Connection ---
+        async function connectFirebase() {
+            if(db) return true;
+            try {
+                const fbConfig = {
+                    apiKey: "AIzaSyD0eh7mkqDIiCsh6ALkptO2vj6jMYiyauk",
+                    authDomain: "coach-hub-poli.firebaseapp.com",
+                    projectId: "coach-hub-poli",
+                    storageBucket: "coach-hub-poli.firebasestorage.app",
+                    messagingSenderId: "88037977989",
+                    appId: "1:88037977989:web:2758f022fb1af029705eec"
+                };
+                const app = initializeApp(fbConfig);
+                const auth = getAuth(app);
+                await signInAnonymously(auth);
+                db = getFirestore(app);
+                document.getElementById('global-sync-status').className = "w-2 h-2 rounded-full bg-emerald-500 animate-pulse";
+                return true;
+            } catch(e) {
+                console.warn("Firebase falló, usando Local", e);
+                document.getElementById('global-sync-status').className = "w-2 h-2 rounded-full bg-rose-500";
+                return false;
+            }
+        }
+
+        // --- Expert Login Logic ---
+        window.validateExpertCode = async function() {
+            const code = document.getElementById('join-session-code').value.toUpperCase();
+            if(!code) return window.showMsg('Ingresa un código', 'error');
+            
+            await connectFirebase();
+            let data = null;
+            if(db) {
+                // To read once we use onSnapshot but trigger once
+                return new Promise((resolve) => {
+                    const unsub = onSnapshot(doc(db, 'coach_sessions', code), (snap) => {
+                        unsub();
+                        if(snap.exists()) {
+                            processExpertJoin(snap.data(), code);
+                        } else {
+                            window.showMsg('Sesión no encontrada', 'error');
+                        }
+                    }, (err) => { window.showMsg('Error de permisos. Modo local', 'error'); processExpertLocal(code); });
+                });
+            } else {
+                processExpertLocal(code);
+            }
+        };
+
+        function processExpertLocal(code) {
+            const raw = localStorage.getItem(`cs_${code}`);
+            if(raw) processExpertJoin(JSON.parse(raw), code);
+            else window.showMsg('Sesión local no encontrada', 'error');
+        }
+
+        function processExpertJoin(data, code) {
+            window.currentCode = code;
+            currentSessionData = data;
+            isCoach = false;
+            
+            if(data.type === 'group') {
+                document.getElementById('expert-step-1').classList.add('hidden');
+                document.getElementById('expert-step-2').classList.remove('hidden');
+                document.getElementById('expert-login-desc').innerText = "Selecciona tu nombre de la lista.";
+                const sel = document.getElementById('expert-name-select');
+                sel.innerHTML = '<option value="">Selecciona...</option>' + Object.keys(data.experts).map(k => `<option value="${k}">${k}</option>`).join('');
+            } else {
+                myExpertName = Object.keys(data.experts)[0];
+                window.joinSessionFinal();
+            }
+        }
+
+        window.joinSessionFinal = function() {
+            if(currentSessionData.type === 'group') {
+                myExpertName = document.getElementById('expert-name-select').value;
+                if(!myExpertName) return window.showMsg('Selecciona tu nombre', 'error');
+            }
+            if(db) {
+                sessionRef = doc(db, 'coach_sessions', window.currentCode);
+                listenSession(window.currentCode);
+            } else {
+                listenLocal(window.currentCode);
+            }
+            setupDashboard(currentSessionData);
+        };
+
+        window.resumeCoachSession = async function() {
+            const c = document.getElementById('coach-resume-code').value.toUpperCase();
+            if(!c) return;
+            isCoach = true;
+            window.currentCode = c;
+            await connectFirebase();
+            if(db) {
+                sessionRef = doc(db, 'coach_sessions', c);
+                listenSession(c);
+            } else {
+                listenLocal(c);
+            }
+        };
+
+        // --- Sync Listeners ---
+        function listenSession(code) {
+            onSnapshot(doc(db, 'coach_sessions', code), (snap) => {
+                if(snap.exists()) renderUI(snap.data());
+            }, (e) => { console.error("Sync Error", e); window.showMsg("Error de lectura DB", "error"); });
+        }
+
+        function listenLocal(code) {
+            window.addEventListener('storage', (e) => {
+                if(e.key === `cs_${code}`) renderUI(JSON.parse(e.newValue));
+            });
+            renderUI(JSON.parse(localStorage.getItem(`cs_${code}`)));
+        }
+
+        async function safeUpdate(updates) {
+            if(db && sessionRef) {
+                try { await updateDoc(sessionRef, updates); } catch(e) { console.error(e); }
+            } else {
+                // Local deep merge simulation
+                let d = JSON.parse(localStorage.getItem(`cs_${window.currentCode}`));
+                for(let k in updates) {
+                    if(k.includes('.')) {
+                        let parts = k.split('.');
+                        d[parts[0]][parts[1]][parts[2]] = updates[k]; // simplified for experts.name.prop
+                    } else { d[k] = updates[k]; }
+                }
+                localStorage.setItem(`cs_${window.currentCode}`, JSON.stringify(d));
+                renderUI(d);
+            }
+        }
+
+        // --- UI Rendering ---
+        function setupDashboard(data) {
+            window.showScreen('main-dashboard');
+            document.querySelectorAll('.coach-only').forEach(el => el.style.display = isCoach ? '' : 'none');
+            document.querySelectorAll('.expert-only').forEach(el => el.style.display = isCoach ? 'none' : '');
+            
+            document.getElementById('display-session-code').innerText = data.code;
+            
+            if(isCoach) {
+                const sel = document.getElementById('coach-expert-selector');
+                sel.innerHTML = '<option value="general">Vista General (Equipo)</option>' + Object.keys(data.experts).map(k => `<option value="${k}">${k}</option>`).join('');
+                currentExpertView = 'general';
+                window.switchTab('tab-sbi');
+                initCharts(data);
+            } else {
+                document.getElementById('dash-expert-name').innerText = myExpertName;
+                currentExpertView = myExpertName;
+                window.switchTab('tab-board'); // Experto arranca en pizarra
+            }
+            renderUI(data);
+        }
+
+        window.changeExpertView = function(val) {
+            currentExpertView = val;
+            renderUI(currentSessionData);
+        };
+
+        window.switchTab = function(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+            
+            document.getElementById(tabId).classList.remove('hidden');
+            document.getElementById(tabId).classList.add('block');
+            const btn = document.getElementById(`nav-${tabId.split('-')[1]}`);
+            if(btn) btn.classList.add('active');
+
+            const titles = { 'tab-sbi': 'Tu Potencial', 'tab-data': 'Datos y Casos', 'tab-board': 'Pizarra de Reflexión', 'tab-sim': 'Práctica de Caso', 'tab-commitment': 'Tu Compromiso', 'tab-report': 'Reporte Final' };
+            document.getElementById('header-title').innerText = titles[tabId];
+            
+            if(tabId === 'tab-report' && isCoach) updateCharts(currentSessionData);
+        };
+
+        function renderUI(data) {
+            currentSessionData = data;
+            const isGen = currentExpertView === 'general';
+            const viewData = isGen ? data.general : data.experts[currentExpertView];
+            if(!viewData) return;
+
+            // 1. S.B.I
+            ['sbi_s', 'sbi_b', 'sbi_i'].forEach(f => {
+                const el = document.getElementById(`val-${f.replace('_','-')}`);
+                if(el && el.innerText !== viewData[f]) el.innerText = viewData[f] || '...';
+            });
+
+            // 2. Datos y Casos (Solo Coach)
+            if(isCoach) {
+                if(isGen) {
+                    document.getElementById('data-view-general').classList.remove('hidden');
+                    document.getElementById('data-view-individual').classList.add('hidden');
+                    const tbody = document.getElementById('reincidentes-table-body');
+                    tbody.innerHTML = Object.values(data.experts).map(e => `
+                        <tr class="border-b border-slate-50 hover:bg-slate-50">
+                            <td class="py-3 font-semibold text-slate-800">${e.name}</td>
+                            <td class="py-3 text-center">${e.monitorings}</td>
+                            <td class="py-3 text-center text-rose-500 font-bold">${e.errors.reduce((a,b)=>a+b.count,0)}</td>
+                            <td class="py-3 text-slate-500 truncate max-w-[200px]">${e.errors[0]?.name || ''}</td>
+                            <td class="py-3 text-center"><input type="number" value="${e.score||0}" onblur="window.saveScore('${e.name}', this.value)" class="w-16 p-1 border rounded text-center font-bold text-primary"></td>
+                            <td class="py-3 text-center"><button onclick="document.getElementById('coach-expert-selector').value='${e.name}'; window.changeExpertView('${e.name}');" class="text-indigo-500 hover:underline text-xs font-bold">Ver Detalle</button></td>
+                        </tr>
+                    `).join('');
+                } else {
+                    document.getElementById('data-view-general').classList.add('hidden');
+                    document.getElementById('data-view-individual').classList.remove('hidden');
+                    document.getElementById('data-ind-title').innerText = `Oportunidades: ${viewData.name}`;
+                    document.getElementById('input-ind-score').value = viewData.score || 0;
+                    
+                    const maxCount = Math.max(...viewData.errors.map(e=>e.count), 1);
+                    document.getElementById('errors-container').innerHTML = viewData.errors.map(err => `
+                        <div>
+                            <div class="flex justify-between text-sm mb-1"><span class="font-medium text-slate-700">${err.name}</span><span class="font-bold text-slate-800">${err.count}</span></div>
+                            <div class="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                                <div class="h-full bg-gradient-to-r from-poli-blue to-blue-400 rounded-full" style="width: ${(err.count/maxCount)*100}%"></div>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            }
+
+            // 3. Pizarra compartida
+            document.getElementById('board-canvas').innerHTML = (data.board || []).map(n => `
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 mb-3 inline-block max-w-[85%] ${n.sender==='Coach'?'ml-auto border-indigo-200 bg-indigo-50':'mr-auto'}">
+                    <p class="text-[10px] font-bold text-slate-400 mb-1 uppercase">${n.sender}</p>
+                    <p class="text-sm text-slate-700">${n.text}</p>
+                </div>
+            `).join('');
+
+            if(isCoach && data.general.questions) {
+                document.getElementById('coach-questions-container').innerHTML = data.general.questions.map(q => `
+                    <div class="bg-white p-3 rounded-xl border-l-4 border-l-amber-400 text-sm text-slate-700">${q}</div>
+                `).join('');
+            }
+
+            // 4 & 5. Simulador y Compromiso (Requieren experto específico)
+            if(isGen && isCoach) {
+                document.getElementById('sim-warning').classList.remove('hidden');
+                document.getElementById('sim-content').classList.add('hidden');
+                document.getElementById('com-warning').classList.remove('hidden');
+                document.getElementById('com-content').classList.add('hidden');
+            } else {
+                document.getElementById('sim-warning').classList.add('hidden');
+                document.getElementById('sim-content').classList.remove('hidden');
+                document.getElementById('com-warning').classList.add('hidden');
+                document.getElementById('com-content').classList.remove('hidden');
+
+                // Sim Data
+                document.getElementById('val-sim-context').innerText = viewData.simulator_context || '';
+                document.getElementById('val-sim-context-read').innerText = viewData.simulator_context || '';
+                
+                if(isCoach) {
+                    document.getElementById('coach-view-response').innerText = viewData.expertResponse || 'Esperando...';
+                    if(viewData.commitment?.action) {
+                        document.getElementById('coach-view-commitment').classList.remove('hidden');
+                        document.getElementById('coach-view-commitment').innerHTML = `
+                            <div class="bg-white/10 rounded-xl p-4 text-white">
+                                <p class="font-bold mb-1">Acción: "${viewData.commitment.action}"</p>
+                                <p class="text-sm text-slate-300">Inicio: ${viewData.commitment.date} | Firma: ${viewData.commitment.sign}</p>
+                            </div>
+                        `;
+                    } else {
+                        document.getElementById('coach-view-commitment').classList.add('hidden');
+                    }
+                } else {
+                    if(document.getElementById('val-expert-response').value !== viewData.expertResponse) {
+                        document.getElementById('val-expert-response').value = viewData.expertResponse || '';
+                    }
+                }
+            }
+        }
+
+        // --- Acciones Coach & Experto ---
+        window.saveField = function(field, val) {
+            if(!isCoach || currentExpertView === 'general') return;
+            safeUpdate({ [`experts.${currentExpertView}.${field}`]: val });
+        };
+
+        window.saveScore = function(exp, val) {
+            safeUpdate({ [`experts.${exp}.score`]: parseInt(val)||0 });
+        };
+        window.saveIndScore = function(val) {
+            if(currentExpertView !== 'general') window.saveScore(currentExpertView, val);
+        };
+
+        window.addBoardNote = async function() {
+            const inp = document.getElementById('board-input');
+            if(!inp.value.trim()) return;
+            const note = { sender: isCoach ? 'Coach' : myExpertName, text: inp.value };
+            inp.value = '';
+            if(db && sessionRef) await updateDoc(sessionRef, { board: arrayUnion(note) });
+            else {
+                let d = currentSessionData; d.board.push(note);
+                safeUpdate({ board: d.board });
+            }
+        };
+
+        window.sendSimResponse = function() {
+            const val = document.getElementById('val-expert-response').value;
+            safeUpdate({ [`experts.${myExpertName}.expertResponse`]: val });
+            window.showMsg('Respuesta enviada al Coach');
+        };
+
+        window.calcReadiness = function() {
+            const sum = parseInt(document.getElementById('val-read-1').innerText) + parseInt(document.getElementById('val-read-2').innerText) + parseInt(document.getElementById('val-read-3').innerText);
+            document.getElementById('readiness-score').innerText = Math.round((sum / 30) * 100) + '%';
+        };
+
+        window.saveCommitment = function() {
+            const action = document.getElementById('commit-action').value;
+            const date = document.getElementById('commit-date').value;
+            const sign = document.getElementById('commit-sign').value;
+            if(!action || !date || !sign) return window.showMsg("Completa todo el plan", "error");
+            safeUpdate({ [`experts.${myExpertName}.commitment`]: {action, date, sign} });
+            window.showMsg('¡Compromiso Sellado!');
+        };
+
+        // --- Micrófono Experto ---
+        let recognition = null;
+        if ('webkitSpeechRecognition' in window) {
+            try {
+                recognition = new webkitSpeechRecognition();
+                recognition.continuous = true;
+                recognition.interimResults = true;
+                recognition.lang = 'es-ES';
+                recognition.onresult = function(event) {
+                    let txt = '';
+                    for (let i = event.resultIndex; i < event.results.length; ++i) {
+                        if (event.results[i].isFinal) txt += event.results[i][0].transcript;
+                    }
+                    if(txt) {
+                        const el = document.getElementById('val-expert-response');
+                        el.value = (el.value + " " + txt).trim();
+                    }
+                };
+                recognition.onerror = function(event) {
+                    console.error("Mic error:", event.error);
+                    if(event.error === 'not-allowed') {
+                        window.showMsg("Permiso de micrófono denegado por el navegador.", "error");
+                    }
+                    const btn = document.getElementById('btn-mic');
+                    if (btn) btn.className = "w-12 h-12 rounded-full bg-rose-100 text-rose-500 hover:bg-rose-500 hover:text-white transition-colors flex items-center justify-center text-xl expert-only";
+                };
+            } catch(e) {
+                console.error("Speech Recognition Init Error", e);
+            }
+        }
+        
+        window.toggleMic = function() {
+            if(!recognition) return window.showMsg("Micrófono bloqueado o no soportado en este entorno. Por favor, escribe tu respuesta.", "error");
+            const btn = document.getElementById('btn-mic');
+            try {
+                if(btn.classList.contains('bg-rose-500')) {
+                    recognition.stop();
+                    btn.className = "w-12 h-12 rounded-full bg-rose-100 text-rose-500 hover:bg-rose-500 hover:text-white transition-colors flex items-center justify-center text-xl expert-only";
+                } else {
+                    recognition.start();
+                    btn.className = "w-12 h-12 rounded-full bg-rose-500 text-white animate-pulse transition-colors flex items-center justify-center text-xl expert-only";
+                }
+            } catch(err) {
+                console.error("Mic start/stop error", err);
+                window.showMsg("El entorno bloqueó el acceso al micrófono. Escribe tu respuesta.", "error");
+                btn.className = "w-12 h-12 rounded-full bg-rose-100 text-rose-500 hover:bg-rose-500 hover:text-white transition-colors flex items-center justify-center text-xl expert-only";
+            }
+        };
+
+        // --- Gráficas y Descargas ---
+        window.initCharts = function(data) {
+            if (window.chartPareto) window.chartPareto.destroy();
+            if (window.chartScore) window.chartScore.destroy();
+
+            const ctxP = document.getElementById('chart-pareto').getContext('2d');
+            window.chartPareto = new Chart(ctxP, {
+                type: 'bar',
+                data: { labels: [], datasets: [{ data: [], backgroundColor: '#10385b', borderRadius: 4, barThickness: 24 }] },
+                options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend:{display:false} }, scales: { x:{beginAtZero:true}, y:{ticks:{font:{size:10}}} } }
+            });
+
+            const ctxS = document.getElementById('chart-score').getContext('2d');
+            window.chartScore = new Chart(ctxS, {
+                type: 'bar',
+                data: { labels: [], datasets: [{ data: [], backgroundColor: '#e0016e', barThickness: 40 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend:{display:false} }, scales: { y:{min:0, max:100} } }
+            });
+            updateCharts(data);
+        };
+
+        function updateCharts(data) {
+            if(!window.chartPareto || !window.chartScore) return;
+            // Pareto (Errores globales del grupo de reincidentes)
+            window.chartPareto.data.labels = data.general.errors.map(e=>e.name.substring(0, 30)+'...');
+            window.chartPareto.data.datasets[0].data = data.general.errors.map(e=>e.count);
+            window.chartPareto.update();
+
+            // Score (Todos los expertos)
+            const exps = Object.values(data.experts);
+            window.chartScore.data.labels = exps.map(e=>e.name.split(' ')[0]);
+            window.chartScore.data.datasets[0].data = exps.map(e=>e.score||0);
+            window.chartScore.update();
+        }
+
+        window.downloadChart = function(canvasId, filename) {
+            const link = document.createElement('a');
+            link.download = filename;
+            link.href = document.getElementById(canvasId).toDataURL('image/png');
+            link.click();
+        };
+    </script>
+</body>
+</html>
