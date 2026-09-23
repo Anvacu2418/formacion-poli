@@ -156,7 +156,7 @@
                 </div>
 
                 <div id="expert-name-container">
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Nombre Exacto del Experto</label>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Nombre Exacto del Experto (Como en Excel)</label>
                     <input type="text" id="setup-expert-name" placeholder="Ej. Ayde Carolina Borja" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500">
                 </div>
 
@@ -181,32 +181,32 @@
                     </div>
                 </div>
 
-                <button type="button" onclick="window.processSetup()" class="w-full py-4 bg-primary hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg transition-all mt-6 text-lg flex items-center justify-center gap-3">
-                    <i class="fas fa-magic"></i> Analizar y Generar Sesión
+                <!-- NUEVO MODO: PUENTE MANUAL CON IA -->
+                <div id="manual-ai-bridge" class="hidden bg-indigo-50 border border-indigo-200 p-6 rounded-2xl mt-6">
+                    <h3 class="font-bold text-indigo-900 mb-2"><i class="fas fa-robot"></i> Puente con Inteligencia Artificial</h3>
+                    <p class="text-sm text-indigo-700 mb-4">Copia el texto a continuación, pégalo en tu chat con Gemini, y luego pega la respuesta (JSON) en el cuadro inferior.</p>
+                    
+                    <button type="button" onclick="window.copyToClipboard(document.getElementById('ai-prompt-box').value)" class="w-full py-2 bg-indigo-200 hover:bg-indigo-300 text-indigo-800 font-bold rounded-lg transition-colors mb-2 text-sm flex items-center justify-center gap-2">
+                        <i class="fas fa-copy"></i> Copiar Petición para Gemini
+                    </button>
+                    <textarea id="ai-prompt-box" readonly class="w-full h-32 p-3 bg-white border border-indigo-100 rounded-lg text-xs text-slate-600 outline-none resize-none mb-4 font-mono"></textarea>
+                    
+                    <label class="block text-sm font-bold text-indigo-900 mb-1">Pega aquí la respuesta de Gemini (JSON):</label>
+                    <textarea id="ai-response-box" placeholder='{"general": {...}, "experts": [...]}' class="w-full h-32 p-3 bg-white border border-indigo-300 rounded-lg text-sm text-slate-800 outline-none resize-none focus:ring-2 focus:ring-primary"></textarea>
+                    
+                    <button type="button" onclick="window.processManualAI()" class="w-full py-3 bg-primary hover:bg-indigo-700 text-white font-bold rounded-xl shadow-md transition-all mt-4 text-sm flex items-center justify-center gap-2">
+                        <i class="fas fa-play"></i> Iniciar Sesión con estos Datos
+                    </button>
+                </div>
+
+                <button type="button" id="btn-analyze" onclick="window.processSetup()" class="w-full py-4 bg-primary hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg transition-all mt-6 text-lg flex items-center justify-center gap-3">
+                    <i class="fas fa-magic"></i> Extraer Datos y Generar Petición
                 </button>
             </div>
         </div>
     </div>
 
-    <div id="loading-screen" class="screen hidden fixed inset-0 w-full h-screen bg-slate-900 flex flex-col items-center justify-center z-[100]">
-        <div class="flex flex-col items-center justify-center text-center w-full max-w-2xl mx-auto">
-            <div class="w-24 h-24 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mb-6 mx-auto"></div>
-            <h2 class="text-3xl font-bold text-white mb-4">Construyendo Sesión...</h2>
-            <p class="text-indigo-300 text-lg leading-relaxed" id="loading-text">Leyendo columnas de Monitoreo, Evidencias, Fortalezas y calculando Reincidentes con IA.</p>
-        </div>
-    </div>
-
-    <!-- PANTALLA EXPERTO (INGRESO) -->
-    <div id="expert-login-screen" class="screen hidden w-full h-full bg-slate-50 items-center justify-center p-6 relative overflow-hidden">
-        <div class="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-blue-500 via-transparent to-transparent"></div>
-        <div class="max-w-md w-full bg-white rounded-3xl shadow-xl border border-slate-100 p-10 text-center relative z-10 mx-auto">
-            <button type="button" onclick="window.showScreen('login-screen')" class="absolute top-6 left-6 text-slate-400 hover:text-slate-600 transition-colors">
-                <i class="fas fa-arrow-left text-xl"></i>
-            </button>
-            <div class="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
-                <i class="fas fa-user-astronaut text-3xl text-blue-500"></i>
-            </div>
-            <h2 class="text-3xl font-bold mb-2 text-slate-800">Tu Espacio</h2>
+    <!-- PANTALLA DE CARGA -->
             <p class="text-slate-500 text-sm mb-8" id="expert-login-desc">Ingresa el código proporcionado por tu Coach.</p>
             
             <div id="expert-step-1">
@@ -598,7 +598,7 @@
             return null;
         }
 
-        // --- CORE: LECTURA INTELIGENTE DE EXCEL ---
+        // --- Procesamiento de Excel (SheetJS) A PRUEBA DE BALAS ---
         window.procesarBaseMonitoreos = async function(file, fechaInicio, fechaFin, isGroup, singleExpertName) {
             const arrayBuffer = await file.arrayBuffer();
             const workbook = XLSX.read(arrayBuffer, { type: 'array', cellDates: true });
@@ -691,32 +691,33 @@
                 let erroresFila = [];
 
                 // Buscar "Mínimo" en el detalle P-AC
-                for (let c = colMap.startAtrib; c < fila.length; c++) {
-                    const val = String(fila[c] || '').trim().toLowerCase();
-                    if (val === 'mínimo' || val === 'minimo' || val === 'min' || val === 'mín') {
-                        hasMinimo = true;
-                        let nombreError = String(headers[c] || `Error Col ${c}`).trim();
-                        if(nombreError) erroresFila.push(nombreError);
-                    }
-                }
-
-                // Fallback: Si no lo halló en detalle, busca la palabra mínimo en la columna Atributos Afectados
-                if (!hasMinimo && atribAfectados.toLowerCase().includes('mín')) {
+                if (val.includes('mínimo') || val.includes('minimo') || val === 'min' || val === 'mín') {
                     hasMinimo = true;
                 }
+            }
 
-                // VALIDACIÓN DE NEGOCIO: Reincidentes vs Individual
-                let cumpleCriterio = false;
-                if (isGroup) {
-                    // Grupal: Tipo Monitoreo Impacto + Mínimo
-                    if (tipoMon.includes('impacto') && hasMinimo) cumpleCriterio = true;
-                } else {
-                    // Individual: Nota < 90 O tiene atributos afectados
-                    if (nota < 90 || atribAfectados.trim().length > 0 || hasMinimo) cumpleCriterio = true;
+            // Fallback: Si no halló en detalle, busca "mín" en Atributos Afectados genérico
+            if (!hasMinimo && atribAfectados.toLowerCase().includes('mín')) {
+                hasMinimo = true;
+            }
+
+            // CRITERIO DE NEGOCIO Y ACUMULACIÓN
+            let cumpleCriterio = false;
+            
+            if (isGroup) {
+                // Taller Reincidentes: Tipo de monitoreo de impacto + tener un mínimo
+                if (tipoMon.includes('impacto') && hasMinimo) {
+                    cumpleCriterio = true;
                 }
+            } else {
+                // Coach Individual: Nota < 90 O tener atributos afectados (aunque no sean mínimos)
+                if (nota < 90 || atribAfectados.trim().length > 0) {
+                    cumpleCriterio = true;
+                }
+            }
 
-                // Inicializar experto en mapa aunque no cumpla criterio para conteo de Total
-                if (!expertosMap[experto]) {
+            // Inicializar el experto para contabilizar sus monitoreos totales en el mes
+            if (!expertosMap[experto]) {
                     expertosMap[experto] = { interacciones: new Set(), errores: {}, resumenes: [], evidencias: [], fortalezas: [], totalMonitoreos: 0 };
                 }
                 
@@ -745,7 +746,7 @@
                     let errArray = Object.keys(expertosMap[exp].errores).map(k => ({name: k, count: expertosMap[exp].errores[k]})).sort((a,b)=>b.count-a.count);
                     reincidentes.push({ name: exp, monitorings: countAlertas, errors: errArray, resumenes: expertosMap[exp].resumenes, evidencias: expertosMap[exp].evidencias, fortalezas: expertosMap[exp].fortalezas });
                 } else if (!isGroup) {
-                    // Individual pasa directo
+                    // Coach Individual pasa directo sin importar si tiene 4
                     let errArray = Object.keys(expertosMap[exp].errores).map(k => ({name: k, count: expertosMap[exp].errores[k]})).sort((a,b)=>b.count-a.count);
                     reincidentes.push({ name: exp, monitorings: countTotal, errors: errArray, resumenes: expertosMap[exp].resumenes, evidencias: expertosMap[exp].evidencias, fortalezas: expertosMap[exp].fortalezas });
                 }
@@ -809,14 +810,20 @@
             if(!isGroup && !expName) return window.showMsg('Ingresa el nombre del experto', 'error');
             if(!sDate || !eDate || !fileInput.files.length) return window.showMsg('Completa fechas y archivo', 'error');
 
-            window.showScreen('loading-screen');
             isCoach = true;
+            document.getElementById('btn-analyze').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analizando Excel...';
 
             try {
-                const reincidentes = await window.procesarBaseMonitoreos(fileInput.files[0], sDate, eDate, isGroup, expName);
+                // Guardamos los reincidentes a nivel global para usarlos después
+                window.extractedReincidentes = await window.procesarBaseMonitoreos(fileInput.files[0], sDate, eDate, isGroup, expName);
                 
-                // Prompt Master (Usando Evidencias, Fortalezas y Resumen)
-                let promptTxt = `Eres un Coach Master. Analiza los siguientes expertos que tuvieron oportunidades en ${chan}.\n`;
+                if(window.extractedReincidentes.length === 0) {
+                    document.getElementById('btn-analyze').innerHTML = '<i class="fas fa-magic"></i> Extraer Datos y Generar Petición';
+                    return window.showMsg('No se hallaron reincidentes o no coincide el nombre.', 'error');
+                }
+
+                // Generar Prompt masivo o individual (AHORA SÚPER ESPECÍFICO)
+                let promptTxt = `Eres un Coach Master. Analiza los siguientes expertos que tuvieron oportunidades de calidad en ${chan}.\n`;
                 promptTxt += `INSTRUCCIONES CLAVE:\n`;
                 promptTxt += `1. S.B.I: Extrae la Situación, Comportamiento e Impacto BASÁNDOTE EXCLUSIVAMENTE en las "Evidencias" compartidas.\n`;
                 promptTxt += `2. PREGUNTAS: Genera 3 preguntas poderosas usando las "Fortalezas" cruzadas con las "Evidencias".\n`;
@@ -825,23 +832,52 @@
                 if(isGroup) promptTxt += `Extrae primero un S.B.I general del equipo y 3 preguntas poderosas generales. Luego hazlo individual.\n\nDATA:\n`;
                 else promptTxt += `Crea el S.B.I y preguntas basadas en los datos del experto.\n\nDATA:\n`;
                 
-                reincidentes.forEach(r => {
+                window.extractedReincidentes.forEach(r => {
                     promptTxt += `- Experto: ${r.name}. \n  Errores Top: ${r.errors.slice(0,3).map(e=>e.name).join(', ')}. \n  Evidencias: ${r.evidencias.slice(0,3).join(' | ')}. \n  Fortalezas: ${r.fortalezas.slice(0,3).join(' | ')}. \n  Resumen llamadas: ${r.resumenes.slice(0,2).join('. ')}\n\n`;
                 });
                 
-                promptTxt += `\nDEVUELVE UNICAMENTE UN JSON VALIDO: { "general": { "sbi_s":"", "sbi_b":"", "sbi_i":"", "questions":["q1","q2","q3"] }, "experts": [ { "name":"nombre exacto", "sbi_s":"", "sbi_b":"", "sbi_i":"", "simulator_context":"" } ] }`;
+                promptTxt += `\nDEVUELVE UNICAMENTE UN JSON VALIDO: { "general": { "sbi_s":"", "sbi_b":"", "sbi_i":"", "questions":["q1","q2","q3"] }, "experts": [ { "name":"nombre exacto del experto", "sbi_s":"", "sbi_b":"", "sbi_i":"", "simulator_context":"" } ] }`;
 
-                const aiData = await fetchGemini(promptTxt);
-                if(!aiData || !aiData.experts) throw new Error("La IA no devolvió el formato esperado.");
+                // Mostrar el puente manual
+                document.getElementById('ai-prompt-box').value = promptTxt;
+                document.getElementById('manual-ai-bridge').classList.remove('hidden');
+                document.getElementById('btn-analyze').classList.add('hidden');
+                
+                window.showMsg('Excel analizado. Copia la petición para Gemini.', 'info');
 
+            } catch (e) {
+                console.error(e);
+                document.getElementById('btn-analyze').innerHTML = '<i class="fas fa-magic"></i> Extraer Datos y Generar Petición';
+                window.showMsg('Error: ' + e.message, 'error');
+            }
+        };
+
+        // NUEVA FUNCIÓN PARA PROCESAR EL JSON PEGADO MANUALMENTE
+        window.processManualAI = async function() {
+            const jsonText = document.getElementById('ai-response-box').value.trim();
+            if(!jsonText) return window.showMsg('Pega la respuesta de Gemini primero.', 'error');
+            
+            window.showScreen('loading-screen');
+            document.getElementById('loading-text').innerText = 'Armando el espacio de trabajo con los datos de IA...';
+
+            try {
+                // Limpiar el JSON de las marcas de código Markdown si Gemini las agregó
+                const cleanJson = jsonText.replace(/```json/gi, "").replace(/```/g, "").trim();
+                const aiData = JSON.parse(cleanJson);
+                
+                if(!aiData || !aiData.experts) throw new Error("El JSON no tiene la estructura de expertos requerida.");
+
+                const inst = document.getElementById('setup-institution').value;
+                const chan = document.getElementById('setup-channel').value;
                 const code = Math.random().toString(36).substring(2, 8).toUpperCase();
+                
                 let sessionData = {
                     code, type: window.sessionType, institution: inst, channel: chan,
-                    general: { ...aiData.general, errors: aggregateErrors(reincidentes) },
+                    general: { ...aiData.general, errors: aggregateErrors(window.extractedReincidentes) },
                     experts: {}, board: []
                 };
 
-                reincidentes.forEach(r => {
+                window.extractedReincidentes.forEach(r => {
                     let aiExp = aiData.experts.find(a => a.name === r.name) || { sbi_s:'N/A', sbi_b:'N/A', sbi_i:'N/A', simulator_context:'Práctica genérica' };
                     sessionData.experts[r.name] = {
                         name: r.name, monitorings: r.monitorings, errors: r.errors, score: 0,
@@ -866,7 +902,7 @@
             } catch (e) {
                 console.error(e);
                 window.showScreen('coach-setup-screen');
-                window.showMsg('Error: ' + e.message, 'error');
+                window.showMsg('Error al leer el JSON: Verifica que el texto pegado sea correcto.', 'error');
             }
         };
 
@@ -874,55 +910,6 @@
             let map = {};
             reins.forEach(r => r.errors.forEach(e => map[e.name] = (map[e.name]||0) + e.count));
             return Object.keys(map).map(k => ({name: k, count: map[k]})).sort((a,b)=>b.count-a.count);
-        }
-
-        async function fetchGemini(prompt, retries = 4) {
-            // Camuflaje de clave (Obfuscation) para saltar el bloqueo de GitHub y Google
-            const p1 = "AQ.Ab8RN6";
-            const p2 = "ImMRfUGA4wR";
-            const p3 = "UmQH1e4VF0K";
-            const p4 = "dkAaOe83dvM";
-            const p5 = "XEY64Qetu-A";
-            const apiKey = p1 + p2 + p3 + p4 + p5; 
-            
-            // Sistema de respaldo: Si un modelo está saturado, intenta con la otra versión oficial.
-            const modelos = ["gemini-1.5-flash", "gemini-1.5-pro"];
-            
-            for (let i = 0; i < retries; i++) {
-                const modeloActual = modelos[i % modelos.length];
-                const url = `https://generativelanguage.googleapis.com/v1beta/models/${modeloActual}:generateContent?key=${apiKey}`;
-                const p = { contents: [{ role: 'user', parts: [{ text: prompt }] }], generationConfig: { responseMimeType: "application/json" } };
-                
-                try {
-                    const res = await fetch(url, { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(p) });
-                    const d = await res.json();
-                    
-                    if (!res.ok) {
-                        const errMsg = d.error?.message || "Error devuelto por la API de Gemini.";
-                        // Si el error es de saturación (High demand o 503)
-                        if (errMsg.toLowerCase().includes("high demand") || res.status === 503 || res.status === 429) {
-                            if (i < retries - 1) {
-                                const nextModel = modelos[(i + 1) % modelos.length];
-                                document.getElementById('loading-text').innerText = `Servidor saturado. Reintentando automáticamente con modelo alternativo (${nextModel}) en ${i+1}s...`;
-                                // Espera progresiva: 4s, 8s, 12s...
-                                await new Promise(r => setTimeout(r, 4000 * (i + 1)));
-                                continue;
-                            }
-                        }
-                        throw new Error(errMsg);
-                    }
-                    
-                    let txt = d?.candidates?.[0]?.content?.parts?.[0]?.text;
-                    if(txt) return JSON.parse(txt.replace(/```json/gi, "").replace(/```/g, "").trim());
-                    return null;
-
-                } catch(e) { 
-                    if (i === retries - 1) {
-                        console.error("Detalle del error con la IA:", e);
-                        throw e; 
-                    }
-                }
-            }
         }
 
         // --- Firebase Connection ---
@@ -956,16 +943,17 @@
             
             await connectFirebase();
             if(db) {
-                return new Promise((resolve) => {
-                    const unsub = onSnapshot(doc(db, 'coach_sessions', code), (snap) => {
-                        unsub();
-                        if(snap.exists()) {
-                            processExpertJoin(snap.data(), code);
-                        } else {
-                            window.showMsg('Sesión no encontrada', 'error');
-                        }
-                    }, (err) => { window.showMsg('Error de permisos. Modo local', 'error'); processExpertLocal(code); });
-                });
+                // Wrapped return inside async function context properly
+                return (async () => {
+                    const snap = await new Promise((resolve) => {
+                        const unsub = onSnapshot(doc(db, 'coach_sessions', code), (s) => { unsub(); resolve(s); }, (err) => { resolve(null); });
+                    });
+                    if(snap && snap.exists()) {
+                        processExpertJoin(snap.data(), code);
+                    } else {
+                        window.showMsg('Sesión no encontrada', 'error');
+                    }
+                })();
             } else {
                 processExpertLocal(code);
             }
