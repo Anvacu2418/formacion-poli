@@ -194,7 +194,7 @@
             <div class="flex justify-between items-start mb-6">
                 <div>
                     <h2 class="text-3xl font-bold text-slate-800 flex items-center gap-3"><i class="fas fa-robot text-primary"></i> Modo Manual Activado</h2>
-                    <p class="text-slate-500 mt-1">La API está saturada o en mantenimiento. Completa el proceso copiando la petición a tu Agente IA externo.</p>
+                    <p class="text-slate-500 mt-1">Has superado las peticiones gratuitas por minuto de la API. Completa el proceso copiando la petición a tu Agente IA externo.</p>
                 </div>
                 <button onclick="document.getElementById('manual-fallback-modal').classList.add('hidden')" class="text-slate-400 hover:text-slate-600"><i class="fas fa-times text-2xl"></i></button>
             </div>
@@ -813,7 +813,7 @@
             }
         };
 
-        // INTEGRACIÓN API Y FALLBACK MANUAL
+        // INTEGRACIÓN API INTELIGENTE (CASCADA) Y FALLBACK MANUAL
         window.processSetup = async function() {
             const inst = document.getElementById('setup-institution').value;
             const chan = document.getElementById('setup-channel').value;
@@ -849,10 +849,10 @@
                 
                 promptTxt += `\nDEVUELVE UNICAMENTE UN JSON VALIDO: { "general": { "sbi_s":"", "sbi_b":"", "sbi_i":"", "questions":["q1","q2","q3"] }, "experts": [ { "name":"nombre exacto", "sbi_s":"", "sbi_b":"", "sbi_i":"", "simulator_context":"" } ] }`;
 
-                const aiData = await fetchGemini(promptTxt);
+                const aiData = await fetchGeminiInteligente(promptTxt);
                 
                 if(!aiData || !aiData.experts) {
-                    throw new Error("La API no devolvió datos, activando Fallback Manual.");
+                    throw new Error("Ningún modelo de la API devolvió datos. Activando Fallback Manual.");
                 }
 
                 await createSessionAndDashboard(aiData);
@@ -860,7 +860,7 @@
             } catch (e) {
                 console.warn(e);
                 window.showScreen('coach-setup-screen');
-                document.getElementById('manual-prompt-area').value = e.message.includes('No devolvió') || e.message.includes('API') || e.message.includes('Falló') ? 
+                document.getElementById('manual-prompt-area').value = e.message.includes('Ningún modelo') || e.message.includes('API') || e.message.includes('Fallaron') ? 
                     promptTxt : "Hubo un error al leer el Excel. Revisa el formato.";
                 
                 if(window.pendingSetupData && window.pendingSetupData.reincidentes) {
@@ -934,7 +934,8 @@
             return Object.keys(map).map(k => ({name: k, count: map[k]})).sort((a,b)=>b.count-a.count);
         }
 
-        async function fetchGemini(prompt, retries = 4) {
+        // CASCADA DE MODELOS (Basado en la tabla de disponibilidad de Google AI Studio)
+        async function fetchGeminiInteligente(prompt) {
             const p1 = "AQ.Ab8RN6";
             const p2 = "JjHYU6fic";
             const p3 = "Ec5bPq4PI";
@@ -942,12 +943,19 @@
             const p5 = "KdH0ry1Ha8UzEJIpA";
             const apiKey = p1 + p2 + p3 + p4 + p5; 
             
-            const currentModel = "gemini-3.8-flash"; 
+            // Orden de cascada: Primero el de 15 RPM, luego el de 10 RPM, al final el de 5 RPM (3.8)
+            const modelosDisponibles = [
+                "gemini-3.1-flash-lite", // 15 peticiones por minuto
+                "gemini-2.5-flash-lite", // 10 peticiones por minuto
+                "gemini-3.8-flash"       // 5 peticiones por minuto (Suele saturarse)
+            ];
             
             const loadingText = document.getElementById('loading-text');
 
-            for (let i = 0; i < retries; i++) {
-                if (loadingText) loadingText.innerText = `Conectando a la IA... (Intento ${i+1} de ${retries})...`;
+            for (let m = 0; m < modelosDisponibles.length; m++) {
+                const currentModel = modelosDisponibles[m];
+                
+                if (loadingText) loadingText.innerText = `Conectando IA: Evaluando modelo ${currentModel}...`;
 
                 const url = `https://generativelanguage.googleapis.com/v1beta/models/${currentModel}:generateContent?key=${apiKey}`;
                 const p = { contents: [{ role: 'user', parts: [{ text: prompt }] }], generationConfig: { responseMimeType: "application/json" } };
@@ -958,12 +966,14 @@
                     
                     if (!res.ok) {
                         const errMsg = d.error?.message || "Error desconocido API";
-                        console.warn(`Intento ${i+1} falló: ${errMsg}`);
+                        console.warn(`El modelo ${currentModel} falló: ${errMsg}`);
                         
-                        if (i === retries - 1) throw new Error(`API Falló: ${errMsg}`);
+                        // Si es el último modelo de la lista y falla, rompemos el ciclo para ir al Plan B
+                        if (m === modelosDisponibles.length - 1) throw new Error(`Todos los modelos fallaron. Último error: ${errMsg}`);
                         
-                        if (loadingText) loadingText.innerText = `El servidor está ocupado. Reintentando en 2s...`;
-                        await new Promise(r => setTimeout(r, 2000));
+                        // Si falla (ej. límite de cuota o 404), espera 1 segundo y pasa al siguiente modelo
+                        if (loadingText) loadingText.innerText = `Modelo saturado. Saltando a la alternativa de respaldo...`;
+                        await new Promise(r => setTimeout(r, 1000));
                         continue; 
                     }
                     
@@ -971,8 +981,8 @@
                     if(txt) return JSON.parse(txt.replace(/```json/gi, "").replace(/```/g, "").trim());
                     
                 } catch(e) { 
-                    console.warn(`Error de conexión en intento ${i+1}:`, e);
-                    if (i === retries - 1) throw e; 
+                    console.warn(`Excepción con modelo ${currentModel}:`, e);
+                    if (m === modelosDisponibles.length - 1) throw e; 
                 }
             }
             return null;
