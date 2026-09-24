@@ -436,11 +436,7 @@
                             
                             <div class="mt-4 pt-4 border-t border-indigo-200">
                                 <h4 class="font-bold text-indigo-900 text-sm mb-2"><i class="fas fa-lock text-slate-400"></i> Mis Notas (Privado)</h4>
-                                <textarea id="coach-private-notes" onblur="window.savePrivateNotes(this.value)" class="w-full h-32 p-3 rounded-xl border border-indigo-200 bg-white text-sm outline-none resize-none focus:ring-2 focus:ring-indigo-500" placeholder="Escribe tus observaciones..."></textarea>
-                                
-                                <button type="button" onclick="window.generateEmailPrompt()" class="mt-3 w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-lg shadow transition-all flex items-center justify-center gap-2">
-                                    <i class="fas fa-envelope-open-text"></i> Generar Prompt de Correo
-                                </button>
+                                <textarea id="coach-private-notes-board" onblur="window.savePrivateNotes(this.value)" class="w-full h-32 p-3 rounded-xl border border-indigo-200 bg-white text-sm outline-none resize-none focus:ring-2 focus:ring-indigo-500" placeholder="Escribe tus observaciones..."></textarea>
                             </div>
                         </div>
                     </div>
@@ -543,8 +539,10 @@
                                     </div>
                                 </div>
                                 
-                                <div class="space-y-4 flex-1 coach-only hidden" id="coach-view-commitment">
-                                    <div class="bg-white/10 rounded-xl p-4 min-h-[100px] italic text-slate-300">Esperando compromiso...</div>
+                                <div class="space-y-4 flex-1 coach-only" id="coach-view-commitment">
+                                    <div class="bg-white/10 rounded-xl p-4 min-h-[100px] text-slate-300" id="coach-commitment-text">
+                                        <i class="italic">Esperando compromiso...</i>
+                                    </div>
                                 </div>
 
                                 <button type="button" onclick="window.saveCommitment()" class="w-full py-4 mt-6 bg-slate-900 text-white hover:bg-slate-800 font-bold rounded-xl shadow-lg transition-colors expert-only border border-slate-700">
@@ -563,6 +561,19 @@
                                 <h2 class="text-2xl font-bold text-poli-blue" id="report-title">Reporte Consolidado: Taller</h2>
                                 <p class="text-sm text-slate-500">Análisis de participación y evaluación de conocimientos</p>
                             </div>
+                        </div>
+
+                        <!-- NUEVA SECCIÓN GENERADOR DE CORREO (Visible en el Reporte) -->
+                        <div class="mb-10 p-8 bg-indigo-50 border border-indigo-100 rounded-3xl flex flex-col gap-4">
+                            <h3 class="font-bold text-indigo-900 text-xl"><i class="fas fa-envelope-open-text text-primary"></i> Generador de Correo de Seguimiento</h3>
+                            <p class="text-sm text-indigo-700">Utiliza tus notas privadas y los resultados del simulador para indicarle a la IA que redacte un correo humano, empático y contando la historia del taller.</p>
+                            
+                            <h4 class="font-bold text-indigo-900 text-sm mt-4"><i class="fas fa-lock text-slate-400"></i> Notas Privadas del Coach (Se incluirán en el prompt)</h4>
+                            <textarea id="coach-private-notes-report" onblur="window.savePrivateNotes(this.value)" class="w-full h-32 p-4 rounded-xl border border-indigo-200 bg-white text-sm outline-none resize-none focus:ring-2 focus:ring-indigo-500 shadow-inner" placeholder="Escribe tus observaciones para incluirlas en el correo de este experto..."></textarea>
+                            
+                            <button type="button" onclick="window.generateEmailPrompt()" class="w-full py-4 mt-2 bg-primary hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg transition-all flex items-center justify-center gap-3">
+                                <i class="fas fa-magic"></i> Copiar Prompt para el Agente IA
+                            </button>
                         </div>
 
                         <div class="grid grid-cols-1 gap-10">
@@ -689,17 +700,22 @@
                 }
             }
 
-            // Forzamos la búsqueda de las columnas clave que mencionaste
-            let colMap = { fechaMon: 0, experto: 2, canal: 3, resumen: 9, atribAfectados: 11, evidencias: 12, startAtrib: 15 };
+            // NUEVA LÓGICA DE MAPEO ESTRICTA DE COLUMNAS
+            let colMap = { fechaMon: -1, experto: -1, canal: -1, tipoMon: -1, resumen: -1, atribAfectados: -1, evidencias: -1, startAtrib: 15 };
 
             headers.forEach((h, c) => {
-                if (h.includes('fecha')) colMap.fechaMon = c;
-                else if (h.includes('experto')) colMap.experto = c;
-                else if (h === 'canal' || h.includes('canal')) colMap.canal = c;
-                else if (h.includes('resumen')) colMap.resumen = c; // Columna J
-                else if (h.includes('atributos afectados')) colMap.atribAfectados = c; // Columna L
-                else if (h.includes('evidencia')) colMap.evidencias = c; // Columna M
+                let lh = h.toLowerCase().trim();
+                if (lh.includes('fecha')) colMap.fechaMon = c;
+                else if (lh.includes('experto')) colMap.experto = c;
+                else if (lh === 'canal' || lh.includes('canal')) colMap.canal = c;
+                else if (lh.includes('tipo monitoreo')) colMap.tipoMon = c; // Mapeo Columna I
+                else if (lh.includes('resumen')) colMap.resumen = c; // Mapeo Columna J
+                else if (lh.includes('atributos afectados')) colMap.atribAfectados = c; // Mapeo Columna L
+                else if (lh.includes('evidencia')) colMap.evidencias = c; // Mapeo Columna M
             });
+
+            // Si por alguna razón no mapea correctamente la de fecha, asumimos que es la primera
+            if(colMap.fechaMon === -1) colMap.fechaMon = 0;
 
             let expertosMap = {}; 
             let eDate = new Date(fechaFin + "T23:59:59");
@@ -724,63 +740,64 @@
 
                 totalProcesados++;
 
+                const tipoMon = String(fila[colMap.tipoMon] || '').trim().toLowerCase();
                 const canalFila = String(fila[colMap.canal] || 'Teléfono/Chat').trim();
                 const resumen = String(fila[colMap.resumen] || '').trim();
                 const atribAfectadosStr = String(fila[colMap.atribAfectados] || '').trim();
                 const evidenciasStr = String(fila[colMap.evidencias] || '').trim();
 
-                // Extraemos todos los atributos afectados de la Columna L (separados por comas o saltos de línea)
-                let erroresEnFila = atribAfectadosStr.split(/[\n,;]/).map(s => s.trim()).filter(s => s.length > 2);
+                // REGLA 1: Solo llamadas de "Impacto"
+                if (!tipoMon.includes('impacto')) continue;
+
+                // REGLA 2: Ignorar si las evidencias tienen la palabra clave "felicitaciones" o si los atributos dicen "sin atributos afectados"
+                if (evidenciasStr.toLowerCase().includes('felicitaciones') || atribAfectadosStr.toLowerCase().includes('sin atributos afectados')) {
+                    continue; 
+                }
+
+                // REGLA 3: Solo extraer los errores de la columna L que tienen la calificación "Mínimo"
+                let erroresEnFila = [];
+                let rawErrores = atribAfectadosStr.split(/[\n,;]/).map(s => s.trim()).filter(s => s.length > 2);
                 
-                // Si la columna L está vacía, buscamos la palabra "Mínimo" en las columnas específicas (P a AC)
+                rawErrores.forEach(err => {
+                    if (err.toLowerCase().includes('mín') || err.toLowerCase().includes('min')) {
+                        // Limpiamos el nombre quitando el sufijo " - Mínimo"
+                        let cleanName = err.replace(/\s*-\s*m[íi]nimo/i, '').trim();
+                        if(cleanName) erroresEnFila.push(cleanName);
+                    }
+                });
+
+                // Si la columna L viene vacía, revisamos las columnas individuales de atributos por si acaso dice "mínimo"
                 if(erroresEnFila.length === 0) {
                     for (let c = colMap.startAtrib; c < fila.length; c++) {
                         const val = String(fila[c] || '').trim().toLowerCase();
-                        if (val.includes('mín') || val.includes('minimo')) {
+                        if (val === 'mínimo' || val === 'minimo' || val === 'min' || val === 'mín') {
                             let nombreError = String(headers[c] || `Error Col ${c}`).trim();
                             if(nombreError) erroresEnFila.push(nombreError);
                         }
                     }
                 }
 
-                // Condición de captura
-                let cumpleCriterio = false;
-                if (isGroup) {
-                    if (erroresEnFila.length > 0) cumpleCriterio = true; // Simplificado: si tiene errores, entra al radar
-                } else {
-                    cumpleCriterio = true; // Individual trae todo su historial de esas fechas
-                }
+                // REGLA 4: Si al final no hubo ningún error calificado en mínimo (es decir, le fue bien a pesar de ser de impacto), lo descartamos
+                if (erroresEnFila.length === 0) continue;
 
                 if (!expertosMap[experto]) {
                     expertosMap[experto] = { interacciones: new Set(), erroresObj: {}, canalesTotales: {}, resumenes: [], evidencias: [], totalMonitoreos: 0 };
                 }
                 
                 expertosMap[experto].totalMonitoreos++;
+                expertosMap[experto].interacciones.add(fecha.getTime() + "_" + r);
+                expertosMap[experto].canalesTotales[canalFila] = (expertosMap[experto].canalesTotales[canalFila] || 0) + 1;
                 
-                if (cumpleCriterio) {
-                    expertosMap[experto].interacciones.add(fecha.getTime() + "_" + r);
-                    expertosMap[experto].canalesTotales[canalFila] = (expertosMap[experto].canalesTotales[canalFila] || 0) + 1;
-                    
-                    // Guardamos TODAS las evidencias asociadas a sus errores
-                    erroresEnFila.forEach(e => { 
-                        if (!expertosMap[experto].erroresObj[e]) expertosMap[experto].erroresObj[e] = { count: 0, evidencias: [] };
-                        expertosMap[experto].erroresObj[e].count++;
-                        if (evidenciasStr) {
-                            expertosMap[experto].erroresObj[e].evidencias.push(evidenciasStr);
-                        }
-                    });
-                    
-                    // Si no detectó error pero hay evidencia, se guarda como Afectación General
-                    if(erroresEnFila.length === 0 && evidenciasStr) {
-                        let e = "Afectación de Calidad";
-                        if (!expertosMap[experto].erroresObj[e]) expertosMap[experto].erroresObj[e] = { count: 0, evidencias: [] };
-                        expertosMap[experto].erroresObj[e].count++;
+                erroresEnFila.forEach(e => { 
+                    if (!expertosMap[experto].erroresObj[e]) expertosMap[experto].erroresObj[e] = { count: 0, evidencias: [] };
+                    expertosMap[experto].erroresObj[e].count++;
+                    if (evidenciasStr) {
                         expertosMap[experto].erroresObj[e].evidencias.push(evidenciasStr);
                     }
+                });
 
-                    if(resumen) expertosMap[experto].resumenes.push(resumen);
-                    if(evidenciasStr) expertosMap[experto].evidencias.push(evidenciasStr);
-                }
+                if(resumen) expertosMap[experto].resumenes.push(resumen);
+                if(evidenciasStr) expertosMap[experto].evidencias.push(evidenciasStr);
             }
 
             let reincidentes = [];
@@ -793,7 +810,7 @@
                 let errArray = Object.keys(expertosMap[exp].erroresObj).map(k => ({
                     name: k, 
                     count: expertosMap[exp].erroresObj[k].count,
-                    evidences: expertosMap[exp].erroresObj[k].evidencias // Ya es un Array completo
+                    evidences: expertosMap[exp].erroresObj[k].evidencias 
                 })).sort((a,b)=>b.count-a.count);
 
                 if (isGroup && countAlertas >= 4) {
@@ -805,7 +822,7 @@
 
             if(reincidentes.length === 0) {
                 if(totalProcesados === 0) throw new Error("Fechas o Nombre sin registros. Revisa el correo/nombre exacto ingresado.");
-                else throw new Error(`Se leyeron ${totalProcesados} llamadas, pero el experto no cumple criterios.`);
+                else throw new Error(`Se procesaron ${totalProcesados} registros, pero ningún experto superó el filtro de alertas Mínimas e Impacto.`);
             }
 
             return reincidentes;
@@ -887,7 +904,6 @@
                 else promptTxt += `Crea el S.B.I y preguntas basadas en la data.\n\nDATA:\n`;
                 
                 reincidentes.forEach(r => {
-                    // Le pasamos todos los resúmenes y todas las evidencias sin límite para asegurar el contexto
                     promptTxt += `- Experto: ${r.name} | Canal: ${r.canal}. \n  Errores Top: ${r.errors.map(e=>e.name).join(', ')}. \n  Resúmenes de llamadas: ${r.resumenes.join(' || ')}. \n  Evidencias Completas (TEXTO REAL): ${r.evidencias.join(' || ')}.\n\n`;
                 });
                 
@@ -955,7 +971,7 @@
                         evidencias: r.evidencias, 
                         score: 0,
                         sbi_s: aiExp.sbi_s, sbi_b: aiExp.sbi_b, sbi_i: aiExp.sbi_i, simulator_context: aiExp.simulator_context,
-                        expertResponse: "", commitment: {}, readiness: "50%"
+                        expertResponse: "", commitment: {}, readiness: "50%", privateNotes: ""
                     };
                 });
 
@@ -1214,8 +1230,11 @@
                 if(el && el.innerText !== viewData[f]) el.innerText = viewData[f] || '...';
             });
 
-            const notesEl = document.getElementById('coach-private-notes');
-            if(notesEl) notesEl.value = viewData.privateNotes || '';
+            // Sincronizar notas privadas en ambas pestañas (Pizarra y Reporte)
+            const notesElBoard = document.getElementById('coach-private-notes-board');
+            const notesElReport = document.getElementById('coach-private-notes-report');
+            if(notesElBoard) notesElBoard.value = viewData.privateNotes || '';
+            if(notesElReport) notesElReport.value = viewData.privateNotes || '';
 
             if(isCoach) {
                 if(isGen) {
@@ -1307,22 +1326,18 @@
                 document.getElementById('val-sim-context-read').innerText = viewData.simulator_context || '';
                 
                 if(isCoach) {
-                    // Solución al Bug de la vista del Coach
+                    // SE CORRIGIÓ: Refleja de forma correcta la vista de práctica y compromiso para el Coach
                     document.getElementById('coach-view-response').innerText = viewData.expertResponse || 'El experto aún no ha respondido a la simulación...';
                     
                     if(viewData.commitment?.action) {
-                        document.getElementById('coach-view-commitment').classList.remove('hidden');
-                        document.getElementById('coach-view-commitment').innerHTML = `
-                            <div class="bg-white/10 rounded-xl p-4 text-white">
-                                <p class="font-bold mb-2">💡 Acción: "${viewData.commitment.action}"</p>
-                                <p class="text-sm text-slate-300"><i class="fas fa-calendar-alt"></i> Inicio: ${viewData.commitment.date} | <i class="fas fa-signature"></i> Firma: ${viewData.commitment.sign}</p>
-                            </div>
+                        document.getElementById('coach-commitment-text').innerHTML = `
+                            <p class="font-bold mb-2 text-white">💡 Acción: "${viewData.commitment.action}"</p>
+                            <p class="text-sm text-slate-300"><i class="fas fa-calendar-alt"></i> Inicio: ${viewData.commitment.date} | <i class="fas fa-signature"></i> Firma: ${viewData.commitment.sign}</p>
                         `;
                     } else {
-                        document.getElementById('coach-view-commitment').classList.add('hidden');
+                        document.getElementById('coach-commitment-text').innerHTML = '<i class="italic text-slate-300">Esperando compromiso...</i>';
                     }
                 } else {
-                    // Vista del experto
                     const expertRespEl = document.getElementById('val-expert-response');
                     if(expertRespEl && expertRespEl.value !== viewData.expertResponse) {
                         expertRespEl.value = viewData.expertResponse || '';
@@ -1354,22 +1369,30 @@
         };
 
         window.generateEmailPrompt = function() {
-            const exp = currentExpertView === 'general' ? Object.values(currentSessionData.experts)[0] : currentSessionData.experts[currentExpertView];
-            if(!exp) return window.showMsg('Selecciona un experto individual', 'error');
+            if(currentExpertView === 'general') {
+                return window.showMsg('⚠️ Selecciona un experto en el menú izquierdo para generar su correo.', 'error');
+            }
+
+            const exp = currentSessionData.experts[currentExpertView];
+            if(!exp) return window.showMsg('No se encontró información del experto seleccionado', 'error');
 
             const promptText = `Eres Angie Cuellar. Redacta un correo humano, consecuente y contando una historia (no parezcas una IA). 
 Toma como inspiración el estilo del "Taller de residentes" (Clínica de Optimización, Alta Médica, salir del piloto automático).
 
 Menciona esto en la historia:
 - Experto: ${exp.name}
-- Mis notas privadas de la sesión: "${exp.privateNotes || 'Refuerzo en protocolos'}"
-- Práctica: Se enfrentó al caso "${exp.simulator_context}".
-- Compromiso sellado: Hará "${exp.commitment?.action || 'No documentado'}" desde el ${exp.commitment?.date || 'hoy'}.
+- Mis notas privadas de la sesión: "${exp.privateNotes || 'Se reforzaron protocolos de calidad'}"
+- Práctica Clínica: Se enfrentó al siguiente caso simulado para aplicar sus habilidades analíticas: "${exp.simulator_context}".
+- Compromiso sellado: Tomó la acción de "${exp.commitment?.action || 'Aplicar una lectura analítica antes de interactuar'}" e inicia a partir del ${exp.commitment?.date || 'día de hoy'}.
 
-Estructura: Objetivo, qué se evidenció en la pizarra, evolución en la práctica, y compromiso. Usa viñetas donde sea prudente.`;
+Estructura:
+1. Objetivo del espacio
+2. Qué se evidenció en la pizarra y diagnóstico
+3. Evolución en la práctica 
+4. El compromiso pactado. 
+Usa viñetas donde sea prudente.`;
 
             window.copyToClipboard(promptText);
-            window.showMsg('¡Prompt copiado! Pégalo en tu IA generadora de correos.');
         };
 
         window.addBoardNote = async function() {
