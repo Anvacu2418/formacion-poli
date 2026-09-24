@@ -591,10 +591,10 @@
         </div>
     </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, onSnapshot, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+<script type="module">
+        import { initializeApp } from "[https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js](https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js)";
+        import { getAuth, signInAnonymously } from "[https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js](https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js)";
+        import { getFirestore, doc, setDoc, getDoc, onSnapshot, updateDoc, arrayUnion } from "[https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js](https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js)";
 
         let db = null;
         let sessionRef = null;
@@ -761,7 +761,7 @@
                 }
 
                 if (!expertosMap[experto]) {
-                    expertosMap[experto] = { interacciones: new Set(), errores: {}, canalesTotales: {}, resumenes: [], evidencias: [], fortalezas: [], totalMonitoreos: 0 };
+                    expertosMap[experto] = { interacciones: new Set(), erroresObj: {}, canalesTotales: {}, resumenes: [], evidencias: [], fortalezas: [], totalMonitoreos: 0 };
                 }
                 
                 expertosMap[experto].totalMonitoreos++;
@@ -770,13 +770,22 @@
                     expertosMap[experto].interacciones.add(fecha.getTime() + "_" + r);
                     expertosMap[experto].canalesTotales[canalFila] = (expertosMap[experto].canalesTotales[canalFila] || 0) + 1;
                     
-                    erroresFila.forEach(e => { expertosMap[experto].errores[e] = (expertosMap[experto].errores[e] || 0) + 1; });
+                    // Asignación de evidencias por error exacto
+                    erroresFila.forEach(e => { 
+                        if (!expertosMap[experto].erroresObj[e]) expertosMap[experto].erroresObj[e] = { count: 0, evidencias: new Set() };
+                        expertosMap[experto].erroresObj[e].count++;
+                        if (evidencias) expertosMap[experto].erroresObj[e].evidencias.add(evidencias);
+                    });
+                    
                     if(resumen) expertosMap[experto].resumenes.push(resumen);
                     if(evidencias) expertosMap[experto].evidencias.push(evidencias);
                     if(fortalezas) expertosMap[experto].fortalezas.push(fortalezas);
                     
                     if(erroresFila.length === 0 && atribAfectados) {
-                        expertosMap[experto].errores["Afectación General"] = (expertosMap[experto].errores["Afectación General"] || 0) + 1;
+                        let e = "Afectación General";
+                        if (!expertosMap[experto].erroresObj[e]) expertosMap[experto].erroresObj[e] = { count: 0, evidencias: new Set() };
+                        expertosMap[experto].erroresObj[e].count++;
+                        if (evidencias) expertosMap[experto].erroresObj[e].evidencias.add(evidencias);
                     }
                 }
             }
@@ -788,11 +797,15 @@
                 
                 let dominantChannel = Object.keys(expertosMap[exp].canalesTotales).sort((a,b)=>expertosMap[exp].canalesTotales[b]-expertosMap[exp].canalesTotales[a])[0] || 'Teléfono/Chat';
 
+                let errArray = Object.keys(expertosMap[exp].erroresObj).map(k => ({
+                    name: k, 
+                    count: expertosMap[exp].erroresObj[k].count,
+                    evidences: Array.from(expertosMap[exp].erroresObj[k].evidencias)
+                })).sort((a,b)=>b.count-a.count);
+
                 if (isGroup && countAlertas >= 4) {
-                    let errArray = Object.keys(expertosMap[exp].errores).map(k => ({name: k, count: expertosMap[exp].errores[k]})).sort((a,b)=>b.count-a.count);
                     reincidentes.push({ name: exp, monitorings: countAlertas, errors: errArray, canal: dominantChannel, resumenes: expertosMap[exp].resumenes, evidencias: expertosMap[exp].evidencias, fortalezas: expertosMap[exp].fortalezas });
                 } else if (!isGroup) {
-                    let errArray = Object.keys(expertosMap[exp].errores).map(k => ({name: k, count: expertosMap[exp].errores[k]})).sort((a,b)=>b.count-a.count);
                     reincidentes.push({ name: exp, monitorings: countTotal, errors: errArray, canal: dominantChannel, resumenes: expertosMap[exp].resumenes, evidencias: expertosMap[exp].evidencias, fortalezas: expertosMap[exp].fortalezas });
                 }
             }
@@ -870,24 +883,23 @@
 
             try {
                 const reincidentes = await window.procesarBaseMonitoreos(fileInput.files[0], sDate, eDate, isGroup, expName);
-                
                 window.pendingSetupData = { reincidentes, inst };
 
                 let promptTxt = `Eres un Coach Master. Analiza a los siguientes asesores de servicio al cliente.\n`;
                 promptTxt += `INSTRUCCIONES CLAVE:\n`;
                 promptTxt += `1. S.B.I: Extrae Situación, Comportamiento e Impacto BASÁNDOTE EXCLUSIVAMENTE en las "Evidencias".\n`;
                 promptTxt += `2. PREGUNTAS: Genera 3 preguntas poderosas usando las "Fortalezas" cruzadas con las "Evidencias".\n`;
-                promptTxt += `3. RESUMEN DE CASOS: A partir de la columna "Evidencias", extrae un arreglo ("case_summary") con un resumen muy breve y analítico de los errores cometidos en cada interacción de ese asesor.\n`;
+                promptTxt += `3. RESUMEN DE CASOS CONSOLIDADO: Lee TODAS las evidencias proporcionadas para el asesor y redacta un único párrafo ejecutivo ("case_summary") que consolide sus fallas recurrentes. Menciona tendencias, no te limites a un solo caso.\n`;
                 promptTxt += `4. SIMULADOR: Genera un "simulator_context". DEBES DISEÑARLO COMO UNA PRUEBA O EXAMEN TRAMPA para evaluar si el asesor mejoró específicamente en sus "Errores Top" detectados. Si el canal del experto dice "telefónico/teléfono", simula el inicio verbal de una llamada. Si dice "chat/redes", simula un primer mensaje de texto. Oculta nombres reales.\n\n`;
                 
                 if(isGroup) promptTxt += `Extrae primero un S.B.I general del equipo y 3 preguntas. Luego hazlo individual.\n\nDATA:\n`;
                 else promptTxt += `Crea el S.B.I y preguntas basadas en la data.\n\nDATA:\n`;
                 
                 reincidentes.forEach(r => {
-                    promptTxt += `- Experto: ${r.name} | Canal: ${r.canal}. \n  Errores Top: ${r.errors.slice(0,3).map(e=>e.name).join(', ')}. \n  Evidencias: ${r.evidencias.slice(0,3).join(' | ')}. \n  Fortalezas: ${r.fortalezas.slice(0,3).join(' | ')}. \n  Resumen llamadas: ${r.resumenes.slice(0,2).join('. ')}\n\n`;
+                    promptTxt += `- Experto: ${r.name} | Canal: ${r.canal}. \n  Errores Top: ${r.errors.slice(0,3).map(e=>e.name).join(', ')}. \n  Evidencias Completas: ${r.evidencias.slice(0,10).join(' || ')}. \n  Fortalezas: ${r.fortalezas.slice(0,3).join(' | ')}.\n\n`;
                 });
                 
-                promptTxt += `\nDEVUELVE UNICAMENTE UN JSON VALIDO: { "general": { "sbi_s":"", "sbi_b":"", "sbi_i":"", "questions":["q1","q2","q3"] }, "experts": [ { "name":"nombre exacto que te di", "sbi_s":"", "sbi_b":"", "sbi_i":"", "case_summary":["resumen 1", "resumen 2"], "simulator_context":"" } ] }`;
+                promptTxt += `\nDEVUELVE UNICAMENTE UN JSON VALIDO: { "general": { "sbi_s":"", "sbi_b":"", "sbi_i":"", "questions":["q1","q2","q3"] }, "experts": [ { "name":"nombre exacto que te di", "sbi_s":"", "sbi_b":"", "sbi_i":"", "case_summary":"Resumen narrativo detallado...", "simulator_context":"" } ] }`;
 
                 const aiData = await fetchGeminiInteligente(promptTxt);
                 
@@ -901,7 +913,6 @@
                 console.warn(e);
                 window.showScreen('coach-setup-screen');
                 
-                // MODO MANUAL: PREPARAMOS LA CAJA DE TEXTO DEL PROMPT CON EL TEXTO EXACTO PARA EL AGENTE DE RESPALDO
                 const manualInstructions = `Por favor procesa el archivo adjunto.\nTaller: ${isGroup ? 'Grupal (Reincidentes)' : 'Individual'}\nFechas: ${sDate} a ${eDate}\nExperto a evaluar: ${isGroup ? 'Todos los que apliquen' : expName}\n\nDevuélveme ÚNICAMENTE la estructura JSON que tienes en tus instrucciones del sistema.`;
                 
                 document.getElementById('manual-prompt-area').value = manualInstructions;
@@ -945,13 +956,14 @@
                 };
 
                 window.pendingSetupData.reincidentes.forEach(r => {
-                    let aiExp = aiData.experts.find(a => a.name === r.name) || { sbi_s:'N/A', sbi_b:'N/A', sbi_i:'N/A', simulator_context:'Práctica genérica', case_summary: [] };
-                    
-                    // Lógica de respaldo: 1. Usa la síntesis de la IA. 2. Si falla, usa la columna Resumen del Excel. 3. Si no existe, usa las Evidencias crudas.
-                    let resumenesFinales = (aiExp.case_summary && aiExp.case_summary.length > 0) ? aiExp.case_summary : (r.resumenes.length > 0 ? r.resumenes : r.evidencias);
+                    let aiExp = aiData.experts.find(a => a.name === r.name) || { sbi_s:'N/A', sbi_b:'N/A', sbi_i:'N/A', simulator_context:'Práctica genérica', case_summary: "" };
                     
                     sessionData.experts[r.name] = {
-                        name: r.name, monitorings: r.monitorings, errors: r.errors, canal: r.canal, resumenes: resumenesFinales, score: 0,
+                        name: r.name, monitorings: r.monitorings, errors: r.errors, canal: r.canal, 
+                        case_summary: aiExp.case_summary || "", 
+                        resumenes: r.resumenes,
+                        evidencias: r.evidencias,
+                        score: 0,
                         sbi_s: aiExp.sbi_s, sbi_b: aiExp.sbi_b, sbi_i: aiExp.sbi_i, simulator_context: aiExp.simulator_context,
                         expertResponse: "", commitment: {}, readiness: "50%"
                     };
@@ -1001,7 +1013,7 @@
                 const currentModel = modelosDisponibles[m];
                 if (loadingText) loadingText.innerText = `Conectando IA: Evaluando modelo ${currentModel}...`;
 
-                const url = `https://generativelanguage.googleapis.com/v1beta/models/${currentModel}:generateContent?key=${apiKey}`;
+                const url = `[https://generativelanguage.googleapis.com/v1beta/models/$](https://generativelanguage.googleapis.com/v1beta/models/$){currentModel}:generateContent?key=${apiKey}`;
                 const p = { contents: [{ role: 'user', parts: [{ text: prompt }] }], generationConfig: { responseMimeType: "application/json" } };
                 
                 try {
@@ -1047,7 +1059,6 @@
             }
         }
 
-        // --- RETOMAR SESIÓN COMO COACH MEJORADO ---
         window.resumeCoachSession = async function() {
             const c = document.getElementById('coach-resume-code').value.toUpperCase();
             if(!c) return window.showMsg('Ingresa un código', 'error');
@@ -1058,12 +1069,11 @@
             await connectFirebase();
             if(db) {
                 try {
-                    // Validar primero si existe antes de escuchar
                     const docSnap = await getDoc(doc(db, 'coach_sessions', c));
                     if (docSnap.exists()) {
                         sessionRef = doc(db, 'coach_sessions', c);
-                        setupDashboard(docSnap.data()); // Renderiza de inmediato
-                        listenSession(c);               // Empieza a escuchar cambios
+                        setupDashboard(docSnap.data()); 
+                        listenSession(c);               
                     } else {
                         window.showMsg('Código de sesión no encontrado', 'error');
                     }
@@ -1167,7 +1177,6 @@
             }
         }
 
-        // --- Renderizado de UI ---
         function setupDashboard(data) {
             window.showScreen('main-dashboard');
             document.querySelectorAll('.coach-only').forEach(el => el.style.display = isCoach ? '' : 'none');
@@ -1248,25 +1257,40 @@
                     document.getElementById('data-ind-channel').innerText = `Canal Evaluado: ${viewData.canal || 'No detectado'}`;
                     document.getElementById('input-ind-score').value = viewData.score || 0;
                     
+                    // Renderizado del acordeón de atributos y evidencias
                     const maxCount = Math.max(...viewData.errors.map(e=>e.count), 1);
-                    document.getElementById('errors-container').innerHTML = viewData.errors.map(err => `
-                        <div>
-                            <div class="flex justify-between text-sm mb-1"><span class="font-medium text-slate-700">${err.name}</span><span class="font-bold text-slate-800">${err.count}</span></div>
+                    document.getElementById('errors-container').innerHTML = viewData.errors.map((err, idx) => `
+                        <div class="mb-4">
+                            <div class="flex justify-between text-sm mb-1 cursor-pointer group" onclick="document.getElementById('ev-${idx}').classList.toggle('hidden')">
+                                <span class="font-medium text-slate-700 group-hover:text-indigo-600 transition-colors flex items-center gap-2">
+                                    <i class="fas fa-chevron-down text-xs text-slate-400 group-hover:text-indigo-600 transition-colors"></i> ${err.name}
+                                </span>
+                                <span class="font-bold text-slate-800">${err.count}</span>
+                            </div>
                             <div class="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
                                 <div class="h-full bg-gradient-to-r from-poli-blue to-blue-400 rounded-full" style="width: ${(err.count/maxCount)*100}%"></div>
+                            </div>
+                            <div id="ev-${idx}" class="hidden mt-3 bg-slate-50 p-4 rounded-xl border border-slate-100">
+                                <p class="text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider"><i class="fas fa-search"></i> Evidencias Registradas:</p>
+                                <ul class="list-disc pl-4 text-sm text-slate-600 space-y-2 italic">
+                                    ${err.evidences && err.evidences.length > 0 ? err.evidences.map(ev => `<li>"${ev}"</li>`).join('') : '<li>No hay evidencia textual para este error.</li>'}
+                                </ul>
                             </div>
                         </div>
                     `).join('');
 
+                    // Renderizado del resumen ejecutivo (AI o Fallback)
                     const resumContainer = document.getElementById('interaction-summaries');
-                    if (viewData.resumenes && viewData.resumenes.length > 0) {
+                    if (viewData.case_summary && viewData.case_summary.trim() !== "N/A") {
+                        resumContainer.innerHTML = `<div class="bg-indigo-50/50 p-5 rounded-xl border border-indigo-100 text-sm text-slate-700 leading-relaxed shadow-inner"><i class="fas fa-robot text-indigo-400 mr-2"></i> ${viewData.case_summary}</div>`;
+                    } else if (viewData.resumenes && viewData.resumenes.length > 0) {
                         resumContainer.innerHTML = viewData.resumenes.map((r, i) => `
-                            <div class="bg-white p-3 rounded-lg border border-slate-200 text-sm text-slate-600 italic">
-                                <span class="font-bold text-slate-400 text-xs not-italic block mb-1">Caso ${i+1}:</span> "${r}"
+                            <div class="bg-white p-3 rounded-lg border border-slate-200 text-sm text-slate-600 italic mb-2">
+                                <span class="font-bold text-slate-400 text-xs not-italic block mb-1">Interacción ${i+1}:</span> "${r}"
                             </div>
                         `).join('');
                     } else {
-                        resumContainer.innerHTML = `<p class="text-sm text-slate-400 text-center py-4">No hay resúmenes disponibles en la base de datos para este experto.</p>`;
+                        resumContainer.innerHTML = `<p class="text-sm text-slate-400 text-center py-4">Sube un Excel con la columna Evidencias para visualizar el resumen.</p>`;
                     }
                 }
             }
