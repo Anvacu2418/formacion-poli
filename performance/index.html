@@ -433,9 +433,14 @@
                             <h3 class="font-bold text-indigo-900 mb-4 flex items-center gap-2"><i class="fas fa-lightbulb text-amber-500"></i> Preguntas Poderosas</h3>
                             <div id="coach-questions-container" class="space-y-3 flex-1 overflow-y-auto pr-2">
                             </div>
+                            
                             <div class="mt-4 pt-4 border-t border-indigo-200">
                                 <h4 class="font-bold text-indigo-900 text-sm mb-2"><i class="fas fa-lock text-slate-400"></i> Mis Notas (Privado)</h4>
-                                <textarea class="w-full h-32 p-3 rounded-xl border border-indigo-200 bg-white text-sm outline-none resize-none focus:ring-2 focus:ring-indigo-500" placeholder="Escribe tus observaciones..."></textarea>
+                                <textarea id="coach-private-notes" onblur="window.savePrivateNotes(this.value)" class="w-full h-32 p-3 rounded-xl border border-indigo-200 bg-white text-sm outline-none resize-none focus:ring-2 focus:ring-indigo-500" placeholder="Escribe tus observaciones..."></textarea>
+                                
+                                <button type="button" onclick="window.generateEmailPrompt()" class="mt-3 w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-lg shadow transition-all flex items-center justify-center gap-2">
+                                    <i class="fas fa-envelope-open-text"></i> Generar Prompt de Correo
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -684,23 +689,17 @@
                 }
             }
 
-            let colMap = { fechaMon: -1, experto: -1, tipoMon: -1, canal: -1, nota: -1, resumen: -1, atribAfectados: -1, evidencias: -1, fortalezas: -1, startAtrib: -1 };
-            headers.forEach((h, c) => {
-                if (h.includes('fecha monitoreo')) colMap.fechaMon = c;
-                else if (h === 'experto' || h.includes('nombre del experto')) colMap.experto = c;
-                else if (h.includes('tipo monitoreo')) colMap.tipoMon = c;
-                else if (h === 'canal' || h.includes('canal de atención')) colMap.canal = c;
-                else if (h.includes('nota') || h.includes('calificación')) colMap.nota = c;
-                else if (h === 'resumen' || h.includes('resumen llamada')) colMap.resumen = c;
-                else if (h.includes('atributos afectados')) colMap.atribAfectados = c;
-                else if (h.includes('evidencia')) colMap.evidencias = c;
-                else if (h.includes('fortaleza')) colMap.fortalezas = c;
-            });
+            // Forzamos la búsqueda de las columnas clave que mencionaste
+            let colMap = { fechaMon: 0, experto: 2, canal: 3, resumen: 9, atribAfectados: 11, evidencias: 12, startAtrib: 15 };
 
-            if(colMap.fechaMon === -1) colMap.fechaMon = 0; 
-            if(colMap.experto === -1) colMap.experto = 2; 
-            if(colMap.tipoMon === -1) colMap.tipoMon = 8; 
-            colMap.startAtrib = Math.max(...Object.values(colMap).filter(v => v !== -1)) + 1;
+            headers.forEach((h, c) => {
+                if (h.includes('fecha')) colMap.fechaMon = c;
+                else if (h.includes('experto')) colMap.experto = c;
+                else if (h === 'canal' || h.includes('canal')) colMap.canal = c;
+                else if (h.includes('resumen')) colMap.resumen = c; // Columna J
+                else if (h.includes('atributos afectados')) colMap.atribAfectados = c; // Columna L
+                else if (h.includes('evidencia')) colMap.evidencias = c; // Columna M
+            });
 
             let expertosMap = {}; 
             let eDate = new Date(fechaFin + "T23:59:59");
@@ -725,37 +724,35 @@
 
                 totalProcesados++;
 
-                const tipoMon = String(fila[colMap.tipoMon] || '').toLowerCase();
-                const canalFila = colMap.canal >= 0 ? String(fila[colMap.canal] || 'Teléfono/Chat').trim() : 'Teléfono/Chat';
-                const nota = colMap.nota >= 0 ? parseFloat(fila[colMap.nota]) : 100;
-                const atribAfectados = colMap.atribAfectados >= 0 ? String(fila[colMap.atribAfectados] || '') : '';
-                const evidencias = colMap.evidencias >= 0 ? String(fila[colMap.evidencias] || '') : '';
-                const fortalezas = colMap.fortalezas >= 0 ? String(fila[colMap.fortalezas] || '') : '';
-                const resumen = colMap.resumen >= 0 ? String(fila[colMap.resumen] || '') : '';
+                const canalFila = String(fila[colMap.canal] || 'Teléfono/Chat').trim();
+                const resumen = String(fila[colMap.resumen] || '').trim();
+                const atribAfectadosStr = String(fila[colMap.atribAfectados] || '').trim();
+                const evidenciasStr = String(fila[colMap.evidencias] || '').trim();
 
-                let hasMinimo = false;
-                let erroresFila = [];
-
-                for (let c = colMap.startAtrib; c < fila.length; c++) {
-                    const val = String(fila[c] || '').trim().toLowerCase();
-                    if (val === 'mínimo' || val === 'minimo' || val === 'min' || val === 'mín') {
-                        hasMinimo = true;
-                        let nombreError = String(headers[c] || `Error Col ${c}`).trim();
-                        if(nombreError) erroresFila.push(nombreError);
+                // Extraemos todos los atributos afectados de la Columna L (separados por comas o saltos de línea)
+                let erroresEnFila = atribAfectadosStr.split(/[\n,;]/).map(s => s.trim()).filter(s => s.length > 2);
+                
+                // Si la columna L está vacía, buscamos la palabra "Mínimo" en las columnas específicas (P a AC)
+                if(erroresEnFila.length === 0) {
+                    for (let c = colMap.startAtrib; c < fila.length; c++) {
+                        const val = String(fila[c] || '').trim().toLowerCase();
+                        if (val.includes('mín') || val.includes('minimo')) {
+                            let nombreError = String(headers[c] || `Error Col ${c}`).trim();
+                            if(nombreError) erroresEnFila.push(nombreError);
+                        }
                     }
                 }
 
-                if (!hasMinimo && atribAfectados.toLowerCase().includes('mín')) hasMinimo = true;
-
+                // Condición de captura
                 let cumpleCriterio = false;
                 if (isGroup) {
-                    if (tipoMon.includes('impacto') && hasMinimo) cumpleCriterio = true;
+                    if (erroresEnFila.length > 0) cumpleCriterio = true; // Simplificado: si tiene errores, entra al radar
                 } else {
-                    if (nota < 90 || atribAfectados.trim().length > 0 || hasMinimo) cumpleCriterio = true;
+                    cumpleCriterio = true; // Individual trae todo su historial de esas fechas
                 }
 
                 if (!expertosMap[experto]) {
-                    expertosMap[experto] = { interacciones: new Set(), erroresObj: {}, canalesTotales: {}, resumenes: [], evidencias: [], fortalezas: [], totalMonitoreos: 0 };
+                    expertosMap[experto] = { interacciones: new Set(), erroresObj: {}, canalesTotales: {}, resumenes: [], evidencias: [], totalMonitoreos: 0 };
                 }
                 
                 expertosMap[experto].totalMonitoreos++;
@@ -764,27 +761,25 @@
                     expertosMap[experto].interacciones.add(fecha.getTime() + "_" + r);
                     expertosMap[experto].canalesTotales[canalFila] = (expertosMap[experto].canalesTotales[canalFila] || 0) + 1;
                     
-                    // CAMBIO CLAVE: Usar Array en lugar de Set para no borrar evidencias duplicadas
-                    erroresFila.forEach(e => { 
+                    // Guardamos TODAS las evidencias asociadas a sus errores
+                    erroresEnFila.forEach(e => { 
                         if (!expertosMap[experto].erroresObj[e]) expertosMap[experto].erroresObj[e] = { count: 0, evidencias: [] };
                         expertosMap[experto].erroresObj[e].count++;
-                        if (evidencias && evidencias.trim() !== '') {
-                            expertosMap[experto].erroresObj[e].evidencias.push(evidencias.trim());
+                        if (evidenciasStr) {
+                            expertosMap[experto].erroresObj[e].evidencias.push(evidenciasStr);
                         }
                     });
                     
-                    if(resumen) expertosMap[experto].resumenes.push(resumen);
-                    if(evidencias) expertosMap[experto].evidencias.push(evidencias);
-                    if(fortalezas) expertosMap[experto].fortalezas.push(fortalezas);
-                    
-                    if(erroresFila.length === 0 && atribAfectados) {
-                        let e = "Afectación General";
+                    // Si no detectó error pero hay evidencia, se guarda como Afectación General
+                    if(erroresEnFila.length === 0 && evidenciasStr) {
+                        let e = "Afectación de Calidad";
                         if (!expertosMap[experto].erroresObj[e]) expertosMap[experto].erroresObj[e] = { count: 0, evidencias: [] };
                         expertosMap[experto].erroresObj[e].count++;
-                        if (evidencias && evidencias.trim() !== '') {
-                            expertosMap[experto].erroresObj[e].evidencias.push(evidencias.trim());
-                        }
+                        expertosMap[experto].erroresObj[e].evidencias.push(evidenciasStr);
                     }
+
+                    if(resumen) expertosMap[experto].resumenes.push(resumen);
+                    if(evidenciasStr) expertosMap[experto].evidencias.push(evidenciasStr);
                 }
             }
 
@@ -802,9 +797,9 @@
                 })).sort((a,b)=>b.count-a.count);
 
                 if (isGroup && countAlertas >= 4) {
-                    reincidentes.push({ name: exp, monitorings: countAlertas, errors: errArray, canal: dominantChannel, resumenes: expertosMap[exp].resumenes, evidencias: expertosMap[exp].evidencias, fortalezas: expertosMap[exp].fortalezas });
+                    reincidentes.push({ name: exp, monitorings: countAlertas, errors: errArray, canal: dominantChannel, resumenes: expertosMap[exp].resumenes, evidencias: expertosMap[exp].evidencias });
                 } else if (!isGroup) {
-                    reincidentes.push({ name: exp, monitorings: countTotal, errors: errArray, canal: dominantChannel, resumenes: expertosMap[exp].resumenes, evidencias: expertosMap[exp].evidencias, fortalezas: expertosMap[exp].fortalezas });
+                    reincidentes.push({ name: exp, monitorings: countTotal, errors: errArray, canal: dominantChannel, resumenes: expertosMap[exp].resumenes, evidencias: expertosMap[exp].evidencias });
                 }
             }
 
@@ -892,8 +887,8 @@
                 else promptTxt += `Crea el S.B.I y preguntas basadas en la data.\n\nDATA:\n`;
                 
                 reincidentes.forEach(r => {
-                    // Ahora mandamos hasta 20 evidencias para asegurarnos de que la IA lea absolutamente todo
-                    promptTxt += `- Experto: ${r.name} | Canal: ${r.canal}. \n  Errores Top: ${r.errors.slice(0,5).map(e=>e.name).join(', ')}. \n  Evidencias Completas: ${r.evidencias.slice(0,20).join(' || ')}. \n  Fortalezas: ${r.fortalezas.slice(0,3).join(' | ')}.\n\n`;
+                    // Le pasamos todos los resúmenes y todas las evidencias sin límite para asegurar el contexto
+                    promptTxt += `- Experto: ${r.name} | Canal: ${r.canal}. \n  Errores Top: ${r.errors.map(e=>e.name).join(', ')}. \n  Resúmenes de llamadas: ${r.resumenes.join(' || ')}. \n  Evidencias Completas (TEXTO REAL): ${r.evidencias.join(' || ')}.\n\n`;
                 });
                 
                 promptTxt += `\nDEVUELVE UNICAMENTE UN JSON VALIDO: { "general": { "sbi_s":"", "sbi_b":"", "sbi_i":"", "questions":["q1","q2","q3"] }, "experts": [ { "name":"nombre exacto que te di", "sbi_s":"", "sbi_b":"", "sbi_i":"", "case_summary":"Resumen narrativo detallado de TODAS sus fallas...", "simulator_context":"" } ] }`;
@@ -1003,7 +998,7 @@
                 const currentModel = modelosDisponibles[m];
                 if (loadingText) loadingText.innerText = `Conectando IA: Evaluando modelo ${currentModel}...`;
 
-                const url = `[https://generativelanguage.googleapis.com/v1beta/models/$](https://generativelanguage.googleapis.com/v1beta/models/$){currentModel}:generateContent?key=${apiKey}`;
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/${currentModel}:generateContent?key=${apiKey}`;
                 const p = { contents: [{ role: 'user', parts: [{ text: prompt }] }], generationConfig: { responseMimeType: "application/json" } };
                 
                 try {
@@ -1219,6 +1214,9 @@
                 if(el && el.innerText !== viewData[f]) el.innerText = viewData[f] || '...';
             });
 
+            const notesEl = document.getElementById('coach-private-notes');
+            if(notesEl) notesEl.value = viewData.privateNotes || '';
+
             if(isCoach) {
                 if(isGen) {
                     document.getElementById('data-view-general').classList.remove('hidden');
@@ -1309,21 +1307,25 @@
                 document.getElementById('val-sim-context-read').innerText = viewData.simulator_context || '';
                 
                 if(isCoach) {
-                    document.getElementById('coach-view-response').innerText = viewData.expertResponse || 'Esperando...';
+                    // Solución al Bug de la vista del Coach
+                    document.getElementById('coach-view-response').innerText = viewData.expertResponse || 'El experto aún no ha respondido a la simulación...';
+                    
                     if(viewData.commitment?.action) {
                         document.getElementById('coach-view-commitment').classList.remove('hidden');
                         document.getElementById('coach-view-commitment').innerHTML = `
                             <div class="bg-white/10 rounded-xl p-4 text-white">
-                                <p class="font-bold mb-1">Acción: "${viewData.commitment.action}"</p>
-                                <p class="text-sm text-slate-300">Inicio: ${viewData.commitment.date} | Firma: ${viewData.commitment.sign}</p>
+                                <p class="font-bold mb-2">💡 Acción: "${viewData.commitment.action}"</p>
+                                <p class="text-sm text-slate-300"><i class="fas fa-calendar-alt"></i> Inicio: ${viewData.commitment.date} | <i class="fas fa-signature"></i> Firma: ${viewData.commitment.sign}</p>
                             </div>
                         `;
                     } else {
                         document.getElementById('coach-view-commitment').classList.add('hidden');
                     }
                 } else {
-                    if(document.getElementById('val-expert-response').value !== viewData.expertResponse) {
-                        document.getElementById('val-expert-response').value = viewData.expertResponse || '';
+                    // Vista del experto
+                    const expertRespEl = document.getElementById('val-expert-response');
+                    if(expertRespEl && expertRespEl.value !== viewData.expertResponse) {
+                        expertRespEl.value = viewData.expertResponse || '';
                     }
                 }
             }
@@ -1337,8 +1339,37 @@
         window.saveScore = function(exp, val) {
             safeUpdate({ [`experts.${exp}.score`]: parseInt(val)||0 });
         };
+        
         window.saveIndScore = function(val) {
             if(currentExpertView !== 'general') window.saveScore(currentExpertView, val);
+        };
+
+        window.savePrivateNotes = function(val) {
+            if(!isCoach) return;
+            if(currentExpertView === 'general') {
+                safeUpdate({ 'general.privateNotes': val });
+            } else {
+                safeUpdate({ [`experts.${currentExpertView}.privateNotes`]: val });
+            }
+        };
+
+        window.generateEmailPrompt = function() {
+            const exp = currentExpertView === 'general' ? Object.values(currentSessionData.experts)[0] : currentSessionData.experts[currentExpertView];
+            if(!exp) return window.showMsg('Selecciona un experto individual', 'error');
+
+            const promptText = `Eres Angie Cuellar. Redacta un correo humano, consecuente y contando una historia (no parezcas una IA). 
+Toma como inspiración el estilo del "Taller de residentes" (Clínica de Optimización, Alta Médica, salir del piloto automático).
+
+Menciona esto en la historia:
+- Experto: ${exp.name}
+- Mis notas privadas de la sesión: "${exp.privateNotes || 'Refuerzo en protocolos'}"
+- Práctica: Se enfrentó al caso "${exp.simulator_context}".
+- Compromiso sellado: Hará "${exp.commitment?.action || 'No documentado'}" desde el ${exp.commitment?.date || 'hoy'}.
+
+Estructura: Objetivo, qué se evidenció en la pizarra, evolución en la práctica, y compromiso. Usa viñetas donde sea prudente.`;
+
+            window.copyToClipboard(promptText);
+            window.showMsg('¡Prompt copiado! Pégalo en tu IA generadora de correos.');
         };
 
         window.addBoardNote = async function() {
