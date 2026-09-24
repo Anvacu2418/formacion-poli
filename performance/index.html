@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Coach Performance Hub</title>
     
-    <!-- URLs limpias sin corchetes ni paréntesis de Markdown -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -76,7 +75,6 @@
                     <span class="text-sm text-slate-500">¿Ya tienes una sesión activa?</span>
                     <div class="flex gap-2">
                         <input type="text" id="coach-resume-code" placeholder="CÓDIGO" class="w-24 p-2 text-center font-mono font-bold bg-white border border-slate-300 rounded-lg outline-none uppercase text-sm">
-                        <!-- Ajuste Botón Retomar Coach -->
                         <button type="button" onclick="window.resumeCoachSession()" class="bg-slate-800 text-white px-4 rounded-lg hover:bg-slate-700 transition-colors text-sm font-bold">Retomar</button>
                     </div>
                 </div>
@@ -93,6 +91,7 @@
         </div>
     </div>
 
+    <!-- SELECCIÓN DE COACH -->
     <div id="coach-mode-select-screen" class="screen hidden w-full h-full bg-slate-50 items-center justify-center p-6 relative overflow-hidden">
         <button type="button" onclick="window.showScreen('login-screen')" class="absolute top-8 left-8 text-slate-400 hover:text-slate-600 transition-colors flex items-center gap-2 font-medium">
             <i class="fas fa-arrow-left"></i> Volver al Inicio
@@ -127,7 +126,7 @@
         </div>
     </div>
 
-    <!-- 3. FORMULARIO CARGA -->
+    <!-- FORMULARIO CARGA -->
     <div id="coach-setup-screen" class="screen hidden w-full h-full bg-slate-50 overflow-y-auto py-10 px-4 flex-col items-center">
         <div class="max-w-3xl w-full mx-auto bg-white rounded-3xl shadow-md border border-slate-200 p-10 mt-auto mb-auto">
             <button type="button" onclick="window.showScreen('coach-mode-select-screen')" class="text-slate-400 hover:text-slate-600 mb-6 flex items-center gap-2">
@@ -196,9 +195,9 @@
             <div class="flex-1 overflow-y-auto space-y-6 pr-2">
                 <div class="bg-indigo-50 border border-indigo-200 rounded-2xl p-6">
                     <h3 class="font-bold text-indigo-900 mb-2">Paso 1. Sube tu Excel al Agente "Motor JSON"</h3>
-                    <p class="text-sm text-indigo-700 mb-3">Abre tu Agente (Gem / GPT) preconfigurado, <strong>adjúntale el archivo Excel</strong> y envíale este mensaje exacto:</p>
+                    <p class="text-sm text-indigo-700 mb-3">Abre tu Agente preconfigurado, <strong>adjúntale el archivo Excel</strong> y envíale este mensaje exacto:</p>
                     <div class="relative">
-                        <textarea id="manual-prompt-area" class="w-full h-24 p-4 bg-white border border-indigo-200 rounded-xl text-sm outline-none resize-none font-mono text-slate-600" readonly>Por favor analiza este archivo. Taller: [Individual/Grupal]. Fechas: [Inicio] a [Fin]. Experto: [Nombre]. Devuélveme únicamente el JSON estructurado según tus instrucciones.</textarea>
+                        <textarea id="manual-prompt-area" class="w-full h-24 p-4 bg-white border border-indigo-200 rounded-xl text-sm outline-none resize-none font-mono text-slate-600" readonly></textarea>
                         <button onclick="window.copyToClipboard(document.getElementById('manual-prompt-area').value)" class="absolute top-4 right-4 bg-primary text-white px-4 py-2 rounded-lg font-bold hover:bg-indigo-700 shadow-md text-sm"><i class="fas fa-copy"></i> Copiar Mensaje</button>
                     </div>
                 </div>
@@ -218,6 +217,7 @@
         </div>
     </div>
 
+    <!-- PANTALLA CARGA -->
     <div id="loading-screen" class="screen hidden fixed inset-0 w-full h-screen bg-slate-900 flex flex-col items-center justify-center z-[100]">
         <div class="flex flex-col items-center justify-center text-center w-full max-w-2xl mx-auto">
             <div class="w-24 h-24 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mb-6 mx-auto"></div>
@@ -257,6 +257,7 @@
         </div>
     </div>
 
+    <!-- DASHBOARD PRINCIPAL -->
     <div id="main-dashboard" class="screen hidden w-full h-full bg-white flex">
         
         <!-- Panel Lateral (Izquierdo) -->
@@ -271,7 +272,6 @@
                 </div>
             </div>
 
-            <!-- Código Destacado -->
             <div class="bg-slate-800 border border-slate-700 rounded-xl p-4 mb-4 text-center shadow-inner relative group coach-only">
                 <p class="text-xs text-slate-400 font-semibold mb-1 uppercase tracking-wider">CÓDIGO DE SESIÓN</p>
                 <div class="text-2xl font-mono font-bold text-white tracking-[0.2em]" id="display-session-code">------</div>
@@ -280,7 +280,6 @@
                 </button>
             </div>
 
-            <!-- Selector de Experto (Coach) / Info Experto -->
             <div class="mb-6">
                 <div class="coach-only">
                     <p class="text-xs text-slate-400 font-semibold mb-1">Visualizando Datos de:</p>
@@ -319,7 +318,6 @@
 
         <!-- Área de Contenido Principal -->
         <div class="flex-1 bg-[#f8fafc] overflow-y-auto relative p-8 md:p-12">
-            <!-- Header Dinámico -->
             <div class="max-w-5xl mx-auto flex justify-between items-center mb-8 border-b border-slate-200 pb-6">
                 <div>
                     <h1 class="text-4xl font-bold text-slate-800" id="header-title">Tu Potencial</h1>
@@ -362,7 +360,7 @@
                     </div>
                 </div>
 
-                <!-- TAB 2: DATOS Y CASOS (Coach Only) -->
+                <!-- TAB 2: DATOS Y CASOS -->
                 <div id="tab-data" class="tab-content hidden space-y-6">
                     <div id="data-view-general" class="bg-white p-8 rounded-3xl shadow-sm border border-slate-200">
                         <div class="flex justify-between items-center mb-6">
@@ -382,7 +380,6 @@
                                     </tr>
                                 </thead>
                                 <tbody id="reincidentes-table-body" class="text-sm">
-                                    <!-- Filas dinámicas -->
                                 </tbody>
                             </table>
                         </div>
@@ -396,15 +393,14 @@
                             </div>
                             <span class="text-xs font-bold px-3 py-1 bg-rose-100 text-poli-magenta rounded-full">ALERTAS DETECTADAS</span>
                         </div>
+                        
                         <div id="errors-container" class="space-y-5">
-                            <!-- Barras de error -->
+                            <!-- ACORDEÓN CREADO DINÁMICAMENTE AQUÍ -->
                         </div>
                         
-                        <!-- NUEVO CONTENEDOR: RESUMEN DE INTERACCIONES -->
                         <div class="mt-8 border-t border-slate-100 pt-6">
                             <h4 class="font-bold text-slate-800 text-lg mb-4 flex items-center gap-2"><i class="fas fa-list-alt text-indigo-500"></i> Resumen de Interacciones (Base de Datos)</h4>
                             <div id="interaction-summaries" class="space-y-3 max-h-60 overflow-y-auto pr-2 rounded-xl bg-slate-50 p-4 border border-slate-100">
-                                <!-- Resúmenes dinámicos -->
                             </div>
                         </div>
 
@@ -546,7 +542,6 @@
                                     <div class="bg-white/10 rounded-xl p-4 min-h-[100px] italic text-slate-300">Esperando compromiso...</div>
                                 </div>
 
-                                <!-- AJUSTE DE CONTRASTE DEL BOTÓN -->
                                 <button type="button" onclick="window.saveCommitment()" class="w-full py-4 mt-6 bg-slate-900 text-white hover:bg-slate-800 font-bold rounded-xl shadow-lg transition-colors expert-only border border-slate-700">
                                     Guardar y Sellar Compromiso
                                 </button>
@@ -591,10 +586,10 @@
         </div>
     </div>
 
-<script type="module">
-        import { initializeApp } from "[https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js](https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js)";
-        import { getAuth, signInAnonymously } from "[https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js](https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js)";
-        import { getFirestore, doc, setDoc, getDoc, onSnapshot, updateDoc, arrayUnion } from "[https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js](https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js)";
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, onSnapshot, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         let db = null;
         let sessionRef = null;
@@ -636,6 +631,14 @@
             ).join(' ');
         };
 
+        window.escapeHTML = function(str) {
+            if (!str) return '';
+            return String(str).replace(/[&<>"']/g, function(match) {
+                const escape = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+                return escape[match];
+            });
+        };
+
         function parseExcelDate(val) {
             if (!val) return null;
             if (val instanceof Date) return val;
@@ -653,7 +656,6 @@
             return null;
         }
 
-        // --- CORE: LECTURA INTELIGENTE DE EXCEL Y CANAL ---
         window.procesarBaseMonitoreos = async function(file, fechaInicio, fechaFin, isGroup, singleExpertName) {
             const arrayBuffer = await file.arrayBuffer();
             const workbook = XLSX.read(arrayBuffer, { type: 'array', cellDates: true });
@@ -770,7 +772,6 @@
                     expertosMap[experto].interacciones.add(fecha.getTime() + "_" + r);
                     expertosMap[experto].canalesTotales[canalFila] = (expertosMap[experto].canalesTotales[canalFila] || 0) + 1;
                     
-                    // Asignación de evidencias por error exacto
                     erroresFila.forEach(e => { 
                         if (!expertosMap[experto].erroresObj[e]) expertosMap[experto].erroresObj[e] = { count: 0, evidencias: new Set() };
                         expertosMap[experto].erroresObj[e].count++;
@@ -818,7 +819,6 @@
             return reincidentes;
         };
 
-        // --- Lógica UI ---
         window.showScreen = function(id) {
             document.querySelectorAll('.screen').forEach(el => el.classList.add('hidden'));
             const target = document.getElementById(id);
@@ -866,7 +866,6 @@
             window.showMsg('Experto eliminado exitosamente');
         };
 
-        // INTEGRACIÓN API INTELIGENTE (CASCADA) Y FALLBACK MANUAL
         window.processSetup = async function() {
             const inst = document.getElementById('setup-institution').value;
             const sDate = document.getElementById('setup-start-date').value;
@@ -1001,19 +1000,14 @@
             const p5 = "KdH0ry1Ha8UzEJIpA";
             const apiKey = p1 + p2 + p3 + p4 + p5; 
             
-            const modelosDisponibles = [
-                "gemini-3.1-flash-lite", 
-                "gemini-2.5-flash-lite", 
-                "gemini-3.8-flash"       
-            ];
-            
+            const modelosDisponibles = ["gemini-3.1-flash-lite", "gemini-2.5-flash-lite", "gemini-3.8-flash"];
             const loadingText = document.getElementById('loading-text');
 
             for (let m = 0; m < modelosDisponibles.length; m++) {
                 const currentModel = modelosDisponibles[m];
                 if (loadingText) loadingText.innerText = `Conectando IA: Evaluando modelo ${currentModel}...`;
 
-                const url = `[https://generativelanguage.googleapis.com/v1beta/models/$](https://generativelanguage.googleapis.com/v1beta/models/$){currentModel}:generateContent?key=${apiKey}`;
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/${currentModel}:generateContent?key=${apiKey}`;
                 const p = { contents: [{ role: 'user', parts: [{ text: prompt }] }], generationConfig: { responseMimeType: "application/json" } };
                 
                 try {
@@ -1257,13 +1251,12 @@
                     document.getElementById('data-ind-channel').innerText = `Canal Evaluado: ${viewData.canal || 'No detectado'}`;
                     document.getElementById('input-ind-score').value = viewData.score || 0;
                     
-                    // Renderizado del acordeón de atributos y evidencias
                     const maxCount = Math.max(...viewData.errors.map(e=>e.count), 1);
                     document.getElementById('errors-container').innerHTML = viewData.errors.map((err, idx) => `
                         <div class="mb-4">
-                            <div class="flex justify-between text-sm mb-1 cursor-pointer group" onclick="document.getElementById('ev-${idx}').classList.toggle('hidden')">
+                            <div class="flex justify-between text-sm mb-1 cursor-pointer group" onclick="const e=document.getElementById('ev-${idx}'); e.classList.toggle('hidden'); const i=document.getElementById('icon-${idx}'); i.classList.toggle('rotate-180');">
                                 <span class="font-medium text-slate-700 group-hover:text-indigo-600 transition-colors flex items-center gap-2">
-                                    <i class="fas fa-chevron-down text-xs text-slate-400 group-hover:text-indigo-600 transition-colors"></i> ${err.name}
+                                    <i id="icon-${idx}" class="fas fa-chevron-down text-xs text-slate-400 group-hover:text-indigo-600 transition-transform duration-200"></i> ${err.name}
                                 </span>
                                 <span class="font-bold text-slate-800">${err.count}</span>
                             </div>
@@ -1273,16 +1266,15 @@
                             <div id="ev-${idx}" class="hidden mt-3 bg-slate-50 p-4 rounded-xl border border-slate-100">
                                 <p class="text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider"><i class="fas fa-search"></i> Evidencias Registradas:</p>
                                 <ul class="list-disc pl-4 text-sm text-slate-600 space-y-2 italic">
-                                    ${err.evidences && err.evidences.length > 0 ? err.evidences.map(ev => `<li>"${ev}"</li>`).join('') : '<li>No hay evidencia textual para este error.</li>'}
+                                    ${err.evidences && err.evidences.length > 0 ? err.evidences.map(ev => `<li class="mb-2 text-justify">"${window.escapeHTML(ev)}"</li>`).join('') : '<li>No hay evidencia textual para este error.</li>'}
                                 </ul>
                             </div>
                         </div>
                     `).join('');
 
-                    // Renderizado del resumen ejecutivo (AI o Fallback)
                     const resumContainer = document.getElementById('interaction-summaries');
                     if (viewData.case_summary && viewData.case_summary.trim() !== "N/A") {
-                        resumContainer.innerHTML = `<div class="bg-indigo-50/50 p-5 rounded-xl border border-indigo-100 text-sm text-slate-700 leading-relaxed shadow-inner"><i class="fas fa-robot text-indigo-400 mr-2"></i> ${viewData.case_summary}</div>`;
+                        resumContainer.innerHTML = `<div class="bg-indigo-50/50 p-5 rounded-xl border border-indigo-100 text-sm text-slate-700 leading-relaxed shadow-inner"><i class="fas fa-robot text-indigo-400 mr-2 text-lg"></i> ${viewData.case_summary}</div>`;
                     } else if (viewData.resumenes && viewData.resumenes.length > 0) {
                         resumContainer.innerHTML = viewData.resumenes.map((r, i) => `
                             <div class="bg-white p-3 rounded-lg border border-slate-200 text-sm text-slate-600 italic mb-2">
