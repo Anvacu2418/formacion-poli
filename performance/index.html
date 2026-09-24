@@ -138,26 +138,18 @@
             </div>
             
             <div class="space-y-6">
-                <div class="grid grid-cols-2 gap-6">
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-1">Institución</label>
-                        <select id="setup-institution" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500">
-                            <option value="poli">Politécnico Grancolombiano</option>
-                            <option value="andina">Areandina</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-1">Canal de Atención</label>
-                        <select id="setup-channel" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500">
-                            <option value="linea">Línea Telefónica</option>
-                            <option value="redes">Redes Sociales / Chat</option>
-                        </select>
-                    </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Institución</label>
+                    <select id="setup-institution" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="poli">Politécnico Grancolombiano</option>
+                        <option value="andina">Areandina</option>
+                        <option value="san_marcos">San Marcos</option>
+                    </select>
                 </div>
 
                 <div id="expert-name-container">
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Nombre Exacto del Experto</label>
-                    <input type="text" id="setup-expert-name" placeholder="Ej. Ayde Carolina Borja" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500">
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Correo del Experto (Recomendado) o Nombre exacto</label>
+                    <input type="text" id="setup-expert-name" placeholder="Ej. jose.ardila@ilumno.com o Jose Ardila" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500">
                 </div>
 
                 <div class="grid grid-cols-2 gap-6">
@@ -177,7 +169,7 @@
                         <input type="file" id="setup-excel-file" accept=".xlsx, .xlsm, .csv" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onchange="window.updateFileName(this)">
                         <i class="fas fa-file-excel text-4xl text-emerald-500 mb-3"></i>
                         <p id="file-main-text" class="text-sm font-medium text-slate-700">Haz clic o arrastra el archivo aquí</p>
-                        <p class="text-xs text-slate-500 mt-1" id="file-name-display">El sistema buscará automáticamente la hoja de datos.</p>
+                        <p class="text-xs text-slate-500 mt-1" id="file-name-display">El sistema detectará automáticamente el canal de atención.</p>
                     </div>
                 </div>
 
@@ -228,7 +220,7 @@
         <div class="flex flex-col items-center justify-center text-center w-full max-w-2xl mx-auto">
             <div class="w-24 h-24 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mb-6 mx-auto"></div>
             <h2 class="text-3xl font-bold text-white mb-4">Construyendo Sesión...</h2>
-            <p class="text-indigo-300 text-lg leading-relaxed" id="loading-text">Leyendo columnas de Monitoreo, Evidencias, Fortalezas y calculando Reincidentes con IA.</p>
+            <p class="text-indigo-300 text-lg leading-relaxed" id="loading-text">Analizando canales de atención, oportunidades de mejora y diseñando simulador trampa...</p>
         </div>
     </div>
 
@@ -380,11 +372,11 @@
                                 <thead>
                                     <tr class="border-b border-slate-200 text-slate-500 text-sm">
                                         <th class="py-3 font-semibold">Experto</th>
-                                        <th class="py-3 font-semibold text-center">Monitoreos</th>
+                                        <th class="py-3 font-semibold text-center">Canal Principal</th>
                                         <th class="py-3 font-semibold text-center">Alertas Tot.</th>
                                         <th class="py-3 font-semibold">Top Error</th>
                                         <th class="py-3 font-semibold text-center">Nota Sesión</th>
-                                        <th class="py-3 font-semibold text-center">Acción</th>
+                                        <th class="py-3 font-semibold text-center">Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody id="reincidentes-table-body" class="text-sm">
@@ -396,12 +388,24 @@
 
                     <div id="data-view-individual" class="hidden bg-white p-8 rounded-3xl shadow-sm border border-slate-200">
                         <div class="flex justify-between items-end mb-6">
-                            <h3 class="text-xl font-bold text-slate-800" id="data-ind-title">Oportunidades Identificadas</h3>
+                            <div>
+                                <h3 class="text-xl font-bold text-slate-800" id="data-ind-title">Oportunidades Identificadas</h3>
+                                <p class="text-sm font-medium text-slate-500 mt-1" id="data-ind-channel">Canal Evaluado: Teléfono</p>
+                            </div>
                             <span class="text-xs font-bold px-3 py-1 bg-rose-100 text-poli-magenta rounded-full">ALERTAS DETECTADAS</span>
                         </div>
                         <div id="errors-container" class="space-y-5">
                             <!-- Barras de error -->
                         </div>
+                        
+                        <!-- NUEVO CONTENEDOR: RESUMEN DE INTERACCIONES -->
+                        <div class="mt-8 border-t border-slate-100 pt-6">
+                            <h4 class="font-bold text-slate-800 text-lg mb-4 flex items-center gap-2"><i class="fas fa-list-alt text-indigo-500"></i> Resumen de Interacciones (Base de Datos)</h4>
+                            <div id="interaction-summaries" class="space-y-3 max-h-60 overflow-y-auto pr-2 rounded-xl bg-slate-50 p-4 border border-slate-100">
+                                <!-- Resúmenes dinámicos -->
+                            </div>
+                        </div>
+
                         <div class="mt-10 pt-6 border-t border-slate-100 flex items-center justify-between">
                             <div>
                                 <h4 class="font-bold text-slate-800 text-lg">Evaluación Final del Experto</h4>
@@ -450,7 +454,7 @@
                     <div id="sim-content">
                         <div class="bg-indigo-50/50 p-8 rounded-3xl border border-indigo-100 relative mb-6">
                             <div class="absolute top-8 right-8 text-4xl text-indigo-200" id="sim-icon"><i class="fas fa-headset"></i></div>
-                            <h3 class="text-xl font-bold text-indigo-900 mb-2">Rol del Cliente (Simulación Anónima) <i class="fas fa-pencil-alt text-xs text-indigo-300 ml-2 coach-only"></i></h3>
+                            <h3 class="text-xl font-bold text-indigo-900 mb-2">Simulador de Caso Práctico (Examen Trampa) <i class="fas fa-pencil-alt text-xs text-indigo-300 ml-2 coach-only"></i></h3>
                             <div class="editable-field text-indigo-800 leading-relaxed pr-12 text-lg coach-only" id="val-sim-context" contenteditable="true" onblur="window.saveField('simulator_context', this.innerText)">Cargando...</div>
                             <div class="text-indigo-800 leading-relaxed pr-12 text-lg hidden expert-only" id="val-sim-context-read">Cargando...</div>
                         </div>
@@ -548,7 +552,7 @@
                     </div>
                 </div>
 
-                <!-- TAB 6: REPORTE FINAL (SOLO COACH) - ¡ACTUALIZADO A ANCHO COMPLETO! -->
+                <!-- TAB 6: REPORTE FINAL (SOLO COACH) -->
                 <div id="tab-report" class="tab-content hidden coach-only">
                     <div id="export-report-area" class="bg-white p-10 rounded-[2rem] shadow-lg border border-slate-200">
                         <div class="flex justify-between items-start mb-10 border-b-2 border-poli-blue pb-4">
@@ -558,9 +562,8 @@
                             </div>
                         </div>
 
-                        <!-- Cambiado a grid-cols-1 para que ocupen todo el ancho y se apilen hacia abajo -->
                         <div class="grid grid-cols-1 gap-10">
-                            <!-- Gráfica 1: Resultados (Ocupa 100% del ancho) -->
+                            <!-- Gráfica 1 -->
                             <div class="border border-slate-200 rounded-2xl p-8 flex flex-col relative group">
                                 <h3 class="font-bold text-slate-700 mb-6 text-center text-xl">Resultados de Evaluación de Reincidentes</h3>
                                 <button type="button" onclick="window.downloadChart('chart-score', 'Score_Evaluacion.png')" class="absolute top-6 right-6 text-slate-400 hover:text-poli-magenta opacity-0 group-hover:opacity-100 transition-opacity text-xl"><i class="fas fa-download"></i></button>
@@ -569,7 +572,7 @@
                                 </div>
                             </div>
                             
-                            <!-- Gráfica 2: Pareto (Ocupa 100% del ancho) -->
+                            <!-- Gráfica 2 -->
                             <div class="border border-slate-200 rounded-2xl p-8 flex flex-col relative group">
                                 <h3 class="font-bold text-slate-700 mb-6 text-center text-xl">Cantidad de Mínimos Consolidado</h3>
                                 <button type="button" onclick="window.downloadChart('chart-pareto', 'Pareto_Minimos.png')" class="absolute top-6 right-6 text-slate-400 hover:text-poli-blue opacity-0 group-hover:opacity-100 transition-opacity text-xl"><i class="fas fa-download"></i></button>
@@ -619,21 +622,17 @@
             document.body.removeChild(textArea);
         };
 
-        // Formateador de nombres inteligente para las gráficas
         window.formatDisplayName = function(nameStr) {
             if (!nameStr) return '';
             let cleanName = nameStr;
-            // Si tiene arroba, quitamos el dominio y cambiamos puntos/guiones por espacios
             if (cleanName.includes('@')) {
                 cleanName = cleanName.split('@')[0].replace(/[\._-]/g, ' ');
             }
-            // Retornamos máximo 2 palabras (Nombre Apellido), con la primera letra en mayúscula
             return cleanName.trim().split(/\s+/).slice(0, 2).map(word => 
                 word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
             ).join(' ');
         };
 
-        // Date Parser Robust
         function parseExcelDate(val) {
             if (!val) return null;
             if (val instanceof Date) return val;
@@ -651,7 +650,7 @@
             return null;
         }
 
-        // --- CORE: LECTURA INTELIGENTE DE EXCEL ---
+        // --- CORE: LECTURA INTELIGENTE DE EXCEL Y CANAL ---
         window.procesarBaseMonitoreos = async function(file, fechaInicio, fechaFin, isGroup, singleExpertName) {
             const arrayBuffer = await file.arrayBuffer();
             const workbook = XLSX.read(arrayBuffer, { type: 'array', cellDates: true });
@@ -683,11 +682,13 @@
                 }
             }
 
-            let colMap = { fechaMon: -1, experto: -1, tipoMon: -1, nota: -1, resumen: -1, atribAfectados: -1, evidencias: -1, fortalezas: -1, startAtrib: -1 };
+            // NUEVO: Agregado mapeo de "canal"
+            let colMap = { fechaMon: -1, experto: -1, tipoMon: -1, canal: -1, nota: -1, resumen: -1, atribAfectados: -1, evidencias: -1, fortalezas: -1, startAtrib: -1 };
             headers.forEach((h, c) => {
                 if (h.includes('fecha monitoreo')) colMap.fechaMon = c;
                 else if (h === 'experto' || h.includes('nombre del experto')) colMap.experto = c;
                 else if (h.includes('tipo monitoreo')) colMap.tipoMon = c;
+                else if (h === 'canal' || h.includes('canal de atención')) colMap.canal = c;
                 else if (h.includes('nota') || h.includes('calificación')) colMap.nota = c;
                 else if (h === 'resumen' || h.includes('resumen llamada')) colMap.resumen = c;
                 else if (h.includes('atributos afectados')) colMap.atribAfectados = c;
@@ -709,7 +710,9 @@
                 sDate = new Date(eDate.getTime() - (90 * 24 * 60 * 60 * 1000));
             }
 
-            const expBuscado = (singleExpertName || '').trim().toLowerCase();
+            // BÚSQUEDA A PRUEBA DE BALAS (Para modo Individual):
+            // Convertimos lo que el coach escriba (Ej. "Jose Ardila" o "jose.ardila@ilumno.com") a un string limpio sin correos ni puntos
+            const expBuscadoLimpiado = (singleExpertName || '').toLowerCase().replace(/@.+/, '').replace(/[\._-]/g, ' ').trim();
             let totalProcesados = 0;
 
             for (let r = headerRowIndex + 1; r < data.length; r++) {
@@ -722,11 +725,17 @@
                 const experto = String(fila[colMap.experto] || '').trim();
                 if (!experto) continue;
 
-                if (!isGroup && experto.toLowerCase() !== expBuscado) continue;
+                // Aplicar limpieza también al experto del Excel para que empaten siempre
+                const expCeldaLimpiado = experto.toLowerCase().replace(/@.+/, '').replace(/[\._-]/g, ' ').trim();
+                
+                if (!isGroup && !expCeldaLimpiado.includes(expBuscadoLimpiado)) continue;
 
                 totalProcesados++;
 
                 const tipoMon = String(fila[colMap.tipoMon] || '').toLowerCase();
+                // Extracción de canal
+                const canalFila = colMap.canal >= 0 ? String(fila[colMap.canal] || 'Teléfono/Chat').trim() : 'Teléfono/Chat';
+                
                 const nota = colMap.nota >= 0 ? parseFloat(fila[colMap.nota]) : 100;
                 const atribAfectados = colMap.atribAfectados >= 0 ? String(fila[colMap.atribAfectados] || '') : '';
                 const evidencias = colMap.evidencias >= 0 ? String(fila[colMap.evidencias] || '') : '';
@@ -755,13 +764,15 @@
                 }
 
                 if (!expertosMap[experto]) {
-                    expertosMap[experto] = { interacciones: new Set(), errores: {}, resumenes: [], evidencias: [], fortalezas: [], totalMonitoreos: 0 };
+                    expertosMap[experto] = { interacciones: new Set(), errores: {}, canalesTotales: {}, resumenes: [], evidencias: [], fortalezas: [], totalMonitoreos: 0 };
                 }
                 
                 expertosMap[experto].totalMonitoreos++;
                 
                 if (cumpleCriterio) {
                     expertosMap[experto].interacciones.add(fecha.getTime() + "_" + r);
+                    expertosMap[experto].canalesTotales[canalFila] = (expertosMap[experto].canalesTotales[canalFila] || 0) + 1;
+                    
                     erroresFila.forEach(e => { expertosMap[experto].errores[e] = (expertosMap[experto].errores[e] || 0) + 1; });
                     if(resumen) expertosMap[experto].resumenes.push(resumen);
                     if(evidencias) expertosMap[experto].evidencias.push(evidencias);
@@ -778,18 +789,21 @@
                 const countAlertas = expertosMap[exp].interacciones.size;
                 const countTotal = expertosMap[exp].totalMonitoreos;
                 
+                // Determinamos el canal principal (el que más se repite para este experto)
+                let dominantChannel = Object.keys(expertosMap[exp].canalesTotales).sort((a,b)=>expertosMap[exp].canalesTotales[b]-expertosMap[exp].canalesTotales[a])[0] || 'Teléfono/Chat';
+
                 if (isGroup && countAlertas >= 4) {
                     let errArray = Object.keys(expertosMap[exp].errores).map(k => ({name: k, count: expertosMap[exp].errores[k]})).sort((a,b)=>b.count-a.count);
-                    reincidentes.push({ name: exp, monitorings: countAlertas, errors: errArray, resumenes: expertosMap[exp].resumenes, evidencias: expertosMap[exp].evidencias, fortalezas: expertosMap[exp].fortalezas });
+                    reincidentes.push({ name: exp, monitorings: countAlertas, errors: errArray, canal: dominantChannel, resumenes: expertosMap[exp].resumenes, evidencias: expertosMap[exp].evidencias, fortalezas: expertosMap[exp].fortalezas });
                 } else if (!isGroup) {
                     let errArray = Object.keys(expertosMap[exp].errores).map(k => ({name: k, count: expertosMap[exp].errores[k]})).sort((a,b)=>b.count-a.count);
-                    reincidentes.push({ name: exp, monitorings: countTotal, errors: errArray, resumenes: expertosMap[exp].resumenes, evidencias: expertosMap[exp].evidencias, fortalezas: expertosMap[exp].fortalezas });
+                    reincidentes.push({ name: exp, monitorings: countTotal, errors: errArray, canal: dominantChannel, resumenes: expertosMap[exp].resumenes, evidencias: expertosMap[exp].evidencias, fortalezas: expertosMap[exp].fortalezas });
                 }
             }
 
             if(reincidentes.length === 0) {
-                if(totalProcesados === 0) throw new Error("Fechas o Nombre sin registros. Revisa el filtro.");
-                else throw new Error(`Se leyeron ${totalProcesados} llamadas, pero ningún experto cumplió los criterios.`);
+                if(totalProcesados === 0) throw new Error("Fechas o Nombre sin registros. Revisa el correo/nombre exacto ingresado.");
+                else throw new Error(`Se leyeron ${totalProcesados} llamadas, pero el experto no cumple criterios (Ej. >=4 alertas de impacto).`);
             }
 
             return reincidentes;
@@ -830,17 +844,29 @@
             }
         };
 
-        // INTEGRACIÓN API INTELIGENTE (CASCADA) Y FALLBACK MANUAL
+        // ELIMINAR EXPERTO DEL TALLER
+        window.deleteExpert = async function(expertName) {
+            if(!confirm(`¿Estás seguro de eliminar a ${window.formatDisplayName(expertName)} del taller? Esto lo quitará de la tabla y las gráficas.`)) return;
+            
+            let data = currentSessionData;
+            delete data.experts[expertName];
+            
+            let remainingReincidentes = Object.values(data.experts);
+            data.general.errors = aggregateErrors(remainingReincidentes);
+            
+            await safeUpdate({ experts: data.experts, 'general.errors': data.general.errors });
+            window.showMsg('Experto eliminado exitosamente');
+        };
+
         window.processSetup = async function() {
             const inst = document.getElementById('setup-institution').value;
-            const chan = document.getElementById('setup-channel').value;
             const sDate = document.getElementById('setup-start-date').value;
             const eDate = document.getElementById('setup-end-date').value;
             const fileInput = document.getElementById('setup-excel-file');
             const isGroup = window.sessionType === 'group';
             const expName = document.getElementById('setup-expert-name').value;
 
-            if(!isGroup && !expName) return window.showMsg('Ingresa el nombre del experto', 'error');
+            if(!isGroup && !expName) return window.showMsg('Ingresa el nombre o correo del experto', 'error');
             if(!sDate || !eDate || !fileInput.files.length) return window.showMsg('Completa fechas y archivo', 'error');
 
             window.showScreen('loading-screen');
@@ -849,22 +875,23 @@
             try {
                 const reincidentes = await window.procesarBaseMonitoreos(fileInput.files[0], sDate, eDate, isGroup, expName);
                 
-                window.pendingSetupData = { reincidentes, inst, chan };
+                window.pendingSetupData = { reincidentes, inst };
 
-                let promptTxt = `Eres un Coach Master. Analiza los siguientes expertos que tuvieron oportunidades en ${chan}.\n`;
+                // PROMPT ACTUALIZADO PARA EXAMEN TRAMPA Y CANAL AUTOMÁTICO
+                let promptTxt = `Eres un Coach Master. Analiza a los siguientes asesores de servicio al cliente.\n`;
                 promptTxt += `INSTRUCCIONES CLAVE:\n`;
-                promptTxt += `1. S.B.I: Extrae la Situación, Comportamiento e Impacto BASÁNDOTE EXCLUSIVAMENTE en las "Evidencias" compartidas.\n`;
+                promptTxt += `1. S.B.I: Extrae Situación, Comportamiento e Impacto BASÁNDOTE EXCLUSIVAMENTE en las "Evidencias".\n`;
                 promptTxt += `2. PREGUNTAS: Genera 3 preguntas poderosas usando las "Fortalezas" cruzadas con las "Evidencias".\n`;
-                promptTxt += `3. SIMULADOR: Genera un "simulator_context" (un rol de cliente de 2 a 3 líneas) BASÁNDOTE EN EL "Resumen", pero DEBES ANONIMIZAR Y OMITIR cualquier nombre real, cédula, o dato sensible. Inventa nombres genéricos.\n\n`;
+                promptTxt += `3. SIMULADOR: Genera un "simulator_context". DEBES DISEÑARLO COMO UNA PRUEBA O EXAMEN TRAMPA para evaluar si el asesor mejoró específicamente en sus "Errores Top" detectados. Si el canal del experto dice "telefónico/teléfono", simula el inicio verbal de una llamada. Si dice "chat/redes", simula un primer mensaje de texto. Oculta nombres reales.\n\n`;
                 
-                if(isGroup) promptTxt += `Extrae primero un S.B.I general del equipo y 3 preguntas poderosas generales. Luego hazlo individual.\n\nDATA:\n`;
-                else promptTxt += `Crea el S.B.I y preguntas basadas en los datos del experto.\n\nDATA:\n`;
+                if(isGroup) promptTxt += `Extrae primero un S.B.I general del equipo y 3 preguntas. Luego hazlo individual.\n\nDATA:\n`;
+                else promptTxt += `Crea el S.B.I y preguntas basadas en la data.\n\nDATA:\n`;
                 
                 reincidentes.forEach(r => {
-                    promptTxt += `- Experto: ${r.name}. \n  Errores Top: ${r.errors.slice(0,3).map(e=>e.name).join(', ')}. \n  Evidencias: ${r.evidencias.slice(0,3).join(' | ')}. \n  Fortalezas: ${r.fortalezas.slice(0,3).join(' | ')}. \n  Resumen llamadas: ${r.resumenes.slice(0,2).join('. ')}\n\n`;
+                    promptTxt += `- Experto: ${r.name} | Canal: ${r.canal}. \n  Errores Top: ${r.errors.slice(0,3).map(e=>e.name).join(', ')}. \n  Evidencias: ${r.evidencias.slice(0,3).join(' | ')}. \n  Fortalezas: ${r.fortalezas.slice(0,3).join(' | ')}. \n  Resumen llamadas: ${r.resumenes.slice(0,2).join('. ')}\n\n`;
                 });
                 
-                promptTxt += `\nDEVUELVE UNICAMENTE UN JSON VALIDO: { "general": { "sbi_s":"", "sbi_b":"", "sbi_i":"", "questions":["q1","q2","q3"] }, "experts": [ { "name":"nombre exacto", "sbi_s":"", "sbi_b":"", "sbi_i":"", "simulator_context":"" } ] }`;
+                promptTxt += `\nDEVUELVE UNICAMENTE UN JSON VALIDO: { "general": { "sbi_s":"", "sbi_b":"", "sbi_i":"", "questions":["q1","q2","q3"] }, "experts": [ { "name":"nombre exacto que te di", "sbi_s":"", "sbi_b":"", "sbi_i":"", "simulator_context":"" } ] }`;
 
                 const aiData = await fetchGeminiInteligente(promptTxt);
                 
@@ -913,15 +940,16 @@
             try {
                 const code = Math.random().toString(36).substring(2, 8).toUpperCase();
                 let sessionData = {
-                    code, type: window.sessionType, institution: window.pendingSetupData.inst, channel: window.pendingSetupData.chan,
+                    code, type: window.sessionType, institution: window.pendingSetupData.inst,
                     general: { ...aiData.general, errors: aggregateErrors(window.pendingSetupData.reincidentes) },
                     experts: {}, board: []
                 };
 
+                // GUARDAMOS EL CANAL Y LOS RESÚMENES ORIGINALES DE LA BASE
                 window.pendingSetupData.reincidentes.forEach(r => {
                     let aiExp = aiData.experts.find(a => a.name === r.name) || { sbi_s:'N/A', sbi_b:'N/A', sbi_i:'N/A', simulator_context:'Práctica genérica' };
                     sessionData.experts[r.name] = {
-                        name: r.name, monitorings: r.monitorings, errors: r.errors, score: 0,
+                        name: r.name, monitorings: r.monitorings, errors: r.errors, canal: r.canal, resumenes: r.resumenes, score: 0,
                         sbi_s: aiExp.sbi_s, sbi_b: aiExp.sbi_b, sbi_i: aiExp.sbi_i, simulator_context: aiExp.simulator_context,
                         expertResponse: "", commitment: {}, readiness: "50%"
                     };
@@ -951,7 +979,6 @@
             return Object.keys(map).map(k => ({name: k, count: map[k]})).sort((a,b)=>b.count-a.count);
         }
 
-        // CASCADA DE MODELOS (Basado en la tabla de disponibilidad de Google AI Studio)
         async function fetchGeminiInteligente(prompt) {
             const p1 = "AQ.Ab8RN6";
             const p2 = "JjHYU6fic";
@@ -961,16 +988,15 @@
             const apiKey = p1 + p2 + p3 + p4 + p5; 
             
             const modelosDisponibles = [
-                "gemini-3.1-flash-lite", // 15 peticiones por minuto
-                "gemini-2.5-flash-lite", // 10 peticiones por minuto
-                "gemini-3.8-flash"       // 5 peticiones por minuto
+                "gemini-3.1-flash-lite", 
+                "gemini-2.5-flash-lite", 
+                "gemini-3.8-flash"       
             ];
             
             const loadingText = document.getElementById('loading-text');
 
             for (let m = 0; m < modelosDisponibles.length; m++) {
                 const currentModel = modelosDisponibles[m];
-                
                 if (loadingText) loadingText.innerText = `Conectando IA: Evaluando modelo ${currentModel}...`;
 
                 const url = `https://generativelanguage.googleapis.com/v1beta/models/${currentModel}:generateContent?key=${apiKey}`;
@@ -981,12 +1007,7 @@
                     const d = await res.json();
                     
                     if (!res.ok) {
-                        const errMsg = d.error?.message || "Error desconocido API";
-                        console.warn(`El modelo ${currentModel} falló: ${errMsg}`);
-                        
-                        if (m === modelosDisponibles.length - 1) throw new Error(`Todos los modelos fallaron. Último error: ${errMsg}`);
-                        
-                        if (loadingText) loadingText.innerText = `Modelo saturado. Saltando a la alternativa de respaldo...`;
+                        if (m === modelosDisponibles.length - 1) throw new Error("Todos fallaron");
                         await new Promise(r => setTimeout(r, 1000));
                         continue; 
                     }
@@ -995,14 +1016,12 @@
                     if(txt) return JSON.parse(txt.replace(/```json/gi, "").replace(/```/g, "").trim());
                     
                 } catch(e) { 
-                    console.warn(`Excepción con modelo ${currentModel}:`, e);
                     if (m === modelosDisponibles.length - 1) throw e; 
                 }
             }
             return null;
         }
 
-        // --- Firebase Connection ---
         async function connectFirebase() {
             if (db) return true;
             try {
@@ -1021,7 +1040,6 @@
                 document.getElementById('global-sync-status').className = "w-2 h-2 rounded-full bg-emerald-500 animate-pulse";
                 return true;
             } catch(e) {
-                console.warn("Firebase falló, usando Local", e);
                 document.getElementById('global-sync-status').className = "w-2 h-2 rounded-full bg-rose-500";
                 return false;
             }
@@ -1041,7 +1059,7 @@
                         } else {
                             window.showMsg('Sesión no encontrada', 'error');
                         }
-                    }, (err) => { window.showMsg('Error de permisos. Modo local', 'error'); processExpertLocal(code); });
+                    }, (err) => { processExpertLocal(code); });
                 });
             } else {
                 processExpertLocal(code);
@@ -1064,7 +1082,6 @@
                 document.getElementById('expert-step-2').classList.remove('hidden');
                 document.getElementById('expert-login-desc').innerText = "Selecciona tu nombre de la lista.";
                 const sel = document.getElementById('expert-name-select');
-                // Formateamos los nombres en la lista de selección para que se vean bonitos
                 sel.innerHTML = '<option value="">Selecciona...</option>' + Object.keys(data.experts).map(k => `<option value="${k}">${window.formatDisplayName(k)}</option>`).join('');
             } else {
                 myExpertName = Object.keys(data.experts)[0];
@@ -1103,7 +1120,7 @@
         function listenSession(code) {
             onSnapshot(doc(db, 'coach_sessions', code), (snap) => {
                 if(snap.exists()) renderUI(snap.data());
-            }, (e) => { console.error("Sync Error", e); window.showMsg("Error de lectura DB", "error"); });
+            });
         }
 
         function listenLocal(code) {
@@ -1129,7 +1146,7 @@
             }
         }
 
-        // --- Renderizado de UI y Gráficas ---
+        // --- Renderizado de UI ---
         function setupDashboard(data) {
             window.showScreen('main-dashboard');
             document.querySelectorAll('.coach-only').forEach(el => el.style.display = isCoach ? '' : 'none');
@@ -1139,7 +1156,6 @@
             
             if(isCoach) {
                 const sel = document.getElementById('coach-expert-selector');
-                // Formateamos los nombres en el selector del coach
                 sel.innerHTML = '<option value="general">Vista General (Equipo)</option>' + Object.keys(data.experts).map(k => `<option value="${k}">${window.formatDisplayName(k)}</option>`).join('');
                 currentExpertView = 'general';
                 window.switchTab('tab-sbi');
@@ -1188,21 +1204,28 @@
                     document.getElementById('data-view-general').classList.remove('hidden');
                     document.getElementById('data-view-individual').classList.add('hidden');
                     const tbody = document.getElementById('reincidentes-table-body');
-                    // Formateamos los nombres en la tabla
+                    
+                    // AÑADIDO BOTÓN ELIMINAR EN LA VISTA GENERAL
                     tbody.innerHTML = Object.values(data.experts).map(e => `
                         <tr class="border-b border-slate-50 hover:bg-slate-50">
                             <td class="py-3 font-semibold text-slate-800">${window.formatDisplayName(e.name)}</td>
-                            <td class="py-3 text-center">${e.monitorings}</td>
+                            <td class="py-3 text-center text-slate-600 text-xs">${e.canal || 'N/A'}</td>
                             <td class="py-3 text-center text-rose-500 font-bold">${e.errors.reduce((a,b)=>a+b.count,0)}</td>
-                            <td class="py-3 text-slate-500 truncate max-w-[200px]">${e.errors[0]?.name || ''}</td>
+                            <td class="py-3 text-slate-500 truncate max-w-[150px]">${e.errors[0]?.name || ''}</td>
                             <td class="py-3 text-center"><input type="number" value="${e.score||0}" onblur="window.saveScore('${e.name}', this.value)" class="w-16 p-1 border rounded text-center font-bold text-primary"></td>
-                            <td class="py-3 text-center"><button onclick="document.getElementById('coach-expert-selector').value='${e.name}'; window.changeExpertView('${e.name}');" class="text-indigo-500 hover:underline text-xs font-bold">Ver Detalle</button></td>
+                            <td class="py-3 text-center">
+                                <div class="flex gap-2 justify-center">
+                                    <button onclick="document.getElementById('coach-expert-selector').value='${e.name}'; window.changeExpertView('${e.name}');" class="text-indigo-500 hover:bg-indigo-50 p-2 rounded-lg transition-colors font-bold text-xs">Ver Detalle</button>
+                                    <button onclick="window.deleteExpert('${e.name}')" class="text-rose-400 hover:text-white hover:bg-rose-500 p-2 rounded-lg transition-colors" title="Eliminar de la sesión"><i class="fas fa-trash-alt"></i></button>
+                                </div>
+                            </td>
                         </tr>
                     `).join('');
                 } else {
                     document.getElementById('data-view-general').classList.add('hidden');
                     document.getElementById('data-view-individual').classList.remove('hidden');
                     document.getElementById('data-ind-title').innerText = `Oportunidades: ${window.formatDisplayName(viewData.name)}`;
+                    document.getElementById('data-ind-channel').innerText = `Canal Evaluado: ${viewData.canal || 'No detectado'}`;
                     document.getElementById('input-ind-score').value = viewData.score || 0;
                     
                     const maxCount = Math.max(...viewData.errors.map(e=>e.count), 1);
@@ -1214,6 +1237,18 @@
                             </div>
                         </div>
                     `).join('');
+
+                    // RENDERIZAR RESÚMENES DE INTERACCIÓN
+                    const resumContainer = document.getElementById('interaction-summaries');
+                    if (viewData.resumenes && viewData.resumenes.length > 0) {
+                        resumContainer.innerHTML = viewData.resumenes.map((r, i) => `
+                            <div class="bg-white p-3 rounded-lg border border-slate-200 text-sm text-slate-600 italic">
+                                <span class="font-bold text-slate-400 text-xs not-italic block mb-1">Caso ${i+1}:</span> "${r}"
+                            </div>
+                        `).join('');
+                    } else {
+                        resumContainer.innerHTML = `<p class="text-sm text-slate-400 text-center py-4">No hay resúmenes disponibles en la base de datos para este experto.</p>`;
+                    }
                 }
             }
 
@@ -1309,7 +1344,6 @@
             window.showMsg('¡Compromiso Sellado!');
         };
 
-        // Micrófono con escudo de seguridad
         let recognition = null;
         if ('webkitSpeechRecognition' in window) {
             try {
@@ -1328,9 +1362,6 @@
                     }
                 };
                 recognition.onerror = function(event) {
-                    if(event.error === 'not-allowed') {
-                        window.showMsg("Permiso de micrófono denegado. Escribe la respuesta.", "error");
-                    }
                     const btn = document.getElementById('btn-mic');
                     if (btn) btn.className = "w-12 h-12 rounded-full bg-rose-100 text-rose-500 hover:bg-rose-500 hover:text-white transition-colors flex items-center justify-center text-xl expert-only";
                 };
@@ -1349,16 +1380,14 @@
                     btn.className = "w-12 h-12 rounded-full bg-rose-500 text-white animate-pulse transition-colors flex items-center justify-center text-xl expert-only";
                 }
             } catch(err) {
-                window.showMsg("El entorno bloqueó el acceso al micrófono. Escribe tu respuesta.", "error");
+                window.showMsg("El entorno bloqueó el acceso al micrófono.", "error");
             }
         };
 
-        // INICIALIZACIÓN DE GRÁFICAS CORREGIDA PARA VISTA HORIZONTAL
         window.initCharts = function(data) {
             if (window.chartPareto) window.chartPareto.destroy();
             if (window.chartScore) window.chartScore.destroy();
 
-            // Gráfica Pareto
             const ctxP = document.getElementById('chart-pareto').getContext('2d');
             window.chartPareto = new Chart(ctxP, {
                 type: 'bar',
@@ -1375,7 +1404,6 @@
                 }
             });
 
-            // Gráfica de Score (Color Magenta, Etiquetas Horizontales y Símbolo de %)
             const ctxS = document.getElementById('chart-score').getContext('2d');
             window.chartScore = new Chart(ctxS, {
                 type: 'bar',
@@ -1392,7 +1420,7 @@
                         },
                         x: {
                             ticks: {
-                                maxRotation: 0, // Fuerza que no se pongan en diagonal
+                                maxRotation: 0,
                                 minRotation: 0,
                                 font: { size: 12, weight: 'bold' },
                                 color: '#475569'
@@ -1411,7 +1439,6 @@
             window.chartPareto.update();
 
             const exps = Object.values(data.experts);
-            // USAMOS EL FORMATEADOR PARA ENVIAR SOLO EL NOMBRE A LA GRÁFICA
             window.chartScore.data.labels = exps.map(e=>window.formatDisplayName(e.name));
             window.chartScore.data.datasets[0].data = exps.map(e=>e.score||0);
             window.chartScore.update();
