@@ -586,10 +586,10 @@
         </div>
     </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, onSnapshot, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+<script type="module">
+        import { initializeApp } from "[https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js](https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js)";
+        import { getAuth, signInAnonymously } from "[https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js](https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js)";
+        import { getFirestore, doc, setDoc, getDoc, onSnapshot, updateDoc, arrayUnion } from "[https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js](https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js)";
 
         let db = null;
         let sessionRef = null;
@@ -598,7 +598,6 @@
         let currentExpertView = "general";
         let myExpertName = "";
 
-        // UI Toast Messages
         window.showMsg = function(text, type='info') {
             const el = document.getElementById('custom-toast');
             document.getElementById('toast-msg').innerText = text;
@@ -661,7 +660,6 @@
             const workbook = XLSX.read(arrayBuffer, { type: 'array', cellDates: true });
             
             let targetSheetName = workbook.SheetNames.find(n => n.trim().toUpperCase() === 'BASE_MONITOREOS' || n.trim().toUpperCase() === 'BASE MONITOREOS');
-            
             if (!targetSheetName) {
                 targetSheetName = workbook.SheetNames.find(sn => {
                     const sheet = workbook.Sheets[sn];
@@ -703,16 +701,12 @@
             if(colMap.fechaMon === -1) colMap.fechaMon = 0; 
             if(colMap.experto === -1) colMap.experto = 2; 
             if(colMap.tipoMon === -1) colMap.tipoMon = 8; 
-            
             colMap.startAtrib = Math.max(...Object.values(colMap).filter(v => v !== -1)) + 1;
 
             let expertosMap = {}; 
-            
             let eDate = new Date(fechaFin + "T23:59:59");
             let sDate = new Date(fechaInicio + "T00:00:00");
-            if (isGroup) {
-                sDate = new Date(eDate.getTime() - (90 * 24 * 60 * 60 * 1000));
-            }
+            if (isGroup) { sDate = new Date(eDate.getTime() - (90 * 24 * 60 * 60 * 1000)); }
 
             const expBuscadoLimpiado = (singleExpertName || '').toLowerCase().replace(/@.+/, '').replace(/[\._-]/g, ' ').trim();
             let totalProcesados = 0;
@@ -728,7 +722,6 @@
                 if (!experto) continue;
 
                 const expCeldaLimpiado = experto.toLowerCase().replace(/@.+/, '').replace(/[\._-]/g, ' ').trim();
-                
                 if (!isGroup && !expCeldaLimpiado.includes(expBuscadoLimpiado)) continue;
 
                 totalProcesados++;
@@ -772,10 +765,13 @@
                     expertosMap[experto].interacciones.add(fecha.getTime() + "_" + r);
                     expertosMap[experto].canalesTotales[canalFila] = (expertosMap[experto].canalesTotales[canalFila] || 0) + 1;
                     
+                    // CAMBIO CLAVE: Usar Array en lugar de Set para no borrar evidencias duplicadas
                     erroresFila.forEach(e => { 
-                        if (!expertosMap[experto].erroresObj[e]) expertosMap[experto].erroresObj[e] = { count: 0, evidencias: new Set() };
+                        if (!expertosMap[experto].erroresObj[e]) expertosMap[experto].erroresObj[e] = { count: 0, evidencias: [] };
                         expertosMap[experto].erroresObj[e].count++;
-                        if (evidencias) expertosMap[experto].erroresObj[e].evidencias.add(evidencias);
+                        if (evidencias && evidencias.trim() !== '') {
+                            expertosMap[experto].erroresObj[e].evidencias.push(evidencias.trim());
+                        }
                     });
                     
                     if(resumen) expertosMap[experto].resumenes.push(resumen);
@@ -784,9 +780,11 @@
                     
                     if(erroresFila.length === 0 && atribAfectados) {
                         let e = "Afectación General";
-                        if (!expertosMap[experto].erroresObj[e]) expertosMap[experto].erroresObj[e] = { count: 0, evidencias: new Set() };
+                        if (!expertosMap[experto].erroresObj[e]) expertosMap[experto].erroresObj[e] = { count: 0, evidencias: [] };
                         expertosMap[experto].erroresObj[e].count++;
-                        if (evidencias) expertosMap[experto].erroresObj[e].evidencias.add(evidencias);
+                        if (evidencias && evidencias.trim() !== '') {
+                            expertosMap[experto].erroresObj[e].evidencias.push(evidencias.trim());
+                        }
                     }
                 }
             }
@@ -801,7 +799,7 @@
                 let errArray = Object.keys(expertosMap[exp].erroresObj).map(k => ({
                     name: k, 
                     count: expertosMap[exp].erroresObj[k].count,
-                    evidences: Array.from(expertosMap[exp].erroresObj[k].evidencias)
+                    evidences: expertosMap[exp].erroresObj[k].evidencias // Ya es un Array completo
                 })).sort((a,b)=>b.count-a.count);
 
                 if (isGroup && countAlertas >= 4) {
@@ -888,17 +886,18 @@
                 promptTxt += `INSTRUCCIONES CLAVE:\n`;
                 promptTxt += `1. S.B.I: Extrae Situación, Comportamiento e Impacto BASÁNDOTE EXCLUSIVAMENTE en las "Evidencias".\n`;
                 promptTxt += `2. PREGUNTAS: Genera 3 preguntas poderosas usando las "Fortalezas" cruzadas con las "Evidencias".\n`;
-                promptTxt += `3. RESUMEN DE CASOS CONSOLIDADO: Lee TODAS las evidencias proporcionadas para el asesor y redacta un único párrafo ejecutivo ("case_summary") que consolide sus fallas recurrentes. Menciona tendencias, no te limites a un solo caso.\n`;
+                promptTxt += `3. DIAGNÓSTICO (case_summary): Lee TODAS las "Evidencias Completas" de los monitoreos del experto. Redacta un párrafo analítico y directo dirigido al Coach. Resume cuáles han sido TODAS las fallas específicas y recurrentes cometidas en las llamadas/chats, explicando el porqué de los errores. Sé detallado y agrupa los patrones.\n`;
                 promptTxt += `4. SIMULADOR: Genera un "simulator_context". DEBES DISEÑARLO COMO UNA PRUEBA O EXAMEN TRAMPA para evaluar si el asesor mejoró específicamente en sus "Errores Top" detectados. Si el canal del experto dice "telefónico/teléfono", simula el inicio verbal de una llamada. Si dice "chat/redes", simula un primer mensaje de texto. Oculta nombres reales.\n\n`;
                 
                 if(isGroup) promptTxt += `Extrae primero un S.B.I general del equipo y 3 preguntas. Luego hazlo individual.\n\nDATA:\n`;
                 else promptTxt += `Crea el S.B.I y preguntas basadas en la data.\n\nDATA:\n`;
                 
                 reincidentes.forEach(r => {
-                    promptTxt += `- Experto: ${r.name} | Canal: ${r.canal}. \n  Errores Top: ${r.errors.slice(0,3).map(e=>e.name).join(', ')}. \n  Evidencias Completas: ${r.evidencias.slice(0,10).join(' || ')}. \n  Fortalezas: ${r.fortalezas.slice(0,3).join(' | ')}.\n\n`;
+                    // Ahora mandamos hasta 20 evidencias para asegurarnos de que la IA lea absolutamente todo
+                    promptTxt += `- Experto: ${r.name} | Canal: ${r.canal}. \n  Errores Top: ${r.errors.slice(0,5).map(e=>e.name).join(', ')}. \n  Evidencias Completas: ${r.evidencias.slice(0,20).join(' || ')}. \n  Fortalezas: ${r.fortalezas.slice(0,3).join(' | ')}.\n\n`;
                 });
                 
-                promptTxt += `\nDEVUELVE UNICAMENTE UN JSON VALIDO: { "general": { "sbi_s":"", "sbi_b":"", "sbi_i":"", "questions":["q1","q2","q3"] }, "experts": [ { "name":"nombre exacto que te di", "sbi_s":"", "sbi_b":"", "sbi_i":"", "case_summary":"Resumen narrativo detallado...", "simulator_context":"" } ] }`;
+                promptTxt += `\nDEVUELVE UNICAMENTE UN JSON VALIDO: { "general": { "sbi_s":"", "sbi_b":"", "sbi_i":"", "questions":["q1","q2","q3"] }, "experts": [ { "name":"nombre exacto que te di", "sbi_s":"", "sbi_b":"", "sbi_i":"", "case_summary":"Resumen narrativo detallado de TODAS sus fallas...", "simulator_context":"" } ] }`;
 
                 const aiData = await fetchGeminiInteligente(promptTxt);
                 
@@ -913,7 +912,6 @@
                 window.showScreen('coach-setup-screen');
                 
                 const manualInstructions = `Por favor procesa el archivo adjunto.\nTaller: ${isGroup ? 'Grupal (Reincidentes)' : 'Individual'}\nFechas: ${sDate} a ${eDate}\nExperto a evaluar: ${isGroup ? 'Todos los que apliquen' : expName}\n\nDevuélveme ÚNICAMENTE la estructura JSON que tienes en tus instrucciones del sistema.`;
-                
                 document.getElementById('manual-prompt-area').value = manualInstructions;
                 
                 if(window.pendingSetupData && window.pendingSetupData.reincidentes) {
@@ -960,8 +958,7 @@
                     sessionData.experts[r.name] = {
                         name: r.name, monitorings: r.monitorings, errors: r.errors, canal: r.canal, 
                         case_summary: aiExp.case_summary || "", 
-                        resumenes: r.resumenes,
-                        evidencias: r.evidencias,
+                        evidencias: r.evidencias, 
                         score: 0,
                         sbi_s: aiExp.sbi_s, sbi_b: aiExp.sbi_b, sbi_i: aiExp.sbi_i, simulator_context: aiExp.simulator_context,
                         expertResponse: "", commitment: {}, readiness: "50%"
@@ -1007,7 +1004,7 @@
                 const currentModel = modelosDisponibles[m];
                 if (loadingText) loadingText.innerText = `Conectando IA: Evaluando modelo ${currentModel}...`;
 
-                const url = `https://generativelanguage.googleapis.com/v1beta/models/${currentModel}:generateContent?key=${apiKey}`;
+                const url = `[https://generativelanguage.googleapis.com/v1beta/models/$](https://generativelanguage.googleapis.com/v1beta/models/$){currentModel}:generateContent?key=${apiKey}`;
                 const p = { contents: [{ role: 'user', parts: [{ text: prompt }] }], generationConfig: { responseMimeType: "application/json" } };
                 
                 try {
@@ -1251,6 +1248,7 @@
                     document.getElementById('data-ind-channel').innerText = `Canal Evaluado: ${viewData.canal || 'No detectado'}`;
                     document.getElementById('input-ind-score').value = viewData.score || 0;
                     
+                    // Renderizado del acordeón de atributos y TODAS las evidencias
                     const maxCount = Math.max(...viewData.errors.map(e=>e.count), 1);
                     document.getElementById('errors-container').innerHTML = viewData.errors.map((err, idx) => `
                         <div class="mb-4">
@@ -1264,23 +1262,20 @@
                                 <div class="h-full bg-gradient-to-r from-poli-blue to-blue-400 rounded-full" style="width: ${(err.count/maxCount)*100}%"></div>
                             </div>
                             <div id="ev-${idx}" class="hidden mt-3 bg-slate-50 p-4 rounded-xl border border-slate-100">
-                                <p class="text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider"><i class="fas fa-search"></i> Evidencias Registradas:</p>
-                                <ul class="list-disc pl-4 text-sm text-slate-600 space-y-2 italic">
-                                    ${err.evidences && err.evidences.length > 0 ? err.evidences.map(ev => `<li class="mb-2 text-justify">"${window.escapeHTML(ev)}"</li>`).join('') : '<li>No hay evidencia textual para este error.</li>'}
+                                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider"><i class="fas fa-search"></i> Evidencias Registradas:</p>
+                                <ul class="list-disc pl-4 text-sm text-slate-600 space-y-3 italic mt-2">
+                                    ${err.evidences && err.evidences.length > 0 ? err.evidences.map((ev, i) => `<li class="text-justify"><span class="font-bold text-slate-500 not-italic">Caso ${i+1}:</span> "${window.escapeHTML(ev)}"</li>`).join('') : '<li>No hay evidencia textual para este error en la base.</li>'}
                                 </ul>
                             </div>
                         </div>
                     `).join('');
 
+                    // Renderizado del resumen ejecutivo (AI o Lista de respaldo automático)
                     const resumContainer = document.getElementById('interaction-summaries');
-                    if (viewData.case_summary && viewData.case_summary.trim() !== "N/A") {
-                        resumContainer.innerHTML = `<div class="bg-indigo-50/50 p-5 rounded-xl border border-indigo-100 text-sm text-slate-700 leading-relaxed shadow-inner"><i class="fas fa-robot text-indigo-400 mr-2 text-lg"></i> ${viewData.case_summary}</div>`;
-                    } else if (viewData.resumenes && viewData.resumenes.length > 0) {
-                        resumContainer.innerHTML = viewData.resumenes.map((r, i) => `
-                            <div class="bg-white p-3 rounded-lg border border-slate-200 text-sm text-slate-600 italic mb-2">
-                                <span class="font-bold text-slate-400 text-xs not-italic block mb-1">Interacción ${i+1}:</span> "${r}"
-                            </div>
-                        `).join('');
+                    if (viewData.case_summary && viewData.case_summary.trim() !== "N/A" && viewData.case_summary.trim() !== "") {
+                        resumContainer.innerHTML = `<div class="bg-indigo-50/50 p-5 rounded-xl border border-indigo-100 text-sm text-slate-700 leading-relaxed shadow-inner"><i class="fas fa-stethoscope text-indigo-500 mr-2 text-lg"></i> <span class="font-bold text-indigo-900">Diagnóstico del Coach:</span><br><br>${viewData.case_summary}</div>`;
+                    } else if (viewData.evidencias && viewData.evidencias.length > 0) {
+                        resumContainer.innerHTML = `<div class="bg-slate-50 p-4 rounded-xl border border-slate-200 text-sm text-slate-600 leading-relaxed"><p class="font-bold text-slate-700 mb-3"><i class="fas fa-list"></i> Recopilación de fallas (Generado automáticamente):</p><ul class="list-disc pl-5 space-y-2">` + viewData.evidencias.map((ev, i) => `<li><span class="font-bold text-slate-500">Caso ${i+1}:</span> ${window.escapeHTML(ev)}</li>`).join('') + `</ul></div>`;
                     } else {
                         resumContainer.innerHTML = `<p class="text-sm text-slate-400 text-center py-4">Sube un Excel con la columna Evidencias para visualizar el resumen.</p>`;
                     }
