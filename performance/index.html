@@ -222,7 +222,7 @@
         <div class="flex flex-col items-center justify-center text-center w-full max-w-2xl mx-auto">
             <div class="w-24 h-24 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mb-6 mx-auto"></div>
             <h2 class="text-3xl font-bold text-white mb-4">Construyendo Sesión...</h2>
-            <p class="text-indigo-300 text-lg leading-relaxed" id="loading-text">Analizando canales de atención, oportunidades de mejora y diseñando simulador trampa...</p>
+            <p class="text-indigo-300 text-lg leading-relaxed" id="loading-text">Analizando base de calidad, extrayendo evidencias y formulando diagnóstico...</p>
         </div>
     </div>
 
@@ -399,8 +399,9 @@
                         </div>
                         
                         <div class="mt-8 border-t border-slate-100 pt-6">
-                            <h4 class="font-bold text-slate-800 text-lg mb-4 flex items-center gap-2"><i class="fas fa-list-alt text-indigo-500"></i> Resumen de Interacciones (Base de Datos)</h4>
-                            <div id="interaction-summaries" class="space-y-3 max-h-60 overflow-y-auto pr-2 rounded-xl bg-slate-50 p-4 border border-slate-100">
+                            <h4 class="font-bold text-slate-800 text-lg mb-4 flex items-center gap-2"><i class="fas fa-stethoscope text-indigo-500"></i> Diagnóstico del Coach</h4>
+                            <div id="interaction-summaries" class="space-y-3 pr-2 rounded-xl">
+                                <!-- Diagnóstico de la IA entra aquí -->
                             </div>
                         </div>
 
@@ -563,7 +564,7 @@
                             </div>
                         </div>
 
-                        <!-- NUEVA SECCIÓN GENERADOR DE CORREO (Visible en el Reporte) -->
+                        <!-- NUEVA SECCIÓN GENERADOR DE CORREO -->
                         <div class="mb-10 p-8 bg-indigo-50 border border-indigo-100 rounded-3xl flex flex-col gap-4">
                             <h3 class="font-bold text-indigo-900 text-xl"><i class="fas fa-envelope-open-text text-primary"></i> Generador de Correo de Seguimiento</h3>
                             <p class="text-sm text-indigo-700">Utiliza tus notas privadas y los resultados del simulador para indicarle a la IA que redacte un correo humano, empático y contando la historia del taller.</p>
@@ -577,7 +578,6 @@
                         </div>
 
                         <div class="grid grid-cols-1 gap-10">
-                            <!-- Gráfica 1 -->
                             <div class="border border-slate-200 rounded-2xl p-8 flex flex-col relative group">
                                 <h3 class="font-bold text-slate-700 mb-6 text-center text-xl">Resultados de Evaluación de Reincidentes</h3>
                                 <button type="button" onclick="window.downloadChart('chart-score', 'Score_Evaluacion.png')" class="absolute top-6 right-6 text-slate-400 hover:text-poli-magenta opacity-0 group-hover:opacity-100 transition-opacity text-xl"><i class="fas fa-download"></i></button>
@@ -586,7 +586,6 @@
                                 </div>
                             </div>
                             
-                            <!-- Gráfica 2 -->
                             <div class="border border-slate-200 rounded-2xl p-8 flex flex-col relative group">
                                 <h3 class="font-bold text-slate-700 mb-6 text-center text-xl">Cantidad de Mínimos Consolidado</h3>
                                 <button type="button" onclick="window.downloadChart('chart-pareto', 'Pareto_Minimos.png')" class="absolute top-6 right-6 text-slate-400 hover:text-poli-blue opacity-0 group-hover:opacity-100 transition-opacity text-xl"><i class="fas fa-download"></i></button>
@@ -670,66 +669,67 @@
             return null;
         }
 
+        // --- LÓGICA DE EXCEL ESCRITA TOTALMENTE DESDE CERO ---
         window.procesarBaseMonitoreos = async function(file, fechaInicio, fechaFin, isGroup, singleExpertName) {
             const arrayBuffer = await file.arrayBuffer();
             const workbook = XLSX.read(arrayBuffer, { type: 'array', cellDates: true });
             
+            // 1. Buscar la hoja ignorando mayúsculas y espacios
             let targetSheetName = workbook.SheetNames.find(n => n.trim().toUpperCase() === 'BASE_MONITOREOS' || n.trim().toUpperCase() === 'BASE MONITOREOS');
-            if (!targetSheetName) {
-                targetSheetName = workbook.SheetNames.find(sn => {
-                    const sheet = workbook.Sheets[sn];
-                    const data = XLSX.utils.sheet_to_json(sheet, { header: 1, range: 0, defval: '' });
-                    const flat = data.slice(0, 5).flat().map(v => String(v).toLowerCase().trim());
-                    return flat.includes('fecha monitoreo') || flat.includes('tipo monitoreo');
-                });
-            }
-            if (!targetSheetName) targetSheetName = workbook.SheetNames[0];
+            if (!targetSheetName) targetSheetName = workbook.SheetNames[0]; // Respaldo por si le cambian el nombre
 
             const worksheet = workbook.Sheets[targetSheetName];
             const data = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' });
             if (data.length < 2) throw new Error('La hoja está vacía o no tiene registros.');
 
-            let headerRowIndex = 0;
+            // 2. Buscar fila de encabezados dinámicamente
+            let headerRowIndex = -1;
             let headers = [];
-            for (let i = 0; i < Math.min(15, data.length); i++) {
+            for (let i = 0; i < Math.min(20, data.length); i++) {
                 let rowStr = data[i].join('|').toLowerCase();
-                if (rowStr.includes('experto') && (rowStr.includes('fecha monitoreo') || rowStr.includes('fecha'))) {
+                if (rowStr.includes('experto') && (rowStr.includes('fecha') || rowStr.includes('monitoreo'))) {
                     headerRowIndex = i;
                     headers = data[i].map(h => String(h).toLowerCase().trim());
                     break;
                 }
             }
+            if (headerRowIndex === -1) throw new Error('No se encontraron los encabezados principales (Fecha, Experto) en las primeras 20 filas.');
 
-            // NUEVA LÓGICA DE MAPEO ESTRICTA DE COLUMNAS (Basada en tus indicaciones)
-            let colMap = { fechaMon: 0, experto: 2, canal: 3, afectacionMin: 7, tipoMon: 8, resumen: 9, atribAfectados: 11, evidencias: 12 };
+            // 3. Mapeo ultra-robusto buscando las columnas sin importar su posición exacta
+            let colMap = { fechaMon: -1, experto: -1, afectacionMin: -1, tipoMon: -1, canal: -1, resumen: -1, atribAfectados: -1, evidencias: -1 };
 
             headers.forEach((h, c) => {
-                let lh = h.toLowerCase().trim();
-                if (lh.includes('fecha')) colMap.fechaMon = c;
-                else if (lh.includes('experto')) colMap.experto = c;
-                else if (lh === 'canal' || lh.includes('canal')) colMap.canal = c;
-                else if (lh.includes('afectación en mínimo') || lh.includes('afectacion')) colMap.afectacionMin = c; // Columna H
-                else if (lh.includes('tipo monitoreo') || lh.includes('tipo')) colMap.tipoMon = c; // Columna I
-                else if (lh.includes('resumen')) colMap.resumen = c; // Columna J
-                else if (lh.includes('atributos afectados')) colMap.atribAfectados = c; // Columna L
-                else if (lh.includes('evidencia')) colMap.evidencias = c; // Columna M
+                if (h.includes('fecha monitoreo') || h === 'fecha') colMap.fechaMon = c;
+                else if (h.includes('experto')) colMap.experto = c;
+                else if (h.includes('afectación en mínimo') || h.includes('afectacion en minimo') || h === 'afectación') colMap.afectacionMin = c;
+                else if (h.includes('tipo monitoreo') || h === 'tipo') colMap.tipoMon = c;
+                else if (h.includes('canal')) colMap.canal = c;
+                else if (h.includes('resumen')) colMap.resumen = c;
+                else if (h.includes('atributos afectados') || h.includes('atributo afectado')) colMap.atribAfectados = c;
+                else if (h.includes('evidencia')) colMap.evidencias = c;
             });
 
-            let expertosMap = {}; 
+            // Respaldo básico por si alguna columna crítica no se mapeó por error de tipeo en el Excel
+            if (colMap.fechaMon === -1) colMap.fechaMon = 0; 
+            if (colMap.experto === -1) colMap.experto = 2; 
+
+            let expertosMap = {};
             let eDate = new Date(fechaFin + "T23:59:59");
             let sDate = new Date(fechaInicio + "T00:00:00");
-            if (isGroup) { sDate = new Date(eDate.getTime() - (90 * 24 * 60 * 60 * 1000)); }
 
             const expBuscadoLimpiado = (singleExpertName || '').toLowerCase().replace(/@.+/, '').replace(/[\._-]/g, ' ').trim();
             let totalProcesados = 0;
 
+            // 4. Recorrer datos de la base
             for (let r = headerRowIndex + 1; r < data.length; r++) {
                 const fila = data[r];
                 if (!fila || fila.length === 0) continue;
 
+                // Validación 1: Fecha dentro de rango
                 const fecha = parseExcelDate(fila[colMap.fechaMon]);
                 if (!fecha || isNaN(fecha.getTime()) || fecha < sDate || fecha > eDate) continue;
 
+                // Validación 2: Tiene nombre de experto
                 const experto = String(fila[colMap.experto] || '').trim();
                 if (!experto) continue;
 
@@ -738,65 +738,75 @@
 
                 totalProcesados++;
 
-                const tipoMon = String(fila[colMap.tipoMon] || '').trim().toLowerCase();
-                const afectacionMin = String(fila[colMap.afectacionMin] || '').trim().toLowerCase();
-                const canalFila = String(fila[colMap.canal] || 'Teléfono/Chat').trim();
-                const resumen = String(fila[colMap.resumen] || '').trim();
-                const atribAfectadosStr = String(fila[colMap.atribAfectados] || '').trim();
-                const evidenciasStr = String(fila[colMap.evidencias] || '').trim();
+                // Captura de datos para filtros estrictos
+                const tipoMon = colMap.tipoMon >= 0 ? String(fila[colMap.tipoMon]).trim().toLowerCase() : 'impacto'; 
+                const afectacionMin = colMap.afectacionMin >= 0 ? String(fila[colMap.afectacionMin]).trim().toLowerCase() : 'si';
 
-                // REGLA 1: Solo llamadas de "Impacto"
-                if (!tipoMon.includes('impacto')) continue;
+                // REGLAS ESTRICTAS DE FILTRO:
+                if (!tipoMon.includes('impacto')) continue; // Solo impacto
+                if (!(afectacionMin === 'si' || afectacionMin === 'sí' || afectacionMin.includes('si'))) continue; // Solo afectación en mínimo = Sí
 
-                // REGLA 2: Tiene afectación en mínimo (Columna H dice "Sí" o "Si")
-                if (!afectacionMin.includes('si') && !afectacionMin.includes('sí')) continue;
+                // Extracción de datos
+                const canalFila = colMap.canal >= 0 ? String(fila[colMap.canal]).trim() : 'Teléfono';
+                const resumen = colMap.resumen >= 0 ? String(fila[colMap.resumen]).trim() : '';
+                const atribAfectadosStr = colMap.atribAfectados >= 0 ? String(fila[colMap.atribAfectados]).trim() : '';
+                let evidenciasStr = colMap.evidencias >= 0 ? String(fila[colMap.evidencias]).trim() : '';
 
-                // REGLA 3: Ignorar falsos positivos explícitos
-                if (evidenciasStr.toLowerCase().includes('felicitaciones') || atribAfectadosStr.toLowerCase().includes('sin atributos afectados')) {
-                    continue; 
-                }
+                // LIMPIEZA DE SEGURIDAD: Ocultar números de cédula largos en las evidencias
+                evidenciasStr = evidenciasStr.replace(/\b\d{7,15}\b/g, "[CÉDULA OCULTA]");
 
-                // REGLA 4: Extraer errores de Col L y limpiar el nombre (Quitar canal y la palabra mínimo)
-                // Ej: "Solución integral al requerimiento del estudiante - Telefónico - Mínimo" -> "Solución integral al requerimiento del estudiante"
+                // Lógica para extraer Atributos: Ej "Escucha activa - Telefónico - Mínimo" -> "Escucha activa"
                 let erroresEnFila = [];
                 let rawErrores = atribAfectadosStr.split(/[\n,;]/).map(s => s.trim()).filter(s => s.length > 2);
-                
+
                 rawErrores.forEach(err => {
                     if (err.toLowerCase().includes('mín') || err.toLowerCase().includes('min')) {
-                        // Partimos por el guion y tomamos la primera parte (el nombre del atributo limpio)
-                        let cleanName = err.split('-')[0].trim();
-                        if(cleanName) erroresEnFila.push(cleanName);
+                        let cleanName = err.split('-')[0].trim(); // Toma lo que está antes del primer guion
+                        if (cleanName) erroresEnFila.push(cleanName);
                     }
                 });
 
-                // REGLA 5: Si al final no hubo ningún error calificado en mínimo lo descartamos
-                if (erroresEnFila.length === 0) continue;
-
-                if (!expertosMap[experto]) {
-                    expertosMap[experto] = { interacciones: new Set(), erroresObj: {}, canalesTotales: {}, resumenes: [], evidencias: [], totalMonitoreos: 0 };
+                // Si por alguna razón la columna está rara pero sabemos que tiene Mínimo por el filtro H
+                if (erroresEnFila.length === 0 && atribAfectadosStr.length > 2) {
+                    erroresEnFila.push(atribAfectadosStr.split('-')[0].trim());
+                } else if (erroresEnFila.length === 0) {
+                    erroresEnFila.push("Falla detectada no especificada en base");
                 }
-                
-                expertosMap[experto].totalMonitoreos++;
-                expertosMap[experto].interacciones.add(fecha.getTime() + "_" + r);
+
+                // Agrupación en el Mapa por Experto
+                if (!expertosMap[experto]) {
+                    expertosMap[experto] = { 
+                        monitoringsCount: 0, 
+                        erroresObj: {}, 
+                        canalesTotales: {}, 
+                        resumenes: [], 
+                        evidencias: [] 
+                    };
+                }
+
+                expertosMap[experto].monitoringsCount++; // Sumamos una llamada fallada
                 expertosMap[experto].canalesTotales[canalFila] = (expertosMap[experto].canalesTotales[canalFila] || 0) + 1;
-                
-                erroresEnFila.forEach(e => { 
-                    if (!expertosMap[experto].erroresObj[e]) expertosMap[experto].erroresObj[e] = { count: 0, evidencias: [] };
+
+                if(resumen) expertosMap[experto].resumenes.push(resumen);
+                if(evidenciasStr) expertosMap[experto].evidencias.push(evidenciasStr);
+
+                erroresEnFila.forEach(e => {
+                    if (!expertosMap[experto].erroresObj[e]) {
+                        expertosMap[experto].erroresObj[e] = { count: 0, evidencias: [] };
+                    }
                     expertosMap[experto].erroresObj[e].count++;
                     if (evidenciasStr) {
                         expertosMap[experto].erroresObj[e].evidencias.push(evidenciasStr);
                     }
                 });
-
-                if(resumen) expertosMap[experto].resumenes.push(resumen);
-                if(evidenciasStr) expertosMap[experto].evidencias.push(evidenciasStr);
             }
 
+            // 5. Aplicar lógica de reincidentes finales
             let reincidentes = [];
             for (let exp in expertosMap) {
-                const countAlertas = expertosMap[exp].interacciones.size;
-                const countTotal = expertosMap[exp].totalMonitoreos;
+                const countAlertas = expertosMap[exp].monitoringsCount; // Cuantos monitoreos críticos tiene
                 
+                // Determina el canal dominante de este experto
                 let dominantChannel = Object.keys(expertosMap[exp].canalesTotales).sort((a,b)=>expertosMap[exp].canalesTotales[b]-expertosMap[exp].canalesTotales[a])[0] || 'Teléfono/Chat';
 
                 let errArray = Object.keys(expertosMap[exp].erroresObj).map(k => ({
@@ -805,16 +815,17 @@
                     evidences: expertosMap[exp].erroresObj[k].evidencias 
                 })).sort((a,b)=>b.count-a.count);
 
+                // REGLA CLAVE: >= 4 monitoreos para entrar al taller grupal
                 if (isGroup && countAlertas >= 4) {
                     reincidentes.push({ name: exp, monitorings: countAlertas, errors: errArray, canal: dominantChannel, resumenes: expertosMap[exp].resumenes, evidencias: expertosMap[exp].evidencias });
-                } else if (!isGroup) {
-                    reincidentes.push({ name: exp, monitorings: countTotal, errors: errArray, canal: dominantChannel, resumenes: expertosMap[exp].resumenes, evidencias: expertosMap[exp].evidencias });
+                } else if (!isGroup && countAlertas > 0) { // Si es individual, al menos 1
+                    reincidentes.push({ name: exp, monitorings: countAlertas, errors: errArray, canal: dominantChannel, resumenes: expertosMap[exp].resumenes, evidencias: expertosMap[exp].evidencias });
                 }
             }
 
             if(reincidentes.length === 0) {
-                if(totalProcesados === 0) throw new Error("Fechas o Nombre sin registros. Revisa el correo/nombre exacto ingresado.");
-                else throw new Error(`Se procesaron ${totalProcesados} registros, pero ningún experto superó el filtro de alertas Mínimas e Impacto.`);
+                if(totalProcesados === 0) throw new Error("No se encontraron registros en el rango de fechas para el experto indicado.");
+                else throw new Error(`Se leyeron ${totalProcesados} interacciones en total. Ningún experto cumplió la regla exacta: Tipo = Impacto AND Afectación Mínimo = Sí AND (si es taller) >= 4 monitoreos.`);
             }
 
             return reincidentes;
@@ -888,15 +899,15 @@
                 let promptTxt = `Eres un Coach Master de Calidad. Analiza a los siguientes asesores de servicio al cliente.\n`;
                 promptTxt += `INSTRUCCIONES CLAVE:\n`;
                 promptTxt += `1. S.B.I: Extrae Situación, Comportamiento e Impacto BASÁNDOTE EXCLUSIVAMENTE en las "Evidencias".\n`;
-                promptTxt += `2. PREGUNTAS (Activa y Crece): Genera 3 preguntas poderosas usando las "Evidencias" para generar reflexión.\n`;
-                promptTxt += `3. DIAGNÓSTICO DEL COACH (case_summary): Redacta un análisis MUY profundo, empático y detallado. Evalúa el porqué de los errores y qué "patologías operativas" ves. Sé un Coach experto.\n`;
-                promptTxt += `4. SIMULADOR: Genera un "simulator_context". DEBES DISEÑARLO COMO UNA PRUEBA O EXAMEN TRAMPA para evaluar si el asesor mejoró específicamente en sus "Errores Top" detectados. Si el canal del experto dice "telefónico/teléfono", simula el inicio verbal de una llamada. Si dice "chat/redes", simula un primer mensaje de texto. Usa los "Resúmenes de llamadas" de contexto.\n\n`;
+                promptTxt += `2. PREGUNTAS (Activa y Crece): Genera 3 preguntas poderosas usando las "Evidencias" para generar reflexión sobre cómo impactan al estudiante.\n`;
+                promptTxt += `3. DIAGNÓSTICO DEL COACH (case_summary): Redacta un análisis MUY profundo, empático y detallado dirigido al Coach. Evalúa el porqué de los errores y qué "patologías operativas" ves. Sé un Coach experto.\n`;
+                promptTxt += `4. SIMULADOR: Genera un "simulator_context". DEBES DISEÑARLO COMO UNA PRUEBA O EXAMEN TRAMPA para evaluar si el asesor mejoró en sus errores. Si el canal dice "Redes sociales", simula un Chat. Si dice "Telefonico", simula una Llamada. Usa los "Resúmenes" para inventar un contexto muy parecido sin nombres reales.\n\n`;
                 
                 if(isGroup) promptTxt += `Extrae primero un S.B.I general del equipo y 3 preguntas. Luego hazlo individual.\n\nDATA:\n`;
                 else promptTxt += `Crea el S.B.I y preguntas basadas en la data.\n\nDATA:\n`;
                 
                 reincidentes.forEach(r => {
-                    promptTxt += `- Experto: ${r.name} | Canal: ${r.canal}. \n  Errores Top: ${r.errors.map(e=>e.name).join(', ')}. \n  Resúmenes de llamadas: ${r.resumenes.join(' || ')}. \n  Evidencias Completas (TEXTO REAL): ${r.evidencias.join(' || ')}.\n\n`;
+                    promptTxt += `- Experto: ${r.name} | Canal: ${r.canal}. \n  Errores Top: ${r.errors.map(e=>e.name).join(', ')}. \n  Resúmenes de llamadas: ${r.resumenes.join(' || ')}. \n  Evidencias Completas: ${r.evidencias.join(' || ')}.\n\n`;
                 });
                 
                 promptTxt += `\nDEVUELVE UNICAMENTE UN JSON VALIDO: { "general": { "sbi_s":"", "sbi_b":"", "sbi_i":"", "questions":["q1","q2","q3"] }, "experts": [ { "name":"nombre exacto que te di", "sbi_s":"", "sbi_b":"", "sbi_i":"", "case_summary":"Tu diagnóstico profundo y analítico aquí...", "simulator_context":"" } ] }`;
@@ -919,7 +930,7 @@
                 if(window.pendingSetupData && window.pendingSetupData.reincidentes) {
                     document.getElementById('manual-fallback-modal').classList.remove('hidden');
                 } else {
-                    window.showMsg('Error de lectura: ' + e.message, 'error');
+                    window.showMsg(e.message, 'error');
                 }
             }
         };
@@ -1222,7 +1233,6 @@
                 if(el && el.innerText !== viewData[f]) el.innerText = viewData[f] || '...';
             });
 
-            // Sincronizar notas privadas en ambas pestañas (Pizarra y Reporte)
             const notesElBoard = document.getElementById('coach-private-notes-board');
             const notesElReport = document.getElementById('coach-private-notes-report');
             if(notesElBoard) notesElBoard.value = viewData.privateNotes || '';
@@ -1256,7 +1266,6 @@
                     document.getElementById('data-ind-channel').innerText = `Canal Evaluado: ${viewData.canal || 'No detectado'}`;
                     document.getElementById('input-ind-score').value = viewData.score || 0;
                     
-                    // Renderizado del acordeón de atributos y TODAS las evidencias
                     const maxCount = Math.max(...viewData.errors.map(e=>e.count), 1);
                     document.getElementById('errors-container').innerHTML = viewData.errors.map((err, idx) => `
                         <div class="mb-4">
@@ -1278,7 +1287,6 @@
                         </div>
                     `).join('');
 
-                    // Renderizado del resumen ejecutivo (AI o Lista de respaldo automático)
                     const resumContainer = document.getElementById('interaction-summaries');
                     if (viewData.case_summary && viewData.case_summary.trim() !== "N/A" && viewData.case_summary.trim() !== "") {
                         resumContainer.innerHTML = `<div class="bg-indigo-50/50 p-5 rounded-xl border border-indigo-100 text-sm text-slate-700 leading-relaxed shadow-inner"><i class="fas fa-stethoscope text-indigo-500 mr-2 text-lg"></i> <span class="font-bold text-indigo-900">Diagnóstico del Coach:</span><br><br>${viewData.case_summary}</div>`;
@@ -1318,7 +1326,6 @@
                 document.getElementById('val-sim-context-read').innerText = viewData.simulator_context || '';
                 
                 if(isCoach) {
-                    // SE CORRIGIÓ: Refleja de forma correcta la vista de práctica y compromiso para el Coach
                     document.getElementById('coach-view-response').innerText = viewData.expertResponse || 'El experto aún no ha respondido a la simulación...';
                     
                     if(viewData.commitment?.action) {
