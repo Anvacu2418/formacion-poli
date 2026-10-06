@@ -1,0 +1,1343 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Laboratorio Forense: Autopsia de la Llamada | Gestión de Rematrícula</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,600&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            forensic: {
+              navy: '#10385b',
+              cyan: '#14becf',
+              magenta: '#e0016e',
+              green: '#a4cc38',
+              amber: '#faaf16',
+              slate: '#0f172a',
+              lab: '#f8fafc',
+              border: '#cbd5e1'
+            }
+          },
+          fontFamily: {
+            poli: ['Montserrat', 'sans-serif'],
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace']
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f1f5f9;
+      color: #0f172a;
+      user-select: none;
+    }
+    .font-title {
+      font-family: 'Montserrat', sans-serif;
+    }
+    /* Flip Card 3D effect */
+    .perspective-1000 {
+      perspective: 1000px;
+    }
+    .flip-card-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      transform-style: preserve-3d;
+      cursor: pointer;
+    }
+    .flip-card-inner.flipped {
+      transform: rotateY(180deg);
+    }
+    .flip-card-front, .flip-card-back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden;
+      border-radius: 1rem;
+    }
+    .flip-card-back {
+      transform: rotateY(180deg);
+    }
+    .evidence-stamp {
+      background: repeating-linear-gradient(
+        -45deg,
+        rgba(224, 1, 110, 0.04),
+        rgba(224, 1, 110, 0.04) 10px,
+        transparent 10px,
+        transparent 20px
+      );
+    }
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    @keyframes pulse-ring {
+      0% { transform: scale(0.95); opacity: 0.8; }
+      50% { transform: scale(1.05); opacity: 0.3; }
+      100% { transform: scale(0.95); opacity: 0.8; }
+    }
+    .ecg-pulse {
+      animation: pulse-ring 2s infinite ease-in-out;
+    }
+  </style>
+</head>
+<body class="h-full w-full flex flex-col justify-between overflow-hidden bg-slate-100 relative">
+
+  <!-- Header: Sala Forense / Sala de Operaciones -->
+  <header class="w-full bg-white border-b border-slate-300 shadow-sm px-4 sm:px-8 py-2.5 flex items-center justify-between z-40">
+    <div class="flex items-center gap-3">
+      <!-- Forensic Lab Status Indicator -->
+      <div class="flex items-center gap-1.5 p-1.5 bg-slate-100 rounded-lg border border-slate-200">
+        <span class="w-2.5 h-6 rounded bg-[#10385b]"></span>
+        <span class="w-2.5 h-6 rounded bg-[#14becf]"></span>
+        <span class="w-2.5 h-6 rounded bg-[#e0016e]"></span>
+      </div>
+      <div class="flex flex-col">
+        <div class="flex items-center gap-2">
+          <span class="font-mono text-[10px] font-extrabold tracking-widest text-[#10385b] uppercase flex items-center gap-1">
+            <svg class="w-3 h-3 text-[#e0016e]" fill="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/></svg>
+            SALA DE AUTOPSIA FORENSE
+          </span>
+          <span class="px-2 py-0.2 text-[9px] font-mono font-bold bg-[#14becf]/15 text-[#10385b] border border-[#14becf]/40 rounded">
+            GESTIÓN DE REMATRÍCULA
+          </span>
+        </div>
+        <h1 class="text-xs sm:text-sm font-bold text-slate-900 flex items-center gap-1.5 font-title">
+          Autopsia de la Llamada <span class="text-[#e0016e] font-black">|</span> Diagnóstico Clínico de Pérdidas Evitables
+        </h1>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-2 sm:gap-3">
+      <!-- Cronómetro del Laboratorio 55 Min -->
+      <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-300">
+        <svg class="w-3.5 h-3.5 text-[#10385b]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10" stroke-width="2"/>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6l4 2"/>
+        </svg>
+        <span class="text-[11px] text-slate-500 font-mono hidden md:inline font-semibold">TIEMPO SALA:</span>
+        <span id="sessionTimer" class="font-mono text-xs sm:text-sm font-bold text-[#10385b]">55:00</span>
+        <button id="toggleSessionTimerBtn" title="Pausar/Reanudar" class="text-slate-400 hover:text-[#10385b] transition">
+          <svg id="timerPlayIcon" class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+        </button>
+      </div>
+
+      <!-- Indicador de Ficha de Evidencia -->
+      <div class="px-3 py-1.5 rounded-lg bg-white border border-slate-300 font-mono text-xs text-slate-700 shadow-sm font-bold">
+        CASO <span id="currentSlideDisplay" class="text-[#e0016e] font-black">1</span> / <span id="totalSlidesDisplay">8</span>
+      </div>
+
+      <!-- Audio Mute Toggle -->
+      <button id="soundToggleBtn" class="p-2 rounded-lg bg-white hover:bg-slate-100 border border-slate-300 text-slate-600 hover:text-[#10385b] transition" title="Alternar audio clínico">
+        <svg id="soundIconOn" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/>
+        </svg>
+      </button>
+
+      <!-- Fullscreen Toggle -->
+      <button id="fullscreenBtn" class="hidden sm:flex p-2 rounded-lg bg-white hover:bg-slate-100 border border-slate-300 text-slate-600 hover:text-[#10385b] transition" title="Pantalla completa">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-8 py-4 overflow-y-auto no-scrollbar flex items-center justify-center relative">
+
+    <!-- SLIDE 1: PORTADA FORENSE - AUTOPSIA DE LA LLAMADA -->
+    <div class="slide w-full h-full flex flex-col justify-center items-center text-center space-y-4" data-slide="1">
+      <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-slate-200/80 border border-slate-300 text-[#10385b] text-xs font-mono font-bold tracking-wide">
+        <span class="w-2 h-2 rounded-full bg-[#e0016e] animate-ping"></span>
+        EXPEDIENTE CLÍNICO // LABORATORIO DE CALIBRACIÓN
+      </div>
+      
+      <div class="relative max-w-4xl">
+        <h2 class="text-3xl sm:text-5xl lg:text-6xl font-title font-extrabold tracking-tight text-[#10385b] leading-tight">
+          AUTOPSIA DE <br/>
+          <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#10385b] via-[#e0016e] to-[#14becf]">LA LLAMADA</span>
+        </h2>
+        <div class="mt-2 text-sm sm:text-lg font-title font-bold text-slate-600 tracking-wide">
+          Bisturí a la Objeción: Desenmascarar la Causa Real de Muerte del Contacto
+        </div>
+        <div class="inline-flex items-center gap-2 mt-3 bg-[#e0016e] text-white font-mono font-bold text-xs uppercase px-3.5 py-1 rounded shadow-sm">
+          <span>🔬</span> ESTUDIO DE CASOS: PÉRDIDAS CLÍNICAS EVITABLES
+        </div>
+      </div>
+
+      <p class="text-xs sm:text-base text-slate-600 max-w-3xl leading-relaxed">
+        "En una mesa de autopsia <strong class="text-[#10385b]">el bisturí jamás juzga al cirujano</strong>: abre el tejido para encontrar qué mató al paciente. Hoy no venimos a evaluar a nadie; venimos a examinar la grabación para descubrir por qué mueren llamadas de estudiantes valiosos ante el primer 'NO'."
+      </p>
+
+      <!-- Trilogía de Evolución Formativa -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5 w-full max-w-4xl pt-2 text-left">
+        <div class="p-3.5 rounded-xl bg-white border-l-4 border-l-[#14becf] border border-slate-300 shadow-sm">
+          <div class="text-[#10385b] font-mono text-[10px] tracking-wider uppercase font-extrabold">Fase 1 // Agosto</div>
+          <div class="text-xs font-bold text-slate-900 font-title mt-0.5">El Escudo Mental</div>
+          <div class="text-[11px] text-slate-500 mt-1">Bajar la voz, frenar la frustración y separar la emoción del estudiante.</div>
+        </div>
+        <div class="p-3.5 rounded-xl bg-white border-l-4 border-l-[#faaf16] border border-slate-300 shadow-sm">
+          <div class="text-[#10385b] font-mono text-[10px] tracking-wider uppercase font-extrabold">Fase 2 // Septiembre</div>
+          <div class="text-xs font-bold text-slate-900 font-title mt-0.5">El Escáner Consultivo</div>
+          <div class="text-[11px] text-slate-500 mt-1">El puente hacia la razón: diagnosticar el síntoma antes de recetar.</div>
+        </div>
+        <div class="p-3.5 rounded-xl bg-white border-l-4 border-l-[#e0016e] border border-slate-300 shadow-sm">
+          <div class="text-[#e0016e] font-mono text-[10px] tracking-wider uppercase font-extrabold">Fase 3 // Octubre (Hoy)</div>
+          <div class="text-xs font-bold text-slate-900 font-title mt-0.5">La Mesa de Disección</div>
+          <div class="text-[11px] text-slate-500 mt-1">Cero conjeturas: práctica quirúrgica entre pares sobre grabaciones reales.</div>
+        </div>
+      </div>
+
+      <div class="pt-2">
+        <button onclick="Deck.goToSlide(2)" class="px-6 py-3 rounded-xl bg-[#10385b] hover:bg-[#0c2a44] text-white font-title font-bold text-xs uppercase tracking-wider transition shadow-md flex items-center gap-2 mx-auto">
+          <span>Ingresar a la Sala de Disección</span>
+          <svg class="w-4 h-4 text-[#14becf]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- SLIDE 2: PROTOCOLO PERICIAL DE AUTOPSIA (DESACTIVACIÓN DEL SESGO DEFENSIVO) -->
+    <div class="slide hidden w-full h-full flex flex-col justify-center space-y-4" data-slide="2">
+      <div class="flex items-center justify-between border-b border-slate-300 pb-2.5">
+        <div>
+          <span class="text-xs font-mono font-bold text-[#14becf] uppercase tracking-wider">Protocolo de Desactivación del Sesgo Defensivo</span>
+          <h2 class="text-2xl sm:text-3xl font-title font-extrabold text-[#10385b]">EL PACTO DE LA MESA FORENSE</h2>
+        </div>
+        <span class="text-xs font-mono font-bold px-3 py-1 bg-slate-200 text-slate-800 rounded border border-slate-300">
+          REGLAS DE AUTOPSIA
+        </span>
+      </div>
+
+      <p class="text-slate-600 text-xs sm:text-sm max-w-4xl">
+        En una sala de investigación forense no existen juicios personales ni culpables; existe la <strong class="text-[#10385b]">cadena de custodia de la llamada</strong>. Para operar con bisturí en mano, asumimos 3 pactos inquebrantables:
+      </p>
+
+      <!-- 3 Acuerdos Forenses -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <!-- Pacto 1 -->
+        <div class="p-5 rounded-2xl bg-white border border-slate-300 hover:border-[#14becf] transition shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <span class="w-8 h-8 rounded-lg bg-[#14becf]/15 text-[#10385b] flex items-center justify-center font-mono font-black text-sm">01</span>
+              <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200">SECRETO DE SUMARIO</span>
+            </div>
+            <h3 class="text-sm font-bold text-[#10385b] font-title mb-2">Lo que se abre en la mesa, se queda en la mesa</h3>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              Espacio blindado de confianza clínica. Evaluamos el audio grabado como si fuera una pieza de laboratorio ajena; nadie juzga a quien gestionó, sino al procedimiento documentado.
+            </p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-100 text-[11px] font-mono text-[#10385b] font-semibold">
+            🔒 Blindaje ético absoluto entre colegas.
+          </div>
+        </div>
+
+        <!-- Pacto 2 -->
+        <div class="p-5 rounded-2xl bg-white border border-slate-300 hover:border-[#faaf16] transition shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <span class="w-8 h-8 rounded-lg bg-[#faaf16]/20 text-[#10385b] flex items-center justify-center font-mono font-black text-sm">02</span>
+              <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200">EVIDENCIA TANGIBLE</span>
+            </div>
+            <h3 class="text-sm font-bold text-[#10385b] font-title mb-2">Cero coartadas o suposiciones automáticas</h3>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              Queda estrictamente prohibido el <em>"es que el estudiante venía indispuesto"</em> o <em>"seguro no tenía plata"</em>. Solo se valida lo que se escucha, lo que se calló y la pregunta que nunca se hizo.
+            </p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-100 text-[11px] font-mono text-[#faaf16] font-semibold">
+            ⚖️ La evidencia forense manda sobre la emoción.
+          </div>
+        </div>
+
+        <!-- Pacto 3 -->
+        <div class="p-5 rounded-2xl bg-white border border-slate-300 hover:border-[#e0016e] transition shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <span class="w-8 h-8 rounded-lg bg-[#e0016e]/15 text-[#e0016e] flex items-center justify-center font-mono font-black text-sm">03</span>
+              <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200">SIMULACRO SEGURO</span>
+            </div>
+            <h3 class="text-sm font-bold text-[#10385b] font-title mb-2">El error en este laboratorio es gratuito</h3>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              Equivocarse con el bisturí en este espacio no cuesta nada y genera aprendizaje inmediato. Equivocarse en la llamada real le cuesta a la operación la deserción silenciosa de un estudiante.
+            </p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-100 text-[11px] font-mono text-[#e0016e] font-semibold">
+            🎯 El laboratorio existe para calibrar reflejos.
+          </div>
+        </div>
+      </div>
+
+      <div class="p-3 rounded-xl bg-white border border-slate-300 flex items-center justify-between text-xs text-slate-600">
+        <span class="font-mono font-bold text-[#10385b]">METÁFORA CLÍNICA:</span>
+        <span>"Un cirujano no discute con la herida: la examina, desinfecta el área y reconstruye el tejido con precisión."</span>
+        <button onclick="Deck.goToSlide(3)" class="px-3 py-1 rounded bg-[#10385b] text-white font-mono text-[11px] font-bold">Ver Síntomas Mortales →</button>
+      </div>
+    </div>
+
+    <!-- SLIDE 3: REPORTE TOXICOLÓGICO DE CALIDAD: LOS 4 SÍNTOMAS MORTALES -->
+    <div class="slide hidden w-full h-full flex flex-col justify-center space-y-3.5" data-slide="3">
+      <div class="flex items-center justify-between border-b border-slate-300 pb-2">
+        <div>
+          <span class="text-xs font-mono font-bold text-[#e0016e] uppercase tracking-wider">Reporte Patológico // Auditorías de Calidad Comercial</span>
+          <h2 class="text-2xl sm:text-3xl font-title font-extrabold text-[#10385b]">LOS 4 SÍNTOMAS MORTALES EN LLAMADA</h2>
+        </div>
+        <span class="text-xs font-mono font-bold px-3 py-1 bg-amber-100 text-amber-900 border border-amber-300 rounded">
+          FOCO: AFECTACIÓN MÍNIMO Y PARCIAL
+        </span>
+      </div>
+
+      <p class="text-xs text-slate-600">
+        El dictamen pericial de calidad revela que las llamadas no caen por falta de conocimiento del producto, sino por 4 patrones mecánicos de desconexión clínica:
+      </p>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <!-- Síntoma 1 -->
+        <div class="p-3.5 rounded-xl bg-white border border-slate-300 shadow-sm hover:border-[#10385b] transition">
+          <div class="flex items-start justify-between">
+            <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-[#e0016e]/15 text-[#e0016e] border border-[#e0016e]/30">ALTO IMPACTO (11 PTS)</span>
+            <span class="text-slate-400 font-mono text-[10px] font-bold">PATOLOGÍA #1</span>
+          </div>
+          <h3 class="text-sm font-bold text-[#10385b] font-title mt-1.5">Asfixia por Suposición Prematura</h3>
+          <div class="text-[11px] text-amber-800 font-mono font-semibold">Atributo: Identificación de Necesidades</div>
+          <p class="text-xs text-slate-600 mt-1.5 leading-relaxed">
+            El estudiante dice <em>"económico"</em> y el asesor compra la excusa sin abrir el expediente. No formula preguntas abiertas para explorar si el colapso fue por carga laboral o frustración.
+          </p>
+        </div>
+
+        <!-- Síntoma 2 -->
+        <div class="p-3.5 rounded-xl bg-white border border-slate-300 shadow-sm hover:border-[#10385b] transition">
+          <div class="flex items-start justify-between">
+            <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-[#faaf16]/25 text-amber-900 border border-amber-300">EXP. Y GESTIÓN (6 PTS)</span>
+            <span class="text-slate-400 font-mono text-[10px] font-bold">PATOLOGÍA #2</span>
+          </div>
+          <h3 class="text-sm font-bold text-[#10385b] font-title mt-1.5">Ceguera de Antecedentes Clínicos</h3>
+          <div class="text-[11px] text-amber-800 font-mono font-semibold">Atributo: Adaptación de la Asesoría</div>
+          <p class="text-xs text-slate-600 mt-1.5 leading-relaxed">
+            Disparan un guion genérico sin verificar: ¿pagaba de contado o a crédito?, ¿aplica alivio empresarial o beca?, ¿inscribe carga completa o paga por bloques? Argumentan a ciegas.
+          </p>
+        </div>
+
+        <!-- Síntoma 3 -->
+        <div class="p-3.5 rounded-xl bg-white border border-slate-300 shadow-sm hover:border-[#10385b] transition">
+          <div class="flex items-start justify-between">
+            <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-[#e0016e]/15 text-[#e0016e] border border-[#e0016e]/30">ALTO IMPACTO (11 PTS)</span>
+            <span class="text-slate-400 font-mono text-[10px] font-bold">PATOLOGÍA #3</span>
+          </div>
+          <h3 class="text-sm font-bold text-[#10385b] font-title mt-1.5">Paro Cardiorrespiratorio ante el NO Seco</h3>
+          <div class="text-[11px] text-amber-800 font-mono font-semibold">Atributo: Gestión Asertiva de Objeciones</div>
+          <p class="text-xs text-slate-600 mt-1.5 leading-relaxed">
+            Ante un <em>"¡No voy a seguir y no me llamen más!"</em>, se produce un silencio incómodo superior a 3 segundos. El asesor se asusta o continúa en un tono de derrota y resignación.
+          </p>
+        </div>
+
+        <!-- Síntoma 4 -->
+        <div class="p-3.5 rounded-xl bg-white border border-slate-300 shadow-sm hover:border-[#10385b] transition">
+          <div class="flex items-start justify-between">
+            <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-[#14becf]/20 text-[#10385b] border border-[#14becf]/40">ALTO IMPACTO (11 PTS)</span>
+            <span class="text-slate-400 font-mono text-[10px] font-bold">PATOLOGÍA #4</span>
+          </div>
+          <h3 class="text-sm font-bold text-[#10385b] font-title mt-1.5">Desangre en el Cierre sin Signos Vitales</h3>
+          <div class="text-[11px] text-amber-800 font-mono font-semibold">Atributo: Cierre Orientado a la Acción</div>
+          <p class="text-xs text-slate-600 mt-1.5 leading-relaxed">
+            Despedidas pasivas: <em>"Bueno Carlos, piénselo con la almohada y cualquier cosa me avisa"</em>. Cero micro-pasos guiados, sin orden de matrícula simulada y sin hora pactada de contacto.
+          </p>
+        </div>
+      </div>
+
+      <div class="p-3 rounded-xl bg-slate-900 text-white flex items-center justify-between text-xs font-mono">
+        <span class="text-[#14becf] font-bold">💡 CONCLUSIÓN CLÍNICA:</span>
+        <span class="text-slate-300">En agosto y septiembre dimos el concepto. En octubre entrenamos los reflejos del cirujano.</span>
+      </div>
+    </div>
+
+    <!-- SLIDE 4: AUTOPSIA FORENSE EN VIVO (CASO CLÍNICO CON SONDEO INTERACTIVO) -->
+    <div class="slide hidden w-full h-full flex flex-col justify-center space-y-3.5" data-slide="4">
+      <div class="flex items-center justify-between border-b border-slate-300 pb-2">
+        <div>
+          <span class="text-xs font-mono font-bold text-[#10385b] uppercase tracking-wider">Evidencia Real Anonimizada // Minuto 05:00 - 15:00</span>
+          <h2 class="text-2xl sm:text-3xl font-title font-extrabold text-[#10385b]">AUTOPSIA: "¿DE QUÉ MURIÓ ESTA LLAMADA?"</h2>
+        </div>
+        <span class="text-xs font-mono font-bold px-3 py-1 bg-[#e0016e]/15 text-[#e0016e] border border-[#e0016e]/30 rounded">
+          EXPEDIENTE PERICIAL #409-R
+        </span>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch">
+        <!-- Columna Izquierda: Transcripción del Audio de la Llamada -->
+        <div class="lg:col-span-6 bg-white border border-slate-300 p-4 rounded-2xl shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between border-b border-slate-100 pb-2 mb-2.5">
+              <span class="text-xs font-mono font-bold text-slate-700 flex items-center gap-1.5">
+                <span class="w-2.5 h-2.5 rounded-full bg-[#e0016e]"></span> GRABACIÓN DE AUDIO (0:26s)
+              </span>
+              <span class="text-[10px] text-amber-800 font-mono font-bold bg-amber-100 px-2 py-0.5 rounded">CALIDAD: PARCIAL / MÍNIMO</span>
+            </div>
+
+            <div class="space-y-2.5 text-xs">
+              <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200">
+                <span class="text-[#e0016e] font-bold font-mono text-[11px] block">ESTUDIANTE (Tono tajante y cortante):</span>
+                "Mire, no me llamen más que no voy a continuar el próximo periodo. La situación económica está imposible y las cosas están demasiado costosas."
+              </div>
+
+              <div class="p-2.5 rounded-xl bg-[#10385b]/5 border border-[#10385b]/15">
+                <span class="text-[#10385b] font-bold font-mono text-[11px] block">ASESOR (Modo automático):</span>
+                "Entiendo su punto, Camilo, pero recuerde que la institución tiene convenios financieros y cuotas cómodas para que no interrumpa sus estudios..."
+              </div>
+
+              <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200">
+                <span class="text-[#e0016e] font-bold font-mono text-[11px] block">ESTUDIANTE:</span>
+                "No, no me interesa ningún crédito. Muchas gracias, hasta luego." <span class="text-slate-400 italic">[Cuelga abruptamente]</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sondeo de Opinión Teams (Lanzar en vivo) -->
+          <div class="mt-3 p-3 rounded-xl bg-slate-50 border border-slate-200">
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="text-[11px] font-mono font-bold text-[#10385b] flex items-center gap-1">
+                📊 SONDEO EN TEAMS / POLI: ¿Cuál es el Diagnóstico Preliminar?
+              </span>
+              <span class="text-[10px] text-slate-400 font-mono">Votación en sala</span>
+            </div>
+            <div class="grid grid-cols-3 gap-1.5 text-[11px] font-mono">
+              <div class="p-2 bg-white rounded border border-slate-200 text-center text-slate-700">
+                <strong>Opción A:</strong><br/>Iliquidez financiera real
+              </div>
+              <div class="p-2 bg-white rounded border border-slate-200 text-center text-slate-700">
+                <strong>Opción B:</strong><br/>Recetó medicina sin indagar
+              </div>
+              <div class="p-2 bg-white rounded border border-slate-200 text-center text-slate-700">
+                <strong>Opción C:</strong><br/>Falta de interés vocacional
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Columna Derecha: Expediente Oculto & Veredicto Forense -->
+        <div class="lg:col-span-6 bg-white border-2 border-[#14becf]/40 p-4 rounded-2xl shadow-sm flex flex-col justify-between relative overflow-hidden">
+          <div>
+            <div class="flex items-center justify-between pb-2 mb-2 border-b border-slate-100">
+              <span class="text-xs font-title tracking-wider text-[#10385b] uppercase font-bold">EXPEDIENTE HISTÓRICO EN CRM (CONFIDENCIAL)</span>
+              <span class="text-[10px] font-mono text-slate-400">PISTAS NO REVISADAS</span>
+            </div>
+
+            <!-- Contenido con revelación interactiva -->
+            <div id="hiddenEvidenceContent" class="space-y-2.5 opacity-15 filter blur-sm transition-all duration-500">
+              <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs space-y-1.5">
+                <div class="text-slate-700"><strong class="text-[#10385b]">Promedio Acumulado:</strong> 4.6 / 5.0 (Estudiante disciplinado).</div>
+                <div class="text-slate-700"><strong class="text-[#10385b]">Modalidad de Pago:</strong> Siempre de Contado (Cuenta con alivio empresarial del 50%).</div>
+                <div class="text-slate-700"><strong class="text-[#10385b]">Historial de Servicio:</strong> Ticket de soporte por error al cargar entrega final sin respuesta hace 40 días.</div>
+                <div class="text-slate-700"><strong class="text-[#e0016e]">Causa Real de Muerte:</strong> Frustración de servicio en plataforma. El tema de "dinero" fue únicamente la <span class="bg-amber-100 text-amber-900 font-bold px-1 rounded">cortina de humo</span> para quitarse al asesor de encima.</div>
+              </div>
+
+              <div id="forensicVerdictBox" class="p-3 rounded-xl bg-[#e0016e]/10 border border-[#e0016e]/30 hidden">
+                <div class="text-xs font-mono font-bold text-[#e0016e] flex items-center gap-1.5">
+                  <span>🔬</span> DICTAMEN DE LA AUTOPSIA:
+                </div>
+                <p class="text-xs text-slate-800 mt-1">
+                  La llamada no murió por dinero. Murió porque el asesor asumió y le disparó convenios financieros a un estudiante que paga de contado y que lo que requería era ser escuchado en su experiencia académica.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-3 pt-2.5 border-t border-slate-200 flex items-center gap-2">
+            <button id="revealEvidenceBtn" onclick="Deck.toggleEvidence()" class="flex-1 py-2 px-3 rounded-xl bg-[#10385b] hover:bg-[#0c2a44] text-white text-xs font-title font-bold uppercase tracking-wider transition flex items-center justify-center gap-2 shadow-sm">
+              <svg class="w-3.5 h-3.5 text-[#14becf]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+              <span id="revealBtnText">Abrir Evidencia Forense</span>
+            </button>
+            <button id="revealVerdictBtn" onclick="Deck.revealVerdict()" class="py-2 px-3 rounded-xl bg-[#e0016e] hover:bg-[#b8015a] text-white text-xs font-mono font-bold transition flex items-center gap-1.5">
+              <span>Dictamen Final</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 5: LA TRÍADA DE RESUCITACIÓN COMERCIAL (CON TARJETAS GIRATORIAS) -->
+    <div class="slide hidden w-full h-full flex flex-col justify-center space-y-3" data-slide="5">
+      <div class="flex items-center justify-between border-b border-slate-300 pb-2">
+        <div>
+          <span class="text-xs font-mono font-bold text-[#14becf] uppercase tracking-wider">Protocolo de Intervención en Vivo // Haz clic en cada tarjeta para rotar</span>
+          <h2 class="text-2xl sm:text-3xl font-title font-extrabold text-[#10385b]">LA TRÍADA DE RESUCITACIÓN COMERCIAL</h2>
+        </div>
+        <span class="text-xs font-mono font-bold px-3 py-1 bg-slate-200 text-[#10385b] rounded border border-slate-300">
+          INSTRUMENTAL EN SALA
+        </span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 h-[370px]">
+        <!-- Tarjeta Giratoria 1: Radiografía Previa -->
+        <div class="perspective-1000 h-full">
+          <div id="flipCard1" onclick="Deck.flipCard(1)" class="flip-card-inner">
+            <!-- Front -->
+            <div class="flip-card-front p-4 bg-white border border-slate-300 shadow-sm flex flex-col justify-between hover:border-[#10385b] transition">
+              <div>
+                <div class="flex items-center justify-between mb-2">
+                  <span class="w-8 h-8 rounded-lg bg-[#10385b] text-[#14becf] flex items-center justify-center font-mono font-bold text-xs">01</span>
+                  <span class="text-[10px] font-mono text-[#10385b] bg-[#14becf]/15 px-2 py-0.5 rounded font-bold">15s ANTES DE MARCAR</span>
+                </div>
+                <h3 class="text-sm font-bold text-[#10385b] font-title mb-1">Radiografía Pre-Llamada</h3>
+                <p class="text-xs text-slate-600 leading-relaxed mt-2">
+                  No marques a ciegas. Valida en tu CRM en 15 segundos:
+                </p>
+                <ul class="text-xs text-slate-700 space-y-1.5 mt-2 font-mono">
+                  <li>• ¿Pago previo: Contado vs. Crédito?</li>
+                  <li>• ¿Aplica alivio empresarial o beca?</li>
+                  <li>• ¿Carga completa o pago por bloques?</li>
+                </ul>
+              </div>
+              <div class="p-2 rounded bg-slate-100 text-[11px] text-[#10385b] font-bold flex items-center justify-between">
+                <span>🔄 Toca para ver preguntas clave</span>
+                <span>→</span>
+              </div>
+            </div>
+            <!-- Back -->
+            <div class="flip-card-back p-4 bg-[#10385b] text-white border border-[#10385b] shadow-md flex flex-col justify-between">
+              <div>
+                <span class="text-[10px] font-mono text-[#14becf] font-bold block mb-1">CÓMO USAR LA INFORMACIÓN:</span>
+                <h4 class="text-xs font-bold text-white font-title mb-2">Contextualizar el primer minuto</h4>
+                <div class="text-[11px] text-slate-200 space-y-2 italic">
+                  <p class="p-2 rounded bg-white/10">"Camilo, veo en su expediente que el ciclo anterior cursó sus asignaturas con apoyo empresarial..."</p>
+                  <p class="p-2 rounded bg-white/10">"Sé que habitualmente realiza sus pagos de contado, por lo que mi llamada busca revisar su plan de materias..."</p>
+                </div>
+              </div>
+              <div class="text-[10px] font-mono text-[#14becf]">🔄 Toca para regresar al frente</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tarjeta Giratoria 2: El Doble Clic -->
+        <div class="perspective-1000 h-full">
+          <div id="flipCard2" onclick="Deck.flipCard(2)" class="flip-card-inner">
+            <!-- Front -->
+            <div class="flip-card-front p-4 bg-white border border-slate-300 shadow-sm flex flex-col justify-between hover:border-[#faaf16] transition">
+              <div>
+                <div class="flex items-center justify-between mb-2">
+                  <span class="w-8 h-8 rounded-lg bg-[#faaf16] text-[#10385b] flex items-center justify-center font-mono font-bold text-xs">02</span>
+                  <span class="text-[10px] font-mono text-amber-900 bg-[#faaf16]/25 px-2 py-0.5 rounded font-bold">2 PREGUNTAS ABIERTAS</span>
+                </div>
+                <h3 class="text-sm font-bold text-[#10385b] font-title mb-1">El "Doble Clic" Indagatorio</h3>
+                <p class="text-xs text-slate-600 leading-relaxed mt-2">
+                  Prohibido soltar convenios o descuentos en la primera réplica. Diagnostica con preguntas abiertas:
+                </p>
+                <div class="mt-2 text-xs text-slate-700 italic bg-amber-50 p-2 rounded border border-amber-200">
+                  "Para entender mejor su situación: ¿qué fue lo más retador durante el periodo pasado?"
+                </div>
+              </div>
+              <div class="p-2 rounded bg-amber-50 text-[11px] text-amber-900 font-bold flex items-center justify-between">
+                <span>🔄 Toca para ver banco de preguntas</span>
+                <span>→</span>
+              </div>
+            </div>
+            <!-- Back -->
+            <div class="flip-card-back p-4 bg-amber-900 text-white border border-amber-950 shadow-md flex flex-col justify-between">
+              <div>
+                <span class="text-[10px] font-mono text-[#faaf16] font-bold block mb-1">BANCO DE PREGUNTAS ABIERTAS:</span>
+                <h4 class="text-xs font-bold text-white font-title mb-2">Alternativas para desarmar el motivo:</h4>
+                <div class="text-[11px] text-amber-100 space-y-2 italic">
+                  <p class="p-2 rounded bg-white/10">"¿El principal reto en este momento es de liquidez o de compatibilidad de horarios con su trabajo?"</p>
+                  <p class="p-2 rounded bg-white/10">"¿Cómo sintió el volumen de materias del semestre anterior con respecto a sus tiempos libres?"</p>
+                </div>
+              </div>
+              <div class="text-[10px] font-mono text-[#faaf16]">🔄 Toca para regresar al frente</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tarjeta Giratoria 3: Pregunta de Desarme -->
+        <div class="perspective-1000 h-full">
+          <div id="flipCard3" onclick="Deck.flipCard(3)" class="flip-card-inner">
+            <!-- Front -->
+            <div class="flip-card-front p-4 bg-white border border-slate-300 shadow-sm flex flex-col justify-between hover:border-[#e0016e] transition">
+              <div>
+                <div class="flex items-center justify-between mb-2">
+                  <span class="w-8 h-8 rounded-lg bg-[#e0016e] text-white flex items-center justify-center font-mono font-bold text-xs">03</span>
+                  <span class="text-[10px] font-mono text-[#e0016e] bg-[#e0016e]/15 px-2 py-0.5 rounded font-bold">REGLA DE LOS 3 SEGUNDOS</span>
+                </div>
+                <h3 class="text-sm font-bold text-[#10385b] font-title mb-1">La Pregunta de Desarme</h3>
+                <p class="text-xs text-slate-600 leading-relaxed mt-2">
+                  Ante un "NO" seco, cero silencios de pánico. Valida sin debatir y desarma la barrera:
+                </p>
+                <div class="mt-2 text-xs text-slate-700 italic bg-[#e0016e]/5 p-2 rounded border border-[#e0016e]/20">
+                  "Tiene toda la razón en cuidar su presupuesto. Solo para registrarlo bien: ¿esta pausa se debe a temas de tiempo o a alguna situación de servicio?"
+                </div>
+              </div>
+              <div class="p-2 rounded bg-[#e0016e]/10 text-[11px] text-[#e0016e] font-bold flex items-center justify-between">
+                <span>🔄 Toca para ver salidas tácticas</span>
+                <span>→</span>
+              </div>
+            </div>
+            <!-- Back -->
+            <div class="flip-card-back p-4 bg-[#e0016e] text-white border border-[#e0016e] shadow-md flex flex-col justify-between">
+              <div>
+                <span class="text-[10px] font-mono text-white/80 font-bold block mb-1">FÓRMULA QUIRÚRGICA:</span>
+                <h4 class="text-xs font-bold text-white font-title mb-2">Validación de Pulso + Desarme</h4>
+                <div class="text-[11px] text-white/90 space-y-2 italic">
+                  <p class="p-2 rounded bg-black/15">"Comprendo totalmente su postura y no pretendo presionarlo..."</p>
+                  <p class="p-2 rounded bg-black/15">"...si existiera una opción de cursar por bloques para no sobrecargarse, ¿evaluaría mantener su continuidad?"</p>
+                </div>
+              </div>
+              <div class="text-[10px] font-mono text-white/80">🔄 Toca para regresar al frente</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 6: MESA DE DISECCIÓN Y CALIBRACIÓN ENTRE PARES (CON GAVETA OCULTA) -->
+    <div class="slide hidden w-full h-full flex flex-col justify-center space-y-3" data-slide="6">
+      <div class="flex items-center justify-between border-b border-slate-300 pb-2">
+        <div>
+          <span class="text-xs font-mono font-bold text-[#10385b] uppercase tracking-wider">Dinámica Central // Minuto 15:00 - 38:00</span>
+          <h2 class="text-2xl sm:text-3xl font-title font-extrabold text-[#10385b]">MESA DE CALIBRACIÓN: ROLEPLAY ENTRE PARES</h2>
+        </div>
+        <span class="text-xs font-mono font-bold px-3 py-1 bg-slate-200 text-[#10385b] rounded border border-slate-300">
+          2 RONDAS x 10 MIN
+        </span>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch">
+        <!-- Columna Izquierda: Selección del Caso e Instrucciones Generales -->
+        <div class="lg:col-span-6 bg-white border border-slate-300 p-4 rounded-2xl shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between border-b border-slate-100 pb-2 mb-3">
+              <span class="text-xs font-title uppercase text-slate-700 font-bold">Casos Clínicos para Simulación</span>
+              <span class="text-[11px] font-mono text-[#10385b] font-bold">1 Asesor vs. 1 Estudiante</span>
+            </div>
+
+            <div class="space-y-2">
+              <button onclick="Deck.selectCase(1)" id="caseBtn1" class="w-full text-left p-2.5 rounded-xl border-2 border-[#10385b] bg-[#10385b]/5 transition flex items-center justify-between">
+                <div>
+                  <span class="text-xs font-bold text-[#10385b] block font-title">CASO 01: La Cortina Económica</span>
+                  <span class="text-[11px] text-slate-500">Dice "no hay plata", pero colapsó por exceso de materias.</span>
+                </div>
+                <span class="text-xs font-mono font-bold text-[#10385b]">ACTIVO</span>
+              </button>
+
+              <button onclick="Deck.selectCase(2)" id="caseBtn2" class="w-full text-left p-2.5 rounded-xl border border-slate-200 bg-white hover:border-slate-300 transition flex items-center justify-between">
+                <div>
+                  <span class="text-xs font-bold text-slate-700 block font-title">CASO 02: El Fantasma de la Plataforma</span>
+                  <span class="text-[11px] text-slate-500">Dice "el nivel es regular", pero no le dieron soporte a tiempo.</span>
+                </div>
+                <span class="text-xs font-mono font-bold text-slate-400">SELECCIONAR</span>
+              </button>
+
+              <button onclick="Deck.selectCase(3)" id="caseBtn3" class="w-full text-left p-2.5 rounded-xl border border-slate-200 bg-white hover:border-slate-300 transition flex items-center justify-between">
+                <div>
+                  <span class="text-xs font-bold text-slate-700 block font-title">CASO 03: El Bloqueo del NO Tajante</span>
+                  <span class="text-[11px] text-slate-500">Dice "no tengo tiempo". Desconoce cursar por bloques.</span>
+                </div>
+                <span class="text-xs font-mono font-bold text-slate-400">SELECCIONAR</span>
+              </button>
+            </div>
+
+            <!-- Contexto público para toda la sala -->
+            <div class="mt-3 p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs">
+              <span class="font-bold text-[#10385b] block mb-1 font-title">ESCENARIO VISIBLE PARA EL ASESOR:</span>
+              <p id="casePublicContext" class="text-slate-600 leading-relaxed">
+                El estudiante atiende con tono apresurado y afirma tajantemente que la matrícula está muy costosa y que no continuará el semestre.
+              </p>
+            </div>
+          </div>
+
+          <!-- Botón para abrir la Gaveta Oculta (Solo para quien hace de estudiante) -->
+          <div class="pt-2">
+            <button onclick="Deck.openSecretDrawer()" class="w-full py-2.5 px-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-900 font-mono text-xs font-extrabold transition flex items-center justify-center gap-2 shadow-sm">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+              <span>GAVETA SECRETA: Ficha Confidencial del Estudiante</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Columna Derecha: Panel de Calibración de Calidad (Votación Técnica) -->
+        <div class="lg:col-span-6 bg-white border border-slate-300 p-4 rounded-2xl shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+              <span class="font-title text-xs font-bold text-[#10385b] uppercase">Panel de Dictamen de Calidad (La Sala Vota)</span>
+              <button onclick="Deck.resetVotes()" class="text-[10px] font-mono text-slate-400 hover:text-slate-600">Reiniciar Votos</button>
+            </div>
+
+            <p class="text-xs text-slate-500 mt-2 mb-3">
+              Al finalizar los 4 minutos de roleplay, el facilitador guarda silencio absoluto. La sala emite su veredicto técnico según la evidencia escuchada:
+            </p>
+
+            <div class="grid grid-cols-3 gap-2.5">
+              <!-- Rojo: Afectación Crítica -->
+              <button onclick="Deck.addVote('red')" class="p-3 rounded-xl bg-red-50 border border-red-200 hover:border-red-300 flex flex-col items-center justify-center transition active:scale-95 text-center">
+                <span class="text-xl mb-0.5">🛑</span>
+                <span class="text-xs font-bold text-red-800 font-title">Afectación</span>
+                <span class="text-[9px] text-red-600 mt-0.5 leading-tight">Asumió / Silencio > 3s</span>
+                <span id="voteRedCount" class="font-mono text-xs font-bold text-red-800 mt-1.5 px-2 py-0.5 bg-red-200 rounded-full">0</span>
+              </button>
+
+              <!-- Amarillo: Ajuste Necesario -->
+              <button onclick="Deck.addVote('yellow')" class="p-3 rounded-xl bg-amber-50 border border-amber-200 hover:border-amber-300 flex flex-col items-center justify-center transition active:scale-95 text-center">
+                <span class="text-xl mb-0.5">⚠️</span>
+                <span class="text-xs font-bold text-amber-900 font-title">Ajuste</span>
+                <span class="text-[9px] text-amber-700 mt-0.5 leading-tight">Pregunta cerrada (Sí/No)</span>
+                <span id="voteYellowCount" class="font-mono text-xs font-bold text-amber-900 mt-1.5 px-2 py-0.5 bg-amber-200 rounded-full">0</span>
+              </button>
+
+              <!-- Verde: Consultoría Sobresaliente -->
+              <button onclick="Deck.addVote('green')" class="p-3 rounded-xl bg-emerald-50 border border-emerald-200 hover:border-emerald-300 flex flex-col items-center justify-center transition active:scale-95 text-center">
+                <span class="text-xl mb-0.5">✅</span>
+                <span class="text-xs font-bold text-emerald-900 font-title">Sobresaliente</span>
+                <span class="text-[9px] text-emerald-700 mt-0.5 leading-tight">Doble Clic + Desarme</span>
+                <span id="voteGreenCount" class="font-mono text-xs font-bold text-emerald-900 mt-1.5 px-2 py-0.5 bg-emerald-200 rounded-full">0</span>
+              </button>
+            </div>
+
+            <!-- Rúbrica Rápida de Observación -->
+            <div class="mt-3 p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-[11px] text-slate-600 space-y-1 font-mono">
+              <div>✓ ¿Revisó forma de pago previa antes de argumentar?</div>
+              <div>✓ ¿Hizo al menos 2 preguntas abiertas de diagnóstico?</div>
+              <div>✓ ¿Evitó silencios incómodos y cerró con hora pactada?</div>
+            </div>
+          </div>
+
+          <div class="mt-3 pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] font-mono text-slate-400">
+            <span>Feedback técnico entre pares</span>
+            <span class="text-[#10385b] font-bold">Cero juicios personales</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 7: RETO EL DESARMADOR DEL "NO" SECO (SIMULACRO EN 60 SEGUNDOS) -->
+    <div class="slide hidden w-full h-full flex flex-col justify-center space-y-3.5" data-slide="7">
+      <div class="flex items-center justify-between border-b border-slate-300 pb-2">
+        <div>
+          <span class="text-xs font-mono font-bold text-[#e0016e] uppercase tracking-wider">Simulacro Quirúrgico de Choque // Minuto 38:00 - 48:00</span>
+          <h2 class="text-2xl sm:text-3xl font-title font-extrabold text-[#10385b]">RETO: EL DESARMADOR DEL "NO" SECO</h2>
+        </div>
+        <span class="text-xs font-mono font-bold px-3 py-1 bg-[#e0016e]/15 text-[#e0016e] border border-[#e0016e]/30 rounded">
+          MICRO-INTERVENCIONES (60s)
+        </span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-stretch">
+        <!-- Columna Izquierda: Regla y Protocolo de Salida -->
+        <div class="md:col-span-7 bg-white border border-slate-300 p-4 rounded-2xl shadow-sm flex flex-col justify-between">
+          <div class="space-y-3">
+            <div class="flex items-center gap-2">
+              <span class="px-2.5 py-0.5 bg-[#e0016e] text-white text-xs font-mono font-bold rounded">PROTOCOLO DE CHOQUE</span>
+              <span class="text-xs text-slate-700 font-title font-bold">Cero silencios superiores a 3 segundos</span>
+            </div>
+
+            <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs">
+              <span class="text-[#e0016e] font-mono font-bold block mb-1">DISPARO SECO DEL ESTUDIANTE:</span>
+              <p class="text-sm font-semibold text-slate-800 italic">
+                "¡No voy a continuar el próximo periodo, no tengo plata ni tiempo, así que por favor no me insista más!"
+              </p>
+            </div>
+
+            <div class="space-y-2">
+              <span class="text-xs font-title text-[#10385b] uppercase font-bold tracking-wider">Fórmula Quirúrgica de Respuesta (2 Pasos):</span>
+              
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                <div class="p-2.5 rounded-xl bg-[#10385b]/5 border border-[#10385b]/20">
+                  <strong class="text-[#10385b] block mb-1 font-title">1. Validación de Pulso:</strong>
+                  "Tiene toda la razón en cuidar sus recursos y su tiempo en este momento, Camilo..."
+                </div>
+                <div class="p-2.5 rounded-xl bg-amber-50 border border-amber-200">
+                  <strong class="text-amber-900 block mb-1 font-title">2. Pregunta de Desarme:</strong>
+                  "...solo para registrar bien su decisión: ¿le fallamos en algo en el servicio o la situación es 100% externa?"
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-3 p-2.5 rounded-lg bg-sky-50 border border-sky-200 text-[11px] text-[#10385b]">
+            💡 <strong>Misión del Reto:</strong> Evacuar el pánico. Comprobar que el estudiante no cuelga si se le responde con serenidad y una pregunta genuina de diagnóstico.
+          </div>
+        </div>
+
+        <!-- Columna Derecha: Cronómetro Clínico de 60 Segundos con Alerta ECG -->
+        <div class="md:col-span-5 bg-white border border-slate-300 p-4 rounded-2xl shadow-sm flex flex-col justify-between items-center text-center">
+          <div class="w-full">
+            <span class="text-[11px] font-mono font-bold text-[#10385b] uppercase tracking-widest block">CRONÓMETRO DE PRECISIÓN</span>
+            <h3 class="text-sm font-bold text-slate-800 font-title">60 SEGUNDOS AL TELÉFONO</h3>
+          </div>
+
+          <div class="my-2 relative">
+            <div id="countdownRing" class="w-32 h-32 rounded-full border-4 border-[#10385b]/20 flex items-center justify-center relative overflow-hidden transition-all duration-300">
+              <div class="text-center z-10">
+                <span id="roleplayCountdown" class="text-4xl font-mono font-bold text-[#10385b]">60</span>
+                <span class="text-[9px] text-slate-400 block font-mono font-semibold">SEGUNDOS</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2 w-full">
+            <button id="startCountdownBtn" onclick="Deck.toggleCountdown()" class="flex-1 py-2 rounded-xl bg-[#10385b] hover:bg-[#0c2a44] text-white font-title text-xs font-bold uppercase transition flex items-center justify-center gap-1.5 shadow-sm">
+              <svg class="w-3.5 h-3.5 text-[#14becf]" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+              <span id="countdownBtnText">Iniciar Reto</span>
+            </button>
+            <button onclick="Deck.resetCountdown()" class="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 transition border border-slate-300" title="Reiniciar 60s">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 8: FICHA FORENSE DE BOLSILLO (COMPROMISO OPERATIVO) -->
+    <div class="slide hidden w-full h-full flex flex-col justify-center space-y-3.5" data-slide="8">
+      <div class="flex items-center justify-between border-b border-slate-300 pb-2">
+        <div>
+          <span class="text-xs font-mono font-bold text-[#14becf] uppercase tracking-wider">Herramienta de Escritorio // Minuto 48:00 - 55:00</span>
+          <h2 class="text-2xl sm:text-3xl font-title font-extrabold text-[#10385b]">FICHA FORENSE PRE-LLAMADA</h2>
+        </div>
+        <span class="text-xs font-mono font-bold px-3 py-1 bg-slate-200 text-[#10385b] rounded border border-slate-300">
+          COMPROMISO EN VIVO
+        </span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+        <!-- Paso 1 -->
+        <div class="p-4 rounded-xl bg-white border border-slate-300 shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="text-[10px] font-mono text-[#10385b] font-bold mb-1">PASO 1 // ANTES DE MARCAR</div>
+            <h3 class="text-sm font-bold text-[#10385b] font-title mb-2">Checklist de 15 Segundos</h3>
+            <ul class="text-xs text-slate-700 space-y-2">
+              <li class="flex items-center gap-2">
+                <input type="checkbox" checked disabled class="accent-[#10385b] rounded">
+                <span>¿Modalidad de pago previa? (Contado/Crédito)</span>
+              </li>
+              <li class="flex items-center gap-2">
+                <input type="checkbox" checked disabled class="accent-[#10385b] rounded">
+                <span>¿Tiene alivio empresarial o beca activa?</span>
+              </li>
+              <li class="flex items-center gap-2">
+                <input type="checkbox" checked disabled class="accent-[#10385b] rounded">
+                <span>¿Le conviene carga completa o por bloques?</span>
+              </li>
+            </ul>
+          </div>
+          <div class="mt-3 text-[11px] text-slate-500 italic">
+            "Si no sé qué tiene el estudiante, no puedo asesorarlo con propiedad."
+          </div>
+        </div>
+
+        <!-- Paso 2 -->
+        <div class="p-4 rounded-xl bg-white border border-slate-300 shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="text-[10px] font-mono text-[#faaf16] font-bold mb-1">PASO 2 // ANTE LA BARRERA</div>
+            <h3 class="text-sm font-bold text-[#10385b] font-title mb-2">El Doble Clic Obligatorio</h3>
+            <div class="space-y-1.5 text-xs text-slate-700">
+              <p class="p-2 rounded bg-slate-50 border border-slate-200">
+                1. Validar pulso: <em>"Entiendo totalmente su postura..."</em>
+              </p>
+              <p class="p-2 rounded bg-slate-50 border border-slate-200">
+                2. Abrir con pregunta: <em>"¿Qué hizo que este ciclo fuera más retador?"</em>
+              </p>
+            </div>
+          </div>
+          <div class="mt-3 text-[11px] text-slate-500 italic">
+            "Prohibido soltar convenios antes de hacer dos preguntas abiertas."
+          </div>
+        </div>
+
+        <!-- Paso 3 -->
+        <div class="p-4 rounded-xl bg-white border border-slate-300 shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="text-[10px] font-mono text-[#e0016e] font-bold mb-1">PASO 3 // CIERRE QUIRÚRGICO</div>
+            <h3 class="text-sm font-bold text-[#10385b] font-title mb-2">Micro-Paso con Hora Pactada</h3>
+            <div class="space-y-1.5 text-xs text-slate-700">
+              <p class="text-slate-400 line-through">🚫 "Piénselo y nos avisa"</p>
+              <p class="text-emerald-800 font-semibold bg-emerald-50 p-2 rounded border border-emerald-200">
+                ✅ "Le dejo simulada la carga en su portal. Lo contacto hoy a las 4:30 pm para que validemos si tiene dudas."
+              </p>
+            </div>
+          </div>
+          <div class="mt-3 text-[11px] text-slate-500 italic">
+            "Un cierre sin hora ni acción pactada es una matrícula perdida."
+          </div>
+        </div>
+      </div>
+
+      <!-- Banner de Compromiso Inmediato -->
+      <div class="p-3.5 rounded-xl bg-white border-2 border-[#10385b] flex flex-col sm:flex-row items-center justify-between gap-3 shadow-md">
+        <div>
+          <div class="text-xs font-mono text-[#e0016e] font-bold">COMPROMISO INMEDIATO DE LA TARDE:</div>
+          <div class="text-xs sm:text-sm font-bold text-[#10385b] font-title">Aplicar la "Radiografía Previa" y el "Doble Clic" en las siguientes 5 llamadas.</div>
+        </div>
+        <button onclick="Deck.copyFlightCard()" id="copyCardBtn" class="px-5 py-2.5 rounded-xl bg-[#10385b] hover:bg-[#0c2a44] text-white font-title text-xs font-bold uppercase transition flex items-center gap-2 whitespace-nowrap shadow-sm">
+          <svg class="w-4 h-4 text-[#14becf]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg>
+          <span id="copyBtnLabel">Copiar Ficha al Portapapeles</span>
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <!-- MODAL GAVETA SECRETA (Solo para el participante que actúa de estudiante) -->
+  <div id="secretDrawerModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white border-2 border-amber-500 rounded-2xl max-w-lg w-full p-5 shadow-2xl space-y-3 relative animate-fade-in">
+      <div class="flex items-center justify-between border-b border-slate-200 pb-2">
+        <div class="flex items-center gap-2">
+          <span class="text-xl">🤫</span>
+          <div>
+            <span class="text-[10px] font-mono font-bold text-amber-700 uppercase block">INSTRUCCIÓN PRIVADA // SOLO PARA EL ESTUDIANTE</span>
+            <h4 id="drawerCaseTitle" class="text-sm font-bold text-slate-900 font-title">CASO 01: La Cortina Económica</h4>
+          </div>
+        </div>
+        <button onclick="Deck.closeSecretDrawer()" class="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-700">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <div id="drawerContent" class="space-y-2 text-xs">
+        <!-- Inyección dinámica según el caso -->
+      </div>
+
+      <div class="pt-2 border-t border-slate-200 flex justify-end">
+        <button onclick="Deck.closeSecretDrawer()" class="px-4 py-2 rounded-xl bg-slate-900 text-white font-mono text-xs font-bold">
+          Entendido, cerrar gaveta y actuar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer: Barra de progreso y navegación -->
+  <footer class="w-full border-t border-slate-300 bg-white px-4 sm:px-8 py-2.5 flex items-center justify-between z-40">
+    <div class="flex-1 max-w-xs sm:max-w-md mr-4">
+      <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden border border-slate-300">
+        <div id="progressBar" class="bg-gradient-to-r from-[#10385b] via-[#14becf] to-[#e0016e] h-full w-[12.5%] transition-all duration-300"></div>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-2">
+      <button id="prevSlideBtn" onclick="Deck.prevSlide()" class="px-3.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-700 text-xs font-mono font-bold transition flex items-center gap-1 disabled:opacity-30 disabled:cursor-not-allowed">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+        <span>ANTERIOR</span>
+      </button>
+
+      <button id="nextSlideBtn" onclick="Deck.nextSlide()" class="px-4 py-1.5 rounded-lg bg-[#10385b] hover:bg-[#0c2a44] text-white text-xs font-mono font-bold transition flex items-center gap-1 disabled:opacity-30 disabled:cursor-not-allowed shadow-sm">
+        <span>SIGUIENTE</span>
+        <svg class="w-3.5 h-3.5 text-[#14becf]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+  </footer>
+
+  <!-- Toast Notification -->
+  <div id="toastMessage" class="fixed bottom-16 left-1/2 -translate-x-1/2 px-4 py-2 rounded-xl bg-slate-900 text-white text-xs font-mono shadow-xl opacity-0 pointer-events-none transition-all duration-300 z-50 flex items-center gap-2 border border-[#14becf]">
+    <span class="w-2 h-2 rounded-full bg-[#14becf]"></span>
+    <span id="toastText">Notificación</span>
+  </div>
+
+  <script>
+    // Audio Synthesizer (Web Audio API)
+    class ClinicalSoundEngine {
+      constructor() {
+        this.ctx = null;
+        this.enabled = true;
+      }
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          if (AudioContext) {
+            this.ctx = new AudioContext();
+          }
+        }
+      }
+      playTone(freq, type = 'sine', duration = 0.08, gainVal = 0.04) {
+        if (!this.enabled) return;
+        try {
+          this.init();
+          if (!this.ctx) return;
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = type;
+          osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+          gain.gain.setValueAtTime(gainVal, this.ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + duration);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start();
+          osc.stop(this.ctx.currentTime + duration);
+        } catch (e) {
+          console.warn('Audio:', e);
+        }
+      }
+      click() { this.playTone(520, 'sine', 0.04, 0.03); }
+      reveal() { 
+        this.playTone(400, 'triangle', 0.08, 0.03);
+        setTimeout(() => this.playTone(620, 'sine', 0.12, 0.04), 70);
+      }
+      vote() { this.playTone(440, 'square', 0.05, 0.02); }
+      buzzer() { this.playTone(220, 'sawtooth', 0.25, 0.05); }
+      flip() { this.playTone(480, 'sine', 0.06, 0.03); }
+      toggle() {
+        this.enabled = !this.enabled;
+        return this.enabled;
+      }
+    }
+
+    const sound = new ClinicalSoundEngine();
+
+    // Data for Roleplay Cases (Real patterns extracted from operational quality audits)
+    const casesDatabase = {
+      1: {
+        title: 'CASO 01: "La Cortina de Humo Económica"',
+        publicContext: 'El estudiante contesta apurado y afirma con tono tajante que la matrícula está muy costosa, que la situación del país no da para más y que no continuará el semestre.',
+        studentRole: 'Dices con tono cortante que no tienes dinero y que no te insistan.',
+        studentSecret: 'El dinero NO es tu verdadero problema (tu empresa te subsidia el 50%). El semestre pasado inscribiste 6 materias, colapsaste con el horario laboral y reprobaste 2 asignaturas por falta de tiempo. Te da pena reconocerlo.',
+        triggerOpen: 'Si el asesor te pregunta de forma abierta: "¿Cómo coordinó sus horarios laborales con las asignaturas el periodo anterior?" o "¿Sintió muy cargado el volumen de créditos?", te abres y confiesas que cursando 2 o 3 materias sí podrías continuar.',
+        triggerClose: 'Si el asesor de inmediato te dispara convenios financieros, cuotas o descuentos sin preguntar nada, respondes: "No me interesa ningún crédito" y cuelgas.'
+      },
+      2: {
+        title: 'CASO 02: "El Fantasma de la Plataforma Virtual"',
+        publicContext: 'El estudiante atiende con evidente molestia y declara que "el nivel no fue lo que esperaba y no aprendió nada durante el periodo".',
+        studentRole: 'Dices molesto que el nivel académico no te gustó y que prefieres buscar otra opción.',
+        studentSecret: 'Tuviste un problema técnico al cargar entregables finales en la plataforma virtual, el caso de soporte tardó 25 días en atenderse y la plataforma te cerró con calificación cero. Sientes desamparo y abandono institucional.',
+        triggerOpen: 'Si el asesor valida con calma tu molestia y te pregunta: "¿En qué momento específico sintió que el acompañamiento institucional no estuvo a la altura de lo esperado?", reconoces el fallo de la plataforma y el ticket.',
+        triggerClose: 'Si el asesor empieza a alardear sobre certificaciones, reconocimientos o nivel docente sin escucharte, le dices: "Eso en la web se ve muy bonito pero en la práctica no funciona" y cuelgas.'
+      },
+      3: {
+        title: 'CASO 03: "El Bloqueo del NO Tajante"',
+        publicContext: 'El estudiante atiende de forma apresurada y tajante: "Mire, la verdad no voy a seguir, no tengo tiempo y punto".',
+        studentRole: 'Dices que no tienes tiempo para nada y que estás a punto de entrar a una reunión.',
+        studentSecret: 'Trabajas en turnos rotativos. Tienes la falsa creencia de que estás obligado a matricular el semestre completo al mismo tiempo. Desconoces por completo que puedes matricular y pagar por bloques.',
+        triggerOpen: 'Si el asesor amortigua con serenidad y te pregunta: "Si existiera una alternativa para cursar por bloques de asignaturas sin perder su condición regular, ¿evaluaría esa posibilidad?", te detienes y escuchas.',
+        triggerClose: 'Si el asesor se queda en silencio más de 3 segundos o te dice: "¿Y no le puede hacer un campito al estudio?", dices que estás en junta y cortas de inmediato.'
+      }
+    };
+
+    // Main Deck Application Logic
+    const Deck = {
+      currentSlide: 1,
+      totalSlides: 8,
+      evidenceRevealed: false,
+      verdictRevealed: false,
+      currentCaseId: 1,
+      votes: { red: 0, yellow: 0, green: 0 },
+      sessionSeconds: 55 * 60,
+      sessionTimerInterval: null,
+      countdownSeconds: 60,
+      countdownInterval: null,
+
+      init() {
+        this.updateSlideView();
+        this.selectCase(1);
+        this.setupKeyboard();
+        this.setupSessionClock();
+      },
+
+      showToast(msg) {
+        const toast = document.getElementById('toastMessage');
+        const text = document.getElementById('toastText');
+        if (!toast || !text) return;
+        text.innerText = msg;
+        toast.classList.remove('opacity-0', 'pointer-events-none');
+        toast.classList.add('opacity-100');
+        setTimeout(() => {
+          toast.classList.remove('opacity-100');
+          toast.classList.add('opacity-0', 'pointer-events-none');
+        }, 2200);
+      },
+
+      updateSlideView() {
+        document.querySelectorAll('.slide').forEach((slide) => {
+          const slideNum = parseInt(slide.getAttribute('data-slide'));
+          if (slideNum === this.currentSlide) {
+            slide.classList.remove('hidden');
+          } else {
+            slide.classList.add('hidden');
+          }
+        });
+
+        document.getElementById('currentSlideDisplay').innerText = this.currentSlide;
+        document.getElementById('totalSlidesDisplay').innerText = this.totalSlides;
+
+        const progressPercent = (this.currentSlide / this.totalSlides) * 100;
+        document.getElementById('progressBar').style.width = `${progressPercent}%`;
+
+        document.getElementById('prevSlideBtn').disabled = this.currentSlide === 1;
+        document.getElementById('nextSlideBtn').disabled = this.currentSlide === this.totalSlides;
+      },
+
+      nextSlide() {
+        if (this.currentSlide < this.totalSlides) {
+          this.currentSlide++;
+          sound.click();
+          this.updateSlideView();
+        }
+      },
+
+      prevSlide() {
+        if (this.currentSlide > 1) {
+          this.currentSlide--;
+          sound.click();
+          this.updateSlideView();
+        }
+      },
+
+      goToSlide(num) {
+        if (num >= 1 && num <= this.totalSlides) {
+          this.currentSlide = num;
+          sound.click();
+          this.updateSlideView();
+        }
+      },
+
+      setupKeyboard() {
+        window.addEventListener('keydown', (e) => {
+          if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+          if (e.key === 'ArrowRight' || e.key === ' ') {
+            this.nextSlide();
+          } else if (e.key === 'ArrowLeft') {
+            this.prevSlide();
+          }
+        });
+      },
+
+      // Flip card trigger
+      flipCard(cardNum) {
+        sound.flip();
+        const card = document.getElementById(`flipCard${cardNum}`);
+        card.classList.toggle('flipped');
+      },
+
+      // Evidence toggles
+      toggleEvidence() {
+        const el = document.getElementById('hiddenEvidenceContent');
+        const btnText = document.getElementById('revealBtnText');
+        this.evidenceRevealed = !this.evidenceRevealed;
+        sound.reveal();
+
+        if (this.evidenceRevealed) {
+          el.classList.remove('opacity-15', 'filter', 'blur-sm');
+          el.classList.add('opacity-100');
+          btnText.innerText = 'Cerrar Expediente Oculto';
+          this.showToast('Evidencia forense desbloqueada');
+        } else {
+          el.classList.add('opacity-15', 'filter', 'blur-sm');
+          el.classList.remove('opacity-100');
+          btnText.innerText = 'Abrir Evidencia Forense';
+        }
+      },
+
+      revealVerdict() {
+        const box = document.getElementById('forensicVerdictBox');
+        sound.reveal();
+        box.classList.remove('hidden');
+        this.showToast('Dictamen pericial final emitido');
+      },
+
+      // Case selection logic
+      selectCase(id) {
+        sound.click();
+        this.currentCaseId = id;
+        const data = casesDatabase[id];
+        
+        document.getElementById('casePublicContext').innerText = data.publicContext;
+
+        [1, 2, 3].forEach(i => {
+          const btn = document.getElementById(`caseBtn${i}`);
+          const statusSpan = btn.querySelector('span:last-child');
+          const titleSpan = btn.querySelector('span:first-child');
+          if (i === id) {
+            btn.className = 'w-full text-left p-2.5 rounded-xl border-2 border-[#10385b] bg-[#10385b]/5 transition flex items-center justify-between';
+            titleSpan.className = 'text-xs font-bold text-[#10385b] block font-title';
+            statusSpan.innerText = 'ACTIVO';
+            statusSpan.className = 'text-xs font-mono font-bold text-[#10385b]';
+          } else {
+            btn.className = 'w-full text-left p-2.5 rounded-xl border border-slate-200 bg-white hover:border-slate-300 transition flex items-center justify-between';
+            titleSpan.className = 'text-xs font-bold text-slate-700 block font-title';
+            statusSpan.innerText = 'SELECCIONAR';
+            statusSpan.className = 'text-xs font-mono font-bold text-slate-400';
+          }
+        });
+      },
+
+      // Secret Drawer Modal (For the student participant only)
+      openSecretDrawer() {
+        sound.reveal();
+        const data = casesDatabase[this.currentCaseId];
+        document.getElementById('drawerCaseTitle').innerText = data.title;
+        const container = document.getElementById('drawerContent');
+        container.innerHTML = `
+          <div><strong class="text-slate-800">Tu papel:</strong> <span class="text-slate-600">${data.studentRole}</span></div>
+          <div class="p-2.5 rounded-lg bg-amber-50 border border-amber-200"><strong class="text-amber-900">Tu Secreto Clínico (Solo tú lo sabes):</strong> <span class="text-amber-950">${data.studentSecret}</span></div>
+          <div class="p-2.5 rounded-lg bg-emerald-50 border border-emerald-200"><strong class="text-emerald-900">Gatillo de Apertura (Si el asesor hace esto, te abres):</strong> <span class="text-emerald-950">${data.triggerOpen}</span></div>
+          <div class="p-2.5 rounded-lg bg-red-50 border border-red-200"><strong class="text-red-900">Gatillo de Muerte (Si el asesor hace esto, cuelgas):</strong> <span class="text-red-950">${data.triggerClose}</span></div>
+        `;
+        document.getElementById('secretDrawerModal').classList.remove('hidden');
+      },
+
+      closeSecretDrawer() {
+        sound.click();
+        document.getElementById('secretDrawerModal').classList.add('hidden');
+      },
+
+      // Voting tally
+      addVote(color) {
+        sound.vote();
+        this.votes[color]++;
+        document.getElementById('voteRedCount').innerText = this.votes.red;
+        document.getElementById('voteYellowCount').innerText = this.votes.yellow;
+        document.getElementById('voteGreenCount').innerText = this.votes.green;
+        this.showToast('Voto pericial asentado en la mesa');
+      },
+
+      resetVotes() {
+        sound.click();
+        this.votes = { red: 0, yellow: 0, green: 0 };
+        document.getElementById('voteRedCount').innerText = 0;
+        document.getElementById('voteYellowCount').innerText = 0;
+        document.getElementById('voteGreenCount').innerText = 0;
+        this.showToast('Mesa de calibración reiniciada');
+      },
+
+      // 55 Min session clock
+      setupSessionClock() {
+        const toggleBtn = document.getElementById('toggleSessionTimerBtn');
+        const display = document.getElementById('sessionTimer');
+        let isRunning = false;
+
+        const formatTime = (secs) => {
+          const m = Math.floor(secs / 60);
+          const s = secs % 60;
+          return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        };
+
+        toggleBtn.addEventListener('click', () => {
+          sound.click();
+          if (isRunning) {
+            clearInterval(this.sessionTimerInterval);
+            isRunning = false;
+            document.getElementById('timerPlayIcon').innerHTML = '<path d="M8 5v14l11-7z"/>';
+            display.classList.remove('text-[#10385b]');
+            display.classList.add('text-slate-400');
+          } else {
+            isRunning = true;
+            document.getElementById('timerPlayIcon').innerHTML = '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>';
+            display.classList.add('text-[#10385b]');
+            display.classList.remove('text-slate-400');
+            this.sessionTimerInterval = setInterval(() => {
+              if (this.sessionSeconds > 0) {
+                this.sessionSeconds--;
+                display.innerText = formatTime(this.sessionSeconds);
+              } else {
+                clearInterval(this.sessionTimerInterval);
+                sound.buzzer();
+              }
+            }, 1000);
+          }
+        });
+      },
+
+      // 60-Second Challenge Countdown
+      toggleCountdown() {
+        const btnText = document.getElementById('countdownBtnText');
+        const display = document.getElementById('roleplayCountdown');
+        const ring = document.getElementById('countdownRing');
+
+        if (this.countdownInterval) {
+          clearInterval(this.countdownInterval);
+          this.countdownInterval = null;
+          btnText.innerText = 'Reanudar Reto';
+          sound.click();
+        } else {
+          sound.click();
+          btnText.innerText = 'Pausar';
+          this.countdownInterval = setInterval(() => {
+            if (this.countdownSeconds > 0) {
+              this.countdownSeconds--;
+              display.innerText = this.countdownSeconds;
+              if (this.countdownSeconds <= 10) {
+                ring.classList.add('border-[#e0016e]', 'bg-red-50', 'ecg-pulse');
+                display.classList.remove('text-[#10385b]');
+                display.classList.add('text-[#e0016e]');
+                sound.playTone(720, 'triangle', 0.05, 0.02);
+              }
+            } else {
+              clearInterval(this.countdownInterval);
+              this.countdownInterval = null;
+              btnText.innerText = 'Tiempo Cumplido';
+              sound.buzzer();
+              this.showToast('¡Tiempo cumplido! Votación técnica inmediata');
+            }
+          }, 1000);
+        }
+      },
+
+      resetCountdown() {
+        sound.click();
+        if (this.countdownInterval) {
+          clearInterval(this.countdownInterval);
+          this.countdownInterval = null;
+        }
+        this.countdownSeconds = 60;
+        document.getElementById('roleplayCountdown').innerText = '60';
+        document.getElementById('countdownBtnText').innerText = 'Iniciar Reto';
+        const ring = document.getElementById('countdownRing');
+        const display = document.getElementById('roleplayCountdown');
+        ring.classList.remove('border-[#e0016e]', 'bg-red-50', 'ecg-pulse');
+        display.classList.add('text-[#10385b]');
+        display.classList.remove('text-[#e0016e]');
+      },
+
+      // Clipboard copy for Flight Card
+      copyFlightCard() {
+        const text = `📋 FICHA FORENSE PRE-LLAMADA (GESTIÓN DE REMATRÍCULA)\n\n1. RADIOGRAFÍA PREVIA (15s antes de marcar):\n- Forma de pago habitual: ¿Contado o Crédito?\n- Alivio empresarial / Beca académica activa.\n- ¿Carga completa o pago por bloques?\n\n2. EL DOBLE CLIC INDAGATORIO (Ante el NO o motivo económico):\n- Validación de pulso: "Entiendo totalmente su postura..."\n- 2 preguntas abiertas de diagnóstico antes de ofrecer alternativas.\n\n3. PREGUNTA DE DESARME:\n- "¿Esta pausa se debe a temas de tiempo o a alguna inconformidad de servicio?"\n\n4. CIERRE QUIRÚRGICO:\n- Micro-paso guiado pactando fecha y hora exacta de seguimiento.`;
+        
+        const tempTextArea = document.createElement('textarea');
+        tempTextArea.value = text;
+        document.body.appendChild(tempTextArea);
+        tempTextArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(tempTextArea);
+
+        sound.reveal();
+        const btnLabel = document.getElementById('copyBtnLabel');
+        btnLabel.innerText = '¡Ficha Copiada al Portapapeles!';
+        this.showToast('Ficha de escritorio copiada');
+        setTimeout(() => {
+          btnLabel.innerText = 'Copiar Ficha al Portapapeles';
+        }, 2400);
+      }
+    };
+
+    // Fullscreen and Audio Handlers
+    document.getElementById('fullscreenBtn')?.addEventListener('click', () => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        document.exitFullscreen().catch(() => {});
+      }
+    });
+
+    document.getElementById('soundToggleBtn').addEventListener('click', () => {
+      const isMuted = !sound.toggle();
+      const icon = document.getElementById('soundIconOn');
+      if (isMuted) {
+        icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"/>';
+        Deck.showToast('Sonido desactivado');
+      } else {
+        icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/>';
+        sound.click();
+        Deck.showToast('Sonido activado');
+      }
+    });
+
+    window.addEventListener('DOMContentLoaded', () => {
+      Deck.init();
+    });
+  </script>
+</body>
+</html>
