@@ -139,15 +139,24 @@
             </div>
             
             <div class="space-y-6">
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Institución</label>
-                    <select id="setup-institution" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500">
-                        <option value="poli">Politécnico Grancolombiano</option>
-                        <option value="andina">Universidad Área Andina</option>
-                        <option value="san_marcos">Universidad San Marcos</option>
-                        <option value="istmo">Universidad del Istmo</option>
-                        <option value="hep">HEP</option>
-                    </select>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Institución</label>
+                        <select id="setup-institution" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="poli">Politécnico Grancolombiano</option>
+                            <option value="andina">Universidad Área Andina</option>
+                            <option value="san_marcos">Universidad San Marcos</option>
+                            <option value="istmo">Universidad del Istmo</option>
+                            <option value="hep">HEP</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Segmento / Contexto Operativo</label>
+                        <select id="setup-segment" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="Servicio y Rematrícula">Servicio y Rematrícula</option>
+                            <option value="Admisiones">Admisiones</option>
+                        </select>
+                    </div>
                 </div>
 
                 <!-- Campo Modo Individual -->
@@ -197,13 +206,13 @@
         </div>
     </div>
 
-    <!-- MODAL MODO MANUAL FALLBACK -->
+    <!-- MODAL MODO MANUAL FALLBACK (CREACIÓN INICIAL) -->
     <div id="manual-fallback-modal" class="hidden fixed inset-0 bg-slate-900/90 z-[200] flex flex-col items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-white rounded-[2rem] max-w-4xl w-full p-8 shadow-2xl flex flex-col max-h-[90vh]">
             <div class="flex justify-between items-start mb-6">
                 <div>
-                    <h2 class="text-3xl font-bold text-slate-800 flex items-center gap-3"><i class="fas fa-robot text-primary"></i> Intervención Manual Requerida</h2>
-                    <p class="text-slate-500 mt-1">La lectura del archivo o conexión falló. Usa el Agente Externo para generar el JSON.</p>
+                    <h2 class="text-3xl font-bold text-slate-800 flex items-center gap-3"><i class="fas fa-robot text-primary"></i> Intervención Manual / Motor JSON</h2>
+                    <p class="text-slate-500 mt-1">Usa tu Agente Externo para generar el análisis JSON completo (con casos prácticos y SBI por experto).</p>
                 </div>
                 <button onclick="document.getElementById('manual-fallback-modal').classList.add('hidden')" class="text-slate-400 hover:text-slate-600"><i class="fas fa-times text-2xl"></i></button>
             </div>
@@ -211,9 +220,9 @@
             <div class="flex-1 overflow-y-auto space-y-6 pr-2">
                 <div class="bg-indigo-50 border border-indigo-200 rounded-2xl p-6">
                     <h3 class="font-bold text-indigo-900 mb-2">Paso 1. Sube tu Excel al Agente "Motor JSON"</h3>
-                    <p class="text-sm text-indigo-700 mb-3">Abre tu Agente preconfigurado, <strong>adjúntale el archivo Excel</strong> y envíale este mensaje exacto:</p>
+                    <p class="text-sm text-indigo-700 mb-3">Abre tu Agente preconfigurado, <strong>adjúntale el archivo Excel</strong> (si aplica) y envíale este mensaje exacto:</p>
                     <div class="relative">
-                        <textarea id="manual-prompt-area" class="w-full h-28 p-4 bg-white border border-indigo-200 rounded-xl text-sm outline-none resize-none font-mono text-slate-600" readonly></textarea>
+                        <textarea id="manual-prompt-area" class="w-full h-36 p-4 bg-white border border-indigo-200 rounded-xl text-xs outline-none resize-none font-mono text-slate-600" readonly></textarea>
                         <button onclick="window.copyToClipboard(document.getElementById('manual-prompt-area').value)" class="absolute top-4 right-4 bg-primary text-white px-4 py-2 rounded-lg font-bold hover:bg-indigo-700 shadow-md text-sm"><i class="fas fa-copy"></i> Copiar Mensaje</button>
                     </div>
                 </div>
@@ -228,6 +237,63 @@
             <div class="mt-6 pt-6 border-t border-slate-100">
                 <button onclick="window.finishManualSetup()" class="w-full py-4 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl shadow-lg transition-all text-lg flex items-center justify-center gap-3">
                     <i class="fas fa-play"></i> Iniciar Taller con Datos Manuales
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL CENTRO DE AJUSTE IA (SIN REINICIAR LA SESIÓN ACTIVA) -->
+    <div id="ai-adjust-modal" class="hidden fixed inset-0 bg-slate-900/90 z-[210] flex flex-col items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-[2rem] max-w-4xl w-full p-8 shadow-2xl flex flex-col max-h-[92vh]">
+            <div class="flex justify-between items-start mb-4 border-b border-slate-100 pb-4">
+                <div>
+                    <h2 class="text-2xl font-bold text-slate-800 flex items-center gap-3">
+                        <i class="fas fa-sliders-h text-primary"></i> Ajustar IA de la Sesión Activa
+                    </h2>
+                    <p class="text-sm text-slate-500 mt-1">Re-analiza o inyecta un nuevo JSON <strong>sin perder el código de sesión</strong>, ni las notas de la pizarra, ni las respuestas de los expertos.</p>
+                </div>
+                <button onclick="document.getElementById('ai-adjust-modal').classList.add('hidden')" class="text-slate-400 hover:text-slate-600"><i class="fas fa-times text-2xl"></i></button>
+            </div>
+
+            <div class="flex-1 overflow-y-auto space-y-6 pr-2">
+                <!-- Opción A: Re-analizar con IA en vivo -->
+                <div class="bg-indigo-50/70 border border-indigo-200 rounded-2xl p-6 space-y-4">
+                    <div class="flex flex-wrap justify-between items-center gap-2">
+                        <h3 class="font-bold text-indigo-900 text-lg"><i class="fas fa-magic mr-1"></i> Opción 1: Indicar a la IA qué volver a generar</h3>
+                        <select id="reanalyze-scope" class="bg-white border border-indigo-200 text-indigo-900 text-xs font-bold rounded-lg px-3 py-2 outline-none">
+                            <option value="all">Aplicar a: Todos los expertos de la sesión</option>
+                            <option value="current">Aplicar a: Solo el experto seleccionado actualmente</option>
+                        </select>
+                    </div>
+                    <p class="text-xs text-indigo-700">Escribe qué deseas ajustar o profundizar (ej. <em>"Enfoca los casos prácticos en objeciones de costos de matrícula en Admisiones"</em> o <em>"Profundiza el diagnóstico y regenera el simulador"</em>):</p>
+                    <textarea id="reanalyze-custom-instruction" class="w-full h-24 p-3 bg-white border border-indigo-200 rounded-xl text-sm outline-none resize-none focus:ring-2 focus:ring-indigo-500" placeholder="Ej: Haz que el caso práctico sea de un estudiante de posgrado molesto por un ticket mal escalado y profundiza el SBI individual..."></textarea>
+                    <button type="button" onclick="window.reanalyzeActiveSession()" class="w-full py-3 bg-primary hover:bg-indigo-700 text-white font-bold rounded-xl shadow-md transition-all flex items-center justify-center gap-2 text-sm">
+                        <i class="fas fa-sync-alt"></i> Re-procesar con IA (Mantiene la sesión actual)
+                    </button>
+                </div>
+
+                <!-- Opción B: Pegar / Actualizar JSON manualmente -->
+                <div class="bg-emerald-50/70 border border-emerald-200 rounded-2xl p-6 space-y-4">
+                    <div class="flex flex-wrap justify-between items-center gap-2">
+                        <h3 class="font-bold text-emerald-900 text-lg"><i class="fas fa-code mr-1"></i> Opción 2: Actualizar pegando código JSON</h3>
+                        <button type="button" onclick="window.copyActiveSessionAgentPrompt()" class="bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold px-3 py-2 rounded-lg shadow-sm flex items-center gap-1">
+                            <i class="fas fa-copy"></i> Copiar Prompt con Datos Actuales para el Agente
+                        </button>
+                    </div>
+                    <p class="text-xs text-emerald-800">Pega aquí el código JSON del Agente para actualizar SBI, Diagnósticos, Preguntas y Simuladores sin borrar el avance del taller:</p>
+                    <textarea id="adjust-json-area" class="w-full h-32 p-3 bg-white border border-emerald-200 rounded-xl text-xs font-mono outline-none resize-none text-slate-700" placeholder='{"general": {...}, "experts": [...]}'></textarea>
+                    <button type="button" onclick="window.applyManualJsonToActiveSession()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-md transition-all flex items-center justify-center gap-2 text-sm">
+                        <i class="fas fa-check-circle"></i> Actualizar Sesión con este JSON
+                    </button>
+                </div>
+            </div>
+
+            <div class="mt-4 pt-4 border-t border-slate-200 flex justify-between items-center">
+                <button type="button" onclick="document.getElementById('ai-adjust-modal').classList.add('hidden'); window.showScreen('coach-mode-select-screen');" class="text-xs font-semibold text-rose-500 hover:text-rose-700 flex items-center gap-1">
+                    <i class="fas fa-redo"></i> Configurar una sesión nueva desde cero
+                </button>
+                <button type="button" onclick="document.getElementById('ai-adjust-modal').classList.add('hidden')" class="px-6 py-2.5 bg-slate-800 text-white text-sm font-bold rounded-xl hover:bg-slate-700">
+                    Cerrar y Volver al Taller
                 </button>
             </div>
         </div>
@@ -323,8 +389,8 @@
             </nav>
 
             <div class="mt-auto pt-6 border-t border-slate-700/50 flex flex-col gap-2">
-                <button type="button" onclick="window.showScreen('coach-mode-select-screen')" class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-medium rounded-lg transition-colors coach-only flex items-center justify-center gap-2">
-                    <i class="fas fa-cog"></i> Ajustar IA / Reiniciar
+                <button type="button" onclick="window.openAiAdjustModal()" class="w-full py-2.5 bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/30 text-indigo-200 text-sm font-semibold rounded-lg transition-colors coach-only flex items-center justify-center gap-2">
+                    <i class="fas fa-sliders-h"></i> Ajustar IA de Sesión
                 </button>
                 <button type="button" onclick="location.reload()" class="w-full py-3 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 font-medium rounded-xl transition-colors flex items-center justify-center gap-2">
                     <i class="fas fa-sign-out-alt"></i> Salir de Sesión
@@ -333,17 +399,19 @@
         </div>
 
         <!-- Área de Contenido Principal -->
-        <div class="flex-1 bg-[#f8fafc] overflow-y-auto relative p-8 md:p-12">
-            <div class="max-w-5xl mx-auto flex justify-between items-center mb-8 border-b border-slate-200 pb-6">
+        <div class="flex-1 bg-[#f8fafc] overflow-y-auto relative p-6 md:p-10">
+            <div id="main-header-container" class="max-w-5xl mx-auto flex flex-wrap justify-between items-center mb-6 border-b border-slate-200 pb-5 transition-all duration-300">
                 <div>
-                    <h1 class="text-4xl font-bold text-slate-800" id="header-title">Tu Potencial</h1>
+                    <h1 class="text-3xl md:text-4xl font-bold text-slate-800" id="header-title">Tu Potencial</h1>
                     <p class="text-slate-500 mt-1" id="header-desc">Modelo S.B.I. generado para enfocar el desarrollo.</p>
                 </div>
-                <div class="flex gap-3" id="header-badges"></div>
+                <div class="flex items-center gap-3 mt-2 md:mt-0" id="header-badges">
+                    <span id="current-view-pill" class="px-3.5 py-1.5 rounded-full text-xs font-bold bg-indigo-100 text-primary">Vista General (Equipo)</span>
+                </div>
             </div>
 
-            <!-- CONTENEDORES DE PESTAÑAS (Centrados max-w-5xl) -->
-            <div class="max-w-5xl mx-auto">
+            <!-- CONTENEDOR DINÁMICO DE PESTAÑAS -->
+            <div id="main-content-container" class="max-w-5xl mx-auto transition-all duration-300">
                 
                 <!-- TAB 1: S.B.I -->
                 <div id="tab-sbi" class="tab-content block space-y-6">
@@ -391,6 +459,7 @@
                                         <th class="py-3 font-semibold text-center">Canal Principal</th>
                                         <th class="py-3 font-semibold text-center">Alertas Tot.</th>
                                         <th class="py-3 font-semibold">Top Error</th>
+                                        <th class="py-3 font-semibold text-center">Práctica</th>
                                         <th class="py-3 font-semibold text-center">Nota Sesión</th>
                                         <th class="py-3 font-semibold text-center">Acciones</th>
                                     </tr>
@@ -415,9 +484,13 @@
                         </div>
                         
                         <div class="mt-8 border-t border-slate-100 pt-6">
-                            <h4 class="font-bold text-slate-800 text-lg mb-4 flex items-center gap-2"><i class="fas fa-stethoscope text-indigo-500"></i> Diagnóstico del Coach</h4>
+                            <div class="flex justify-between items-center mb-3">
+                                <h4 class="font-bold text-slate-800 text-lg flex items-center gap-2">
+                                    <i class="fas fa-stethoscope text-indigo-500"></i> Diagnóstico Estratégico del Coach <span class="text-xs font-normal text-slate-400">(En qué enfocarse con este experto)</span>
+                                </h4>
+                            </div>
                             <div id="interaction-summaries" class="space-y-3 pr-2 rounded-xl">
-                                <!-- Diagnóstico de la IA entra aquí -->
+                                <!-- Diagnóstico ejecutivo editable de la IA entra aquí -->
                             </div>
                         </div>
 
@@ -434,26 +507,32 @@
                     </div>
                 </div>
 
-                <!-- TAB 3: PIZARRA C.R.E.C.E -->
+                <!-- TAB 3: PIZARRA DE REFLEXIÓN (AMPLIADA Y EXPANDIBLE) -->
                 <div id="tab-board" class="tab-content hidden">
-                    <div class="grid md:grid-cols-3 gap-6">
-                        <div class="md:col-span-2 bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden flex flex-col h-[600px]">
-                            <div class="p-6 border-b border-slate-100 bg-slate-50 flex gap-3">
-                                <input type="text" id="board-input" placeholder="Ej: 'Siento que el volumen de llamadas me afecta...'" class="flex-1 p-3 bg-white border border-slate-200 rounded-xl outline-none focus:border-indigo-500">
-                                <button type="button" onclick="window.addBoardNote()" class="bg-slate-800 text-white px-6 rounded-xl font-bold hover:bg-slate-700">Plasmar</button>
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+                        <div id="board-main-col" class="lg:col-span-8 bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden flex flex-col h-[calc(100vh-200px)] min-h-[640px] transition-all duration-300">
+                            <div class="p-5 border-b border-slate-100 bg-slate-50 flex flex-wrap gap-3 items-center">
+                                <input type="text" id="board-input" onkeydown="if(event.key==='Enter') window.addBoardNote()" placeholder="Escribe aquí tu reflexión o aporte y presiona Enter o Plasmar..." class="flex-1 min-w-[240px] p-3.5 bg-white border border-slate-200 rounded-xl outline-none focus:border-indigo-500 text-base">
+                                <button type="button" onclick="window.addBoardNote()" class="bg-slate-800 text-white px-6 py-3.5 rounded-xl font-bold hover:bg-slate-700 transition-colors">Plasmar</button>
+                                <button type="button" onclick="window.toggleExpandBoard()" id="btn-expand-board" class="coach-only bg-indigo-50 hover:bg-indigo-100 text-primary px-4 py-3.5 rounded-xl font-bold text-sm transition-colors flex items-center gap-2" title="Ampliar o reducir pizarra">
+                                    <i class="fas fa-expand-alt"></i> <span id="expand-board-text">Expandir Pizarra</span>
+                                </button>
                             </div>
-                            <div class="flex-1 bg-dots p-6 overflow-y-auto" id="board-canvas">
+                            <div class="flex-1 bg-dots p-8 overflow-y-auto flex flex-col gap-3" id="board-canvas">
                             </div>
                         </div>
 
-                        <div class="bg-indigo-50/50 rounded-3xl border border-indigo-100 p-6 flex flex-col h-[600px] coach-only">
-                            <h3 class="font-bold text-indigo-900 mb-4 flex items-center gap-2"><i class="fas fa-lightbulb text-amber-500"></i> Preguntas Poderosas</h3>
+                        <div id="board-side-col" class="lg:col-span-4 bg-indigo-50/50 rounded-3xl border border-indigo-100 p-6 flex flex-col h-[calc(100vh-200px)] min-h-[640px] coach-only transition-all duration-300">
+                            <div class="flex justify-between items-center mb-3">
+                                <h3 class="font-bold text-indigo-900 flex items-center gap-2"><i class="fas fa-lightbulb text-amber-500"></i> Preguntas Poderosas</h3>
+                                <span id="questions-scope-badge" class="text-[11px] font-bold px-2.5 py-1 bg-amber-100 text-amber-800 rounded-full">Comunes (Equipo)</span>
+                            </div>
                             <div id="coach-questions-container" class="space-y-3 flex-1 overflow-y-auto pr-2">
                             </div>
                             
                             <div class="mt-4 pt-4 border-t border-indigo-200">
                                 <h4 class="font-bold text-indigo-900 text-sm mb-2"><i class="fas fa-lock text-slate-400"></i> Mis Notas (Privado)</h4>
-                                <textarea id="coach-private-notes-board" onblur="window.savePrivateNotes(this.value)" class="w-full h-32 p-3 rounded-xl border border-indigo-200 bg-white text-sm outline-none resize-none focus:ring-2 focus:ring-indigo-500" placeholder="Escribe tus observaciones..."></textarea>
+                                <textarea id="coach-private-notes-board" onblur="window.savePrivateNotes(this.value)" class="w-full h-36 p-3 rounded-xl border border-indigo-200 bg-white text-sm outline-none resize-none focus:ring-2 focus:ring-indigo-500" placeholder="Escribe tus observaciones..."></textarea>
                             </div>
                         </div>
                     </div>
@@ -464,26 +543,31 @@
                     <div id="sim-warning" class="bg-amber-50 border border-amber-200 text-amber-800 p-6 rounded-2xl text-center hidden">
                         <i class="fas fa-exclamation-triangle text-2xl mb-2"></i>
                         <p class="font-bold">Selecciona un Experto Específico</p>
-                        <p class="text-sm">Para realizar la práctica, selecciona al experto en el menú lateral izquierdo.</p>
+                        <p class="text-sm">Para realizar o revisar la práctica, selecciona al experto en el menú lateral izquierdo.</p>
                     </div>
 
                     <div id="sim-content">
                         <div class="bg-indigo-50/50 p-8 rounded-3xl border border-indigo-100 relative mb-6">
                             <div class="absolute top-8 right-8 text-4xl text-indigo-200" id="sim-icon"><i class="fas fa-headset"></i></div>
-                            <h3 class="text-xl font-bold text-indigo-900 mb-2">Simulador de Caso Práctico (Examen Trampa) <i class="fas fa-pencil-alt text-xs text-indigo-300 ml-2 coach-only"></i></h3>
-                            <div class="editable-field text-indigo-800 leading-relaxed pr-12 text-lg coach-only" id="val-sim-context" contenteditable="true" onblur="window.saveField('simulator_context', this.innerText)">Cargando...</div>
-                            <div class="text-indigo-800 leading-relaxed pr-12 text-lg expert-only" id="val-sim-context-read">Cargando...</div>
+                            <div class="flex items-center gap-3 mb-2">
+                                <h3 class="text-xl font-bold text-indigo-900">Simulador de Caso Práctico (Examen Trampa) <i class="fas fa-pencil-alt text-xs text-indigo-300 ml-2 coach-only"></i></h3>
+                            </div>
+                            <div class="editable-field text-indigo-900 leading-relaxed pr-12 text-lg coach-only whitespace-pre-line" id="val-sim-context" contenteditable="true" onblur="window.saveField('simulator_context', this.innerText)">Cargando...</div>
+                            <div class="text-indigo-900 leading-relaxed pr-12 text-lg expert-only whitespace-pre-line" id="val-sim-context-read">Cargando...</div>
                         </div>
 
                         <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-200">
                             <div class="flex justify-between items-center mb-4">
-                                <h3 class="text-xl font-bold text-slate-800">Consola de Práctica</h3>
+                                <div class="flex items-center gap-3">
+                                    <h3 class="text-xl font-bold text-slate-800">Consola de Práctica</h3>
+                                    <span id="sim-status-badge" class="hidden text-xs font-bold px-3 py-1 rounded-full bg-emerald-100 text-emerald-700">Respuesta Recibida</span>
+                                </div>
                                 <button type="button" id="btn-mic" onclick="window.toggleMic()" class="w-12 h-12 rounded-full bg-rose-100 text-rose-500 hover:bg-rose-500 hover:text-white transition-colors flex items-center justify-center text-xl expert-only" title="Hablar">
                                     <i class="fas fa-microphone"></i>
                                 </button>
                             </div>
                             <p class="text-sm text-slate-500 mb-4 expert-only">Usa el micrófono (Permite acceso al navegador) o escribe directamente tu respuesta a la situación.</p>
-                            <p class="text-sm text-slate-500 mb-4 coach-only">La respuesta del experto aparecerá aquí en tiempo real.</p>
+                            <p class="text-sm text-slate-500 mb-4 coach-only">La respuesta del experto aparecerá aquí en tiempo real en cuanto presione "Enviar Respuesta" (también puedes editarla o tomar nota si el ejercicio fue verbal).</p>
                             
                             <textarea id="val-expert-response" placeholder="Escribe tu respuesta aquí..." class="w-full h-48 p-6 bg-slate-50 border border-slate-200 rounded-2xl outline-none text-lg text-slate-700 resize-none focus:ring-2 focus:ring-indigo-500 expert-only"></textarea>
                             
@@ -493,7 +577,7 @@
                                 </button>
                             </div>
                             
-                            <div id="coach-view-response" class="w-full h-48 p-6 bg-slate-50 border border-slate-200 rounded-2xl text-lg text-slate-700 overflow-y-auto italic coach-only">
+                            <div id="coach-view-response" contenteditable="true" onblur="window.saveField('expertResponse', this.innerText)" class="editable-field w-full min-h-[12rem] p-6 bg-slate-50 border border-slate-200 rounded-2xl text-lg text-slate-700 overflow-y-auto whitespace-pre-line coach-only">
                                 Esperando que el experto inicie la práctica...
                             </div>
                         </div>
@@ -597,10 +681,10 @@
                         </div>
 
                         <div class="grid grid-cols-1 gap-10">
-                            <div class="border border-slate-200 rounded-2xl p-8 flex flex-col relative group">
+                            <div class="border border-slate-200 rounded-2xl p-8 flex flex-col relative group overflow-x-auto">
                                 <h3 class="font-bold text-slate-700 mb-6 text-center text-xl">Resultados de Evaluación de Reincidentes</h3>
                                 <button type="button" onclick="window.downloadChart('chart-score', 'Score_Evaluacion.png')" class="absolute top-6 right-6 text-slate-400 hover:text-poli-magenta opacity-0 group-hover:opacity-100 transition-opacity text-xl"><i class="fas fa-download"></i></button>
-                                <div class="w-full h-80 relative">
+                                <div id="chart-score-wrapper" class="w-full h-80 relative min-w-[500px]">
                                     <canvas id="chart-score"></canvas>
                                 </div>
                             </div>
@@ -630,6 +714,8 @@
         let currentSessionData = {};
         let currentExpertView = "general";
         let myExpertName = "";
+        let boardExpanded = false;
+        let lastKnownResponses = {};
 
         // Configuración de Colores y Nombres por Institución
         const INSTITUTION_COLORS = {
@@ -742,6 +828,83 @@
             return lines;
         }
 
+        // Respaldo Inteligente: Garantiza que NUNCA queden vacíos el SBI Individual, el Diagnóstico, las Preguntas ni el Caso Práctico
+        function ensureCompleteExpertData(exp, instKey = 'poli', segment = 'Servicio y Rematrícula') {
+            const instName = INSTITUTION_NAMES[instKey] || 'la institución';
+            const cleanName = window.formatDisplayName(exp.name || 'Experto');
+            const canal = exp.canal || 'Teléfono';
+            const isChat = /red|chat|whatsapp|escrito/i.test(canal);
+            const isAdmissions = /admisi/i.test(segment);
+            const topErrors = (exp.errors || []).map(e => e.name).filter(Boolean);
+            const mainError = topErrors[0] || 'Registro correcto de la información y solución integral';
+            const allErrorsStr = topErrors.length > 0 ? topErrors.join(', ') : mainError;
+            const rawSummarySample = (exp.resumenes && exp.resumenes[0]) || (exp.evidencias && exp.evidencias[0]) || '';
+
+            const isInvalid = (val) => !val || String(val).trim() === '' || String(val).trim().toUpperCase() === 'N/A' || String(val).trim() === '...' || String(val).trim() === 'Práctica genérica';
+
+            if (isInvalid(exp.sbi_s)) {
+                exp.sbi_s = `Durante los monitoreos de impacto evaluados en el canal ${canal} (${segment} - ${instName}), se identificaron ${exp.monitorings || (exp.errors || []).length || 1} interacciones con afectación crítica en mínimo, concentradas principalmente en: ${allErrorsStr}.${rawSummarySample ? ' Contexto observado en base: ' + rawSummarySample.substring(0, 220) + '...' : ''}`;
+            }
+            if (isInvalid(exp.sbi_b)) {
+                exp.sbi_b = `Se observa una gestión reactiva donde se omiten pasos clave del protocolo en "${mainError}"${topErrors.length > 1 ? ' y "' + topErrors.slice(1).join(', ') + '"' : ''}, pasando por alto la validación rigurosa, la indagación consultiva o la trazabilidad completa en el sistema antes de cerrar el contacto.`;
+            }
+            if (isInvalid(exp.sbi_i)) {
+                exp.sbi_i = isAdmissions
+                    ? `Esto pone en riesgo la conversión y confianza del aspirante hacia ${instName}, generando reprocesos, incertidumbre sobre su proceso de admisión/matrícula y pérdida de trazabilidad comercial en el CRM.`
+                    : `Esto impacta directamente la experiencia y permanencia del estudiante en ${instName}, obligándolo a recontactar por falta de claridad o trazabilidad en su registro académico y afectando los indicadores de calidad del equipo.`;
+            }
+
+            if (isInvalid(exp.case_summary)) {
+                exp.case_summary = `Enfoque para el Coach con ${cleanName}: El patrón de reincidencia en ${allErrorsStr} (canal ${canal}) evidencia que el experto tiende a operar en "piloto automático" frente a solicitudes cotidianas o de presión. En lugar de detenerse a verificar el historial completo y asegurar cada requisito del protocolo, prioriza la rapidez de respuesta. Durante la sesión, trabaja con ${cleanName} en: 1) Pausar e indagar antes de asumir la respuesta, 2) Blindar el atributo "${mainError}" mediante un checklist mental previo a despedirse, y 3) Garantizar la documentación y trazabilidad exacta de la gestión en plataforma.`;
+            }
+
+            if (!Array.isArray(exp.questions) || exp.questions.length === 0) {
+                exp.questions = [
+                    `1. ${cleanName}, al ver tu recurrencia en "${mainError}", ¿qué factor del día a día (afán, confianza o presión del usuario) sientes que te lleva a saltar este paso del protocolo?`,
+                    `2. Si te pusieras hoy en el lugar del ${isAdmissions ? 'aspirante' : 'estudiante'} de ${instName}, ¿cómo afecta su tranquilidad y su proceso el hecho de que omitamos ${allErrorsStr}?`,
+                    `3. ¿Qué filtro o pausa concreta vas a implementar desde tu próxima interacción en ${canal} para garantizar el 100% de cumplimiento sin perder agilidad?`
+                ];
+            }
+
+            if (isInvalid(exp.simulator_context)) {
+                if (isAdmissions) {
+                    exp.simulator_context = isChat
+                        ? `[SIMULACIÓN DE CHAT - ADMISIONES ${instName.toUpperCase()}]\nContexto para el Experto: Ingresa un aspirante por canal escrito con alta urgencia. Tu objetivo es atenderlo aplicando rigurosamente: ${allErrorsStr}.\n\n💬 Aspirante escribe: "¡Hola! Necesito que me digan YA cuánto cuesta el semestre y qué materias me homologan. Ya hablé ayer con otro asesor pero nadie me dejó nada registrado ni me enviaron el link de inscripción, y si no me resuelven en 5 minutos me inscribo en otra universidad. ¡No me pidan tantos datos y díganme el valor exacto!"\n\n👉 Reto: Responde el chat manejando su objeción y afán con empatía, realiza el protocolo obligatorio de validación/registro de datos, indaga el programa de interés y deja clara la trazabilidad del cierre.`
+                        : `[SIMULACIÓN DE LLAMADA - ADMISIONES ${instName.toUpperCase()}]\nContexto para el Experto: Recibes la llamada de un aspirante interesado en ingresar este periodo, pero se escucha acelerado y escéptico. Se evaluará especialmente tu manejo de: ${allErrorsStr}.\n\n📞 Aspirante dice: "Aló, buenas. Mire, llamo rápido porque estoy en el trabajo. Quiero saber si todavía alcanzo a matricularme con descuento y cómo hago el pago, porque la semana pasada llamé y el asesor no dejó nota de mi caso. Eso sí, dígame rápido sin tanto protocolo que tengo 2 minutos."\n\n👉 Reto: Conduce la llamada manteniendo la calma, aplica la apertura y validación de datos sin fricción, indaga estratégicamente su necesidad real, bríndale solución integral y confirma el registro completo en el sistema antes de cortar.`;
+                } else {
+                    exp.simulator_context = isChat
+                        ? `[SIMULACIÓN DE CHAT / REDES SOCIALES - SERVICIO Y REMATRÍCULA ${instName.toUpperCase()}]\nContexto para el Experto: Atiendes por canal escrito a un estudiante antiguo visiblemente alterado por un trámite académico/financiero. Se pondrá a prueba tu rigor en: ${allErrorsStr}.\n\n💬 Estudiante escribe: "Buenas tardes. Es la tercera vez que escribo por este medio y nadie me da razón de mi solicitud para poder matricular mis materias del próximo bloque. El último asesor ni siquiera dejó nota en mi historial ni me dio número de ticket. ¡Necesito que me radiquen o me solucionen YA mismo porque hoy se vence el plazo!"\n\n👉 Reto: Redacta tu intervención completa conteniendo emocionalmente al estudiante, validando su identidad y programa académico correcto, explicando el paso a paso de tu gestión y asegurando el registro y número de radicado/trazabilidad.`
+                        : `[SIMULACIÓN TELEFÓNICA - SERVICIO Y REMATRÍCULA ${instName.toUpperCase()}]\nContexto para el Experto: Ingresa llamada de un estudiante (o acudiente) con urgencia frente a su proceso académico/rematrícula en ${instName}. Tu misión es demostrar control total en: ${allErrorsStr}.\n\n📞 Estudiante dice: "Buen día. Llamo porque necesito definir hoy mismo mi situación académica y validar un trámite pendiente en plataforma. La vez pasada llamé, me dijeron que esperara el cronograma, pero revisé mi cuenta y no dejaron ningún registro ni trazabilidad de lo que me explicaron. ¿Usted sí me va a ayudar bien o me va a dejar igual?"\n\n👉 Reto: Realiza el protocolo completo de validación de seguridad, escucha con empatía sin dejarte llevar por la presión, verifica minuciosamente el registro académico antes de orientar o radicar, y confirma la trazabilidad exacta al cierre.`;
+                }
+            }
+
+            return exp;
+        }
+
+        function ensureCompleteGeneralData(generalObj, expertsList, instKey = 'poli', segment = 'Servicio y Rematrícula') {
+            const instName = INSTITUTION_NAMES[instKey] || 'la institución';
+            const topGlobalErrors = (generalObj.errors || []).slice(0, 4).map(e => e.name).join(', ') || 'protocolos críticos de calidad y trazabilidad';
+            const isInvalid = (val) => !val || String(val).trim() === '' || String(val).trim().toUpperCase() === 'N/A' || String(val).trim() === '...';
+
+            if (isInvalid(generalObj.sbi_s)) {
+                generalObj.sbi_s = `En el consolidado de monitoreos de alto impacto del equipo de ${segment} (${instName}), se identificó reincidencia grupal concentrada en los atributos críticos: ${topGlobalErrors}.`;
+            }
+            if (isInvalid(generalObj.sbi_b)) {
+                generalObj.sbi_b = `Como tendencia común del equipo, se evidencia mecanización operativa ("piloto automático") ante la presión o premura del usuario, omitiendo validaciones obligatorias, lectura integral del historial o el registro detallado de la interacción.`;
+            }
+            if (isInvalid(generalObj.sbi_i)) {
+                generalObj.sbi_i = `Esta brecha grupal genera reprocesos en la operación de ${instName}, recontactos innecesarios por parte de los estudiantes y afectaciones directas en la nota de calidad del equipo.`;
+            }
+            if (!Array.isArray(generalObj.questions) || generalObj.questions.length === 0) {
+                generalObj.questions = [
+                    `1. Como equipo de ${instName}, ¿en qué momento de la interacción sentimos que se activa el "piloto automático" que nos hace omitir ${topGlobalErrors}?`,
+                    `2. Cuando un estudiante se comunica con urgencia o molestia, ¿cómo cambia nuestra forma de escuchar, validar y registrar en el sistema?`,
+                    `3. ¿Qué acuerdo grupal no negociable vamos a adoptar desde hoy para blindar la trazabilidad y la solución integral en cada contacto?`
+                ];
+            }
+            return generalObj;
+        }
+
         window.escapeHTML = function(str) {
             if (!str) return '';
             return String(str).replace(/[&<>"']/g, function(match) {
@@ -772,7 +935,6 @@
             const arrayBuffer = await file.arrayBuffer();
             const workbook = XLSX.read(arrayBuffer, { type: 'array', cellDates: true });
             
-            // 1. Buscar la hoja ignorando mayúsculas y espacios
             let targetSheetName = workbook.SheetNames.find(n => n.trim().toUpperCase() === 'BASE_MONITOREOS' || n.trim().toUpperCase() === 'BASE MONITOREOS');
             if (!targetSheetName) targetSheetName = workbook.SheetNames[0];
 
@@ -780,7 +942,6 @@
             const data = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' });
             if (data.length < 2) throw new Error('La hoja está vacía o no tiene registros.');
 
-            // 2. Buscar fila de encabezados dinámicamente
             let headerRowIndex = -1;
             let headers = [];
             for (let i = 0; i < Math.min(20, data.length); i++) {
@@ -793,7 +954,6 @@
             }
             if (headerRowIndex === -1) throw new Error('No se encontraron los encabezados principales (Fecha, Experto) en las primeras 20 filas.');
 
-            // 3. Mapeo buscando las columnas sin importar su posición exacta
             let colMap = { fechaMon: -1, experto: -1, afectacionMin: -1, tipoMon: -1, canal: -1, resumen: -1, atribAfectados: -1, evidencias: -1 };
 
             headers.forEach((h, c) => {
@@ -819,7 +979,6 @@
             let eDate = new Date(fechaFin + "T23:59:59");
             let sDate = new Date(fechaInicio + "T00:00:00");
 
-            // Procesar lista personalizada en modo grupal (si el Coach pegó nombres/correos)
             const groupTargetList = isGroup && groupExpertsRaw
                 ? groupExpertsRaw.split(/[\n,;|\t]+/).map(s => s.trim()).filter(Boolean)
                 : [];
@@ -827,7 +986,6 @@
 
             let totalProcesados = 0;
 
-            // 4. Recorrer datos de la base
             for (let r = headerRowIndex + 1; r < data.length; r++) {
                 const fila = data[r];
                 if (!fila || fila.length === 0) continue;
@@ -850,7 +1008,6 @@
                 const tipoMon = colMap.tipoMon >= 0 ? String(fila[colMap.tipoMon]).trim().toLowerCase() : ''; 
                 const afectacionMin = colMap.afectacionMin >= 0 ? String(fila[colMap.afectacionMin]).trim().toLowerCase() : '';
 
-                // REGLAS ESTRICTAS DE FILTRO:
                 if (!tipoMon.includes('impacto')) continue;
                 if (afectacionMin !== 'si' && afectacionMin !== 'sí') continue;
 
@@ -859,8 +1016,8 @@
                 const atribAfectadosStr = colMap.atribAfectados >= 0 ? String(fila[colMap.atribAfectados]).trim() : '';
                 let evidenciasStr = colMap.evidencias >= 0 ? String(fila[colMap.evidencias]).trim() : '';
 
-                // LIMPIEZA DE SEGURIDAD: Ocultar números de cédula largos en las evidencias
                 evidenciasStr = evidenciasStr.replace(/\b\d{7,15}\b/g, "[DATO OCULTO]");
+                const cleanResumen = resumen.replace(/\b\d{7,15}\b/g, "[DATO OCULTO]");
 
                 let erroresEnFila = [];
                 let rawErrores = atribAfectadosStr.split('\n').map(s => s.trim()).filter(s => s.length > 2);
@@ -892,21 +1049,23 @@
                 expertosMap[safeExpKey].monitoringsCount++;
                 expertosMap[safeExpKey].canalesTotales[canalFila] = (expertosMap[safeExpKey].canalesTotales[canalFila] || 0) + 1;
 
-                if(resumen) expertosMap[safeExpKey].resumenes.push(resumen);
+                if(cleanResumen) expertosMap[safeExpKey].resumenes.push(cleanResumen);
                 if(evidenciasStr) expertosMap[safeExpKey].evidencias.push(evidenciasStr);
+
+                // Si la columna Evidencias venía vacía pero sí hay Resumen de la llamada, usamos el Resumen como referencia contextual del caso
+                const evidenceToStore = evidenciasStr || (cleanResumen ? `(Sin detalle en columna Evidencias - Resumen del caso): ${cleanResumen}` : '');
 
                 erroresEnFila.forEach(cleanName => {
                     if (!expertosMap[safeExpKey].erroresObj[cleanName]) {
                         expertosMap[safeExpKey].erroresObj[cleanName] = { count: 0, evidencias: [] };
                     }
                     expertosMap[safeExpKey].erroresObj[cleanName].count++;
-                    if (evidenciasStr) {
-                        expertosMap[safeExpKey].erroresObj[cleanName].evidencias.push(evidenciasStr);
+                    if (evidenceToStore) {
+                        expertosMap[safeExpKey].erroresObj[cleanName].evidencias.push(evidenceToStore);
                     }
                 });
             }
 
-            // 5. Aplicar lógica de reincidentes finales
             let reincidentes = [];
             for (let expKey in expertosMap) {
                 const countAlertas = expertosMap[expKey].monitoringsCount;
@@ -919,8 +1078,6 @@
                     evidences: expertosMap[expKey].erroresObj[k].evidencias 
                 })).sort((a,b)=>b.count-a.count);
 
-                // Si el Coach pegó una lista específica de expertos para el taller, los incluye con >= 1 monitoreo crítico;
-                // Si dejó el campo vacío en taller grupal, filtra automáticamente a quienes tengan >= 4 monitoreos.
                 if (isGroup && !hasCustomGroupList && countAlertas >= 4) {
                     reincidentes.push({ name: expKey, monitorings: countAlertas, errors: errArray, canal: dominantChannel, resumenes: expertosMap[expKey].resumenes, evidencias: expertosMap[expKey].evidencias });
                 } else if ((hasCustomGroupList || !isGroup) && countAlertas > 0) {
@@ -983,13 +1140,55 @@
             let remainingReincidentes = Object.values(data.experts);
             data.general.errors = aggregateErrors(remainingReincidentes);
             
-            await safeUpdate({ experts: data.experts, 'general.errors': data.general.errors });
+            if(db && sessionRef) {
+                await setDoc(sessionRef, data);
+            } else {
+                localStorage.setItem(`cs_${window.currentCode}`, JSON.stringify(data));
+                renderUI(data);
+            }
             window.showMsg('Experto eliminado exitosamente');
         };
 
+        // Construye el prompt maestro tanto para la API como para el Agente Manual
+        function buildMasterAnalysisPrompt(reincidentesList, instKey, segment, isGroup, customInstruction = '') {
+            const instName = INSTITUTION_NAMES[instKey] || instKey;
+            let promptTxt = `Eres un Coach Master de Calidad para ${instName} en el segmento de "${segment}". Analiza a los siguientes expertos de atención estudiantil.\n\n`;
+            promptTxt += `REGLA DE ORO ANTE VACÍOS EN LA BASE:\n`;
+            promptTxt += `Si algún experto tiene el campo "Evidencias" vacío o un "Resumen" muy corto, ESTÁ PROHIBIDO dejar campos en blanco o "N/A". Debes inferir y construir el S.B.I. individual, el diagnóstico, las preguntas y el Caso Práctico (simulator_context) basándote en sus "Errores Top (Mínimos)", su "Canal", la institución (${instName}) y el contexto de "${segment}".\n\n`;
+            promptTxt += `INSTRUCCIONES DE SALIDA POR CADA PUNTO:\n`;
+            promptTxt += `1. "general": S.B.I. transversal del equipo ("sbi_s", "sbi_b", "sbi_i") y 3 "questions" sobre lo que TODOS tienen en común.\n`;
+            promptTxt += `2. Por cada experto en "experts":\n`;
+            promptTxt += `   - "name": Exactamente el mismo nombre proporcionado (Primer Nombre y Primer Apellido).\n`;
+            promptTxt += `   - "sbi_s", "sbi_b", "sbi_i": S.B.I. INDIVIDUAL y específico de ese experto según la lectura de sus afectaciones.\n`;
+            promptTxt += `   - "questions": Array de 3 preguntas poderosas individuales enfocadas en lo que se debe trabajar específicamente con ese experto.\n`;
+            promptTxt += `   - "case_summary": Diagnóstico ejecutivo para el Coach. PROHIBIDO volver a listar los casos o copiar las evidencias. Haz un resumen analítico de qué patologías operativas tiene el experto y en qué debe enfocarse el Coach para trabajar con él.\n`;
+            promptTxt += `   - "simulator_context": (OBLIGATORIO, NUNCA VACÍO) Examen trampa o caso práctico realista inspirado en sus casos afectados y adaptado a ${instName} (${segment}) y a su canal (si es Redes/Chat simula mensaje de chat; si es Teléfono simula diálogo de llamada). El estudiante debe poner a prueba exactamente los atributos que el experto falló.\n`;
+
+            if (customInstruction && customInstruction.trim()) {
+                promptTxt += `\nINSTRUCCIÓN ESPECIAL ADICIONAL DEL COACH PARA ESTA EJECUCIÓN:\n"${customInstruction.trim()}"\n`;
+            }
+
+            promptTxt += `\nDATA DE EXPERTOS A PROCESAR:\n`;
+            reincidentesList.forEach(r => {
+                const errStr = (r.errors || []).map(e => `${e.name} (${e.count})`).join(', ');
+                const resStr = (r.resumenes || []).join(' || ') || 'Sin resumen detallado (inferir por atributos y segmento)';
+                const evStr = (r.evidencias || []).join(' || ') || 'Sin texto en columna Evidencias (inferir por atributos, resumen y segmento)';
+                promptTxt += `- Experto: ${r.name} | Canal: ${r.canal || 'Teléfono'} | Alertas: ${r.monitorings || 1}\n  Errores Top (Mínimos): ${errStr}\n  Resúmenes de interacción: ${resStr}\n  Evidencias registradas: ${evStr}\n\n`;
+            });
+
+            promptTxt += `\nDEVUELVE ÚNICAMENTE UN JSON VÁLIDO CON ESTA ESTRUCTURA EXACTA:\n{ "general": { "sbi_s":"", "sbi_b":"", "sbi_i":"", "questions":["q1","q2","q3"] }, "experts": [ { "name":"Nombre Exacto", "sbi_s":"", "sbi_b":"", "sbi_i":"", "questions":["q_ind_1","q_ind_2","q_ind_3"], "case_summary":"Resumen estratégico para el coach...", "simulator_context":"Caso práctico completo y obligatorio..." } ] }`;
+            return promptTxt;
+        }
+
         function buildManualFallbackPrompt(isGroup, sDate, eDate, expName, groupExpertsRaw) {
             const inst = document.getElementById('setup-institution').value;
+            const segment = document.getElementById('setup-segment')?.value || 'Servicio y Rematrícula';
             const instName = INSTITUTION_NAMES[inst] || inst;
+
+            if (window.pendingSetupData && Array.isArray(window.pendingSetupData.reincidentes) && window.pendingSetupData.reincidentes.length > 0) {
+                return buildMasterAnalysisPrompt(window.pendingSetupData.reincidentes, inst, segment, isGroup);
+            }
+
             let targetExpertsText = '';
             if (isGroup) {
                 const cleanList = (groupExpertsRaw || '').split(/[\n,;|\t]+/).map(s => s.trim()).filter(Boolean).join(', ');
@@ -997,11 +1196,12 @@
             } else {
                 targetExpertsText = expName || 'Experto indicado';
             }
-            return `Por favor procesa el archivo adjunto para ${instName}.\nTaller: ${isGroup ? 'Grupal (Reincidentes)' : 'Individual'}\nFechas: ${sDate || 'Inicio'} a ${eDate || 'Fin'}\nExpertos a evaluar: ${targetExpertsText}\n\nImportante: En el campo "name" de cada experto coloca únicamente Primer Nombre y Primer Apellido (sin el @dominio del correo).\nDevuélveme ÚNICAMENTE la estructura JSON que tienes en tus instrucciones del sistema.`;
+            return `Por favor procesa el archivo Excel adjunto.\n- Institución: ${instName}\n- Segmento Operativo: ${segment}\n- Modalidad: ${isGroup ? 'Taller Grupal de Reincidentes' : 'Coach Individual'}\n- Rango de Fechas: ${sDate || 'Inicio'} a ${eDate || 'Fin'}\n- Expertos a evaluar: ${targetExpertsText}\n\nREGLAS CRÍTICAS:\n1. En "name" usa solo Primer Nombre y Primer Apellido (sin @dominio).\n2. Incluye el S.B.I. general del grupo y también el S.B.I. individual ("sbi_s", "sbi_b", "sbi_i") y 3 preguntas individuales ("questions") por cada experto.\n3. En "case_summary" no listes los casos otra vez: haz un resumen ejecutivo para el Coach sobre qué trabajar con cada experto.\n4. GARANTIZA al 100% el campo "simulator_context" (Caso Práctico Trampa) para cada experto según su canal, universidad (${instName}) y segmento (${segment}), incluso si la columna de Evidencias está vacía o el Resumen es corto.\n\nDevuélveme ÚNICAMENTE el código JSON válido.`;
         }
 
         window.openManualFallbackDirect = function() {
             const inst = document.getElementById('setup-institution').value;
+            const segment = document.getElementById('setup-segment')?.value || 'Servicio y Rematrícula';
             const sDate = document.getElementById('setup-start-date').value;
             const eDate = document.getElementById('setup-end-date').value;
             const isGroup = window.sessionType === 'group';
@@ -1010,9 +1210,10 @@
 
             isCoach = true;
             if (!window.pendingSetupData) {
-                window.pendingSetupData = { reincidentes: [], inst };
+                window.pendingSetupData = { reincidentes: [], inst, segment };
             } else {
                 window.pendingSetupData.inst = inst;
+                window.pendingSetupData.segment = segment;
             }
             document.getElementById('manual-prompt-area').value = buildManualFallbackPrompt(isGroup, sDate, eDate, expName, groupExpertsRaw);
             document.getElementById('manual-fallback-modal').classList.remove('hidden');
@@ -1020,6 +1221,7 @@
 
         window.processSetup = async function() {
             const inst = document.getElementById('setup-institution').value;
+            const segment = document.getElementById('setup-segment')?.value || 'Servicio y Rematrícula';
             const sDate = document.getElementById('setup-start-date').value;
             const eDate = document.getElementById('setup-end-date').value;
             const fileInput = document.getElementById('setup-excel-file');
@@ -1035,28 +1237,13 @@
 
             try {
                 const reincidentes = await window.procesarBaseMonitoreos(fileInput.files[0], sDate, eDate, isGroup, expName, groupExpertsRaw);
-                window.pendingSetupData = { reincidentes, inst };
+                window.pendingSetupData = { reincidentes, inst, segment };
 
-                let promptTxt = `Eres un Coach Master de Calidad para ${INSTITUTION_NAMES[inst] || 'la institución'}. Analiza a los siguientes asesores de servicio al cliente.\n`;
-                promptTxt += `INSTRUCCIONES CLAVE:\n`;
-                promptTxt += `1. S.B.I: Extrae Situación, Comportamiento e Impacto BASÁNDOTE EXCLUSIVAMENTE en las "Evidencias".\n`;
-                promptTxt += `2. PREGUNTAS (Activa y Crece): Genera 3 preguntas poderosas usando las "Evidencias" para generar reflexión sobre cómo impactan al estudiante.\n`;
-                promptTxt += `3. DIAGNÓSTICO DEL COACH (case_summary): Redacta un análisis MUY profundo, empático y detallado dirigido al Coach. Evalúa el porqué de los errores y qué "patologías operativas" ves. Sé un Coach experto.\n`;
-                promptTxt += `4. SIMULADOR: Genera un "simulator_context". DEBES DISEÑARLO COMO UNA PRUEBA O EXAMEN TRAMPA para evaluar si el asesor mejoró en sus errores. Si el canal dice "Redes", simula un Chat. Si dice "Telefonico", simula una Llamada. Usa los "Resúmenes" para inventar un contexto muy parecido sin nombres reales.\n\n`;
-                
-                if(isGroup) promptTxt += `Extrae primero un S.B.I general del equipo y 3 preguntas. Luego hazlo individual.\n\nDATA:\n`;
-                else promptTxt += `Crea el S.B.I y preguntas basadas en la data.\n\nDATA:\n`;
-                
-                reincidentes.forEach(r => {
-                    promptTxt += `- Experto: ${r.name} | Canal: ${r.canal}. \n  Errores Top: ${r.errors.map(e=>e.name).join(', ')}. \n  Resúmenes de llamadas: ${r.resumenes.join(' || ')}. \n  Evidencias Completas (TEXTO REAL): ${r.evidencias.join(' || ')}.\n\n`;
-                });
-                
-                promptTxt += `\nDEVUELVE UNICAMENTE UN JSON VALIDO: { "general": { "sbi_s":"", "sbi_b":"", "sbi_i":"", "questions":["q1","q2","q3"] }, "experts": [ { "name":"Nombre exacto igual al proporcionado", "sbi_s":"", "sbi_b":"", "sbi_i":"", "case_summary":"Tu diagnóstico profundo y analítico aquí...", "simulator_context":"" } ] }`;
-
+                const promptTxt = buildMasterAnalysisPrompt(reincidentes, inst, segment, isGroup);
                 const aiData = await fetchGeminiInteligente(promptTxt);
                 
                 if(!aiData || !aiData.experts) {
-                    throw new Error("Ningún modelo de la API devolvió datos. Activando Fallback Manual.");
+                    throw new Error("Ningún modelo de la API devolvió datos. Activando Motor Manual con datos pre-procesados.");
                 }
 
                 await createSessionAndDashboard(aiData);
@@ -1064,15 +1251,10 @@
             } catch (e) {
                 console.warn(e);
                 window.showScreen('coach-setup-screen');
-                if (!window.pendingSetupData) window.pendingSetupData = { reincidentes: [], inst };
+                if (!window.pendingSetupData) window.pendingSetupData = { reincidentes: [], inst, segment };
                 document.getElementById('manual-prompt-area').value = buildManualFallbackPrompt(isGroup, sDate, eDate, expName, groupExpertsRaw);
-                
-                if(window.pendingSetupData && window.pendingSetupData.reincidentes && window.pendingSetupData.reincidentes.length > 0) {
-                    document.getElementById('manual-fallback-modal').classList.remove('hidden');
-                } else {
-                    window.showMsg(e.message, 'error');
-                    document.getElementById('manual-fallback-modal').classList.remove('hidden');
-                }
+                window.showMsg(e.message, 'error');
+                document.getElementById('manual-fallback-modal').classList.remove('hidden');
             }
         };
 
@@ -1101,6 +1283,7 @@
             try {
                 const code = Math.random().toString(36).substring(2, 8).toUpperCase();
                 const inst = window.pendingSetupData?.inst || document.getElementById('setup-institution').value || 'poli';
+                const segment = window.pendingSetupData?.segment || document.getElementById('setup-segment')?.value || 'Servicio y Rematrícula';
                 const hasLocalReincidentes = window.pendingSetupData && Array.isArray(window.pendingSetupData.reincidentes) && window.pendingSetupData.reincidentes.length > 0;
 
                 const aiExpertsList = Array.isArray(aiData.experts) ? aiData.experts : Object.values(aiData.experts || {});
@@ -1109,6 +1292,7 @@
                     code,
                     type: window.sessionType || 'group',
                     institution: inst,
+                    segment: segment,
                     general: {
                         ...(aiData.general || {}),
                         errors: hasLocalReincidentes
@@ -1120,30 +1304,34 @@
                 };
 
                 if (hasLocalReincidentes) {
-                    window.pendingSetupData.reincidentes.forEach(r => {
+                    window.pendingSetupData.reincidentes.forEach((r, idx) => {
                         const cleanKey = window.formatDisplayName(r.name);
-                        let aiExp = aiExpertsList.find(a => matchesExpertQuery(a.name, r.name)) || { sbi_s:'N/A', sbi_b:'N/A', sbi_i:'N/A', simulator_context:'Práctica genérica', case_summary: "" };
+                        let aiExp = aiExpertsList.find(a => matchesExpertQuery(a.name, r.name)) || (aiExpertsList.length === 1 && window.pendingSetupData.reincidentes.length === 1 ? aiExpertsList[0] : (aiExpertsList[idx] || {}));
                         
-                        sessionData.experts[cleanKey] = {
+                        let expObj = {
                             name: cleanKey,
                             monitorings: r.monitorings,
                             errors: (r.errors || []).map(err => ({
                                 ...err,
                                 name: err.name ? err.name.charAt(0).toUpperCase() + err.name.slice(1) : ''
                             })),
-                            canal: r.canal, 
-                            case_summary: aiExp.case_summary || "", 
+                            canal: r.canal || aiExp.canal || 'Teléfono', 
+                            resumenes: r.resumenes || [],
                             evidencias: r.evidencias || [], 
                             score: 0,
-                            sbi_s: aiExp.sbi_s,
-                            sbi_b: aiExp.sbi_b,
-                            sbi_i: aiExp.sbi_i,
-                            simulator_context: aiExp.simulator_context,
+                            sbi_s: aiExp.sbi_s || aiExp.situacion || '',
+                            sbi_b: aiExp.sbi_b || aiExp.comportamiento || '',
+                            sbi_i: aiExp.sbi_i || aiExp.impacto || '',
+                            questions: Array.isArray(aiExp.questions) ? aiExp.questions : [],
+                            case_summary: aiExp.case_summary || aiExp.diagnostico || '', 
+                            simulator_context: aiExp.simulator_context || aiExp.simulador || '',
                             expertResponse: "",
                             commitment: {},
                             readiness: "50%",
                             privateNotes: ""
                         };
+
+                        sessionData.experts[cleanKey] = ensureCompleteExpertData(expObj, inst, segment);
                     });
                 } else {
                     aiExpertsList.forEach(aiExp => {
@@ -1153,28 +1341,33 @@
                             count: err.count || 1,
                             evidences: err.evidences || []
                         }));
-                        sessionData.experts[cleanKey] = {
+                        let expObj = {
                             name: cleanKey,
                             monitorings: aiExp.monitorings || normErrors.reduce((a, b) => a + b.count, 0) || 4,
                             errors: normErrors,
-                            canal: aiExp.canal || 'Teléfono/Chat',
-                            case_summary: aiExp.case_summary || "",
+                            canal: aiExp.canal || 'Teléfono',
+                            resumenes: aiExp.resumenes || [],
                             evidencias: aiExp.evidencias || [],
                             score: aiExp.score || 0,
-                            sbi_s: aiExp.sbi_s || 'N/A',
-                            sbi_b: aiExp.sbi_b || 'N/A',
-                            sbi_i: aiExp.sbi_i || 'N/A',
-                            simulator_context: aiExp.simulator_context || 'Práctica genérica',
+                            sbi_s: aiExp.sbi_s || aiExp.situacion || '',
+                            sbi_b: aiExp.sbi_b || aiExp.comportamiento || '',
+                            sbi_i: aiExp.sbi_i || aiExp.impacto || '',
+                            questions: Array.isArray(aiExp.questions) ? aiExp.questions : [],
+                            case_summary: aiExp.case_summary || aiExp.diagnostico || '',
+                            simulator_context: aiExp.simulator_context || aiExp.simulador || '',
                             expertResponse: "",
                             commitment: {},
                             readiness: "50%",
                             privateNotes: ""
                         };
+                        sessionData.experts[cleanKey] = ensureCompleteExpertData(expObj, inst, segment);
                     });
                     if (!sessionData.general.errors || sessionData.general.errors.length === 0) {
                         sessionData.general.errors = aggregateErrors(Object.values(sessionData.experts));
                     }
                 }
+
+                sessionData.general = ensureCompleteGeneralData(sessionData.general, Object.values(sessionData.experts), inst, segment);
 
                 window.currentCode = code;
                 await connectFirebase();
@@ -1192,6 +1385,141 @@
                 window.showScreen('coach-setup-screen');
                 window.showMsg("Error guardando taller: " + err.message, "error");
             }
+        }
+
+        // --- FUNCIONES DEL MODAL "AJUSTAR IA DE LA SESIÓN ACTIVA" (SIN REINICIAR) ---
+        window.openAiAdjustModal = function() {
+            document.getElementById('ai-adjust-modal').classList.remove('hidden');
+        };
+
+        window.copyActiveSessionAgentPrompt = function() {
+            const inst = currentSessionData.institution || 'poli';
+            const segment = currentSessionData.segment || 'Servicio y Rematrícula';
+            const customInst = document.getElementById('reanalyze-custom-instruction')?.value || '';
+            const scope = document.getElementById('reanalyze-scope')?.value || 'all';
+
+            let list = Object.values(currentSessionData.experts || {});
+            if (scope === 'current' && currentExpertView !== 'general' && currentSessionData.experts?.[currentExpertView]) {
+                list = [currentSessionData.experts[currentExpertView]];
+            }
+            const prompt = buildMasterAnalysisPrompt(list, inst, segment, currentSessionData.type === 'group', customInst);
+            window.copyToClipboard(prompt);
+        };
+
+        window.reanalyzeActiveSession = async function() {
+            const inst = currentSessionData.institution || 'poli';
+            const segment = currentSessionData.segment || 'Servicio y Rematrícula';
+            const customInst = document.getElementById('reanalyze-custom-instruction')?.value || '';
+            const scope = document.getElementById('reanalyze-scope')?.value || 'all';
+
+            let list = Object.values(currentSessionData.experts || {});
+            if (scope === 'current') {
+                if (currentExpertView === 'general') {
+                    return window.showMsg('Selecciona primero un experto en el menú izquierdo o elige "Todos los expertos".', 'error');
+                }
+                list = [currentSessionData.experts[currentExpertView]];
+            }
+
+            document.getElementById('ai-adjust-modal').classList.add('hidden');
+            window.showScreen('loading-screen');
+            if (document.getElementById('loading-text')) document.getElementById('loading-text').innerText = "Re-analizando con IA y conservando el progreso de la sesión...";
+
+            try {
+                const promptTxt = buildMasterAnalysisPrompt(list, inst, segment, currentSessionData.type === 'group', customInst);
+                const aiData = await fetchGeminiInteligente(promptTxt);
+                if (!aiData || !aiData.experts) throw new Error("La API no respondió. Puedes usar la Opción 2 pegando el JSON del Agente.");
+
+                await mergeAiIntoActiveSession(aiData, scope);
+                window.showScreen('main-dashboard');
+                window.showMsg('¡Sesión actualizada con IA sin perder el avance!');
+            } catch (err) {
+                window.showScreen('main-dashboard');
+                document.getElementById('ai-adjust-modal').classList.remove('hidden');
+                window.showMsg(err.message, 'error');
+            }
+        };
+
+        window.applyManualJsonToActiveSession = async function() {
+            const raw = document.getElementById('adjust-json-area')?.value || '';
+            if (!raw.trim()) return window.showMsg('Pega el código JSON primero', 'error');
+
+            let aiData;
+            try {
+                const cleanStr = raw.replace(/```json/gi, "").replace(/```/g, "").trim();
+                aiData = JSON.parse(cleanStr);
+            } catch (e) {
+                return window.showMsg('El código pegado no es un JSON válido.', 'error');
+            }
+            if (!aiData || (!aiData.experts && !aiData.general)) {
+                return window.showMsg('El JSON no contiene la estructura esperada.', 'error');
+            }
+
+            await mergeAiIntoActiveSession(aiData, 'all');
+            document.getElementById('adjust-json-area').value = '';
+            document.getElementById('ai-adjust-modal').classList.add('hidden');
+            window.showMsg('¡JSON aplicado exitosamente a la sesión activa!');
+        };
+
+        async function mergeAiIntoActiveSession(aiData, scope = 'all') {
+            const inst = currentSessionData.institution || 'poli';
+            const segment = currentSessionData.segment || 'Servicio y Rematrícula';
+            const aiExpertsList = Array.isArray(aiData.experts) ? aiData.experts : Object.values(aiData.experts || {});
+
+            if (scope === 'all' && aiData.general) {
+                currentSessionData.general = {
+                    ...currentSessionData.general,
+                    sbi_s: aiData.general.sbi_s || currentSessionData.general.sbi_s,
+                    sbi_b: aiData.general.sbi_b || currentSessionData.general.sbi_b,
+                    sbi_i: aiData.general.sbi_i || currentSessionData.general.sbi_i,
+                    questions: Array.isArray(aiData.general.questions) && aiData.general.questions.length > 0
+                        ? aiData.general.questions
+                        : currentSessionData.general.questions
+                };
+            }
+
+            aiExpertsList.forEach(aiExp => {
+                const existingKey = Object.keys(currentSessionData.experts || {}).find(k => matchesExpertQuery(k, aiExp.name));
+                const targetKey = existingKey || window.formatDisplayName(aiExp.name || 'Experto');
+                const prevExp = currentSessionData.experts[targetKey] || {};
+
+                const mergedExp = {
+                    ...prevExp,
+                    name: targetKey,
+                    canal: prevExp.canal || aiExp.canal || 'Teléfono',
+                    monitorings: prevExp.monitorings || aiExp.monitorings || 4,
+                    errors: (prevExp.errors && prevExp.errors.length > 0)
+                        ? prevExp.errors
+                        : (aiExp.errors || []).map(err => ({
+                            name: (err.name || '').charAt(0).toUpperCase() + (err.name || '').slice(1),
+                            count: err.count || 1,
+                            evidences: err.evidences || []
+                        })),
+                    sbi_s: aiExp.sbi_s || prevExp.sbi_s,
+                    sbi_b: aiExp.sbi_b || prevExp.sbi_b,
+                    sbi_i: aiExp.sbi_i || prevExp.sbi_i,
+                    questions: Array.isArray(aiExp.questions) && aiExp.questions.length > 0 ? aiExp.questions : prevExp.questions,
+                    case_summary: aiExp.case_summary || prevExp.case_summary,
+                    simulator_context: aiExp.simulator_context || prevExp.simulator_context,
+                    // Conservamos intactos los avances de la sesión en vivo
+                    score: prevExp.score || 0,
+                    expertResponse: prevExp.expertResponse || "",
+                    commitment: prevExp.commitment || {},
+                    readiness: prevExp.readiness || "50%",
+                    privateNotes: prevExp.privateNotes || ""
+                };
+
+                currentSessionData.experts[targetKey] = ensureCompleteExpertData(mergedExp, inst, segment);
+            });
+
+            currentSessionData.general.errors = aggregateErrors(Object.values(currentSessionData.experts));
+            currentSessionData.general = ensureCompleteGeneralData(currentSessionData.general, Object.values(currentSessionData.experts), inst, segment);
+
+            if (db && sessionRef) {
+                await setDoc(sessionRef, currentSessionData, { merge: true });
+            } else {
+                localStorage.setItem(`cs_${window.currentCode}`, JSON.stringify(currentSessionData));
+            }
+            setupDashboard(currentSessionData);
         }
 
         function aggregateErrors(reins) {
@@ -1265,7 +1593,7 @@
         }
 
         window.resumeCoachSession = async function() {
-            const c = document.getElementById('coach-resume-code').value.toUpperCase();
+            const c = document.getElementById('coach-resume-code').value.toUpperCase().trim();
             if(!c) return window.showMsg('Ingresa un código', 'error');
             
             isCoach = true;
@@ -1292,7 +1620,7 @@
         };
 
         window.validateExpertCode = async function() {
-            const code = document.getElementById('join-session-code').value.toUpperCase();
+            const code = document.getElementById('join-session-code').value.toUpperCase().trim();
             if(!code) return window.showMsg('Ingresa un código', 'error');
             
             await connectFirebase();
@@ -1325,21 +1653,23 @@
             window.currentCode = code;
             currentSessionData = data;
             isCoach = false;
+            const expertKeys = Object.keys(data.experts || {});
             
-            if(data.type === 'group') {
+            if(data.type === 'group' && expertKeys.length > 1) {
                 document.getElementById('expert-step-1').classList.add('hidden');
                 document.getElementById('expert-step-2').classList.remove('hidden');
                 document.getElementById('expert-login-desc').innerText = "Selecciona tu nombre de la lista.";
                 const sel = document.getElementById('expert-name-select');
-                sel.innerHTML = '<option value="">Selecciona...</option>' + Object.keys(data.experts).map(k => `<option value="${k}">${window.formatDisplayName(k)}</option>`).join('');
+                sel.innerHTML = '<option value="">Selecciona...</option>' + expertKeys.map(k => `<option value="${k}">${window.formatDisplayName(k)}</option>`).join('');
             } else {
-                myExpertName = Object.keys(data.experts)[0];
+                myExpertName = expertKeys[0];
                 window.joinSessionFinal();
             }
         }
 
         window.joinSessionFinal = function() {
-            if(currentSessionData.type === 'group') {
+            const expertKeys = Object.keys(currentSessionData.experts || {});
+            if(currentSessionData.type === 'group' && expertKeys.length > 1) {
                 myExpertName = document.getElementById('expert-name-select').value;
                 if(!myExpertName) return window.showMsg('Selecciona tu nombre', 'error');
             }
@@ -1354,7 +1684,21 @@
 
         function listenSession(code) {
             onSnapshot(doc(db, 'coach_sessions', code), (snap) => {
-                if(snap.exists()) renderUI(snap.data());
+                if(snap.exists()) {
+                    const newData = snap.data();
+                    // Detectar si un experto acaba de enviar respuesta del simulador para avisarle al Coach en vivo
+                    if (isCoach && newData.experts) {
+                        Object.entries(newData.experts).forEach(([k, exp]) => {
+                            const newResp = (exp.expertResponse || '').trim();
+                            const oldResp = lastKnownResponses[k] || '';
+                            if (newResp && newResp !== oldResp) {
+                                lastKnownResponses[k] = newResp;
+                                window.showMsg(`💬 ${window.formatDisplayName(k)} envió su respuesta en el Simulador`);
+                            }
+                        });
+                    }
+                    renderUI(newData);
+                }
             });
         }
 
@@ -1366,17 +1710,52 @@
             if(stored) renderUI(JSON.parse(stored));
         }
 
+        // Actualización blindada: usa objetos anidados con setDoc(..., { merge: true }) para que puntos o espacios en nombres NUNCA fallen en Firebase
         async function safeUpdate(updates) {
+            let nestedPatch = {};
+            for (let k in updates) {
+                if (k.startsWith('experts.')) {
+                    const rest = k.substring('experts.'.length);
+                    const lastDotIdx = rest.lastIndexOf('.');
+                    if (lastDotIdx !== -1) {
+                        const expKey = rest.substring(0, lastDotIdx);
+                        const fieldName = rest.substring(lastDotIdx + 1);
+                        if (!nestedPatch.experts) nestedPatch.experts = {};
+                        if (!nestedPatch.experts[expKey]) nestedPatch.experts[expKey] = {};
+                        nestedPatch.experts[expKey][fieldName] = updates[k];
+                    }
+                } else if (k.startsWith('general.')) {
+                    const fieldName = k.substring('general.'.length);
+                    if (!nestedPatch.general) nestedPatch.general = {};
+                    nestedPatch.general[fieldName] = updates[k];
+                } else {
+                    nestedPatch[k] = updates[k];
+                }
+            }
+
             if(db && sessionRef) {
-                try { await updateDoc(sessionRef, updates); } catch(e) { console.error(e); }
+                try {
+                    await setDoc(sessionRef, nestedPatch, { merge: true });
+                } catch(e) {
+                    console.error("Error sincronizando con Firebase:", e);
+                }
             } else {
-                let d = JSON.parse(localStorage.getItem(`cs_${window.currentCode}`));
-                for(let k in updates) {
-                    if(k.includes('.')) {
-                        let parts = k.split('.');
-                        if (parts.length === 3) d[parts[0]][parts[1]][parts[2]] = updates[k];
-                        else if (parts.length === 2) d[parts[0]][parts[1]] = updates[k];
-                    } else { d[k] = updates[k]; }
+                let d = JSON.parse(localStorage.getItem(`cs_${window.currentCode}`) || JSON.stringify(currentSessionData));
+                for (let k in updates) {
+                    if (k.startsWith('experts.')) {
+                        const rest = k.substring('experts.'.length);
+                        const lastDotIdx = rest.lastIndexOf('.');
+                        const expKey = rest.substring(0, lastDotIdx);
+                        const fieldName = rest.substring(lastDotIdx + 1);
+                        if (!d.experts[expKey]) d.experts[expKey] = {};
+                        d.experts[expKey][fieldName] = updates[k];
+                    } else if (k.startsWith('general.')) {
+                        const fieldName = k.substring('general.'.length);
+                        if (!d.general) d.general = {};
+                        d.general[fieldName] = updates[k];
+                    } else {
+                        d[k] = updates[k];
+                    }
                 }
                 localStorage.setItem(`cs_${window.currentCode}`, JSON.stringify(d));
                 renderUI(d);
@@ -1384,6 +1763,19 @@
         }
 
         function setupDashboard(data) {
+            // Garantizar que todos los expertos tengan SBI, Diagnóstico, Preguntas y Simulador completos incluso en sesiones retomadas
+            const inst = data.institution || 'poli';
+            const segment = data.segment || 'Servicio y Rematrícula';
+            if (data.experts) {
+                Object.keys(data.experts).forEach(k => {
+                    data.experts[k] = ensureCompleteExpertData(data.experts[k], inst, segment);
+                    lastKnownResponses[k] = (data.experts[k].expertResponse || '').trim();
+                });
+            }
+            if (data.general) {
+                data.general = ensureCompleteGeneralData(data.general, Object.values(data.experts || {}), inst, segment);
+            }
+
             window.showScreen('main-dashboard');
             document.querySelectorAll('.coach-only').forEach(el => el.style.display = isCoach ? '' : 'none');
             document.querySelectorAll('.expert-only').forEach(el => el.style.display = isCoach ? 'none' : '');
@@ -1392,8 +1784,16 @@
             
             if(isCoach) {
                 const sel = document.getElementById('coach-expert-selector');
-                sel.innerHTML = '<option value="general">Vista General (Equipo)</option>' + Object.keys(data.experts).map(k => `<option value="${k}">${window.formatDisplayName(k)}</option>`).join('');
-                currentExpertView = 'general';
+                const expertKeys = Object.keys(data.experts || {});
+                sel.innerHTML = '<option value="general">Vista General (Equipo)</option>' + expertKeys.map(k => `<option value="${k}">${window.formatDisplayName(k)}</option>`).join('');
+                // Si es sesión individual de 1 solo experto, seleccionarlo directamente para ver todo su detalle de inmediato
+                if (data.type === 'individual' && expertKeys.length === 1) {
+                    currentExpertView = expertKeys[0];
+                    sel.value = currentExpertView;
+                } else {
+                    currentExpertView = 'general';
+                    sel.value = 'general';
+                }
                 window.switchTab('tab-sbi');
                 initCharts(data);
             } else {
@@ -1409,6 +1809,22 @@
             renderUI(currentSessionData);
         };
 
+        window.toggleExpandBoard = function() {
+            boardExpanded = !boardExpanded;
+            const mainCol = document.getElementById('board-main-col');
+            const sideCol = document.getElementById('board-side-col');
+            const btnTxt = document.getElementById('expand-board-text');
+            if (boardExpanded) {
+                mainCol.className = "lg:col-span-12 bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden flex flex-col h-[calc(100vh-190px)] min-h-[660px] transition-all duration-300";
+                sideCol.classList.add('hidden');
+                if (btnTxt) btnTxt.innerText = "Mostrar Preguntas y Notas";
+            } else {
+                mainCol.className = "lg:col-span-8 bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden flex flex-col h-[calc(100vh-200px)] min-h-[640px] transition-all duration-300";
+                if (isCoach) sideCol.classList.remove('hidden');
+                if (btnTxt) btnTxt.innerText = "Expandir Pizarra";
+            }
+        };
+
         window.switchTab = function(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
@@ -1418,6 +1834,17 @@
             const btn = document.getElementById(`nav-${tabId.split('-')[1]}`);
             if(btn) btn.classList.add('active');
 
+            // Ampliar ancho del contenedor cuando esté en la Pizarra de Reflexión o Reporte Final
+            const mainContainer = document.getElementById('main-content-container');
+            const headerContainer = document.getElementById('main-header-container');
+            if (tabId === 'tab-board') {
+                mainContainer.className = "max-w-[96%] mx-auto transition-all duration-300";
+                headerContainer.className = "max-w-[96%] mx-auto flex flex-wrap justify-between items-center mb-5 border-b border-slate-200 pb-4 transition-all duration-300";
+            } else {
+                mainContainer.className = "max-w-5xl mx-auto transition-all duration-300";
+                headerContainer.className = "max-w-5xl mx-auto flex flex-wrap justify-between items-center mb-6 border-b border-slate-200 pb-5 transition-all duration-300";
+            }
+
             const titles = { 'tab-sbi': 'Tu Potencial', 'tab-data': 'Datos y Casos', 'tab-board': 'Pizarra de Reflexión', 'tab-sim': 'Práctica de Caso', 'tab-commitment': 'Tu Compromiso', 'tab-report': 'Reporte Final' };
             document.getElementById('header-title').innerText = titles[tabId];
             
@@ -1426,20 +1853,46 @@
 
         function renderUI(data) {
             currentSessionData = data;
+            const inst = data.institution || 'poli';
+            const segment = data.segment || 'Servicio y Rematrícula';
             const isGen = currentExpertView === 'general';
-            const viewData = isGen ? data.general : data.experts[currentExpertView];
+
+            let viewData = isGen ? data.general : data.experts?.[currentExpertView];
+            if (!viewData && !isGen && data.experts) {
+                const fallbackKey = Object.keys(data.experts).find(k => matchesExpertQuery(k, currentExpertView));
+                if (fallbackKey) {
+                    viewData = data.experts[fallbackKey];
+                }
+            }
             if(!viewData) return;
+
+            if (!isGen) {
+                viewData = ensureCompleteExpertData(viewData, inst, segment);
+            } else {
+                viewData = ensureCompleteGeneralData(viewData, Object.values(data.experts || {}), inst, segment);
+            }
+
+            // Actualizar pastilla superior indicando si se está viendo el SBI/Datos del Equipo o de un Experto Individual
+            const pillEl = document.getElementById('current-view-pill');
+            if (pillEl) {
+                pillEl.innerText = isGen ? 'Vista General (Equipo)' : `Experto: ${window.formatDisplayName(currentExpertView)}`;
+                pillEl.className = isGen
+                    ? 'px-3.5 py-1.5 rounded-full text-xs font-bold bg-indigo-100 text-primary'
+                    : 'px-3.5 py-1.5 rounded-full text-xs font-bold bg-rose-100 text-poli-magenta';
+            }
 
             ['sbi_s', 'sbi_b', 'sbi_i'].forEach(f => {
                 const el = document.getElementById(`val-${f.replace('_','-')}`);
-                if(el && el.innerText !== viewData[f]) el.innerText = viewData[f] || '...';
+                if(el && document.activeElement !== el && el.innerText !== viewData[f]) {
+                    el.innerText = viewData[f] || '...';
+                }
             });
 
             const notesElBoard = document.getElementById('coach-private-notes-board');
             const notesElReport = document.getElementById('coach-private-notes-report');
             const notesBadge = document.getElementById('notes-context-badge');
-            if(notesElBoard) notesElBoard.value = viewData.privateNotes || '';
-            if(notesElReport) notesElReport.value = viewData.privateNotes || '';
+            if(notesElBoard && document.activeElement !== notesElBoard) notesElBoard.value = viewData.privateNotes || '';
+            if(notesElReport && document.activeElement !== notesElReport) notesElReport.value = viewData.privateNotes || '';
             if(notesBadge) {
                 notesBadge.innerText = isGen ? 'Editando Nota: Vista General' : `Editando Nota: ${window.formatDisplayName(currentExpertView)}`;
             }
@@ -1456,12 +1909,17 @@
                     document.getElementById('data-view-individual').classList.add('hidden');
                     const tbody = document.getElementById('reincidentes-table-body');
                     
-                    tbody.innerHTML = Object.entries(data.experts).map(([expKey, e]) => `
+                    tbody.innerHTML = Object.entries(data.experts || {}).map(([expKey, e]) => {
+                        const hasResp = e.expertResponse && String(e.expertResponse).trim().length > 0;
+                        return `
                         <tr class="border-b border-slate-50 hover:bg-slate-50">
                             <td class="py-3 font-semibold text-slate-800">${window.formatDisplayName(e.name || expKey)}</td>
                             <td class="py-3 text-center text-slate-600 text-xs">${e.canal || 'N/A'}</td>
                             <td class="py-3 text-center text-rose-500 font-bold">${(e.errors || []).reduce((a,b)=>a+b.count,0)}</td>
                             <td class="py-3 text-slate-500 truncate max-w-[150px]">${e.errors?.[0]?.name || ''}</td>
+                            <td class="py-3 text-center">
+                                ${hasResp ? '<span class="px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-full text-[11px] font-bold">Respondida</span>' : '<span class="px-2 py-0.5 bg-slate-100 text-slate-400 rounded-full text-[11px]">Pendiente</span>'}
+                            </td>
                             <td class="py-3 text-center"><input type="number" value="${e.score||0}" onblur="window.saveScore('${expKey}', this.value)" class="w-16 p-1 border rounded text-center font-bold text-primary"></td>
                             <td class="py-3 text-center">
                                 <div class="flex gap-2 justify-center">
@@ -1470,12 +1928,12 @@
                                 </div>
                             </td>
                         </tr>
-                    `).join('');
+                    `}).join('');
                 } else {
                     document.getElementById('data-view-general').classList.add('hidden');
                     document.getElementById('data-view-individual').classList.remove('hidden');
                     document.getElementById('data-ind-title').innerText = `Oportunidades: ${window.formatDisplayName(viewData.name)}`;
-                    document.getElementById('data-ind-channel').innerText = `Canal Evaluado: ${viewData.canal || 'No detectado'}`;
+                    document.getElementById('data-ind-channel').innerText = `Canal Evaluado: ${viewData.canal || 'No detectado'} | Segmento: ${segment}`;
                     document.getElementById('input-ind-score').value = viewData.score || 0;
                     
                     const maxCount = Math.max(...(viewData.errors || []).map(e=>e.count), 1);
@@ -1491,38 +1949,56 @@
                                 <div class="h-full bg-gradient-to-r from-poli-blue to-blue-400 rounded-full" style="width: ${(err.count/maxCount)*100}%"></div>
                             </div>
                             <div id="ev-${idx}" class="hidden mt-3 bg-slate-50 p-4 rounded-xl border border-slate-100">
-                                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider"><i class="fas fa-search"></i> Evidencias Registradas:</p>
+                                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider"><i class="fas fa-search"></i> Evidencias / Contexto Registrado:</p>
                                 <ul class="list-disc pl-4 text-sm text-slate-600 space-y-3 italic mt-2">
-                                    ${err.evidences && err.evidences.length > 0 ? err.evidences.map((ev, i) => `<li class="text-justify"><span class="font-bold text-slate-500 not-italic">Caso ${i+1}:</span> "${window.escapeHTML(ev)}"</li>`).join('') : '<li>No hay evidencia textual específica para este error en la base.</li>'}
+                                    ${err.evidences && err.evidences.length > 0 ? err.evidences.map((ev, i) => `<li class="text-justify"><span class="font-bold text-slate-500 not-italic">Caso ${i+1}:</span> "${window.escapeHTML(ev)}"</li>`).join('') : '<li>Sin texto en columna Evidencias (se generó análisis por atributo y contexto).</li>'}
                                 </ul>
                             </div>
                         </div>
                     `).join('');
 
+                    // Diagnóstico Estratégico del Coach (Resumen analítico editable, nunca vuelve a listar casos)
                     const resumContainer = document.getElementById('interaction-summaries');
-                    if (viewData.case_summary && viewData.case_summary.trim() !== "N/A" && viewData.case_summary.trim() !== "") {
-                        resumContainer.innerHTML = `<div class="bg-indigo-50/50 p-5 rounded-xl border border-indigo-100 text-sm text-slate-700 leading-relaxed shadow-inner"><i class="fas fa-stethoscope text-indigo-500 mr-2 text-lg"></i> <span class="font-bold text-indigo-900">Diagnóstico del Coach:</span><br><br>${viewData.case_summary}</div>`;
-                    } else if (viewData.evidencias && viewData.evidencias.length > 0) {
-                        resumContainer.innerHTML = `<div class="bg-slate-50 p-4 rounded-xl border border-slate-200 text-sm text-slate-600 leading-relaxed"><p class="font-bold text-slate-700 mb-3"><i class="fas fa-list"></i> Recopilación de fallas (Generado automáticamente):</p><ul class="list-disc pl-5 space-y-2">` + viewData.evidencias.map((ev, i) => `<li><span class="font-bold text-slate-500">Caso ${i+1}:</span> ${window.escapeHTML(ev)}</li>`).join('') + `</ul></div>`;
-                    } else {
-                        resumContainer.innerHTML = `<p class="text-sm text-slate-400 text-center py-4">Sube un Excel con la columna Evidencias para visualizar el resumen.</p>`;
-                    }
+                    resumContainer.innerHTML = `
+                        <div class="bg-indigo-50/60 p-5 rounded-2xl border border-indigo-100 text-sm text-slate-700 leading-relaxed shadow-inner">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="font-bold text-indigo-900"><i class="fas fa-user-md text-indigo-500 mr-1"></i> Resumen de Enfoque para el Coach:</span>
+                                <span class="text-[11px] text-indigo-400"><i class="fas fa-pencil-alt"></i> Editable</span>
+                            </div>
+                            <div contenteditable="true" onblur="window.saveField('case_summary', this.innerText)" class="editable-field whitespace-pre-line text-slate-700">${window.escapeHTML(viewData.case_summary)}</div>
+                        </div>
+                    `;
                 }
             }
 
+            // Pizarra de Reflexión
             document.getElementById('board-canvas').innerHTML = (data.board || []).map(n => `
-                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 mb-3 inline-block max-w-[85%] ${n.sender==='Coach'?'ml-auto border-indigo-200 bg-indigo-50':'mr-auto'}">
-                    <p class="text-[10px] font-bold text-slate-400 mb-1 uppercase">${n.sender==='Coach'?'Coach':window.formatDisplayName(n.sender)}</p>
-                    <p class="text-sm text-slate-700">${n.text}</p>
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 inline-block max-w-[85%] ${n.sender==='Coach'?'ml-auto border-indigo-200 bg-indigo-50':'mr-auto'}">
+                    <p class="text-[11px] font-bold text-slate-400 mb-1 uppercase">${n.sender==='Coach'?'Coach':window.formatDisplayName(n.sender)}</p>
+                    <p class="text-base text-slate-700 leading-relaxed">${window.escapeHTML(n.text)}</p>
                 </div>
             `).join('');
 
-            if(isCoach && data.general.questions) {
-                document.getElementById('coach-questions-container').innerHTML = data.general.questions.map(q => `
-                    <div class="bg-white p-3 rounded-xl border-l-4 border-l-amber-400 text-sm text-slate-700">${q}</div>
+            // Preguntas Poderosas: En Vista General muestra las comunes; en Vista de Experto muestra las individuales de ese experto
+            if(isCoach) {
+                const qBadge = document.getElementById('questions-scope-badge');
+                const activeQuestions = (!isGen && Array.isArray(viewData.questions) && viewData.questions.length > 0)
+                    ? viewData.questions
+                    : (data.general?.questions || []);
+
+                if (qBadge) {
+                    qBadge.innerText = isGen ? 'Comunes (Equipo)' : `Enfoque: ${window.formatDisplayName(currentExpertView)}`;
+                    qBadge.className = isGen
+                        ? 'text-[11px] font-bold px-2.5 py-1 bg-amber-100 text-amber-800 rounded-full'
+                        : 'text-[11px] font-bold px-2.5 py-1 bg-rose-100 text-poli-magenta rounded-full';
+                }
+
+                document.getElementById('coach-questions-container').innerHTML = activeQuestions.map(q => `
+                    <div class="bg-white p-3.5 rounded-xl border-l-4 border-l-amber-400 text-sm text-slate-700 shadow-sm leading-relaxed">${window.escapeHTML(q)}</div>
                 `).join('');
             }
 
+            // Simulador y Compromiso
             if(isGen && isCoach) {
                 document.getElementById('sim-warning').classList.remove('hidden');
                 document.getElementById('sim-content').classList.add('hidden');
@@ -1534,23 +2010,36 @@
                 document.getElementById('com-warning').classList.add('hidden');
                 document.getElementById('com-content').classList.remove('hidden');
 
-                document.getElementById('val-sim-context').innerText = viewData.simulator_context || '';
+                const simCtxEl = document.getElementById('val-sim-context');
+                if (simCtxEl && document.activeElement !== simCtxEl) {
+                    simCtxEl.innerText = viewData.simulator_context || '';
+                }
                 document.getElementById('val-sim-context-read').innerText = viewData.simulator_context || '';
                 
+                const hasResp = viewData.expertResponse && String(viewData.expertResponse).trim().length > 0;
+                const statusBadge = document.getElementById('sim-status-badge');
+                if (statusBadge) {
+                    if (hasResp) statusBadge.classList.remove('hidden');
+                    else statusBadge.classList.add('hidden');
+                }
+
                 if(isCoach) {
-                    document.getElementById('coach-view-response').innerText = viewData.expertResponse || 'El experto aún no ha respondido a la simulación...';
+                    const coachRespEl = document.getElementById('coach-view-response');
+                    if (coachRespEl && document.activeElement !== coachRespEl) {
+                        coachRespEl.innerText = hasResp ? viewData.expertResponse : 'Esperando que el experto envíe su respuesta a la simulación...';
+                    }
                     
                     if(viewData.commitment?.action) {
                         document.getElementById('coach-commitment-text').innerHTML = `
-                            <p class="font-bold mb-2 text-white">💡 Acción: "${viewData.commitment.action}"</p>
-                            <p class="text-sm text-slate-300"><i class="fas fa-calendar-alt"></i> Inicio: ${viewData.commitment.date} | <i class="fas fa-signature"></i> Firma: ${viewData.commitment.sign}</p>
+                            <p class="font-bold mb-2 text-white">💡 Acción: "${window.escapeHTML(viewData.commitment.action)}"</p>
+                            <p class="text-sm text-slate-300"><i class="fas fa-calendar-alt"></i> Inicio: ${viewData.commitment.date} | <i class="fas fa-signature"></i> Firma: ${window.escapeHTML(viewData.commitment.sign)}</p>
                         `;
                     } else {
                         document.getElementById('coach-commitment-text').innerHTML = '<i class="italic text-slate-300">Esperando compromiso...</i>';
                     }
                 } else {
                     const expertRespEl = document.getElementById('val-expert-response');
-                    if(expertRespEl && expertRespEl.value !== viewData.expertResponse) {
+                    if(expertRespEl && document.activeElement !== expertRespEl && expertRespEl.value !== (viewData.expertResponse || '')) {
                         expertRespEl.value = viewData.expertResponse || '';
                     }
                 }
@@ -1561,8 +2050,12 @@
         }
 
         window.saveField = function(field, val) {
-            if(!isCoach || currentExpertView === 'general') return;
-            safeUpdate({ [`experts.${currentExpertView}.${field}`]: val });
+            if(!isCoach) return;
+            if (currentExpertView === 'general') {
+                safeUpdate({ [`general.${field}`]: val });
+            } else {
+                safeUpdate({ [`experts.${currentExpertView}.${field}`]: val });
+            }
         };
 
         window.saveScore = function(exp, val) {
@@ -1590,6 +2083,7 @@
             }
 
             const instName = INSTITUTION_NAMES[currentSessionData.institution] || 'la institución';
+            const segment = currentSessionData.segment || 'Servicio y Rematrícula';
             const isSingle = expertsList.length === 1;
             const fechaHoy = new Date().toLocaleDateString('es-CO', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
             const participantNames = expertsList.map(e => window.formatDisplayName(e.name)).join(', ');
@@ -1619,7 +2113,7 @@
 `;
             });
 
-            const promptText = `Actúa como Angie Cuellar, Formadora y Coach de Calidad (${instName}). Redacta el correo oficial de seguimiento con el resultado del ${isSingle ? 'taller individual de reincidentes de calidad' : 'taller de reincidentes de calidad'} ejecutado el ${fechaHoy}.
+            const promptText = `Actúa como Angie Cuellar, Formadora y Coach de Calidad (${instName} - ${segment}). Redacta el correo oficial de seguimiento con el resultado del ${isSingle ? 'taller individual de reincidentes de calidad' : 'taller de reincidentes de calidad'} ejecutado el ${fechaHoy}.
 
 OBJETIVO Y ENFOQUE DE REDACCIÓN (MUY IMPORTANTE):
 1. Cuenta la HISTORIA GENERAL e integral del taller (integrando de forma fluida y conectada a ${isSingle ? participantNames : 'todos los participantes: ' + participantNames}).
@@ -1643,7 +2137,7 @@ Durante la práctica clínica, Valentina se enfrentó a un caso simulado en el c
 Para consolidar el cierre de la jornada, Valentina consignó su compromiso formal a partir del 9 de octubre de 2026, pactando de forma explícita: "Me comprometo a no guiarme por la emoción o el afán del estudiante, a mantener la calma para poder escuchar y realizar las preguntas correctas para ayudar al estudiante para que continúe con su proceso de formación". Desde formación nos llevamos la tarea de acompañar la gestión para facilitarle el acceso y comprensión al calendario de posgrados, permitiendo que este espacio marque un punto de inflexión donde la escucha empática y el rigor técnico reemplacen la reactividad en cada contacto."
 
 INSUMOS REALES DE ESTA SESIÓN PARA REDACTAR EL CORREO:
-- Institución: ${instName}
+- Institución: ${instName} (${segment})
 - Modalidad: ${isSingle ? 'Taller Individual' : `Taller Grupal (${expertsList.length} participantes)`}
 - Notas privadas generales del Coach sobre la sesión: "${generalNotes}"
 - Registro general de la Pizarra de Reflexión: ${boardNotes}
@@ -1664,10 +2158,19 @@ ${expertsDetailBlock}`;
             }
         };
 
-        window.sendSimResponse = function() {
+        // Envío de respuesta del Simulador con coincidencia exacta de llave en la base de la sesión
+        window.sendSimResponse = async function() {
             const val = document.getElementById('val-expert-response').value;
-            safeUpdate({ [`experts.${myExpertName}.expertResponse`]: val });
-            window.showMsg('Respuesta enviada al Coach');
+            if (!val.trim()) return window.showMsg('Escribe tu respuesta antes de enviar', 'error');
+
+            let targetKey = myExpertName;
+            if (currentSessionData.experts && !currentSessionData.experts[targetKey]) {
+                const matched = Object.keys(currentSessionData.experts).find(k => matchesExpertQuery(k, myExpertName));
+                if (matched) targetKey = matched;
+            }
+
+            await safeUpdate({ [`experts.${targetKey}.expertResponse`]: val });
+            window.showMsg('¡Respuesta enviada al Coach en tiempo real!');
         };
 
         window.calcReadiness = function() {
@@ -1675,7 +2178,12 @@ ${expertsDetailBlock}`;
             const scoreStr = Math.round((sum / 30) * 100) + '%';
             document.getElementById('readiness-score').innerText = scoreStr;
             if (!isCoach && myExpertName) {
-                safeUpdate({ [`experts.${myExpertName}.readiness`]: scoreStr });
+                let targetKey = myExpertName;
+                if (currentSessionData.experts && !currentSessionData.experts[targetKey]) {
+                    const matched = Object.keys(currentSessionData.experts).find(k => matchesExpertQuery(k, myExpertName));
+                    if (matched) targetKey = matched;
+                }
+                safeUpdate({ [`experts.${targetKey}.readiness`]: scoreStr });
             }
         };
 
@@ -1684,7 +2192,13 @@ ${expertsDetailBlock}`;
             const date = document.getElementById('commit-date').value;
             const sign = document.getElementById('commit-sign').value;
             if(!action || !date || !sign) return window.showMsg("Completa todo el plan", "error");
-            safeUpdate({ [`experts.${myExpertName}.commitment`]: {action, date, sign} });
+
+            let targetKey = myExpertName;
+            if (currentSessionData.experts && !currentSessionData.experts[targetKey]) {
+                const matched = Object.keys(currentSessionData.experts).find(k => matchesExpertQuery(k, myExpertName));
+                if (matched) targetKey = matched;
+            }
+            safeUpdate({ [`experts.${targetKey}.commitment`]: {action, date, sign} });
             window.showMsg('¡Compromiso Sellado!');
         };
 
@@ -1725,6 +2239,30 @@ ${expertsDetailBlock}`;
                 }
             } catch(err) {
                 window.showMsg("El entorno bloqueó el acceso al micrófono.", "error");
+            }
+        };
+
+        // Plugin para pintar el valor encima de las barras en la gráfica de notas al descargar la imagen
+        const barValueLabelPlugin = {
+            id: 'barValueLabelPlugin',
+            afterDatasetsDraw(chart) {
+                if (chart.canvas.id !== 'chart-score') return;
+                const { ctx } = chart;
+                ctx.save();
+                chart.data.datasets.forEach((dataset, i) => {
+                    const meta = chart.getDatasetMeta(i);
+                    meta.data.forEach((bar, index) => {
+                        const val = dataset.data[index];
+                        if (val !== undefined && val !== null) {
+                            ctx.fillStyle = '#334155';
+                            ctx.font = 'bold 11px Inter, sans-serif';
+                            ctx.textAlign = 'center';
+                            ctx.textBaseline = 'bottom';
+                            ctx.fillText(val + '%', bar.x, bar.y - 4);
+                        }
+                    });
+                });
+                ctx.restore();
             }
         };
 
@@ -1783,19 +2321,32 @@ ${expertsDetailBlock}`;
             const ctxS = document.getElementById('chart-score').getContext('2d');
             window.chartScore = new Chart(ctxS, {
                 type: 'bar',
+                plugins: [barValueLabelPlugin],
                 data: {
                     labels: [],
                     datasets: [{
                         data: [],
                         backgroundColor: instColor,
-                        barThickness: 50,
+                        maxBarThickness: 50,
                         borderRadius: 4
                     }]
                 },
                 options: { 
                     responsive: true, 
-                    maintainAspectRatio: false, 
-                    plugins: { legend: { display: false } }, 
+                    maintainAspectRatio: false,
+                    layout: { padding: { top: 24, bottom: 8, left: 8, right: 8 } },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                title: function(context) {
+                                    const label = context[0]?.label;
+                                    if (Array.isArray(label)) return label.join(' ');
+                                    return String(label || '');
+                                }
+                            }
+                        }
+                    }, 
                     scales: { 
                         y: {
                             min: 0, 
@@ -1804,9 +2355,10 @@ ${expertsDetailBlock}`;
                         },
                         x: {
                             ticks: {
+                                autoSkip: false,
                                 maxRotation: 0,
                                 minRotation: 0,
-                                font: { size: 12, weight: 'bold' },
+                                font: { size: 11, weight: 'bold' },
                                 color: '#475569'
                             }
                         }
@@ -1828,11 +2380,39 @@ ${expertsDetailBlock}`;
             window.chartPareto.data.datasets[0].backgroundColor = '#003360';
             window.chartPareto.update();
 
-            // Gráfica 1: Resultados de Evaluación de Reincidentes (Color por institución y Primer Nombre + Primer Apellido)
+            // Gráfica 1: Resultados de Evaluación de Reincidentes (Adaptabilidad dinámica para que SIEMPRE salgan todos los nombres)
             const exps = Object.values(data.experts || {});
-            window.chartScore.data.labels = exps.map(e => window.formatDisplayName(e.name));
+            const totalExps = exps.length;
+
+            // Dividir "PrimerNombre PrimerApellido" en 2 líneas ['PrimerNombre', 'PrimerApellido'] para que ocupen la mitad del ancho y quepan todos sin superponerse
+            window.chartScore.data.labels = exps.map(e => {
+                const clean = window.formatDisplayName(e.name);
+                const parts = clean.split(' ');
+                return parts.length >= 2 ? [parts[0], parts.slice(1).join(' ')] : [clean];
+            });
             window.chartScore.data.datasets[0].data = exps.map(e => e.score || 0);
             window.chartScore.data.datasets[0].backgroundColor = instColor;
+
+            // Adaptar tamaño de fuente, grosor de barra y rotación según la cantidad de expertos
+            let fontSize = 12;
+            let rotation = 0;
+            let maxBar = 50;
+            if (totalExps > 12) {
+                fontSize = 9;
+                rotation = 25;
+                maxBar = 24;
+            } else if (totalExps > 7) {
+                fontSize = 10;
+                rotation = 0;
+                maxBar = 34;
+            }
+
+            window.chartScore.options.scales.x.ticks.autoSkip = false;
+            window.chartScore.options.scales.x.ticks.font = { size: fontSize, weight: 'bold' };
+            window.chartScore.options.scales.x.ticks.maxRotation = rotation;
+            window.chartScore.options.scales.x.ticks.minRotation = rotation;
+            window.chartScore.data.datasets[0].maxBarThickness = maxBar;
+
             window.chartScore.update();
         }
 
