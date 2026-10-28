@@ -1,0 +1,2169 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Poli-Juris 2D: El Escape del Expediente Central</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800;900&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-space: #050811;
+      --poli-cyan: #00d2ff;
+      --poli-green: #00f59b;
+      --poli-yellow: #ffea00;
+      --poli-red: #ff3860;
+    }
+
+    body {
+      background-color: var(--bg-space);
+      color: #f1f5f9;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      user-select: none;
+      -webkit-user-select: none;
+      overflow-x: hidden;
+    }
+
+    .font-orbitron {
+      font-family: 'Orbitron', sans-serif;
+    }
+
+    /* Paneles estilo Tablet Espacial Among Us */
+    .space-panel {
+      background: rgba(13, 22, 44, 0.92);
+      backdrop-filter: blur(14px);
+      border: 2px solid rgba(0, 210, 255, 0.35);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.75), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    }
+
+    .tablet-frame {
+      background: #111c35;
+      border: 6px solid #334155;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.9), inset 0 0 20px rgba(0, 210, 255, 0.12);
+    }
+
+    /* Botón USAR estilo Among Us */
+    .use-btn {
+      transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .use-btn:not(:disabled):hover {
+      transform: scale(1.06);
+      box-shadow: 0 0 25px rgba(255, 234, 0, 0.65);
+    }
+    .use-btn:not(:disabled):active {
+      transform: scale(0.95);
+    }
+
+    #gameCanvas {
+      background: #040710;
+      display: block;
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+    }
+
+    /* Scrollbar limpio */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #091024;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #00d2ff;
+      border-radius: 99px;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-between p-2 md:p-4 relative">
+
+  <!-- ========================================== -->
+  <!-- PANTALLA DE INICIO / REGLAS DEL JUEGO      -->
+  <!-- ========================================== -->
+  <div id="startLobbyModal" class="fixed inset-0 z-50 flex items-center justify-center p-3 bg-black/90 backdrop-blur-md">
+    <div class="w-full max-w-4xl space-panel rounded-3xl p-5 md:p-8 border-2 border-cyan-400/60 shadow-2xl max-h-[94vh] overflow-y-auto">
+      
+      <!-- Top Title Banner -->
+      <div class="flex flex-col md:flex-row items-center justify-between gap-4 pb-5 border-b border-slate-700/80">
+        <div class="flex items-center gap-4">
+          <!-- Mini SVG Crewmate Icon -->
+          <div class="w-16 h-16 rounded-2xl bg-slate-900 border-2 border-cyan-400 flex items-center justify-center shadow-lg shadow-cyan-500/20 shrink-0">
+            <svg width="42" height="42" viewBox="0 0 64 64" fill="none">
+              <rect x="8" y="22" width="10" height="24" rx="5" fill="#0284c7" stroke="#000" stroke-width="3"/>
+              <path d="M16 24C16 12 24 8 34 8C44 8 50 12 50 24V48C50 52 47 55 43 55H39C36 55 35 52 35 48V45H29V48C29 52 28 55 25 55H21C17 55 16 52 16 48V24Z" fill="#00d2ff" stroke="#000" stroke-width="3"/>
+              <rect x="26" y="16" width="26" height="14" rx="7" fill="#bae6fd" stroke="#000" stroke-width="3"/>
+              <rect x="30" y="18" width="12" height="4" rx="2" fill="#ffffff"/>
+            </svg>
+          </div>
+          <div>
+            <span class="px-2.5 py-0.5 rounded-full text-[11px] font-orbitron font-bold bg-amber-400/20 text-amber-300 border border-amber-400/40 uppercase">
+              Simulador Oficial • Escuela de Derecho
+            </span>
+            <h1 class="font-orbitron font-black text-2xl md:text-3xl text-white tracking-wide mt-1">
+              POLI-AMONG 2D: <span class="text-cyan-400">EXPEDIENTE CENTRAL</span>
+            </h1>
+            <p class="text-xs md:text-sm text-slate-300">
+              Completa las tareas normativas de la nave para desbloquear los 5 sectores y ganar hasta <strong class="text-emerald-400">150 Polipuntos</strong>.
+            </p>
+          </div>
+        </div>
+
+        <!-- Selector de Color de Tripulante -->
+        <div class="bg-slate-900/90 p-3 rounded-2xl border border-slate-700 flex flex-col items-center">
+          <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">Color de tu Tripulante</span>
+          <div class="flex items-center gap-2" id="colorPickerContainer">
+            <button type="button" onclick="window.game.setCrewColor('#00d2ff', '#0284c7')" class="w-7 h-7 rounded-full bg-[#00d2ff] ring-2 ring-white scale-110 transition"></button>
+            <button type="button" onclick="window.game.setCrewColor('#00f59b', '#059669')" class="w-7 h-7 rounded-full bg-[#00f59b] opacity-80 hover:opacity-100 transition"></button>
+            <button type="button" onclick="window.game.setCrewColor('#ff3860', '#be123c')" class="w-7 h-7 rounded-full bg-[#ff3860] opacity-80 hover:opacity-100 transition"></button>
+            <button type="button" onclick="window.game.setCrewColor('#ffea00', '#ca8a04')" class="w-7 h-7 rounded-full bg-[#ffea00] opacity-80 hover:opacity-100 transition"></button>
+            <button type="button" onclick="window.game.setCrewColor('#a855f7', '#7e22ce')" class="w-7 h-7 rounded-full bg-[#a855f7] opacity-80 hover:opacity-100 transition"></button>
+            <button type="button" onclick="window.game.setCrewColor('#fb923c', '#c2410c')" class="w-7 h-7 rounded-full bg-[#fb923c] opacity-80 hover:opacity-100 transition"></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reglas del Juego (4 tarjetas visuales muy claras) -->
+      <div class="my-5">
+        <h2 class="font-orbitron font-bold text-sm uppercase tracking-wider text-cyan-300 mb-3 flex items-center gap-2">
+          <span>📋</span> MANUAL DE MISIÓN PARA EL TRIPULANTE (REGLAS DEL JUEGO)
+        </h2>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          <!-- Regla 1 -->
+          <div class="bg-slate-900/80 p-4 rounded-2xl border border-slate-700/80 flex flex-col justify-between">
+            <div>
+              <div class="w-9 h-9 rounded-xl bg-cyan-500/20 border border-cyan-400/40 flex items-center justify-center text-lg mb-2">🖱️</div>
+              <h3 class="font-bold text-white text-sm">1. Cómo Moverte</h3>
+              <p class="text-xs text-slate-300 mt-1 leading-relaxed">
+                <strong>¡Súper fácil!</strong> Haz clic directo sobre cualquier parte del piso o sobre una consola amarilla y tu muñequito caminará solo hasta allá. También puedes usar las flechas del teclado o <kbd class="px-1.5 py-0.5 bg-slate-800 rounded border border-slate-600">WASD</kbd>.
+              </p>
+            </div>
+          </div>
+
+          <!-- Regla 2 -->
+          <div class="bg-slate-900/80 p-4 rounded-2xl border border-amber-500/40 flex flex-col justify-between">
+            <div>
+              <div class="w-9 h-9 rounded-xl bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-lg mb-2">⚡</div>
+              <h3 class="font-bold text-amber-300 text-sm">2. Tareas Amarillas</h3>
+              <p class="text-xs text-slate-300 mt-1 leading-relaxed">
+                Cada sala tiene <strong>3 consolas con borde amarillo brillante</strong>. Haz clic en ellas o presiona el botón <strong>"USAR"</strong> para resolver casos de Preparatorios y Requisitos de Grado.
+              </p>
+            </div>
+          </div>
+
+          <!-- Regla 3 -->
+          <div class="bg-slate-900/80 p-4 rounded-2xl border border-rose-500/40 flex flex-col justify-between">
+            <div>
+              <div class="w-9 h-9 rounded-xl bg-rose-500/20 border border-rose-400/40 flex items-center justify-center text-lg mb-2">🛡️</div>
+              <h3 class="font-bold text-rose-300 text-sm">3. Regla Caja Negra</h3>
+              <p class="text-xs text-slate-300 mt-1 leading-relaxed">
+                Tienes <strong>3 Escudos de Empatía</strong>. Si fallas una respuesta, pierdes 1 escudo y <strong>NO se revelará la respuesta correcta</strong>, pero al final recibirás un informe con las páginas a repasar.
+              </p>
+            </div>
+          </div>
+
+          <!-- Regla 4 -->
+          <div class="bg-slate-900/80 p-4 rounded-2xl border border-emerald-500/40 flex flex-col justify-between">
+            <div>
+              <div class="w-9 h-9 rounded-xl bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center text-lg mb-2">🏆</div>
+              <h3 class="font-bold text-emerald-300 text-sm">4. Desbloqueo de Salas</h3>
+              <p class="text-xs text-slate-300 mt-1 leading-relaxed">
+                Al completar las 3 tareas de una sala, la <strong>compuerta láser se abrirá</strong> para que pases a la siguiente. Son 15 retos al azar (de un banco de 50) por <strong>150 Polipuntos</strong>.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Botón de Inicio -->
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-slate-700/80">
+        <div class="flex items-center gap-2 text-xs text-slate-400">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
+          <span>Banco cargado: <strong>50 casos analíticos</strong> (Acta 02 Ago 2026 & Cartilla Grado)</span>
+        </div>
+        <button id="btnStartMission" type="button" class="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-gradient-to-r from-amber-400 via-yellow-400 to-emerald-400 hover:brightness-110 text-slate-950 font-orbitron font-black text-sm md:text-base tracking-wider uppercase shadow-xl shadow-amber-500/25 active:scale-95 transition cursor-pointer">
+          🚀 INICIAR MISIÓN EN LA NAVE
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- BARRA SUPERIOR HUD (FUERA DEL MAPA)        -->
+  <!-- ========================================== -->
+  <header class="w-full max-w-6xl space-panel rounded-2xl px-4 py-2.5 mb-2 flex flex-wrap items-center justify-between gap-3">
+    <!-- Brand & Room Indicator (Separado del Canvas para que NUNCA se pise el texto) -->
+    <div class="flex items-center gap-3">
+      <button id="btnOpenRules" type="button" title="Ver Reglas" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-cyan-400/40 text-xs font-bold text-cyan-300 flex items-center gap-1.5 transition cursor-pointer">
+        <span>📖</span> <span class="hidden sm:inline">Reglas</span>
+      </button>
+      <div class="h-6 w-[1px] bg-slate-700 hidden sm:block"></div>
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+          <span id="hudRoomTitle" class="font-orbitron font-bold text-xs md:text-sm text-cyan-300 uppercase tracking-wide">
+            SALA 1: RECEPCIÓN DE MALLA Y CRÉDITOS
+          </span>
+        </div>
+        <p id="hudInstruction" class="text-[11px] text-slate-400">
+          Haz clic en cualquier consola amarilla <span class="text-amber-300 font-bold">[ ! ]</span> para caminar hacia ella y abrir la tarea.
+        </p>
+      </div>
+    </div>
+
+    <!-- Barra de Progreso Total de Tareas (Estilo Among Us Task Bar) -->
+    <div class="flex items-center gap-4 md:gap-6 bg-slate-950/90 px-4 py-1.5 rounded-xl border border-slate-700/80">
+      <!-- Task Bar & Polipuntos -->
+      <div>
+        <div class="flex items-center justify-between gap-4 text-[10px] uppercase font-bold tracking-wider text-slate-400 mb-1">
+          <span>Polipuntos</span>
+          <span id="scoreDisplay" class="font-orbitron text-emerald-400 text-xs">0 / 150 PTS</span>
+        </div>
+        <div class="w-32 md:w-44 h-3 bg-slate-800 rounded-full overflow-hidden border border-slate-600 p-0.5">
+          <div id="taskBarFill" class="h-full bg-gradient-to-r from-emerald-500 to-cyan-400 rounded-full transition-all duration-300" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <!-- Vidas / Escudos -->
+      <div class="text-center border-l border-slate-800 pl-4">
+        <span class="block text-[10px] uppercase tracking-wider text-slate-400 font-bold">Empatía</span>
+        <div id="livesContainer" class="flex items-center gap-1 mt-0.5">
+          <span class="text-sm md:text-base">🛡️</span>
+          <span class="text-sm md:text-base">🛡️</span>
+          <span class="text-sm md:text-base">🛡️</span>
+        </div>
+      </div>
+
+      <!-- Contador Tareas -->
+      <div class="text-center border-l border-slate-800 pl-4">
+        <span class="block text-[10px] uppercase tracking-wider text-slate-400 font-bold">Tareas</span>
+        <span id="progressDisplay" class="font-orbitron font-bold text-xs md:text-sm text-amber-300">0 / 15</span>
+      </div>
+    </div>
+
+    <!-- Controles de Audio y Reinicio -->
+    <div class="flex items-center gap-2">
+      <button id="btnSound" type="button" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-cyan-300 border border-slate-600 transition cursor-pointer">
+        🔊 Sonido
+      </button>
+      <button id="btnReset" type="button" class="px-3 py-1.5 rounded-xl bg-rose-950/80 hover:bg-rose-900 text-xs font-semibold text-rose-300 border border-rose-500/40 transition cursor-pointer">
+        ↺ Reiniciar
+      </button>
+    </div>
+  </header>
+
+  <!-- ========================================== -->
+  <!-- ESCENARIO PRINCIPAL 2D (NAVE AMONG US)     -->
+  <!-- ========================================== -->
+  <main class="w-full max-w-6xl relative flex-1 flex flex-col items-center justify-center">
+    
+    <!-- Contenedor del Mapa 16:9 -->
+    <div class="relative w-full aspect-[16/9] max-h-[70vh] rounded-3xl overflow-hidden space-panel border-2 border-cyan-500/40 shadow-2xl">
+      <canvas id="gameCanvas"></canvas>
+
+      <!-- BOTÓN FLOTANTE "USAR / ABRIR TAREA" ESTILO AMONG US (Esquina inferior derecha) -->
+      <button id="btnUseConsole" type="button" disabled class="use-btn absolute bottom-4 right-4 z-20 w-24 h-24 md:w-28 md:h-28 rounded-full bg-slate-900/90 border-4 border-slate-600 opacity-40 flex flex-col items-center justify-center gap-1 cursor-not-allowed shadow-2xl">
+        <!-- Icono de consola / mano -->
+        <svg class="w-8 h-8 md:w-10 md:h-10 text-amber-300" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+        </svg>
+        <span class="font-orbitron font-black text-xs md:text-sm tracking-wider text-white">USAR</span>
+        <span id="useBtnSubtext" class="text-[9px] text-slate-400 uppercase font-bold">Acércate</span>
+      </button>
+
+      <!-- Controles Táctiles D-Pad opcionales en esquina inferior izquierda para móviles -->
+      <div class="absolute bottom-3 left-3 z-20 grid grid-cols-3 gap-1 w-28 md:hidden opacity-85">
+        <div></div>
+        <button id="btnUp" type="button" class="h-9 rounded-lg bg-slate-900/90 border border-cyan-400/50 text-cyan-300 active:bg-cyan-500 active:text-black font-bold">▲</button>
+        <div></div>
+        <button id="btnLeft" type="button" class="h-9 rounded-lg bg-slate-900/90 border border-cyan-400/50 text-cyan-300 active:bg-cyan-500 active:text-black font-bold">◀</button>
+        <button id="btnDown" type="button" class="h-9 rounded-lg bg-slate-900/90 border border-cyan-400/50 text-cyan-300 active:bg-cyan-500 active:text-black font-bold">▼</button>
+        <button id="btnRight" type="button" class="h-9 rounded-lg bg-slate-900/90 border border-cyan-400/50 text-cyan-300 active:bg-cyan-500 active:text-black font-bold">▶</button>
+      </div>
+    </div>
+
+    <!-- Barra rápida de ayuda inferior -->
+    <div class="w-full flex flex-wrap items-center justify-between text-xs text-slate-400 mt-2 px-2 gap-2">
+      <div class="flex items-center gap-4">
+        <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-amber-400 inline-block border border-white"></span> Consola Pendiente (Haz clic para ir)</span>
+        <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-emerald-400 inline-block"></span> Tarea Superada (+10 pts)</span>
+        <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-rose-500 inline-block"></span> Bloqueada por Error</span>
+      </div>
+      <div class="text-[11px] text-cyan-300 font-semibold">
+        💡 Tip: Puedes hacer clic directamente sobre cualquier consola amarilla de tu sala actual para abrirla.
+      </div>
+    </div>
+  </main>
+
+  <!-- ========================================== -->
+  <!-- MODAL DE TAREA (TABLET INTERACTIVA)        -->
+  <!-- ========================================== -->
+  <div id="puzzleModal" class="fixed inset-0 z-50 flex items-center justify-center p-3 bg-black/80 backdrop-blur-md hidden opacity-0 transition-opacity duration-200">
+    <div class="w-full max-w-2xl tablet-frame rounded-3xl p-5 md:p-7 relative flex flex-col max-h-[92vh]">
+      
+      <!-- Tablet Top Status Bar -->
+      <div class="flex items-center justify-between pb-3 border-b border-slate-700 mb-4">
+        <div class="flex items-center gap-2.5">
+          <span class="w-3 h-3 rounded-full bg-amber-400 animate-ping"></span>
+          <span id="modalTypeBadge" class="px-3 py-1 rounded-lg text-xs font-orbitron font-bold uppercase tracking-wider bg-cyan-950 text-cyan-300 border border-cyan-400/40">
+            TAREA DE CONSOLA
+          </span>
+          <span id="modalRoomTag" class="text-xs text-slate-400 font-bold">SALA 1</span>
+        </div>
+        <button id="btnCloseModal" type="button" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-rose-600 text-slate-300 hover:text-white font-bold transition cursor-pointer">✕</button>
+      </div>
+
+      <!-- Cuerpo dinámico de la pregunta -->
+      <div id="modalBody" class="flex-1 overflow-y-auto pr-1"></div>
+
+      <!-- Alerta de Fallo Ciego (Oculta por defecto) -->
+      <div id="blindFeedbackAlert" class="mt-4 p-4 rounded-2xl bg-rose-950/90 border-2 border-rose-500 hidden">
+        <div class="flex items-start gap-3">
+          <span class="text-2xl">🚨</span>
+          <div>
+            <h4 class="font-orbitron font-bold text-sm text-rose-300 uppercase">¡SABOTAJE NORMATIVO DETECTADO! (-1 ESCUDO)</h4>
+            <p class="text-xs text-slate-200 mt-1">
+              El dictamen ingresado contradice los lineamientos vigentes. Esta terminal ha quedado bloqueada.
+            </p>
+            <p class="text-[11px] text-amber-300 mt-1 font-semibold">
+              🔒 Regla Caja Negra: No se revela la respuesta correcta. La fuente exacta se ha enviado a tu informe final de auditoría.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tablet Footer -->
+      <div class="pt-4 border-t border-slate-700 mt-4 flex items-center justify-between">
+        <div class="text-xs text-slate-300 font-semibold">
+          Recompensa de Tarea: <span class="text-emerald-400 font-orbitron font-bold">+10 Polipuntos</span>
+        </div>
+        <button id="btnSubmitPuzzle" type="button" class="px-6 py-3 rounded-xl bg-gradient-to-r from-amber-400 to-emerald-400 hover:brightness-110 font-orbitron font-black text-xs md:text-sm text-slate-950 uppercase tracking-wider shadow-lg cursor-pointer transition">
+          EJECUTAR DICTAMEN ✓
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL DE REPORTE FINAL DE AUDITORÍA        -->
+  <!-- ========================================== -->
+  <div id="finishModal" class="fixed inset-0 z-50 flex items-center justify-center p-3 bg-black/90 backdrop-blur-lg hidden opacity-0 transition-opacity duration-300">
+    <div class="w-full max-w-3xl space-panel rounded-3xl border-2 border-cyan-400/60 p-6 md:p-8 shadow-2xl flex flex-col max-h-[92vh] overflow-hidden">
+      
+      <div class="text-center pb-4 border-b border-slate-700">
+        <span id="finishBadge" class="px-4 py-1 rounded-full text-xs font-orbitron font-bold uppercase tracking-widest bg-emerald-950 text-emerald-400 border border-emerald-500/40 inline-block mb-2">
+          MISIÓN COMPLETADA
+        </span>
+        <h2 id="finishTitle" class="font-orbitron font-black text-2xl md:text-3xl text-white tracking-wide">
+          REPORTE DE NAVE CENTRAL
+        </h2>
+        <p id="finishSubtitle" class="text-xs md:text-sm text-slate-400 mt-1">
+          Resultados de tu auditoría sobre el Reglamento de Preparatorios y Cartilla de Grado.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3 my-4">
+        <div class="bg-slate-900/90 p-4 rounded-2xl border border-slate-700 text-center">
+          <span class="text-xs uppercase text-slate-400 font-bold">Polipuntos Ganados</span>
+          <div id="finalScoreDisplay" class="font-orbitron font-black text-3xl text-emerald-400 mt-1">150 / 150</div>
+          <span class="text-[11px] text-cyan-300">Fase 1 Consultiva</span>
+        </div>
+        <div class="bg-slate-900/90 p-4 rounded-2xl border border-slate-700 text-center">
+          <span class="text-xs uppercase text-slate-400 font-bold">Precisión Normativa</span>
+          <div id="finalAccuracyDisplay" class="font-orbitron font-black text-3xl text-amber-300 mt-1">100%</div>
+          <span id="finalAccuracyLabel" class="text-[11px] text-slate-400">15 de 15 Tareas</span>
+        </div>
+        <div class="bg-slate-900/90 p-4 rounded-2xl border border-slate-700 text-center">
+          <span class="text-xs uppercase text-slate-400 font-bold">Rango de Tripulante</span>
+          <div id="finalStatusDisplay" class="font-orbitron font-black text-xl text-emerald-300 mt-2">ESTRATEGA SENIOR</div>
+          <span class="text-[11px] text-slate-400">Cero Fugas Críticas</span>
+        </div>
+      </div>
+
+      <div class="flex-1 overflow-y-auto pr-2 my-2">
+        <h3 class="font-orbitron font-bold text-xs md:text-sm text-cyan-300 mb-2 uppercase tracking-wider">
+          📋 PLAN DE REFUERZO DOCUMENTAL (BRECHAS DETECTADAS):
+        </h3>
+        <div id="breachListContainer" class="space-y-2.5"></div>
+      </div>
+
+      <div class="pt-4 border-t border-slate-700 flex flex-wrap gap-3 items-center justify-between">
+        <div class="text-xs text-slate-400">
+          🔄 Cada partida selecciona 15 casos nuevos al azar del banco de 50 preguntas.
+        </div>
+        <button id="btnRestartGame" type="button" class="px-6 py-3 rounded-xl bg-gradient-to-r from-cyan-400 to-emerald-400 font-orbitron font-black text-xs text-slate-950 uppercase tracking-wider shadow-lg cursor-pointer">
+          JUGAR NUEVA PARTIDA ALEATORIA
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- SCRIPT DEL JUEGO Y BANCO DE 50 PREGUNTAS   -->
+  <!-- ========================================== -->
+  <script>
+    const MASTER_QUESTION_BANK = [
+      // SALA 1 (1-10)
+      {
+        id: 1, room: 1, type: 'triaje',
+        title: 'Triaje: Validación de Créditos de Grado',
+        caseDesc: 'Un estudiante de Derecho Bogotá Presencial culminó 140 créditos y exige su certificación de terminación de materias alegando que en la sede Medellín un compañero suyo se graduó con esa misma cantidad.',
+        options: ['PROCEDE (Cumple requisito de créditos)', 'NO PROCEDE (Le faltan créditos para su programa)'],
+        correct: 1,
+        docSource: 'Cartilla Requisitos de Grado',
+        pageRef: 'Pág 4, Numeral 1 (Desarrollo del plan de estudios)',
+        hintFeedback: 'Debes revisar la diferencia de créditos entre sedes: Medellín exige 140, pero Bogotá Presencial exige 141 créditos y Virtual 162.'
+      },
+      {
+        id: 2, room: 1, type: 'interrogatorio',
+        title: 'Caso: Habilitación para Pruebas Saber Pro',
+        caseDesc: 'Un estudiante de Derecho Virtual lleva cursados y aprobados 118 créditos de los 162 totales de su plan. Solicita autorización inmediata para inscribir la prueba de Estado Saber Pro en la convocatoria abierta.',
+        options: [
+          'Autorizar de inmediato porque ya cursó más de 100 créditos.',
+          'Rechazar la solicitud, pues no alcanza el 75% mínimo de avance curricular (121.5 créditos).',
+          'Permitir que la presente condicionado a que no pierda ninguna materia este semestre.',
+          'Exigir que primero apruebe el examen de inglés B1 para preinscribirse.'
+        ],
+        correct: 1,
+        docSource: 'Cartilla Requisitos de Grado',
+        pageRef: 'Pág 4, Numeral 2 (Saber Pro) y Art. 56 Reglamento',
+        hintFeedback: 'Saber Pro corresponde única y obligatoriamente a estudiantes con un avance académico igual o superior al 75%.'
+      },
+      {
+        id: 3, room: 1, type: 'circuito',
+        title: 'Circuito Procesal: Secuencia de Culminación de Malla',
+        caseDesc: 'Ordena cronológicamente la ruta que debe surtir el estudiante para certificar su avance académico y quedar habilitado:',
+        steps: [
+          'Aprobar el 100% de las asignaturas y créditos de su plan.',
+          'Solicitar certificación de terminación de materias en Smartcampus.',
+          'Acreditar el avance curricular ante la Coordinación Académica.',
+          'Habilitar la opción de postulación a grado en sistema Banner.'
+        ],
+        correctSequence: [0, 1, 2, 3],
+        docSource: 'Cartilla Requisitos de Grado',
+        pageRef: 'Pág 3 (Ruta para título) y Pág 4 (Numeral 1)',
+        hintFeedback: 'Revisa la ruta estricta: Culminar 100% materias -> Certificación en Smartcampus -> Acreditación ante coordinación -> Habilitación Banner.'
+      },
+      {
+        id: 4, room: 1, type: 'interrogatorio',
+        title: 'Caso: Acreditación de Lengua Extranjera',
+        caseDesc: 'Un estudiante presenta un diploma de suficiencia en inglés nivel A2 expedido por un instituto internacional reconocido y solicita que se registre como requisito cumplido para grado.',
+        options: [
+          'Aceptarlo porque el instituto tiene personería jurídica internacional.',
+          'Rechazarlo: la norma exige demostrar como mínimo suficiencia en nivel B1 del Marco Común Europeo certificado por el Centro de Idiomas Poli.',
+          'Homologarlo únicamente si su promedio global de carrera supera 4.0.',
+          'Validarlo como preparatorio pero no como requisito general de grado.'
+        ],
+        correct: 1,
+        docSource: 'Cartilla Requisitos de Grado',
+        pageRef: 'Pág 5, Numeral 3 (Competencia en Inglés) y Art. 55 Reglamento',
+        hintFeedback: 'El requisito institucional de inglés para pregrado en Derecho exige nivel mínimo B1 y aval del Centro de Idiomas Poli.'
+      },
+      {
+        id: 5, room: 1, type: 'triaje',
+        title: 'Triaje: Detección de Falsedad Documental',
+        caseDesc: 'En la auditoría de grado se descubre que una estudiante anexó un certificado de inglés adulterado en su postulación. Ella solicita que le apliquen solo una sanción pedagógica y le permitan pagar los derechos de grado.',
+        options: ['PROCEDE (Se le da plazo para subsanar)', 'NO PROCEDE (Anulación total y régimen disciplinario)'],
+        correct: 1,
+        docSource: 'Cartilla Requisitos de Grado',
+        pageRef: 'Pág 3, Art. 74 Parágrafo I (Régimen Disciplinario)',
+        hintFeedback: 'Según el Parágrafo I del Art. 74, si hay documentos falsos o adulterados, lo cursado carece de validez, no hay devoluciones y se inician acciones legales.'
+      },
+      {
+        id: 6, room: 1, type: 'interrogatorio',
+        title: 'Caso: Preinscripción Saber Pro en Canales Externos',
+        caseDesc: 'Un asesor le indica a un estudiante que no se preocupe por las fechas del Poli, que él mismo puede inscribirse individualmente en la página web del Icfes de forma directa cuando quiera.',
+        options: [
+          'La orientación es errónea: debe preinscribirse exclusivamente a través de SmartCampus bajo su responsabilidad.',
+          'La orientación es correcta: el Icfes permite inscripción individual sin aval de la universidad.',
+          'Es correcta solo si el estudiante está en modalidad virtual.',
+          'Debe enviar un derecho de petición a la coordinación para que el Icfes lo habilite.'
+        ],
+        correct: 0,
+        docSource: 'Cartilla Requisitos de Grado',
+        pageRef: 'Pág 4, Numeral 2 (Presentación Examen Saber Pro)',
+        hintFeedback: 'El registro a Saber Pro exige preinscripción obligatoria y exclusiva a través de SmartCampus en los plazos institucionales.'
+      },
+      {
+        id: 7, room: 1, type: 'triaje',
+        title: 'Triaje: Créditos de Derecho Virtual',
+        caseDesc: 'Un estudiante de Derecho Virtual completó 141 créditos y solicita que se le certifique el 100% de su plan de estudios porque en Bogotá ese número otorga la terminación de materias.',
+        options: ['PROCEDE (Homologación de créditos por sede)', 'NO PROCEDE (Virtual exige 162 créditos)'],
+        correct: 1,
+        docSource: 'Cartilla Requisitos de Grado',
+        pageRef: 'Pág 4, Numeral 1 (Avance Curricular por Programa)',
+        hintFeedback: 'Derecho Virtual contempla una malla de 10 semestres y 162 créditos académicos, inalterables frente a planes presenciales.'
+      },
+      {
+        id: 8, room: 1, type: 'interrogatorio',
+        title: 'Caso: Validación de Materias de Consultorio Jurídico',
+        caseDesc: 'Un estudiante completó todas las materias teóricas pero no ha legalizado el paz y salvo de Consultorio Jurídico. Solicita que la Coordinación lo habilite en Banner mientras termina los turnos.',
+        options: [
+          'Se le habilita condicionalmente por 15 días calendario.',
+          'No es posible: la habilitación en Banner exige presentar obligatoriamente el Paz y Salvo expedido por el respectivo coordinador de Consultorio.',
+          'Se le permite si ya aprobó los preparatorios.',
+          'Basta con una carta del docente asesor del caso.'
+        ],
+        correct: 1,
+        docSource: 'Cartilla Requisitos de Grado',
+        pageRef: 'Pág 15, Numeral 6 y 7 (Paz y Salvo Consultorio y Banner)',
+        hintFeedback: 'Para habilitar la postulación a grado en Banner es requisito sine qua non el Paz y Salvo expedido por el Director/Coordinador de Consultorio.'
+      },
+      {
+        id: 9, room: 1, type: 'circuito',
+        title: 'Circuito Procesal: Requisitos Ineludibles para Grado',
+        caseDesc: 'Ordena la jerarquía de cumplimiento general para optar al título de Abogado según el Artículo 74:',
+        steps: [
+          'Culminar 100% de créditos y certificar inglés B1 / Saber Pro.',
+          'Aprobar exámenes preparatorios (o causal de homologación/exoneración).',
+          'Aprobar una opción de grado válida y vigente.',
+          'Paz y salvo de Consultorio Jurídico y pago de derechos pecuniarios.'
+        ],
+        correctSequence: [0, 1, 2, 3],
+        docSource: 'Cartilla Requisitos de Grado',
+        pageRef: 'Pág 3, Ruta general para obtener el título de abogado',
+        hintFeedback: 'Sigue la ruta normativa de la pág 3: Plan e idiomas -> Preparatorios -> Opción de grado -> Paz y salvos y pago.'
+      },
+      {
+        id: 10, room: 1, type: 'triaje',
+        title: 'Triaje: Avance para Examen de Estado Saber TyT',
+        caseDesc: 'Un estudiante de pregrado universitario en Derecho solicita presentar las pruebas de Estado Saber TyT en vez de Saber Pro.',
+        options: ['PROCEDE (Son equivalentes)', 'NO PROCEDE (Derecho es pregrado universitario profesional)'],
+        correct: 1,
+        docSource: 'Cartilla Requisitos de Grado',
+        pageRef: 'Pág 4, Numeral 2 y Art. 56',
+        hintFeedback: 'Saber TyT aplica a programas técnicos y tecnológicos; los estudiantes de Derecho presentan obligatoriamente Saber Pro.'
+      },
+
+      // SALA 2 (11-20)
+      {
+        id: 11, room: 2, type: 'interrogatorio',
+        title: 'Caso: Preparatorio Individual vs Exigencia de Promedio',
+        caseDesc: 'Un egresado no graduado con promedio acumulado de 3.1 desea presentar el Preparatorio Individual del área de Derecho Laboral. El asesor le dice que por tener promedio bajo debe hacer el Único General.',
+        options: [
+          'El asesor tiene razón: con 3.1 solo puede presentar Único General.',
+          'El asesor se equivoca: en la modalidad Individual NO se exige promedio, solo la aprobación previa de las asignaturas del área y pago de la tasa.',
+          'Debe solicitar autorización especial al Consejo de Facultad.',
+          'Debe cursar primero un diplomado de nivelación.'
+        ],
+        correct: 1,
+        docSource: 'Reglamento Exámenes Preparatorios',
+        pageRef: 'Pág 2, Numeral Quinto, Literal A (Condiciones Individual)',
+        hintFeedback: 'El preparatorio Individual por Área no exige promedio mínimo; basta culminar las materias del área y pagar la tasa.'
+      },
+      {
+        id: 12, room: 2, type: 'triaje',
+        title: 'Triaje: Acceso a Preparatorio Único por Área',
+        caseDesc: 'Un estudiante terminó el 100% del plan de estudios con un promedio global exacto de 3.80. Solicita inscribirse al Preparatorio Único por Área.',
+        options: ['PROCEDE (El promedio se aproxima a 3.81)', 'NO PROCEDE (Rango estricto es 3.81 a 4.29 sin aproximación)'],
+        correct: 1,
+        docSource: 'Reglamento Exámenes Preparatorios',
+        pageRef: 'Pág 3, Literal C y Parágrafo 1',
+        hintFeedback: 'El Preparatorio Único por Área exige promedio entre 3.81 y 4.29. Los valores NO son objeto de aproximaciones.'
+      },
+      {
+        id: 13, room: 2, type: 'interrogatorio',
+        title: 'Caso: Discrepancia entre Smartcampus y Analyticsbanner',
+        caseDesc: 'Un estudiante muestra que su pantalla de Smartcampus reporta 3.82 de promedio, pero en el sistema Analyticsbanner aparece registrado 3.79. Exige que se le inscriba al Preparatorio Único por Área.',
+        options: [
+          'Se le debe conceder porque la interfaz de Smartcampus es la que ve el estudiante.',
+          'Se rechaza: el Parágrafo 2 del reglamento dicta que en caso de discrepancia se privilegiará el reportado por Analyticsbanner.',
+          'Se promedian ambos sistemas arrojando 3.805.',
+          'Se remite el caso al Centro de Idiomas para desempatar.'
+        ],
+        correct: 1,
+        docSource: 'Reglamento Exámenes Preparatorios',
+        pageRef: 'Pág 3, Quinto, Parágrafo 2',
+        hintFeedback: 'Regla de oro: En cualquier discrepancia entre Smartcampus y Analyticsbanner, prevalece Analyticsbanner de forma estricta.'
+      },
+      {
+        id: 14, room: 2, type: 'interrogatorio',
+        title: 'Caso: Exoneración de Preparatorios por Promedio',
+        caseDesc: 'Un estudiante con el 100% de materias aprobadas tiene un promedio general de 4.30 exacto y exige la resolución de exoneración de todos los preparatorios.',
+        options: [
+          'Tiene derecho a la exoneración inmediata.',
+          'No procede: el reglamento exige de manera taxativa tener un promedio global SUPERIOR a 4.3 (es decir, mínimo 4.31).',
+          'Procede si sustenta una monografía adicional.',
+          'Se le exonera de 3 áreas y debe presentar 2.'
+        ],
+        correct: 1,
+        docSource: 'Reglamento Exámenes Preparatorios',
+        pageRef: 'Pág 7-8, Numeral Décimo Segundo, Literal A',
+        hintFeedback: 'Para exoneración por promedio se exige haber finalizado materias y tener promedio SUPERIOR a 4.3 (sin aproximación).'
+      },
+      {
+        id: 15, room: 2, type: 'triaje',
+        title: 'Triaje: Homologación por Diplomado de Área Específica',
+        caseDesc: 'Un estudiante que aún no ha aprobado la asignatura de "Procesal Laboral" inscribe un diplomado que homologa el preparatorio individual de Laboral y saca nota de 4.5. Solicita la homologación.',
+        options: ['PROCEDE (Su nota compensa la asignatura)', 'NO PROCEDE (Debía tener aprobadas todas las materias del área al inscribirse)'],
+        correct: 1,
+        docSource: 'Reglamento Exámenes Preparatorios',
+        pageRef: 'Pág 7, Numeral Décimo Primero, Literal A, inciso iii',
+        hintFeedback: 'Al inscribir el diplomado para homologar preparatorio individual, el estudiante ya debe haber finalizado y aprobado todas las materias del área.'
+      },
+      {
+        id: 16, room: 2, type: 'interrogatorio',
+        title: 'Caso: Calificación Mínima en Diplomado de Homologación',
+        caseDesc: 'Un estudiante culminó su plan de estudios y cursó un diplomado debidamente autorizado para homologar el preparatorio único general, obteniendo una calificación final de 4.15.',
+        options: [
+          'Se homologa porque en pregrado se aprueba con nota superior a 3.0.',
+          'No se homologa: la condición específica es que la nota alcanzada en el diplomado sea igual o exceda a 4.3 (Cuatro Punto Tres).',
+          'Se homologa condicionado a presentar un ensayo ante jurado.',
+          'Se le otorga una oportunidad de habilitación del diplomado.'
+        ],
+        correct: 1,
+        docSource: 'Reglamento Exámenes Preparatorios',
+        pageRef: 'Pág 7, Numeral Décimo Primero, Literal A, inciso iv',
+        hintFeedback: 'Para homologar preparatorios mediante diplomado, la nota final obtenida debe ser igual o superior a 4.3.'
+      },
+      {
+        id: 17, room: 2, type: 'circuito',
+        title: 'Circuito: Asignaturas Integradas en Derecho Público',
+        caseDesc: 'Un estudiante va a presentar el preparatorio de Derecho Público. Ordena las asignaturas que componen su núcleo según el numeral Tercero:',
+        steps: [
+          'Derecho Constitucional y Administrativo General',
+          'Administrativo Especial y Derecho Internacional Público',
+          'Responsabilidad del Estado y Hacienda Pública',
+          'Procesal Administrativo, Probatorio y Negociación'
+        ],
+        correctSequence: [0, 1, 2, 3],
+        docSource: 'Reglamento Exámenes Preparatorios',
+        pageRef: 'Pág 1 y 2, Numeral Tercero (Áreas y Asignaturas)',
+        hintFeedback: 'Revisa la conformación del área de Público en la pág 1: solo evalúa Responsabilidad del Estado e integra el componente procesal.'
+      },
+      {
+        id: 18, room: 2, type: 'triaje',
+        title: 'Triaje: Preparatorio Único General con Materia Pendiente',
+        caseDesc: 'Un estudiante con promedio de 3.6 que debe únicamente una electiva de último semestre solicita presentar el Preparatorio Único General.',
+        options: ['PROCEDE (Por tener promedio en el rango 3.0 - 3.8)', 'NO PROCEDE (Exige haber finalizado y aprobado el 100% de materias)'],
+        correct: 1,
+        docSource: 'Reglamento Exámenes Preparatorios',
+        pageRef: 'Pág 2, Numeral Quinto, Literal B, condición i',
+        hintFeedback: 'Tanto el Preparatorio Único General como el Único por Área exigen certificación de terminación del 100% del plan de estudios.'
+      },
+      {
+        id: 19, room: 2, type: 'interrogatorio',
+        title: 'Caso: Exoneración por Desempeño Alto en Saber Pro',
+        caseDesc: 'Un estudiante terminó materias con promedio de 3.85, se ubicó en el último percentil del NBC de Derecho en Saber Pro pero obtuvo un puntaje global de 285 puntos. Solicita la exoneración según el Reglamento de Consejo de Escuela.',
+        options: [
+          'Se le concede porque superó el percentil nacional.',
+          'Se niega: el Reglamento aprobado en Consejo de Escuela exige puntaje global igual o superior a 300 puntos.',
+          'Se le exonera pero debe pagar la tasa administrativa.',
+          'Se le concede únicamente para el área de Derecho Privado.'
+        ],
+        correct: 1,
+        docSource: 'Reglamento Exámenes Preparatorios',
+        pageRef: 'Pág 8, Numeral Décimo Segundo, Literal B, condición iii',
+        hintFeedback: 'El Reglamento de Consejo de Escuela (Pág 8) exige percentil superior y puntaje global igual o superior a 300 puntos con promedio > 3.8.'
+      },
+      {
+        id: 20, room: 2, type: 'triaje',
+        title: 'Triaje: Responsabilidad Civil en Privado 1 vs Público',
+        caseDesc: 'En el preparatorio de Privado 1 el jurado evalúa temas de Responsabilidad Extracontractual del Estado. El estudiante alega que no correspondía a esa área.',
+        options: ['PROCEDE LA QUEJA (En Privado 1 solo entra Responsabilidad Civil)', 'NO PROCEDE (Ambas responsabilidades se evalúan siempre juntas)'],
+        correct: 0,
+        docSource: 'Reglamento Exámenes Preparatorios',
+        pageRef: 'Pág 1, Numeral Tercero (Privado 1 vs Público)',
+        hintFeedback: 'La norma aclara expresamente: en Privado 1 solo se evalúa Responsabilidad Civil; la Responsabilidad del Estado va en Derecho Público.'
+      },
+
+      // SALA 3 (21-30)
+      {
+        id: 21, room: 3, type: 'interrogatorio',
+        title: 'Caso: Apelación y Solicitud de Segundo Calificador',
+        caseDesc: 'Un estudiante resulta "NO APROBADO" en su preparatorio virtual y solicita formalmente que el video de la sesión sea enviado a otro docente para obtener una segunda calificación imparcial.',
+        options: [
+          'La solicitud es viable si paga el derecho de revisión.',
+          'Es improcedente: el resultado constituye valoración académica colegiada que no da lugar a nueva evaluación por otros docentes, ni los videos son base para segundo calificador.',
+          'El Decano debe evaluar el video en sala técnica.',
+          'Solo procede si la sustentación duró menos de 15 minutos.'
+        ],
+        correct: 1,
+        docSource: 'Reglamento Exámenes Preparatorios',
+        pageRef: 'Pág 5-6, Numeral Noveno (Recursos ante el resultado)',
+        hintFeedback: 'Las grabaciones tienen fines probatorios institucionales. No procede segundo calificador ni reevaluación por otros docentes.'
+      },
+      {
+        id: 22, room: 3, type: 'circuito',
+        title: 'Circuito: Procedimiento del Recurso de Reconsideración',
+        caseDesc: 'Ordena la forma y términos legales para controvertir el resultado de un examen preparatorio:',
+        steps: [
+          'Notificación del resultado "NO APROBADO" por el jurado.',
+          'Interposición inmediata del recurso de reconsideración oral.',
+          'Sustentación técnica y jurídica en un máximo de 10 minutos.',
+          'Deliberación y decisión definitiva e inapelable del mismo jurado.'
+        ],
+        correctSequence: [0, 1, 2, 3],
+        docSource: 'Reglamento Exámenes Preparatorios',
+        pageRef: 'Pág 6, Numeral Noveno (Términos del recurso oral)',
+        hintFeedback: 'El recurso de reconsideración es oral, inmediato, máximo 10 minutos, ante el mismo jurado y su decisión es definitiva.'
+      },
+      {
+        id: 23, room: 3, type: 'triaje',
+        title: 'Triaje: Cancelación Posterior a Convocatoria Formal',
+        caseDesc: 'Un estudiante inscrito a preparatorio recibe el correo de convocatoria con fecha y hora. Al día siguiente sufre una calamidad doméstica demostrada y pide cancelar la inscripción para que no le cuente el intento.',
+        options: ['PROCEDE (Por mediar caso fortuito sobreviniente)', 'NO PROCEDE (Tras notificada la convocatoria la inscripción es irrevocable)'],
+        correct: 1,
+        docSource: 'Reglamento Exámenes Preparatorios',
+        pageRef: 'Pág 4, Numeral Sexto, Literal D',
+        hintFeedback: 'La cancelación únicamente puede solicitarse con anterioridad al envío del correo de convocatoria formal. Una vez enviado, es irrevocable.'
+      },
+      {
+        id: 24, room: 3, type: 'interrogatorio',
+        title: 'Caso: Reenvío del Correo con el Caso de Examen',
+        caseDesc: 'Un estudiante recibe el caso para su preparatorio y se lo reenvía a su correo personal de Gmail y a dos compañeros para que le ayuden a redactar la minuta.',
+        options: [
+          'Es válido porque el material de estudio es libre.',
+          'Está expresamente prohibido: se considera fraude, el sistema emite alerta automática y da apertura inmediata a proceso disciplinario.',
+          'Solo se sanciona si los compañeros están en semestres inferiores.',
+          'Se le descuentan 0.5 puntos en la sustentación.'
+        ],
+        correct: 1,
+        docSource: 'Reglamento Exámenes Preparatorios',
+        pageRef: 'Pág 4, Numeral Sexto, Parágrafo 3',
+        hintFeedback: 'Está estrictamente prohibido reenviar el correo del caso a terceros o correos personales; se tipifica como fraude con apertura disciplinaria.'
+      },
+      {
+        id: 25, room: 3, type: 'interrogatorio',
+        title: 'Caso: Segunda Oportunidad Gratuita',
+        caseDesc: 'Un estudiante reprobó su primer intento de preparatorio en Derecho Privado 1. Solicita acogerse a la segunda oportunidad sin pago adicional, pero manifestando que desea presentarla en el área de Derecho Penal.',
+        options: [
+          'Debe repetir obligatoriamente Privado 1.',
+          'Es procedente: la segunda oportunidad sin pago recae en la misma modalidad, pero el estudiante puede elegir un área diferente.',
+          'Debe pagar el 50% de los derechos por cambiar de área.',
+          'Pierde la gratuidad al cambiar de jurado.'
+        ],
+        correct: 1,
+        docSource: 'Reglamento Exámenes Preparatorios',
+        pageRef: 'Pág 6, Numeral Décimo (Oportunidades de presentación)',
+        hintFeedback: 'La segunda oportunidad sin costo mantiene la modalidad original, pero permite expresamente al estudiante elegir un área distinta.'
+      },
+      {
+        id: 26, room: 3, type: 'triaje',
+        title: 'Triaje: Uso de Ayudas de Memoria en Sustentación',
+        caseDesc: 'Durante la sustentación oral, el estudiante comparte diapositivas con doctrina y jurisprudencia que él preparó para no olvidar los conceptos del caso.',
+        options: ['PROCEDE (Demuestra preparación)', 'NO PROCEDE (No se permite lectura de notas, solo consulta de Código)'],
+        correct: 1,
+        docSource: 'Reglamento Exámenes Preparatorios',
+        pageRef: 'Pág 4-5, Numeral Séptimo (Sustentación)',
+        hintFeedback: 'En la sustentación no se permite lectura de notas ni dispositivos; el estudiante solo puede consultar el Código respectivo si es necesario.'
+      },
+      {
+        id: 27, room: 3, type: 'interrogatorio',
+        title: 'Caso: Consecuencia de Inasistencia al Examen',
+        caseDesc: 'Un estudiante no se presentó a su examen preparatorio a la hora fijada y solicita que no se le califique para poder usar ese mismo pago en la siguiente fecha semestral.',
+        options: [
+          'Se le congela el saldo para el siguiente período.',
+          'Se levantará acta calificando el examen como NO APROBADO, sin repetición automática ni devolución ni reutilización del valor pagado.',
+          'Se le reprograma automáticamente en 8 días.',
+          'Se le exige un certificado médico para no reportar nota.'
+        ],
+        correct: 1,
+        docSource: 'Reglamento Exámenes Preparatorios',
+        pageRef: 'Pág 4, Numeral Sexto, Literal D (Inasistencia)',
+        hintFeedback: 'La inasistencia sin cancelación previa califica como NO APROBADO y genera pérdida total de los derechos pecuniarios pagados.'
+      },
+      {
+        id: 28, room: 3, type: 'triaje',
+        title: 'Triaje: Inscripción por Medio de Terceros',
+        caseDesc: 'La esposa de un estudiante que trabaja en zona rural sin internet envía la solicitud de inscripción al preparatorio adjuntando el soporte de pago y poder autenticado.',
+        options: ['PROCEDE (Por existir poder)', 'NO PROCEDE (Trámite estrictamente personal e intransferible por el estudiante)'],
+        correct: 1,
+        docSource: 'Reglamento Exámenes Preparatorios',
+        pageRef: 'Pág 3, Numeral Sexto, Literal C',
+        hintFeedback: 'La inscripción es personal e intransferible; se prohíbe taxativamente efectuar el trámite a través de terceros bajo sanción reglamentaria.'
+      },
+      {
+        id: 29, room: 3, type: 'interrogatorio',
+        title: 'Caso: Pago en Múltiples Oportunidades',
+        caseDesc: 'Un estudiante que no aprobó su primer intento pago ni su segunda oportunidad gratuita solicita agendar un tercer y cuarto examen sin cancelar nuevos valores.',
+        options: [
+          'Tiene hasta 4 oportunidades gratis por semestre.',
+          'Deberá pagar nuevamente el valor para la tercera, quinta, séptima y siguientes oportunidades.',
+          'Solo paga si cambia de área disciplinar.',
+          'La tercera es gratis si el promedio de carrera es mayor a 3.5.'
+        ],
+        correct: 1,
+        docSource: 'Reglamento Exámenes Preparatorios',
+        pageRef: 'Pág 6, Numeral Décimo, párrafo 2',
+        hintFeedback: 'El beneficio de gratuidad aplica solo a la 2da oportunidad; la 3ra, 5ta, 7ma y subsiguientes requieren nuevo pago.'
+      },
+      {
+        id: 30, room: 3, type: 'triaje',
+        title: 'Triaje: Modificación de Modalidad de Sustentación',
+        caseDesc: 'Un estudiante matriculado en el programa de Derecho Presencial Bogotá solicita presentar su sustentación de preparatorio de forma virtual por motivos laborales.',
+        options: ['PROCEDE (Virtualidad disponible para todos)', 'NO PROCEDE (Presencial Bogotá y Medellín sustentan presencial)'],
+        correct: 1,
+        docSource: 'Reglamento Exámenes Preparatorios',
+        pageRef: 'Pág 2, Numeral Cuarto (Metodología según programa)',
+        hintFeedback: 'Derecho Presencial Bogotá y Medellín sustentan de manera estrictamente presencial; solo Derecho Virtual sustenta online.'
+      },
+
+      // SALA 4 (31-40)
+      {
+        id: 31, room: 4, type: 'interrogatorio',
+        title: 'Caso: Requisito de Avance para Iniciar Judicatura',
+        caseDesc: 'Una estudiante de Derecho de 9no semestre que ya aprobó Consultorio Jurídico consigue una vacante en un Juzgado y solicita iniciar la judicatura para graduarse tan pronto culmine 10mo.',
+        options: [
+          'Puede iniciarla si tiene aval del juez.',
+          'No puede: como requisito obligatorio debe haber culminado en su totalidad (100%) el plan de estudios de la carrera.',
+          'Basta con tener el 80% de créditos aprobados.',
+          'Solo se permite si la judicatura es ad-honorem.'
+        ],
+        correct: 1,
+        docSource: 'Cartilla Requisitos de Grado',
+        pageRef: 'Pág 11, Numeral 5.1 (Judicatura)',
+        hintFeedback: 'La Judicatura exige haber culminado en su totalidad (100%) el plan de estudios de Derecho antes de iniciar labores.'
+      },
+      {
+        id: 32, room: 4, type: 'triaje',
+        title: 'Triaje: Duración de Judicatura Remunerada',
+        caseDesc: 'Un estudiante vinculado laboralmente en una entidad del Estado como sustanciador solicita que a los 9 meses se le valide la opción de grado por judicatura.',
+        options: ['PROCEDE (Aplica estándar de 9 meses)', 'NO PROCEDE (Judicatura remunerada exige 12 meses)'],
+        correct: 1,
+        docSource: 'Cartilla Requisitos de Grado',
+        pageRef: 'Pág 11, Numeral 5.1, literales a y b',
+        hintFeedback: 'Tiempos normativos: Ad-Honorem dura 9 meses; en cargo remunerado (público o privado) dura estrictamente 12 meses.'
+      },
+      {
+        id: 33, room: 4, type: 'interrogatorio',
+        title: 'Caso: Acreditación Oficial de la Judicatura',
+        caseDesc: 'Un estudiante culminó 12 meses remunerados en una personería y presenta una constancia laboral firmada por el Personero Municipal solicitando que se le apruebe la opción de grado.',
+        options: [
+          'La constancia es suficiente para que la Coordinación apruebe.',
+          'Insuficiente: la judicatura deberá acreditarse exclusivamente mediante Resolución expedida por el Consejo Superior de la Judicatura.',
+          'Requiere además una carta del Ministerio de Justicia.',
+          'Se valida únicamente si aprobó los preparatorios con honores.'
+        ],
+        correct: 1,
+        docSource: 'Cartilla Requisitos de Grado',
+        pageRef: 'Pág 11, Numeral 5.1, párrafo 3',
+        hintFeedback: 'La judicatura solo tiene validez de grado cuando se acredita mediante Resolución expedida por el Consejo Superior de la Judicatura.'
+      },
+      {
+        id: 34, room: 4, type: 'interrogatorio',
+        title: 'Caso: Calificación en Diplomado como Opción de Grado',
+        caseDesc: 'Un estudiante cursó un diplomado como opción de grado, obtuvo una nota final de 4.3 en las materias y aprobó satisfactoriamente el ensayo final. ¿Cumplió el requisito?',
+        options: [
+          'Sí, porque aprobó los módulos y el ensayo.',
+          'No cumplió: para que cuente como opción de grado, el diplomado debe ser aprobado con una nota mínima de 4.5.',
+          'Sí, porque para diplomados la nota mínima general es 4.0.',
+          'No, porque el ensayo requería una calificación numérica superior a 4.7.'
+        ],
+        correct: 1,
+        docSource: 'Cartilla Requisitos de Grado',
+        pageRef: 'Pág 11-12, Numeral 5.3 (Diplomado opción de grado)',
+        hintFeedback: '¡Ojo con la diferencia!: Para homologar preparatorio se exige 4.3, pero como OPCIÓN DE GRADO el diplomado exige nota mínima de 4.5.'
+      },
+      {
+        id: 35, room: 4, type: 'triaje',
+        title: 'Triaje: Calificación Cuantitativa del Ensayo de Diplomado',
+        caseDesc: 'Un estudiante pide que el docente calificador le asigne una nota numérica de 4.8 a su ensayo de diplomado de opción de grado para subir su promedio global.',
+        options: ['PROCEDE (Todo trabajo escrito debe tener nota)', 'NO PROCEDE (El ensayo solo se dictamina como aprobado o reprobado)'],
+        correct: 1,
+        docSource: 'Cartilla Requisitos de Grado',
+        pageRef: 'Pág 12, Numeral 5.3, párrafo 2',
+        hintFeedback: 'El ensayo de diplomado como opción de grado no tiene nota cuantitativa; solo recibe dictamen de APROBADO o REPROBADO.'
+      },
+      {
+        id: 36, room: 4, type: 'circuito',
+        title: 'Circuito: Ruta de Opción de Grado en Misión Académica',
+        caseDesc: 'Ordena la secuencia correcta para cumplir la opción de grado a través de una Misión Académica Internacional:',
+        steps: [
+          'Acreditar como mínimo el 75% del avance curricular.',
+          'Inscribirse en el área correspondiente y realizar el pago de la tasa.',
+          'Participar en conferencias, visitas y seminarios de la misión.',
+          'Elaborar y presentar un artículo tipo investigación.'
+        ],
+        correctSequence: [0, 1, 2, 3],
+        docSource: 'Cartilla Requisitos de Grado',
+        pageRef: 'Pág 12, Numeral 5.4 (Misiones Académicas)',
+        hintFeedback: 'Secuencia Misión: 75% avance -> Inscripción y tasa -> Participación en destino -> Presentación de artículo de investigación.'
+      },
+      {
+        id: 37, room: 4, type: 'interrogatorio',
+        title: 'Caso: Opción Coterminal en Áreas No Jurídicas',
+        caseDesc: 'Un estudiante de Derecho desea cursar como coterminal el primer semestre de la Maestría en Gerencia de Proyectos de TI. Pregunta si le sirve como opción de grado.',
+        options: [
+          'Sí, cualquier posgrado ofertado por el Politécnico es admisible.',
+          'No es viable: la opción coterminal exige cursar módulos de un posgrado relacionado directamente con el área jurídica.',
+          'Solo si demuestra 3 años de experiencia en tecnología.',
+          'Sí, pero debe homologar dos preparatorios en compensación.'
+        ],
+        correct: 1,
+        docSource: 'Cartilla Requisitos de Grado',
+        pageRef: 'Pág 11, Numeral 5.2 (Coterminal)',
+        hintFeedback: 'El Coterminal exige que sean módulos del primer semestre de un posgrado relacionado con el área jurídica.'
+      },
+      {
+        id: 38, room: 4, type: 'triaje',
+        title: 'Triaje: Gestión de Escenario de Judicatura por el Poli',
+        caseDesc: 'Un estudiante radica una queja porque el Politécnico Grancolombiano no le consiguió plaza de judicatura remunerada tras 6 meses de egreso.',
+        options: ['PROCEDE LA QUEJA (La universidad debe garantizar la plaza)', 'NO PROCEDE (El estudiante es el único responsable de conseguir el escenario)'],
+        correct: 1,
+        docSource: 'Cartilla Requisitos de Grado',
+        pageRef: 'Pág 11, Numeral 5.1, párrafo 2',
+        hintFeedback: 'La institución no asume responsabilidad alguna en la consecución de plaza o vinculación laboral para judicatura.'
+      },
+      {
+        id: 39, room: 4, type: 'interrogatorio',
+        title: 'Caso: Porcentaje de Avance para Diplomado de Grado',
+        caseDesc: 'Un estudiante con el 68% de avance curricular solicita inscribir un diplomado como opción de grado para avanzar tiempos antes de terminar materias.',
+        options: [
+          'Puede inscribirlo pagando un recargo.',
+          'No es viable: para desarrollar diplomado como opción de grado se exige tener como mínimo el 75% del avance curricular.',
+          'Solo se permite si su promedio supera 4.2.',
+          'Puede cursarlo pero el ensayo no se le recibirá.'
+        ],
+        correct: 1,
+        docSource: 'Cartilla Requisitos de Grado',
+        pageRef: 'Pág 12, Numeral 5.3, párrafo 3',
+        hintFeedback: 'El diplomado como opción de grado exige un avance curricular mínimo del 75% al momento de la matrícula.'
+      },
+      {
+        id: 40, room: 4, type: 'triaje',
+        title: 'Triaje: Monografía Investigativa al 60% de Carrera',
+        caseDesc: 'Un estudiante brillante de 6to semestre solicita que se le autorice cronograma de inicio de Monografía Investigativa teniendo el 60% de avance.',
+        options: ['PROCEDE (Por rendimiento académico)', 'NO PROCEDE (Se puede iniciar solo al tener aprobado el 75% del plan)'],
+        correct: 1,
+        docSource: 'Cartilla Requisitos de Grado',
+        pageRef: 'Pág 12, Numeral 5.5 (Monografía investigativa)',
+        hintFeedback: 'La monografía de investigación solo puede autorizarse e iniciarse con un avance aprobado del 75% de la carrera.'
+      },
+
+      // SALA 5 (41-50)
+      {
+        id: 41, room: 5, type: 'interrogatorio',
+        title: 'Caso: Permanencia en Semillero para Opción de Grado',
+        caseDesc: 'Dos estudiantes se vincularon a un semillero de investigación hace 6 meses y ya redactaron un artículo científico de alta calidad. Solicitan radicarlo como opción de grado.',
+        options: [
+          'Se acepta por la calidad del producto.',
+          'No procede: el lineamiento exige haber formado parte activa del semillero por un período mínimo de un (1) año previo al desarrollo del trabajo.',
+          'Procede si el líder de semillero firma una carta de aval excepcional.',
+          'Solo se acepta si uno de ellos ya terminó materias.'
+        ],
+        correct: 1,
+        docSource: 'Cartilla Requisitos de Grado',
+        pageRef: 'Pág 13, Numeral 5.6, literal a',
+        hintFeedback: 'La opción de grado por semillero exige vinculación y permanencia activa mínima de un (1) año previo al trabajo.'
+      },
+      {
+        id: 42, room: 5, type: 'triaje',
+        title: 'Triaje: Soporte Final de Publicación en Semillero',
+        caseDesc: 'Un estudiante entrega como evidencia de cumplimiento de opción de grado un pantallazo donde envió su artículo por correo a un docente amigo.',
+        options: ['PROCEDE (Constancia de divulgación)', 'NO PROCEDE (Debe ser radicado o constancia de sometimiento según Minciencias)'],
+        correct: 1,
+        docSource: 'Cartilla Requisitos de Grado',
+        pageRef: 'Pág 13-14, Numeral 5.6',
+        hintFeedback: 'Se exige obligatoriamente constancia o radicado editorial de sometimiento a revista reconocida bajo lineamientos Minciencias.'
+      },
+      {
+        id: 43, room: 5, type: 'interrogatorio',
+        title: 'Caso: Requisitos para Mención Meritoria en Investigación',
+        caseDesc: 'Un trabajo de investigación como opción de grado obtiene una calificación final de 4.65 por parte del jurado. El estudiante solicita mención meritoria.',
+        options: [
+          'Se le otorga meritoria por estar por encima de 4.5.',
+          'No aplica: la mención meritoria se reserva para calificaciones estrictamente superiores a 4.7 puntos (laureada es 5.0).',
+          'La mención meritoria la define el Consejo de Escuela sin importar la nota.',
+          'Aplica solo si el software antiplagio reporta 0% de similitud.'
+        ],
+        correct: 1,
+        docSource: 'Cartilla Requisitos de Grado',
+        pageRef: 'Pág 14, Numeral 5.6 (Escala de calificación)',
+        hintFeedback: 'Escala de investigación: Meritoria requiere calificación superior a 4.7; Laureada exige nota perfecta de 5.0.'
+      },
+      {
+        id: 44, room: 5, type: 'triaje',
+        title: 'Triaje: Asistente vs Auxiliar de Investigación',
+        caseDesc: 'Un estudiante sin trayectoria previa en semilleros ni productos verificables solicita vincularse directamente como Asistente de Investigación.',
+        options: ['PROCEDE (Cualquiera puede iniciar como asistente)', 'NO PROCEDE (Asistente exige mínimo 1 año de semillero o experiencia verificable)'],
+        correct: 1,
+        docSource: 'Cartilla Requisitos de Grado',
+        pageRef: 'Pág 14-15, Numeral 5.6.1',
+        hintFeedback: 'Auxiliar no exige trayectoria previa, pero Asistente de Investigación exige como mínimo 1 año en semillero o productos previos.'
+      },
+      {
+        id: 45, room: 5, type: 'interrogatorio',
+        title: 'Caso: Calificación por No Entrega de Documento Final',
+        caseDesc: 'Un estudiante matriculó Trabajo de Grado pero por problemas laborales no remitió el documento final al cierre del calendario académico. Solicita calificación de 3.0 por avances parciales.',
+        options: [
+          'Se le califica proporcional con 2.5.',
+          'Según el Parágrafo I, la nota será de 0.0 (cero punto cero) puntos cuando no se entregue el documento final.',
+          'Se le asigna concepto de pendiente durante un semestre adicional.',
+          'Se le homologa con un turno de Consultorio Jurídico.'
+        ],
+        correct: 1,
+        docSource: 'Cartilla Requisitos de Grado',
+        pageRef: 'Pág 14, Numeral 5.6, Parágrafo I',
+        hintFeedback: 'La normativa estipula expresamente: la nota será de 0.0 puntos cuando no se entregue el documento final de grado.'
+      },
+      {
+        id: 46, room: 5, type: 'circuito',
+        title: 'Circuito: Documentos para Habilitación en Banner para Grado',
+        caseDesc: 'Ordena los documentos que el estudiante debe presentar al Coordinador Académico para que el sistema Banner le habilite la opción de grado:',
+        steps: [
+          'Acreditación de la opción de grado cumplida y aprobada.',
+          'Paz y Salvo expedido por el Consultorio Jurídico.',
+          'Acta de aprobación del examen preparatorio (o resolución).',
+          'Apertura y habilitación del menú de postulación en Banner.'
+        ],
+        correctSequence: [0, 1, 2, 3],
+        docSource: 'Cartilla Requisitos de Grado',
+        pageRef: 'Pág 15, Numeral 7 (Habilitación en Banner)',
+        hintFeedback: 'Para activar Banner se requieren: Opción de grado + Paz y salvo de consultorio + Acta de preparatorios.'
+      },
+      {
+        id: 47, room: 5, type: 'interrogatorio',
+        title: 'Caso: Contacto de Coordinación para Derecho Virtual',
+        caseDesc: 'Un estudiante de Derecho Virtual necesita enviar su solicitud de preparatorio con soporte de pago. ¿A qué correo institucional debe remitirla según el reglamento?',
+        options: [
+          'ykaespinosa@poligran.edu.co (Bogotá Presencial)',
+          'vzrobinson@poligran.edu.co (Medellín Presencial)',
+          'ylgaona@poligran.edu.co (Derecho Virtual - Yesica Lorena Gaona)',
+          'cblancoa@poligran.edu.co (Líder Monografía)'
+        ],
+        correct: 2,
+        docSource: 'Reglamento Exámenes Preparatorios',
+        pageRef: 'Pág 3, Numeral Sexto, Literal B (Contactos por programa)',
+        hintFeedback: 'El canal oficial para Derecho Virtual es Yesica Lorena Gaona (ylgaona@poligran.edu.co).'
+      },
+      {
+        id: 48, room: 5, type: 'triaje',
+        title: 'Triaje: Reprobación Definitiva en Opción de Grado',
+        caseDesc: 'Un jurado de investigación rechaza un trabajo por problemas graves de fondo y plagio. El estudiante pide una segunda calificación para no cambiar de opción.',
+        options: ['PROCEDE SEGUNDO CALIFICADOR', 'NO PROCEDE (Debe seleccionar obligatoriamente otra opción de grado)'],
+        correct: 1,
+        docSource: 'Cartilla Requisitos de Grado',
+        pageRef: 'Pág 14, Numeral 5.6 (Criterios de Reprobación)',
+        hintFeedback: 'Cuando el trabajo es reprobado por problemas de fondo y forma considerados graves, el estudiante debe seleccionar otra opción de grado.'
+      },
+      {
+        id: 49, room: 5, type: 'interrogatorio',
+        title: 'Caso: Vigencia del Reglamento de Preparatorios',
+        caseDesc: 'Un egresado que terminó materias en el año 2021 solicita que no le apliquen las reglas de casos orales y promedios del acta de agosto de 2026, alegando derechos adquiridos del momento en que cursó materias.',
+        options: [
+          'Se le debe aplicar el reglamento viejo de su año de terminación.',
+          'Es improcedente: el reglamento rige a partir del 13 de agosto de 2026 y es aplicable a todo egresado no graduado al solicitar preparatorios, independientemente de la fecha en que terminó materias.',
+          'Debe pagar una penalidad para conservar el régimen anterior.',
+          'Solo aplica a los estudiantes virtuales, no a presenciales.'
+        ],
+        correct: 1,
+        docSource: 'Reglamento Exámenes Preparatorios',
+        pageRef: 'Pág 9, Numeral Décimo Cuarto (Vigencia)',
+        hintFeedback: 'La cláusula de vigencia (Pág 9) establece que aplica a todo estudiante o egresado no graduado al momento de su solicitud, sin importar cuándo terminó materias.'
+      },
+      {
+        id: 50, room: 5, type: 'triaje',
+        title: 'Triaje: Paz y Salvo de Consultorio en Sede Bogotá',
+        caseDesc: 'Un estudiante de Derecho Bogotá Presencial remite su solicitud de paz y salvo de consultorio jurídico al correo de Derecho Virtual.',
+        options: ['PROCEDE (Mismo despacho institucional)', 'NO PROCEDE (Bogotá Presencial corresponde a Lina Ximena Velásquez)'],
+        correct: 1,
+        docSource: 'Cartilla Requisitos de Grado',
+        pageRef: 'Pág 15, Numeral 6 (Paz y salvo Consultorio por sede)',
+        hintFeedback: 'Revisa los coordinadores: Bogotá es Lina Velásquez (lvelasquez@poligran.edu.co); Virtual es William Ariza (wanarizar@poligran.edu.co).'
+      }
+    ];
+
+    class SoundFX {
+      constructor() {
+        this.ctx = null;
+        this.enabled = true;
+      }
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          if (AudioContext) this.ctx = new AudioContext();
+        }
+      }
+      playTone(freq, type = 'sine', duration = 0.1, gain = 0.08) {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+        try {
+          const osc = this.ctx.createOscillator();
+          const g = this.ctx.createGain();
+          osc.type = type;
+          osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+          g.gain.setValueAtTime(gain, this.ctx.currentTime);
+          g.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + duration);
+          osc.connect(g);
+          g.connect(this.ctx.destination);
+          osc.start();
+          osc.stop(this.ctx.currentTime + duration);
+        } catch(e) {}
+      }
+      click() { this.playTone(750, 'sine', 0.05, 0.06); }
+      step() { this.playTone(220, 'triangle', 0.03, 0.025); }
+      doorOpen() {
+        this.playTone(300, 'sine', 0.15, 0.09);
+        setTimeout(() => this.playTone(600, 'sine', 0.25, 0.1), 120);
+      }
+      success() {
+        this.playTone(523.25, 'sine', 0.09, 0.08);
+        setTimeout(() => this.playTone(659.25, 'sine', 0.1, 0.09), 80);
+        setTimeout(() => this.playTone(783.99, 'sine', 0.12, 0.1), 160);
+        setTimeout(() => this.playTone(1046.5, 'triangle', 0.28, 0.12), 240);
+      }
+      errorBuzz() {
+        this.playTone(150, 'sawtooth', 0.2, 0.14);
+        setTimeout(() => this.playTone(115, 'sawtooth', 0.28, 0.15), 140);
+      }
+      fanfare() {
+        [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => {
+          setTimeout(() => this.playTone(f, 'triangle', 0.28, 0.12), i * 110);
+        });
+      }
+    }
+
+    const sound = new SoundFX();
+
+    class PoliGameEngine {
+      constructor() {
+        this.canvas = document.getElementById('gameCanvas');
+        this.ctx = this.canvas.getContext('2d');
+
+        this.virtWidth = 1000;
+        this.virtHeight = 562;
+        this.canvas.width = this.virtWidth;
+        this.canvas.height = this.virtHeight;
+
+        // Estrellas del espacio exterior
+        this.stars = Array.from({ length: 65 }, () => ({
+          x: Math.random() * this.virtWidth,
+          y: Math.random() * this.virtHeight,
+          r: Math.random() * 1.8 + 0.5,
+          alpha: Math.random() * 0.7 + 0.3,
+          speed: Math.random() * 0.25 + 0.05
+        }));
+
+        // Estado del Juego
+        this.score = 0;
+        this.lives = 3;
+        this.resolvedCount = 0;
+        this.userBreaches = [];
+        this.isGameOver = false;
+
+        // Tripulante (Crewmate)
+        this.player = {
+          x: 105,
+          y: 295,
+          targetX: null,
+          targetY: null,
+          pendingConsole: null,
+          speed: 4.6,
+          facing: 'right',
+          walkCycle: 0,
+          isMoving: false,
+          mainColor: '#00d2ff',
+          darkColor: '#0284c7'
+        };
+
+        // 5 Salas de la Nave
+        this.rooms = [
+          { id: 1, name: 'Recepción Créditos y Malla', shortTitle: '01. MALLA Y CRÉDITOS', x: 20, y: 36, w: 176, h: 490, color: '#00d2ff', cleared: false },
+          { id: 2, name: 'Bóveda de Preparatorios', shortTitle: '02. PREPARATORIOS', x: 216, y: 36, w: 176, h: 490, color: '#ffea00', cleared: false },
+          { id: 3, name: 'Despacho de Sustentación', shortTitle: '03. SUSTENTACIÓN', x: 412, y: 36, w: 176, h: 490, color: '#ff3860', cleared: false },
+          { id: 4, name: 'Opciones de Grado', shortTitle: '04. OPCIONES GRADO', x: 608, y: 36, w: 176, h: 490, color: '#00f59b', cleared: false },
+          { id: 5, name: 'Investigación y Banner', shortTitle: '05. BANNER Y CIERRE', x: 804, y: 36, w: 176, h: 490, color: '#a855f7', cleared: false }
+        ];
+
+        this.activeConsoles = [];
+        this.activeChallenge = null;
+        this.currentInteractingConsole = null;
+        this.keys = {};
+        this.triajeTimer = null;
+        this.triajeTimeLeft = 20;
+        this.circuitAnswer = [];
+
+        this.initDOM();
+        this.initControls();
+        this.initSession();
+        this.startLoop();
+      }
+
+      setCrewColor(main, dark) {
+        sound.click();
+        this.player.mainColor = main;
+        this.player.darkColor = dark;
+      }
+
+      initDOM() {
+        this.startLobbyModal = document.getElementById('startLobbyModal');
+        this.scoreDisplay = document.getElementById('scoreDisplay');
+        this.taskBarFill = document.getElementById('taskBarFill');
+        this.livesContainer = document.getElementById('livesContainer');
+        this.progressDisplay = document.getElementById('progressDisplay');
+        this.hudRoomTitle = document.getElementById('hudRoomTitle');
+        this.btnUseConsole = document.getElementById('btnUseConsole');
+        this.useBtnSubtext = document.getElementById('useBtnSubtext');
+
+        this.puzzleModal = document.getElementById('puzzleModal');
+        this.modalBody = document.getElementById('modalBody');
+        this.modalTypeBadge = document.getElementById('modalTypeBadge');
+        this.modalRoomTag = document.getElementById('modalRoomTag');
+        this.btnSubmitPuzzle = document.getElementById('btnSubmitPuzzle');
+        this.btnCloseModal = document.getElementById('btnCloseModal');
+        this.blindFeedbackAlert = document.getElementById('blindFeedbackAlert');
+
+        this.finishModal = document.getElementById('finishModal');
+        this.finalScoreDisplay = document.getElementById('finalScoreDisplay');
+        this.finalAccuracyDisplay = document.getElementById('finalAccuracyDisplay');
+        this.finalAccuracyLabel = document.getElementById('finalAccuracyLabel');
+        this.finalStatusDisplay = document.getElementById('finalStatusDisplay');
+        this.breachListContainer = document.getElementById('breachListContainer');
+
+        // Botones de Lobby / Reglas
+        document.getElementById('btnStartMission').onclick = () => {
+          sound.click();
+          this.startLobbyModal.classList.add('hidden');
+        };
+        document.getElementById('btnOpenRules').onclick = () => {
+          sound.click();
+          this.startLobbyModal.classList.remove('hidden');
+        };
+
+        document.getElementById('btnSound').onclick = (e) => {
+          sound.enabled = !sound.enabled;
+          e.target.innerText = sound.enabled ? '🔊 Sonido' : '🔇 Silencio';
+          sound.click();
+        };
+
+        document.getElementById('btnReset').onclick = () => {
+          sound.click();
+          this.initSession();
+        };
+
+        document.getElementById('btnRestartGame').onclick = () => {
+          sound.click();
+          this.finishModal.classList.add('hidden');
+          this.finishModal.classList.remove('opacity-100');
+          this.initSession();
+        };
+
+        this.btnCloseModal.onclick = () => this.closeModal();
+        this.btnSubmitPuzzle.onclick = () => this.evaluateCurrentPuzzle();
+
+        // Botón USAR estilo Among Us
+        this.btnUseConsole.onclick = () => {
+          this.handleActionPress();
+        };
+      }
+
+      initControls() {
+        window.addEventListener('keydown', (e) => {
+          if (!this.startLobbyModal.classList.contains('hidden')) return;
+          const k = e.key.toLowerCase();
+          this.keys[k] = true;
+          this.keys[e.code] = true;
+
+          // Cancelar caminata automática si usa el teclado
+          if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright', 'w', 'a', 's', 'd'].includes(k)) {
+            this.player.targetX = null;
+            this.player.targetY = null;
+            this.player.pendingConsole = null;
+          }
+
+          if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(e.code)) {
+            e.preventDefault();
+          }
+          if (e.code === 'KeyE' || e.code === 'Space' || e.code === 'Enter') {
+            this.handleActionPress();
+          }
+        });
+
+        window.addEventListener('keyup', (e) => {
+          this.keys[e.key.toLowerCase()] = false;
+          this.keys[e.code] = false;
+        });
+
+        const bindTouch = (id, key) => {
+          const el = document.getElementById(id);
+          if (!el) return;
+          const start = (ev) => {
+            ev.preventDefault();
+            this.player.targetX = null;
+            this.player.targetY = null;
+            this.keys[key] = true;
+          };
+          const end = (ev) => {
+            ev.preventDefault();
+            this.keys[key] = false;
+          };
+          el.addEventListener('touchstart', start);
+          el.addEventListener('touchend', end);
+          el.addEventListener('mousedown', start);
+          el.addEventListener('mouseup', end);
+        };
+
+        bindTouch('btnUp', 'arrowup');
+        bindTouch('btnDown', 'arrowdown');
+        bindTouch('btnLeft', 'arrowleft');
+        bindTouch('btnRight', 'arrowright');
+
+        // CLIC EN EL LIENZO: Caminar suavemente hacia el punto o consola y abrir tarea automáticamente
+        this.canvas.addEventListener('pointerdown', (e) => {
+          if (this.isGameOver || !this.puzzleModal.classList.contains('hidden')) return;
+
+          const rect = this.canvas.getBoundingClientRect();
+          const scaleX = this.virtWidth / rect.width;
+          const scaleY = this.virtHeight / rect.height;
+          const clickX = (e.clientX - rect.left) * scaleX;
+          const clickY = (e.clientY - rect.top) * scaleY;
+
+          // ¿Hizo clic sobre una consola?
+          const clickedConsole = this.activeConsoles.find(c => {
+            return Math.hypot(clickX - c.x, clickY - c.y) < 38;
+          });
+
+          const maxAllowedX = this.getMaxUnlockedX();
+
+          if (clickedConsole) {
+            if (clickedConsole.x <= maxAllowedX + 10) {
+              sound.click();
+              this.player.targetX = clickedConsole.x;
+              this.player.targetY = clickedConsole.y + 22;
+              this.player.pendingConsole = clickedConsole;
+            } else {
+              // Sala aún bloqueada por láser
+              sound.errorBuzz();
+            }
+          } else {
+            // Caminar hacia el punto clickeado respetando las puertas láser cerradas
+            sound.step();
+            this.player.targetX = Math.max(45, Math.min(maxAllowedX, clickX));
+            this.player.targetY = Math.max(85, Math.min(this.virtHeight - 55, clickY));
+            this.player.pendingConsole = null;
+          }
+        });
+      }
+
+      getMaxUnlockedX() {
+        for (let i = 0; i < this.rooms.length; i++) {
+          if (!this.rooms[i].cleared) {
+            return this.rooms[i].x + this.rooms[i].w - 22;
+          }
+        }
+        return this.virtWidth - 45;
+      }
+
+      initSession() {
+        this.score = 0;
+        this.lives = 3;
+        this.resolvedCount = 0;
+        this.userBreaches = [];
+        this.isGameOver = false;
+
+        this.player.x = 108;
+        this.player.y = 295;
+        this.player.targetX = null;
+        this.player.targetY = null;
+        this.player.pendingConsole = null;
+        this.player.facing = 'right';
+
+        this.rooms.forEach(r => r.cleared = false);
+
+        this.activeConsoles = [];
+        const icons = ['💻', '📡', '⚖️'];
+
+        for (let roomNum = 1; roomNum <= 5; roomNum++) {
+          const roomPool = MASTER_QUESTION_BANK.filter(q => q.room === roomNum);
+          const shuffled = [...roomPool].sort(() => 0.5 - Math.random());
+          const selected3 = shuffled.slice(0, 3);
+
+          const roomDef = this.rooms[roomNum - 1];
+          const positions = [
+            { x: roomDef.x + 88, y: 145 },
+            { x: roomDef.x + 88, y: 295 },
+            { x: roomDef.x + 88, y: 445 }
+          ];
+
+          selected3.forEach((question, idx) => {
+            this.activeConsoles.push({
+              id: `${roomNum}-${idx}`,
+              room: roomNum,
+              x: positions[idx].x,
+              y: positions[idx].y,
+              icon: icons[idx],
+              questionData: question,
+              status: 'pending'
+            });
+          });
+        }
+
+        this.updateHUD();
+      }
+
+      updateHUD() {
+        this.scoreDisplay.innerText = `${this.score} / 150 PTS`;
+        this.progressDisplay.innerText = `${this.resolvedCount} / 15`;
+        const pct = Math.min(100, Math.round((this.resolvedCount / 15) * 100));
+        this.taskBarFill.style.width = `${pct}%`;
+
+        this.livesContainer.innerHTML = '';
+        for (let i = 0; i < 3; i++) {
+          const span = document.createElement('span');
+          span.className = 'text-sm md:text-base transition-transform';
+          span.innerText = i < this.lives ? '🛡️' : '💔';
+          if (i >= this.lives) span.classList.add('opacity-40');
+          this.livesContainer.appendChild(span);
+        }
+
+        const currentRoom = this.getCurrentRoom();
+        if (currentRoom) {
+          this.hudRoomTitle.innerText = `SALA ${currentRoom.id}: ${currentRoom.name}`;
+          this.hudRoomTitle.style.color = currentRoom.color;
+        }
+      }
+
+      getCurrentRoom() {
+        return this.rooms.find(r => this.player.x >= r.x && this.player.x <= (r.x + r.w)) || this.rooms[0];
+      }
+
+      getNearestPendingConsole() {
+        let best = null;
+        let minDist = 62;
+        this.activeConsoles.forEach(c => {
+          if (c.status === 'pending') {
+            const d = Math.hypot(this.player.x - c.x, this.player.y - c.y);
+            if (d < minDist) {
+              minDist = d;
+              best = c;
+            }
+          }
+        });
+        return best;
+      }
+
+      handleActionPress() {
+        if (this.isGameOver) return;
+        if (!this.puzzleModal.classList.contains('hidden')) return;
+
+        const near = this.getNearestPendingConsole();
+        if (near) {
+          this.triggerConsoleInteraction(near);
+        } else {
+          // Si pulsa USAR pero está lejos, caminar hacia la primera consola pendiente de su sala actual
+          const currentRoom = this.getCurrentRoom();
+          const nextInRoom = this.activeConsoles.find(c => c.room === currentRoom.id && c.status === 'pending');
+          if (nextInRoom) {
+            this.player.targetX = nextInRoom.x;
+            this.player.targetY = nextInRoom.y + 22;
+            this.player.pendingConsole = nextInRoom;
+          }
+        }
+      }
+
+      triggerConsoleInteraction(cons) {
+        if (cons.status !== 'pending') return;
+        this.currentInteractingConsole = cons;
+        this.activeChallenge = cons.questionData;
+        this.openModal(this.activeChallenge);
+      }
+
+      openModal(challenge) {
+        sound.click();
+        this.blindFeedbackAlert.classList.add('hidden');
+        this.btnSubmitPuzzle.disabled = false;
+        this.btnSubmitPuzzle.classList.remove('opacity-50', 'cursor-not-allowed');
+
+        this.modalRoomTag.innerText = `SALA 0${challenge.room} • CASO #${challenge.id}`;
+
+        if (challenge.type === 'interrogatorio') {
+          this.modalTypeBadge.className = 'px-3 py-1 rounded-lg text-xs font-orbitron font-bold uppercase bg-cyan-950 text-cyan-300 border border-cyan-400/50';
+          this.modalTypeBadge.innerText = '💻 INTERROGATORIO SITUACIONAL';
+          this.renderInterrogatorioUI(challenge);
+        } else if (challenge.type === 'circuito') {
+          this.modalTypeBadge.className = 'px-3 py-1 rounded-lg text-xs font-orbitron font-bold uppercase bg-amber-950 text-amber-300 border border-amber-400/50';
+          this.modalTypeBadge.innerText = '⚡ CABLES PROCESALES (ORDENAR)';
+          this.renderCircuitoUI(challenge);
+        } else {
+          this.modalTypeBadge.className = 'px-3 py-1 rounded-lg text-xs font-orbitron font-bold uppercase bg-emerald-950 text-emerald-300 border border-emerald-400/50';
+          this.modalTypeBadge.innerText = '📡 ESCÁNER DE TRIAJE RÁPIDO';
+          this.renderTriajeUI(challenge);
+        }
+
+        this.puzzleModal.classList.remove('hidden');
+        setTimeout(() => this.puzzleModal.classList.add('opacity-100'), 15);
+      }
+
+      closeModal() {
+        if (this.triajeTimer) clearInterval(this.triajeTimer);
+        this.puzzleModal.classList.remove('opacity-100');
+        setTimeout(() => {
+          this.puzzleModal.classList.add('hidden');
+          this.currentInteractingConsole = null;
+          this.activeChallenge = null;
+        }, 180);
+      }
+
+      renderInterrogatorioUI(challenge) {
+        this.modalBody.innerHTML = `
+          <div class="space-y-4">
+            <div class="bg-slate-900 p-4 rounded-2xl border border-cyan-500/30">
+              <span class="text-[11px] uppercase text-cyan-400 font-bold block mb-1">${challenge.title}</span>
+              <p class="text-sm md:text-base text-white leading-relaxed font-medium">${challenge.caseDesc}</p>
+            </div>
+            <div class="space-y-2.5">
+              <span class="text-xs uppercase text-slate-400 font-bold block">Selecciona la respuesta normativamente exacta:</span>
+              ${challenge.options.map((opt, i) => `
+                <label class="flex items-start gap-3 p-3.5 rounded-xl bg-slate-900/90 border-2 border-slate-700 hover:border-amber-400 cursor-pointer transition">
+                  <input type="radio" name="puzzleOpt" value="${i}" class="mt-1 w-4 h-4 accent-amber-400">
+                  <span class="text-xs md:text-sm text-slate-100 font-medium">${opt}</span>
+                </label>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }
+
+      renderCircuitoUI(challenge) {
+        this.circuitAnswer = challenge.steps.map((text, originalIndex) => ({ text, originalIndex }));
+        this.circuitAnswer.sort(() => 0.5 - Math.random());
+
+        this.modalBody.innerHTML = `
+          <div class="space-y-4">
+            <div class="bg-slate-900 p-4 rounded-2xl border border-amber-500/30">
+              <span class="text-[11px] uppercase text-amber-400 font-bold block mb-1">${challenge.title}</span>
+              <p class="text-sm md:text-base text-white leading-relaxed font-medium">${challenge.caseDesc}</p>
+              <p class="text-xs text-amber-300 mt-1.5">⚡ Conecta los nodos en orden del 1 al 4 usando las flechas [▲ / ▼]:</p>
+            </div>
+            <div id="circuitList" class="space-y-2"></div>
+          </div>
+        `;
+        this.updateCircuitDOM();
+      }
+
+      updateCircuitDOM() {
+        const list = document.getElementById('circuitList');
+        if (!list) return;
+        list.innerHTML = this.circuitAnswer.map((item, idx) => `
+          <div class="flex items-center justify-between p-3 rounded-xl bg-slate-900 border-2 border-slate-700">
+            <div class="flex items-center gap-3">
+              <span class="font-orbitron font-black text-xs bg-amber-400 text-slate-950 w-7 h-7 rounded-lg flex items-center justify-center shrink-0">
+                ${idx + 1}
+              </span>
+              <span class="text-xs md:text-sm text-white font-medium">${item.text}</span>
+            </div>
+            <div class="flex items-center gap-1.5 shrink-0 ml-2">
+              <button type="button" onclick="window.game.moveCircuitStep(${idx}, -1)" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-amber-400 hover:text-black text-amber-300 font-bold transition cursor-pointer ${idx === 0 ? 'opacity-25 pointer-events-none' : ''}">▲</button>
+              <button type="button" onclick="window.game.moveCircuitStep(${idx}, 1)" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-amber-400 hover:text-black text-amber-300 font-bold transition cursor-pointer ${idx === this.circuitAnswer.length - 1 ? 'opacity-25 pointer-events-none' : ''}">▼</button>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      moveCircuitStep(index, dir) {
+        sound.click();
+        const target = index + dir;
+        if (target < 0 || target >= this.circuitAnswer.length) return;
+        const temp = this.circuitAnswer[index];
+        this.circuitAnswer[index] = this.circuitAnswer[target];
+        this.circuitAnswer[target] = temp;
+        this.updateCircuitDOM();
+      }
+
+      renderTriajeUI(challenge) {
+        this.triajeTimeLeft = 20;
+        this.modalBody.innerHTML = `
+          <div class="space-y-4">
+            <div class="bg-slate-900 p-4 rounded-2xl border border-emerald-500/30">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-[11px] uppercase text-emerald-400 font-bold">${challenge.title}</span>
+                <span id="triajeCountdown" class="font-orbitron text-xs font-bold text-rose-300 px-2.5 py-1 rounded-lg bg-rose-950 border border-rose-500/40 animate-pulse">
+                  ⏱️ 20s
+                </span>
+              </div>
+              <p class="text-sm md:text-base text-white leading-relaxed font-medium">${challenge.caseDesc}</p>
+            </div>
+            <div>
+              <span class="text-xs uppercase text-slate-400 font-bold block mb-2">Selecciona el dictamen de validación:</span>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                ${challenge.options.map((opt, i) => `
+                  <button type="button" onclick="window.game.selectTriajeChoice(${i})" class="triaje-opt-btn p-4 rounded-xl bg-slate-900 border-2 border-slate-700 hover:border-emerald-400 text-xs md:text-sm text-left text-white font-semibold transition flex items-center gap-3 cursor-pointer">
+                    <span class="w-4 h-4 rounded-full border-2 border-emerald-400 shrink-0"></span>
+                    <span>${opt}</span>
+                  </button>
+                `).join('')}
+              </div>
+              <input type="hidden" id="triajeSelected" value="-1">
+            </div>
+          </div>
+        `;
+
+        if (this.triajeTimer) clearInterval(this.triajeTimer);
+        this.triajeTimer = setInterval(() => {
+          this.triajeTimeLeft--;
+          const el = document.getElementById('triajeCountdown');
+          if (el) el.innerText = `⏱️ ${this.triajeTimeLeft}s`;
+          if (this.triajeTimeLeft <= 0) {
+            clearInterval(this.triajeTimer);
+            this.evaluateCurrentPuzzle(true);
+          }
+        }, 1000);
+      }
+
+      selectTriajeChoice(index) {
+        sound.click();
+        document.getElementById('triajeSelected').value = index;
+        document.querySelectorAll('.triaje-opt-btn').forEach((btn, i) => {
+          if (i === index) {
+            btn.classList.add('bg-emerald-950', 'border-emerald-400', 'ring-2', 'ring-emerald-400/50');
+          } else {
+            btn.classList.remove('bg-emerald-950', 'border-emerald-400', 'ring-2', 'ring-emerald-400/50');
+          }
+        });
+      }
+
+      evaluateCurrentPuzzle(isTimeout = false) {
+        if (!this.activeChallenge || !this.currentInteractingConsole) return;
+        if (this.triajeTimer) clearInterval(this.triajeTimer);
+
+        let isCorrect = false;
+
+        if (!isTimeout) {
+          if (this.activeChallenge.type === 'interrogatorio') {
+            const selected = document.querySelector('input[name="puzzleOpt"]:checked');
+            if (!selected) return;
+            isCorrect = parseInt(selected.value, 10) === this.activeChallenge.correct;
+          } else if (this.activeChallenge.type === 'circuito') {
+            const userOrder = this.circuitAnswer.map(item => item.originalIndex);
+            isCorrect = JSON.stringify(userOrder) === JSON.stringify(this.activeChallenge.correctSequence);
+          } else if (this.activeChallenge.type === 'triaje') {
+            const chosen = parseInt(document.getElementById('triajeSelected').value, 10);
+            if (chosen < 0) return;
+            isCorrect = chosen === this.activeChallenge.correct;
+          }
+        }
+
+        const roomNum = this.currentInteractingConsole.room;
+
+        if (isCorrect) {
+          sound.success();
+          this.score += 10;
+          this.resolvedCount++;
+          this.currentInteractingConsole.status = 'cleared';
+          this.checkRoomCompletion(roomNum);
+          this.closeModal();
+          this.updateHUD();
+
+          if (this.resolvedCount >= 15) {
+            setTimeout(() => this.triggerFinishGame(true), 450);
+          }
+        } else {
+          sound.errorBuzz();
+          this.lives--;
+          this.currentInteractingConsole.status = 'failed';
+          this.resolvedCount++;
+
+          this.userBreaches.push({
+            room: this.activeChallenge.room,
+            title: this.activeChallenge.title,
+            docSource: this.activeChallenge.docSource,
+            pageRef: this.activeChallenge.pageRef,
+            hintFeedback: this.activeChallenge.hintFeedback
+          });
+
+          this.updateHUD();
+          this.blindFeedbackAlert.classList.remove('hidden');
+          this.btnSubmitPuzzle.disabled = true;
+          this.btnSubmitPuzzle.classList.add('opacity-50', 'cursor-not-allowed');
+
+          if (this.lives <= 0) {
+            setTimeout(() => {
+              this.closeModal();
+              this.triggerFinishGame(false);
+            }, 1900);
+          } else {
+            setTimeout(() => {
+              this.closeModal();
+              this.checkRoomCompletion(roomNum);
+              if (this.resolvedCount >= 15) {
+                this.triggerFinishGame(true);
+              }
+            }, 2100);
+          }
+        }
+      }
+
+      checkRoomCompletion(roomNumber) {
+        if (!roomNumber) return;
+        const consolesInRoom = this.activeConsoles.filter(c => c.room === roomNumber);
+        if (consolesInRoom.every(c => c.status !== 'pending')) {
+          const roomDef = this.rooms[roomNumber - 1];
+          if (!roomDef.cleared) {
+            roomDef.cleared = true;
+            sound.doorOpen();
+          }
+        }
+      }
+
+      triggerFinishGame(survived) {
+        this.isGameOver = true;
+        sound.fanfare();
+
+        const badge = document.getElementById('finishBadge');
+        const title = document.getElementById('finishTitle');
+        const subtitle = document.getElementById('finishSubtitle');
+        const statusDisplay = document.getElementById('finalStatusDisplay');
+
+        this.finalScoreDisplay.innerText = `${this.score} / 150`;
+        const accuracy = Math.round((this.score / 150) * 100);
+        this.finalAccuracyDisplay.innerText = `${accuracy}%`;
+        this.finalAccuracyLabel.innerText = `${this.score / 10} de 15 Tareas Correctas`;
+
+        if (survived && this.score >= 100) {
+          badge.className = 'px-4 py-1 rounded-full text-xs font-orbitron font-bold uppercase bg-emerald-950 text-emerald-400 border border-emerald-500/40 inline-block mb-2';
+          badge.innerText = '🚀 VICTORIA DE LA TRIPULACIÓN';
+          title.innerText = 'EXPEDIENTE CENTRAL DESBLOQUEADO';
+          subtitle.innerText = 'Excelente dominio del Reglamento de Preparatorios y la Cartilla de Grado.';
+          statusDisplay.innerText = 'TRIPULANTE ÉLITE';
+          statusDisplay.className = 'font-orbitron font-black text-xl text-emerald-400 mt-2';
+        } else {
+          badge.className = 'px-4 py-1 rounded-full text-xs font-orbitron font-bold uppercase bg-rose-950 text-rose-400 border border-rose-500/40 inline-block mb-2';
+          badge.innerText = '⚠️ NAVE EN CUARENTENA NORMATIVA';
+          title.innerText = 'SE AGOTARON LOS ESCUDOS DE EMPATÍA';
+          subtitle.innerText = 'Revisa las fuentes documentales abajo e intenta una nueva misión.';
+          statusDisplay.innerText = 'EN ENTRENAMIENTO';
+          statusDisplay.className = 'font-orbitron font-black text-xl text-rose-400 mt-2';
+        }
+
+        if (this.userBreaches.length === 0) {
+          this.breachListContainer.innerHTML = `
+            <div class="p-5 rounded-2xl bg-emerald-950/40 border border-emerald-500/40 text-center">
+              <span class="text-3xl">🌟🛡️</span>
+              <h4 class="font-orbitron font-bold text-emerald-300 text-sm mt-1">¡PARTIDA PERFECTA SIN BRECHAS!</h4>
+              <p class="text-xs text-slate-300 mt-1">Acertaste el 100% de las terminales consultivas. Suma tus 150 Polipuntos oficiales.</p>
+            </div>
+          `;
+        } else {
+          this.breachListContainer.innerHTML = this.userBreaches.map(b => `
+            <div class="p-3.5 rounded-xl bg-slate-900 border border-rose-500/40">
+              <div class="flex items-center justify-between text-[11px] font-orbitron text-rose-300 mb-1">
+                <span>📖 ${b.docSource} • ${b.pageRef}</span>
+                <span class="text-slate-400">SALA 0${b.room}</span>
+              </div>
+              <h5 class="text-xs md:text-sm font-bold text-white">${b.title}</h5>
+              <p class="text-xs text-amber-300 mt-1">💡 <strong>Qué repasar:</strong> ${b.hintFeedback}</p>
+            </div>
+          `).join('');
+        }
+
+        this.finishModal.classList.remove('hidden');
+        setTimeout(() => this.finishModal.classList.add('opacity-100'), 20);
+      }
+
+      startLoop() {
+        const loop = () => {
+          this.update();
+          this.render();
+          requestAnimationFrame(loop);
+        };
+        requestAnimationFrame(loop);
+      }
+
+      update() {
+        // Mover estrellas de fondo
+        this.stars.forEach(s => {
+          s.x -= s.speed;
+          if (s.x < 0) s.x = this.virtWidth;
+        });
+
+        if (this.isGameOver || !this.puzzleModal.classList.contains('hidden') || !this.startLobbyModal.classList.contains('hidden')) return;
+
+        let dx = 0;
+        let dy = 0;
+
+        if (this.keys['arrowleft'] || this.keys['a']) { dx -= 1; this.player.facing = 'left'; }
+        if (this.keys['arrowright'] || this.keys['d']) { dx += 1; this.player.facing = 'right'; }
+        if (this.keys['arrowup'] || this.keys['w']) { dy -= 1; }
+        if (this.keys['arrowdown'] || this.keys['s']) { dy += 1; }
+
+        const maxAllowedX = this.getMaxUnlockedX();
+
+        // Movimiento por Teclado
+        if (dx !== 0 || dy !== 0) {
+          if (dx !== 0 && dy !== 0) {
+            dx *= 0.7071;
+            dy *= 0.7071;
+          }
+          const nextX = this.player.x + dx * this.player.speed;
+          const nextY = this.player.y + dy * this.player.speed;
+
+          this.player.x = Math.max(45, Math.min(maxAllowedX, nextX));
+          this.player.y = Math.max(85, Math.min(this.virtHeight - 50, nextY));
+          this.player.isMoving = true;
+          this.player.walkCycle += 0.28;
+          this.updateHUD();
+        } else if (this.player.targetX !== null && this.player.targetY !== null) {
+          // Movimiento automático suave hacia donde hizo clic (Click-to-Move)
+          const distX = this.player.targetX - this.player.x;
+          const distY = this.player.targetY - this.player.y;
+          const dist = Math.hypot(distX, distY);
+
+          if (dist > 5) {
+            const step = Math.min(this.player.speed * 1.15, dist);
+            const nx = this.player.x + (distX / dist) * step;
+            const ny = this.player.y + (distY / dist) * step;
+
+            if (distX < -1) this.player.facing = 'left';
+            if (distX > 1) this.player.facing = 'right';
+
+            this.player.x = Math.max(45, Math.min(maxAllowedX, nx));
+            this.player.y = Math.max(85, Math.min(this.virtHeight - 50, ny));
+            this.player.isMoving = true;
+            this.player.walkCycle += 0.32;
+            this.updateHUD();
+          } else {
+            // Llegó al destino
+            this.player.targetX = null;
+            this.player.targetY = null;
+            this.player.isMoving = false;
+
+            if (this.player.pendingConsole && this.player.pendingConsole.status === 'pending') {
+              const c = this.player.pendingConsole;
+              this.player.pendingConsole = null;
+              this.triggerConsoleInteraction(c);
+            }
+          }
+        } else {
+          this.player.isMoving = false;
+        }
+
+        // Actualizar estado del botón USAR estilo Among Us
+        const nearConsole = this.getNearestPendingConsole();
+        if (nearConsole) {
+          this.btnUseConsole.disabled = false;
+          this.btnUseConsole.classList.remove('opacity-40', 'cursor-not-allowed', 'border-slate-600');
+          this.btnUseConsole.classList.add('opacity-100', 'cursor-pointer', 'border-amber-400', 'ring-4', 'ring-amber-400/30');
+          this.useBtnSubtext.innerText = '¡ABRIR TAREA!';
+          this.useBtnSubtext.className = 'text-[9px] text-amber-300 uppercase font-extrabold';
+        } else {
+          // Incluso si está lejos, dejamos que el botón USAR lo lleve a la siguiente tarea de la sala
+          const currentRoom = this.getCurrentRoom();
+          const hasPendingInRoom = this.activeConsoles.some(c => c.room === currentRoom.id && c.status === 'pending');
+          if (hasPendingInRoom) {
+            this.btnUseConsole.disabled = false;
+            this.btnUseConsole.classList.remove('opacity-40', 'cursor-not-allowed');
+            this.btnUseConsole.classList.add('opacity-90', 'cursor-pointer', 'border-cyan-400');
+            this.useBtnSubtext.innerText = 'IR A TAREA';
+            this.useBtnSubtext.className = 'text-[9px] text-cyan-300 uppercase font-bold';
+          } else {
+            this.btnUseConsole.disabled = true;
+            this.btnUseConsole.classList.add('opacity-40', 'cursor-not-allowed');
+            this.useBtnSubtext.innerText = 'SALA LISTA';
+          }
+        }
+      }
+
+      drawRoundedRect(x, y, w, h, r) {
+        const ctx = this.ctx;
+        ctx.beginPath();
+        ctx.moveTo(x + r, y);
+        ctx.lineTo(x + w - r, y);
+        ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+        ctx.lineTo(x + w, y + h - r);
+        ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+        ctx.lineTo(x + r, y + h);
+        ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+        ctx.lineTo(x, y + r);
+        ctx.quadraticCurveTo(x, y, x + r, y);
+        ctx.closePath();
+      }
+
+      render() {
+        const ctx = this.ctx;
+        ctx.clearRect(0, 0, this.virtWidth, this.virtHeight);
+
+        // 1. Espacio exterior estrellado (Estilo Among Us Polus/Skeld)
+        this.stars.forEach(s => {
+          ctx.fillStyle = `rgba(255, 255, 255, ${s.alpha})`;
+          ctx.beginPath();
+          ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+          ctx.fill();
+        });
+
+        // 2. Dibujar las 5 Salas Metálicas de la Nave
+        this.rooms.forEach((r, idx) => {
+          // Casco exterior metálico
+          ctx.fillStyle = '#1e293b';
+          this.drawRoundedRect(r.x - 4, r.y - 4, r.w + 8, r.h + 8, 18);
+          ctx.fill();
+
+          // Piso interior de la sala
+          ctx.fillStyle = '#0f172a';
+          ctx.strokeStyle = r.cleared ? '#00f59b' : r.color;
+          ctx.lineWidth = 2.5;
+          this.drawRoundedRect(r.x, r.y, r.w, r.h, 14);
+          ctx.fill();
+          ctx.stroke();
+
+          // Baldosas tecnológicas sutiles en el piso
+          ctx.strokeStyle = 'rgba(148, 163, 184, 0.06)';
+          ctx.lineWidth = 1;
+          for (let gx = r.x + 25; gx < r.x + r.w; gx += 35) {
+            ctx.beginPath();
+            ctx.moveTo(gx, r.y + 42);
+            ctx.lineTo(gx, r.y + r.h - 10);
+            ctx.stroke();
+          }
+          for (let gy = r.y + 65; gy < r.y + r.h; gy += 35) {
+            ctx.beginPath();
+            ctx.moveTo(r.x + 8, gy);
+            ctx.lineTo(r.x + r.w - 8, gy);
+            ctx.stroke();
+          }
+
+          // Rejilla de ventilación decorativa tipo Among Us (Vent)
+          const ventX = r.x + 18;
+          const ventY = r.y + r.h - 36;
+          ctx.fillStyle = '#1e293b';
+          ctx.strokeStyle = '#475569';
+          ctx.lineWidth = 1.5;
+          this.drawRoundedRect(ventX, ventY, 34, 20, 4);
+          ctx.fill();
+          ctx.stroke();
+          for (let vx = ventX + 6; vx < ventX + 30; vx += 6) {
+            ctx.beginPath();
+            ctx.moveTo(vx, ventY + 4);
+            ctx.lineTo(vx, ventY + 16);
+            ctx.stroke();
+          }
+
+          // Cabecera interna limpia de cada sala (Sin superposición)
+          ctx.fillStyle = 'rgba(2, 6, 23, 0.85)';
+          this.drawRoundedRect(r.x + 6, r.y + 6, r.w - 12, 32, 8);
+          ctx.fill();
+
+          ctx.font = '800 10px Orbitron';
+          ctx.fillStyle = r.cleared ? '#00f59b' : r.color;
+          ctx.fillText(r.shortTitle, r.x + 14, r.y + 21);
+
+          ctx.font = '700 9px "Plus Jakarta Sans"';
+          ctx.fillStyle = r.cleared ? '#00f59b' : '#94a3b8';
+          ctx.fillText(r.cleared ? '✓ SECTOR ABIERTO' : '🔒 COMPLETA 3 TAREAS', r.x + 14, r.y + 33);
+
+          // Pasillo y Compuerta Láser entre salas
+          if (idx < this.rooms.length - 1) {
+            const gateX = r.x + r.w + 10;
+            // Pasillo conector
+            ctx.fillStyle = '#1e293b';
+            ctx.fillRect(r.x + r.w, 245, 20, 95);
+
+            if (!r.cleared) {
+              // Compuerta láser roja activa
+              const pulse = 0.6 + Math.sin(Date.now() * 0.008) * 0.3;
+              ctx.strokeStyle = `rgba(255, 56, 96, ${pulse})`;
+              ctx.lineWidth = 5;
+              ctx.beginPath();
+              ctx.moveTo(gateX, r.y + 15);
+              ctx.lineTo(gateX, r.y + r.h - 15);
+              ctx.stroke();
+
+              // Candado central en la barrera
+              ctx.fillStyle = '#0f172a';
+              ctx.strokeStyle = '#ff3860';
+              ctx.lineWidth = 2;
+              ctx.beginPath();
+              ctx.arc(gateX, 292, 13, 0, Math.PI * 2);
+              ctx.fill();
+              ctx.stroke();
+
+              ctx.font = '12px sans-serif';
+              ctx.textAlign = 'center';
+              ctx.textBaseline = 'middle';
+              ctx.fillText('🔒', gateX, 293);
+              ctx.textAlign = 'left';
+              ctx.textBaseline = 'alphabetic';
+            } else {
+              // Compuerta abierta verde
+              ctx.strokeStyle = 'rgba(0, 245, 155, 0.35)';
+              ctx.lineWidth = 2;
+              ctx.setLineDash([6, 6]);
+              ctx.beginPath();
+              ctx.moveTo(gateX, r.y + 20);
+              ctx.lineTo(gateX, r.y + r.h - 20);
+              ctx.stroke();
+              ctx.setLineDash([]);
+            }
+          }
+        });
+
+        // 3. Dibujar Consolas de Tarea (Con contorno amarillo brillante tipo Among Us)
+        const nearConsole = this.getNearestPendingConsole();
+
+        this.activeConsoles.forEach(c => {
+          const isPending = c.status === 'pending';
+          const isCleared = c.status === 'cleared';
+          const isFailed = c.status === 'failed';
+          const isNear = nearConsole && nearConsole.id === c.id;
+
+          // Sombra de la consola
+          ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+          this.drawRoundedRect(c.x - 24, c.y - 20, 48, 44, 10);
+          ctx.fill();
+
+          // Resplandor amarillo característico de Tarea Activa en Among Us
+          if (isPending) {
+            ctx.save();
+            ctx.shadowColor = '#ffea00';
+            ctx.shadowBlur = isNear ? 20 : 10;
+            ctx.strokeStyle = isNear ? '#ffffff' : '#ffea00';
+            ctx.lineWidth = isNear ? 3.5 : 2.5;
+            this.drawRoundedRect(c.x - 24, c.y - 24, 48, 44, 10);
+            ctx.stroke();
+            ctx.restore();
+          }
+
+          // Cuerpo metálico del escritorio/consola
+          ctx.fillStyle = isCleared ? '#064e3b' : (isFailed ? '#4c0519' : '#1e293b');
+          ctx.strokeStyle = isCleared ? '#00f59b' : (isFailed ? '#ff3860' : '#ffea00');
+          ctx.lineWidth = 2;
+          this.drawRoundedRect(c.x - 22, c.y - 22, 44, 40, 9);
+          ctx.fill();
+          ctx.stroke();
+
+          // Pantalla del monitor en la consola
+          ctx.fillStyle = isCleared ? '#022c22' : (isFailed ? '#2e020e' : '#09152b');
+          this.drawRoundedRect(c.x - 16, c.y - 17, 32, 22, 5);
+          ctx.fill();
+
+          // Icono o estado dentro de la consola
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          if (isPending) {
+            ctx.font = '14px sans-serif';
+            ctx.fillText(c.icon, c.x, c.y - 6);
+
+            // Globo amarillo de exclamación flotante si está pendiente
+            const bounce = Math.sin(Date.now() * 0.007) * 2.5;
+            ctx.fillStyle = '#ffea00';
+            ctx.beginPath();
+            ctx.arc(c.x + 18, c.y - 20 + bounce, 8, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#000000';
+            ctx.font = '900 11px Orbitron';
+            ctx.fillText('!', c.x + 18, c.y - 19 + bounce);
+          } else if (isCleared) {
+            ctx.fillStyle = '#00f59b';
+            ctx.font = 'bold 16px sans-serif';
+            ctx.fillText('✓', c.x, c.y - 5);
+          } else {
+            ctx.fillStyle = '#ff3860';
+            ctx.font = 'bold 15px sans-serif';
+            ctx.fillText('✕', c.x, c.y - 5);
+          }
+
+          // Etiqueta de tipo de tarea debajo de la consola
+          let tag = 'CASO';
+          if (c.questionData.type === 'circuito') tag = 'CABLES';
+          if (c.questionData.type === 'triaje') tag = 'ESCÁNER';
+
+          ctx.fillStyle = isPending ? '#fde047' : '#cbd5e1';
+          ctx.font = '800 9px Orbitron';
+          ctx.fillText(tag, c.x, c.y + 11);
+
+          ctx.textAlign = 'left';
+          ctx.textBaseline = 'alphabetic';
+        });
+
+        // 4. Indicador de destino cuando el jugador hace clic para caminar
+        if (this.player.targetX !== null && this.player.targetY !== null) {
+          ctx.strokeStyle = 'rgba(0, 210, 255, 0.65)';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.arc(this.player.targetX, this.player.targetY, 10, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+
+        // 5. DIBUJAR EL MUÑEQUITO ESTILO AMONG US (CREWMATE)
+        this.drawAmongUsCrewmate(this.player);
+      }
+
+      drawAmongUsCrewmate(p) {
+        const ctx = this.ctx;
+        ctx.save();
+        ctx.translate(p.x, p.y);
+
+        // Balanceo al caminar
+        const bobY = p.isMoving ? Math.abs(Math.sin(p.walkCycle)) * -4 : 0;
+        const legOffset = p.isMoving ? Math.sin(p.walkCycle) * 5 : 0;
+
+        // Sombra en el piso
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.55)';
+        ctx.beginPath();
+        ctx.ellipse(0, 20, 16, 6, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Voltear horizontalmente según la dirección en la que mira
+        const dir = p.facing === 'left' ? -1 : 1;
+        ctx.scale(dir, 1);
+        ctx.translate(0, bobY);
+
+        // Mochila (Backpack) detrás del cuerpo
+        ctx.fillStyle = p.darkColor;
+        ctx.strokeStyle = '#020617';
+        ctx.lineWidth = 3;
+        this.drawRoundedRect(-19, -8, 9, 20, 4);
+        ctx.fill();
+        ctx.stroke();
+
+        // Pierna izquierda
+        ctx.fillStyle = p.darkColor;
+        this.drawRoundedRect(-11, 10 + legOffset * 0.5, 9, 10, 4);
+        ctx.fill();
+        ctx.stroke();
+
+        // Pierna derecha
+        ctx.fillStyle = p.mainColor;
+        this.drawRoundedRect(1, 10 - legOffset * 0.5, 9, 10, 4);
+        ctx.fill();
+        ctx.stroke();
+
+        // Cuerpo principal tipo cápsula (Bean body)
+        ctx.fillStyle = p.mainColor;
+        this.drawRoundedRect(-13, -18, 25, 31, 12);
+        ctx.fill();
+        ctx.stroke();
+
+        // Sombra inferior interna del traje
+        ctx.fillStyle = p.darkColor;
+        ctx.beginPath();
+        ctx.arc(0, 3, 11, 0.15 * Math.PI, 0.85 * Math.PI);
+        ctx.fill();
+
+        // Visor de cristal (Goggles)
+        ctx.fillStyle = '#7dd3fc';
+        ctx.strokeStyle = '#020617';
+        ctx.lineWidth = 2.8;
+        this.drawRoundedRect(-2, -13, 17, 11, 5.5);
+        ctx.fill();
+        ctx.stroke();
+
+        // Brillo blanco del visor
+        ctx.fillStyle = '#ffffff';
+        this.drawRoundedRect(2, -11, 8, 3.5, 2);
+        ctx.fill();
+
+        ctx.restore();
+
+        // Nombre flotante sobre la cabeza del tripulante
+        ctx.save();
+        ctx.font = '800 10px "Plus Jakarta Sans"';
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#020617';
+        ctx.fillText('ASESOR POLI', p.x + 1, p.y - 25 + bobY);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillText('ASESOR POLI', p.x, p.y - 26 + bobY);
+        ctx.restore();
+      }
+    }
+
+    window.onload = function () {
+      window.game = new PoliGameEngine();
+    };
+  </script>
+</body>
+</html>
