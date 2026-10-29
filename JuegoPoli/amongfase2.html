@@ -1,0 +1,2396 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Poli-Among 2D (Fase 2): Operación Nave Nodriza</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800;900&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=VT323&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-space: #04060d;
+      --poli-cyan: #00d2ff;
+      --poli-green: #00f59b;
+      --poli-yellow: #ffea00;
+      --poli-red: #ff3860;
+    }
+
+    body {
+      background-color: var(--bg-space);
+      color: #f1f5f9;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      user-select: none;
+      -webkit-user-select: none;
+      overflow-x: hidden;
+    }
+
+    .font-orbitron {
+      font-family: 'Orbitron', sans-serif;
+    }
+
+    .font-pixel {
+      font-family: 'VT323', monospace;
+    }
+
+    /* Modal Panels */
+    .space-panel {
+      background: #0a1128;
+      border: 2px solid rgba(56, 189, 248, 0.2);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.9);
+    }
+    
+    .rule-card {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.2s ease;
+    }
+    .rule-card:hover {
+      background: rgba(30, 41, 59, 0.8);
+      border-color: rgba(56, 189, 248, 0.4);
+    }
+
+    .tablet-frame {
+      background: #111a2e;
+      border: 6px solid #475569;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.95), inset 0 0 20px rgba(0, 210, 255, 0.12);
+    }
+
+    .use-btn {
+      transition: all 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .use-btn:not(:disabled):hover {
+      transform: scale(1.07);
+      filter: drop-shadow(0 0 18px rgba(255, 234, 0, 0.75));
+    }
+    .use-btn:not(:disabled):active {
+      transform: scale(0.95);
+    }
+
+    #gameCanvas {
+      background: #03050a;
+      display: block;
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+    }
+
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #091024;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #38bdf8;
+      border-radius: 99px;
+    }
+
+    /* Typing effect cursor */
+    .typewriter-cursor::after {
+      content: '█';
+      animation: blink 1s step-start infinite;
+      color: #00f59b;
+      margin-left: 4px;
+    }
+    @keyframes blink { 50% { opacity: 0; } }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-between p-2 md:p-3 relative">
+
+  <!-- ========================================================= -->
+  <!-- PANTALLA DE INICIO (LOBBY LIMPIO TIPO FASE 1)             -->
+  <!-- ========================================================= -->
+  <div id="startLobbyModal" class="fixed inset-0 z-50 flex items-center justify-center p-3 bg-black/95 backdrop-blur-sm transition-opacity duration-300">
+    <div class="w-full max-w-5xl space-panel rounded-3xl p-6 md:p-8 flex flex-col max-h-[95vh] overflow-y-auto">
+      
+      <!-- Top Section: Title & Customizer -->
+      <div class="flex flex-col md:flex-row items-center justify-between gap-6 pb-6 border-b border-slate-700/50">
+        <!-- Title Area -->
+        <div class="flex items-center gap-4">
+          <div class="w-20 h-20 rounded-3xl bg-slate-900 border-2 border-cyan-400 flex items-center justify-center shadow-[0_0_20px_rgba(0,210,255,0.3)] shrink-0 relative overflow-hidden">
+            <!-- Mini Crewmate SVG -->
+            <svg width="50" height="50" viewBox="0 0 64 64" fill="none" class="absolute mt-2">
+              <rect x="8" y="22" width="10" height="24" rx="5" fill="#0284c7" stroke="#fff" stroke-width="2"/>
+              <path d="M16 24C16 12 24 8 34 8C44 8 50 12 50 24V48C50 52 47 55 43 55H39C36 55 35 52 35 48V45H29V48C29 52 28 55 25 55H21C17 55 16 52 16 48V24Z" fill="#00d2ff" stroke="#fff" stroke-width="2"/>
+              <rect x="26" y="16" width="26" height="14" rx="7" fill="#bae6fd" stroke="#fff" stroke-width="2"/>
+              <rect x="30" y="18" width="12" height="4" rx="2" fill="#ffffff"/>
+            </svg>
+            <div class="absolute inset-0 bg-gradient-to-tr from-transparent to-cyan-400/20"></div>
+          </div>
+          <div>
+            <div class="flex items-center gap-2 mb-1.5">
+              <span class="px-2 py-0.5 rounded text-[10px] font-orbitron font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 uppercase">Simulador Oficial • Viernes</span>
+            </div>
+            <h1 class="font-orbitron font-black text-2xl md:text-3xl text-white tracking-wide uppercase leading-none">
+              POLI-AMONG 2D:<br><span class="text-cyan-400">NAVE NODRIZA</span>
+            </h1>
+            <p class="text-xs md:text-sm text-slate-300 mt-2 font-medium max-w-md">
+              Completa las reparaciones normativas en los 5 compartimentos de carga para ganar los <strong class="text-emerald-400">150 Polipuntos</strong> restantes (Meta: 300).
+            </p>
+          </div>
+        </div>
+
+        <!-- Customizer Panel -->
+        <div class="bg-slate-900/80 p-4 rounded-2xl border border-slate-700 min-w-[240px]">
+          <span class="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2 text-center">Color de tu Tripulante</span>
+          <div class="flex items-center justify-center gap-2 mb-4">
+            <button type="button" onclick="window.game.setCrewColor('#00d2ff', '#0284c7', this)" class="color-btn w-7 h-7 rounded-full bg-[#00d2ff] ring-2 ring-white transition cursor-pointer"></button>
+            <button type="button" onclick="window.game.setCrewColor('#00f59b', '#059669', this)" class="color-btn w-7 h-7 rounded-full bg-[#00f59b] opacity-60 hover:opacity-100 transition cursor-pointer"></button>
+            <button type="button" onclick="window.game.setCrewColor('#ff3860', '#be123c', this)" class="color-btn w-7 h-7 rounded-full bg-[#ff3860] opacity-60 hover:opacity-100 transition cursor-pointer"></button>
+            <button type="button" onclick="window.game.setCrewColor('#ffea00', '#ca8a04', this)" class="color-btn w-7 h-7 rounded-full bg-[#ffea00] opacity-60 hover:opacity-100 transition cursor-pointer"></button>
+            <button type="button" onclick="window.game.setCrewColor('#a855f7', '#7e22ce', this)" class="color-btn w-7 h-7 rounded-full bg-[#a855f7] opacity-60 hover:opacity-100 transition cursor-pointer"></button>
+            <button type="button" onclick="window.game.setCrewColor('#fb923c', '#c2410c', this)" class="color-btn w-7 h-7 rounded-full bg-[#fb923c] opacity-60 hover:opacity-100 transition cursor-pointer"></button>
+          </div>
+          <span class="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2 text-center">Accesorio</span>
+          <div class="flex items-center justify-center gap-1.5">
+            <button type="button" onclick="window.game.setCrewHat('none', this)" class="hat-btn px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-[10px] font-bold border border-white text-white cursor-pointer transition">Sin Gorro</button>
+            <button type="button" onclick="window.game.setCrewHat('viking', this)" class="hat-btn px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-[10px] font-bold border border-slate-600 text-slate-400 cursor-pointer transition">⚔️ Vikingo</button>
+            <button type="button" onclick="window.game.setCrewHat('crown', this)" class="hat-btn px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-[10px] font-bold border border-slate-600 text-slate-400 cursor-pointer transition">👑 Corona</button>
+            <button type="button" onclick="window.game.setCrewHat('cap', this)" class="hat-btn px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-[10px] font-bold border border-slate-600 text-slate-400 cursor-pointer transition">🧢 Capitán</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Rules Title -->
+      <div class="mt-6 mb-4 flex items-center gap-2">
+        <span class="text-lg">📋</span>
+        <h2 class="font-orbitron font-bold text-sm text-cyan-300 uppercase tracking-widest">
+          Manual de Misión para el Tripulante (Reglas)
+        </h2>
+      </div>
+
+      <!-- Rules Cards Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <!-- Card 1 -->
+        <div class="rule-card rounded-2xl p-4 border-t-4 border-t-cyan-400">
+          <div class="w-8 h-8 rounded-lg bg-cyan-950 flex items-center justify-center text-cyan-400 mb-3">🖱️</div>
+          <h3 class="font-bold text-white text-sm mb-1.5">1. Cómo Moverte</h3>
+          <p class="text-xs text-slate-300 leading-relaxed">
+            ¡Súper fácil! Haz <strong>clic directo</strong> sobre cualquier caja verde con laptop y tu muñequito caminará solo hasta allá. También puedes usar las flechas del teclado o <kbd class="bg-slate-800 px-1 rounded text-[10px]">WASD</kbd>.
+          </p>
+        </div>
+        <!-- Card 2 -->
+        <div class="rule-card rounded-2xl p-4 border-t-4 border-t-amber-400">
+          <div class="w-8 h-8 rounded-lg bg-amber-950 flex items-center justify-center text-amber-400 mb-3">⚡</div>
+          <h3 class="font-bold text-white text-sm mb-1.5">2. Tareas en Laptops</h3>
+          <p class="text-xs text-slate-300 leading-relaxed">
+            Cada sector tiene <strong>3 cajas de carga con portátiles amarillos</strong>. Haz clic en ellas o acércate y presiona el botón "USAR" para resolver casos de Opciones de Grado e Inglés.
+          </p>
+        </div>
+        <!-- Card 3 -->
+        <div class="rule-card rounded-2xl p-4 border-t-4 border-t-rose-400">
+          <div class="w-8 h-8 rounded-lg bg-rose-950 flex items-center justify-center text-rose-400 mb-3">🛡️</div>
+          <h3 class="font-bold text-white text-sm mb-1.5">3. Regla Caja Negra</h3>
+          <p class="text-xs text-slate-300 leading-relaxed">
+            Tienes <strong>3 Escudos</strong> de protección. Si fallas una respuesta, pierdes 1 escudo y <strong>NO se revelará la respuesta correcta</strong> de inmediato. ¡Deduce el error!
+          </p>
+        </div>
+        <!-- Card 4 -->
+        <div class="rule-card rounded-2xl p-4 border-t-4 border-t-emerald-400">
+          <div class="w-8 h-8 rounded-lg bg-emerald-950 flex items-center justify-center text-emerald-400 mb-3">🏆</div>
+          <h3 class="font-bold text-white text-sm mb-1.5">4. Meta 300 Pts</h3>
+          <p class="text-xs text-slate-300 leading-relaxed">
+            Al reparar los 5 módulos (15 retos al azar) asegurarás tus últimos <strong>150 Polipuntos</strong>, que sumados a los de la Fase 1, te dan el total de <strong>300 Polipuntos</strong> del hito.
+          </p>
+        </div>
+      </div>
+
+      <!-- Start Action Footer -->
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-4 mt-auto pt-4 border-t border-slate-700/50">
+        <div class="flex items-center gap-2 text-xs text-slate-400">
+          <span class="w-3 h-3 rounded-full bg-slate-700 block border border-slate-500"></span>
+          <span>Banco Fase 2: Cargados 50 casos analíticos recientes.</span>
+        </div>
+        <button id="btnInitCutscene" type="button" class="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-300 hover:to-emerald-300 text-slate-900 font-orbitron font-black text-sm uppercase tracking-widest shadow-[0_0_20px_rgba(255,234,0,0.3)] transition cursor-pointer">
+          🚀 INICIAR MISIÓN EN LA NAVE
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- MODAL DE CINEMÁTICA / NARRATIVA (ESTILO RPG)              -->
+  <!-- ========================================================= -->
+  <div id="cutsceneModal" class="fixed inset-0 z-[60] flex flex-col items-center justify-center bg-black hidden opacity-0 transition-opacity duration-500 p-6">
+    <div class="max-w-3xl w-full flex flex-col h-full justify-center relative">
+      <div class="flex items-center gap-3 mb-6 opacity-60">
+        <span class="text-emerald-400 animate-pulse text-xl">▶</span>
+        <span class="font-pixel text-emerald-400 text-xl tracking-widest uppercase">Sistema de Bitácora PoliOS v2.0</span>
+      </div>
+      
+      <!-- Contenedor del texto de máquina de escribir -->
+      <div class="min-h-[250px]">
+        <p id="typewriterText" class="font-pixel text-white text-2xl md:text-3xl leading-relaxed tracking-wide typewriter-cursor"></p>
+      </div>
+
+      <!-- Botones de salto -->
+      <div class="mt-12 flex justify-end">
+        <button id="btnSkipCutscene" type="button" class="px-6 py-2 rounded-none border-2 border-slate-600 hover:border-white text-slate-400 hover:text-white font-pixel text-xl uppercase transition cursor-pointer">
+          Saltar [Espacio] >
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- BARRA SUPERIOR HUD                                        -->
+  <!-- ========================================================= -->
+  <header class="w-full max-w-6xl space-panel rounded-2xl px-4 py-2 mb-2 flex flex-wrap items-center justify-between gap-3 relative z-10">
+    <div class="flex items-center gap-3">
+      <button id="btnOpenRules" type="button" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-amber-400/50 text-xs font-bold text-amber-300 flex items-center gap-1.5 transition cursor-pointer shadow-md">
+        <span>⚙️</span> <span class="hidden sm:inline">Misión / Traje</span>
+      </button>
+      <div class="h-6 w-[1px] bg-slate-700 hidden sm:block"></div>
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span id="hudRoomTitle" class="font-orbitron font-bold text-xs md:text-sm text-cyan-300 uppercase tracking-wide">
+            NAVE NODRIZA • SECTOR 1: HOMOLOGACIÓN INGLÉS
+          </span>
+        </div>
+        <p class="text-[11px] text-slate-400">
+          Haz clic en las <strong class="text-emerald-300">cajas verdes con laptop</strong> <span class="text-amber-300 font-bold">[ ! ]</span> para reparar el módulo.
+        </p>
+      </div>
+    </div>
+
+    <!-- Total Progress & Cumulative 300 Polipuntos -->
+    <div class="flex items-center gap-4 md:gap-5 bg-slate-950/90 px-4 py-1.5 rounded-xl border border-slate-700/80">
+      <div>
+        <div class="flex items-center justify-between gap-3 text-[10px] uppercase font-bold tracking-wider text-slate-400 mb-1">
+          <span>Fase 2</span>
+          <span id="scoreDisplay" class="font-orbitron text-emerald-400 text-xs">0 / 150 PTS</span>
+        </div>
+        <div class="w-24 md:w-32 h-2.5 bg-slate-800 rounded-full overflow-hidden border border-slate-600 p-[1px]">
+          <div id="taskBarFill" class="h-full bg-gradient-to-r from-emerald-500 to-amber-300 rounded-full transition-all duration-300" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <!-- Acumulado Global 300 Pts -->
+      <div class="text-center border-l border-slate-800 pl-3 hidden sm:block">
+        <span class="block text-[9px] uppercase tracking-wider text-amber-300/80 font-bold">Total (F1+F2)</span>
+        <span id="globalScoreDisplay" class="font-orbitron font-black text-xs md:text-sm text-amber-300">150 / 300</span>
+      </div>
+
+      <!-- Escudos -->
+      <div class="text-center border-l border-slate-800 pl-3">
+        <span class="block text-[10px] uppercase tracking-wider text-slate-400 font-bold">Escudos</span>
+        <div id="livesContainer" class="flex items-center gap-1 mt-0.5">
+          <span class="text-sm">🛡️</span>
+          <span class="text-sm">🛡️</span>
+          <span class="text-sm">🛡️</span>
+        </div>
+      </div>
+
+      <!-- Contador Tareas -->
+      <div class="text-center border-l border-slate-800 pl-3">
+        <span class="block text-[10px] uppercase tracking-wider text-slate-400 font-bold">Terminales</span>
+        <span id="progressDisplay" class="font-orbitron font-bold text-xs md:text-sm text-cyan-300">0 / 15</span>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-2">
+      <button id="btnSound" type="button" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-cyan-300 border border-slate-600 transition cursor-pointer">
+        🔊 Sonido
+      </button>
+      <button id="btnReset" type="button" class="px-3 py-1.5 rounded-xl bg-rose-950/80 hover:bg-rose-900 text-xs font-semibold text-rose-300 border border-rose-500/40 transition cursor-pointer">
+        ↺ Reiniciar
+      </button>
+    </div>
+  </header>
+
+  <!-- ========================================================= -->
+  <!-- ESCENARIO PRINCIPAL 2D (DROPSHIP LOBBY / NAVE NODRIZA)    -->
+  <!-- ========================================================= -->
+  <main class="w-full max-w-6xl relative flex-1 flex flex-col items-center justify-center z-0">
+    
+    <div class="relative w-full aspect-[16/9] max-h-[71vh] rounded-3xl overflow-hidden space-panel border-2 border-slate-600 shadow-2xl">
+      <canvas id="gameCanvas"></canvas>
+
+      <!-- PING SUPERIOR DERECHO ESTILO AMONG US -->
+      <div class="absolute top-3 right-4 pointer-events-none hidden sm:flex items-center gap-2 font-pixel text-white text-base opacity-90 drop-shadow-md">
+        <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+        <span>Ping: 10 ms • Dropship Poli</span>
+      </div>
+
+      <!-- BOTÓN "USE" ESTILO AMONG US DROPSHIP -->
+      <button id="btnUseConsole" type="button" disabled class="use-btn absolute bottom-3 right-3 z-20 w-24 h-24 md:w-28 md:h-28 flex flex-col items-center justify-center cursor-not-allowed opacity-45">
+        <svg viewBox="0 0 120 110" class="w-full h-full drop-shadow-2xl">
+          <polygon points="10,12 110,12 60,102" fill="#cbd5e1" stroke="#0f172a" stroke-width="6" stroke-linejoin="round"/>
+          <polygon points="20,18 100,18 60,90" fill="#94a3b8" stroke="#ef4444" stroke-width="4" stroke-linejoin="round"/>
+          <!-- Laptop mini icon -->
+          <rect x="44" y="24" width="32" height="20" rx="3" fill="#0f172a" stroke="#fff" stroke-width="2"/>
+          <path d="M38 46H82L86 52H34L38 46Z" fill="#334155" stroke="#0f172a" stroke-width="2"/>
+          <text x="60" y="74" text-anchor="middle" fill="#ffffff" stroke="#000000" stroke-width="4" paint-order="stroke" font-family="Orbitron, sans-serif" font-weight="900" font-size="22">USE</text>
+        </svg>
+        <span id="useBtnSubtext" class=" -mt-2 px-2 py-0.5 rounded bg-black/80 text-[9px] font-orbitron font-bold text-amber-300 uppercase border border-amber-400/40">
+          ACÉRCATE
+        </span>
+      </button>
+
+      <!-- D-Pad Móvil -->
+      <div class="absolute bottom-3 left-3 z-20 grid grid-cols-3 gap-1 w-28 md:hidden opacity-90">
+        <div></div>
+        <button id="btnUp" type="button" class="h-9 rounded-lg bg-slate-900/90 border border-cyan-400/50 text-cyan-300 active:bg-cyan-500 active:text-black font-bold">▲</button>
+        <div></div>
+        <button id="btnLeft" type="button" class="h-9 rounded-lg bg-slate-900/90 border border-cyan-400/50 text-cyan-300 active:bg-cyan-500 active:text-black font-bold">◀</button>
+        <button id="btnDown" type="button" class="h-9 rounded-lg bg-slate-900/90 border border-cyan-400/50 text-cyan-300 active:bg-cyan-500 active:text-black font-bold">▼</button>
+        <button id="btnRight" type="button" class="h-9 rounded-lg bg-slate-900/90 border border-cyan-400/50 text-cyan-300 active:bg-cyan-500 active:text-black font-bold">▶</button>
+      </div>
+    </div>
+
+    <!-- Pie de ayuda -->
+    <div class="w-full flex flex-wrap items-center justify-between text-xs text-slate-400 mt-1.5 px-2 gap-2">
+      <div class="flex items-center gap-4">
+        <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-emerald-700 border border-amber-300 inline-block"></span> Laptop Activa (Clic para ir)</span>
+        <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-emerald-400 inline-block"></span> Reparada (+10 Polipuntos)</span>
+        <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-rose-500 inline-block"></span> Saboteada (-1 Escudo)</span>
+      </div>
+      <div class="text-[11px] text-amber-300 font-semibold">
+        🚀 Meta Viernes: Completa los 5 compartimentos de la Nave Nodriza.
+      </div>
+    </div>
+  </main>
+
+  <!-- ========================================================= -->
+  <!-- MODAL DE TAREA (LAPTOP TERMINAL INTERACTIVA)              -->
+  <!-- ========================================================= -->
+  <div id="puzzleModal" class="fixed inset-0 z-50 flex items-center justify-center p-3 bg-black/80 backdrop-blur-md hidden opacity-0 transition-opacity duration-200">
+    <div class="w-full max-w-2xl tablet-frame rounded-3xl p-5 md:p-7 relative flex flex-col max-h-[92vh]">
+      
+      <div class="flex items-center justify-between pb-3 border-b border-slate-700 mb-4">
+        <div class="flex items-center gap-2.5">
+          <span class="w-3 h-3 rounded-full bg-amber-400 animate-ping"></span>
+          <span id="modalTypeBadge" class="px-3 py-1 rounded-lg text-xs font-orbitron font-bold uppercase tracking-wider bg-cyan-950 text-cyan-300 border border-cyan-400/40">
+            TERMINAL PORTÁTIL
+          </span>
+          <span id="modalRoomTag" class="text-xs text-slate-400 font-bold">SECTOR 1</span>
+        </div>
+        <button id="btnCloseModal" type="button" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-rose-600 text-slate-300 hover:text-white font-bold transition cursor-pointer">✕</button>
+      </div>
+
+      <div id="modalBody" class="flex-1 overflow-y-auto pr-1"></div>
+
+      <!-- Alerta de Fallo Ciego -->
+      <div id="blindFeedbackAlert" class="mt-4 p-4 rounded-2xl bg-rose-950/90 border-2 border-rose-500 hidden">
+        <div class="flex items-start gap-3">
+          <span class="text-2xl">🚨</span>
+          <div>
+            <h4 class="font-orbitron font-bold text-sm text-rose-300 uppercase">¡ERROR DE PROTOCOLO OPERATIVO! (-1 ESCUDO)</h4>
+            <p class="text-xs text-slate-200 mt-1">
+              La orientación elegida presenta inconsistencias frente a los NotiBoom y lineamientos oficiales socializados esta semana.
+            </p>
+            <p class="text-[11px] text-amber-300 mt-1 font-semibold">
+              🔒 Regla Caja Negra: No se revela la respuesta correcta durante la partida. El tema exacto se agregó a tu bitácora final de refuerzo.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="pt-4 border-t border-slate-700 mt-4 flex items-center justify-between">
+        <div class="text-xs text-slate-300 font-semibold">
+          Recompensa: <span class="text-emerald-400 font-orbitron font-bold">+10 Polipuntos (Fase 2)</span>
+        </div>
+        <button id="btnSubmitPuzzle" type="button" class="px-6 py-3 rounded-xl bg-gradient-to-r from-amber-400 to-emerald-400 hover:brightness-110 font-orbitron font-black text-xs md:text-sm text-slate-950 uppercase tracking-wider shadow-lg cursor-pointer transition">
+          PROCESAR CASO ✓
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- MODAL DE FINALIZACIÓN (CONSOLIDADO 300 POLIPUNTOS)        -->
+  <!-- ========================================================= -->
+  <div id="finishModal" class="fixed inset-0 z-50 flex items-center justify-center p-3 bg-black/90 backdrop-blur-lg hidden opacity-0 transition-opacity duration-300">
+    <div class="w-full max-w-3xl space-panel rounded-3xl border-2 border-amber-400/60 p-6 md:p-8 shadow-2xl flex flex-col max-h-[92vh] overflow-hidden">
+      
+      <div class="text-center pb-4 border-b border-slate-700">
+        <span id="finishBadge" class="px-4 py-1 rounded-full text-xs font-orbitron font-bold uppercase tracking-widest bg-emerald-950 text-emerald-400 border border-emerald-500/40 inline-block mb-2">
+          AUDITORÍA FASE 2 FINALIZADA
+        </span>
+        <h2 id="finishTitle" class="font-orbitron font-black text-2xl md:text-3xl text-white tracking-wide">
+          ¡NAVE NODRIZA LISTA PARA EL DESPEGUE!
+        </h2>
+        <p id="finishSubtitle" class="text-xs md:text-sm text-slate-400 mt-1">
+          Consolidado de tu desempeño en Homologación de Inglés, Prácticas Admin, Convenios 2027-1 y Grados.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3 my-4">
+        <div class="bg-slate-900/90 p-4 rounded-2xl border border-slate-700 text-center">
+          <span class="text-xs uppercase text-slate-400 font-bold">Puntaje Fase 2</span>
+          <div id="finalScoreDisplay" class="font-orbitron font-black text-3xl text-emerald-400 mt-1">150 / 150</div>
+          <span class="text-[11px] text-cyan-300">Polipuntos Viernes</span>
+        </div>
+        <div class="bg-slate-900/90 p-4 rounded-2xl border border-amber-500/40 text-center">
+          <span class="text-xs uppercase text-amber-300 font-bold">Acumulado Misión (F1 + F2)</span>
+          <div id="finalTotal300Display" class="font-orbitron font-black text-3xl text-amber-300 mt-1">300 / 300</div>
+          <span id="finalAccuracyLabel" class="text-[11px] text-slate-300">Meta Global Polipuntos</span>
+        </div>
+        <div class="bg-slate-900/90 p-4 rounded-2xl border border-slate-700 text-center">
+          <span class="text-xs uppercase text-slate-400 font-bold">Estado Operativo</span>
+          <div id="finalStatusDisplay" class="font-orbitron font-black text-xl text-emerald-300 mt-2">COMANDANTE POLI</div>
+          <span class="text-[11px] text-slate-400">Efectividad Consultiva</span>
+        </div>
+      </div>
+
+      <div class="flex-1 overflow-y-auto pr-2 my-2">
+        <h3 class="font-orbitron font-bold text-xs md:text-sm text-amber-300 mb-2 uppercase tracking-wider">
+          📋 BITÁCORA DE FEEDBACK (QUÉ DEBES REVISAR SEGÚN TUS FALLOS):
+        </h3>
+        <div id="breachListContainer" class="space-y-2.5"></div>
+      </div>
+
+      <div class="pt-4 border-t border-slate-700 flex flex-wrap gap-3 items-center justify-between">
+        <div class="text-xs text-slate-400">
+          🔄 Puedes volver a jugar para enfrentar otra combinación aleatoria del banco de 50 casos.
+        </div>
+        <button id="btnRestartGame" type="button" class="px-6 py-3 rounded-xl bg-gradient-to-r from-amber-400 to-emerald-400 font-orbitron font-black text-xs text-slate-950 uppercase tracking-wider shadow-lg cursor-pointer">
+          JUGAR NUEVA RONDA ALEATORIA
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- MOTOR Y LÓGICA JAVASCRIPT                                 -->
+  <!-- ========================================================= -->
+  <script>
+    /**
+     * BANCO MAESTRO DE 50 PREGUNTAS ANALÍTICAS - FASE 2
+     */
+    const MASTER_QUESTION_BANK = [
+      // ==========================================
+      // SECTOR 1: HOMOLOGACIÓN INGLÉS & VACACIONALES
+      // ==========================================
+      {
+        id: 1, room: 1, type: 'interrogatorio',
+        title: 'Caso: Error al Cargar Documentos de Homologación de Inglés',
+        caseDesc: 'Un estudiante se comunica molesto porque Smart Campus le arroja un error técnico cada vez que intenta subir su certificado para homologar el requisito de inglés. ¿A quién y por qué medio debes indicarle que remita su caso?',
+        options: [
+          'Radicar un ticket en Mesa de Ayuda TI adjuntando únicamente su documento de identidad.',
+          'Remitir su caso vía correo electrónico al docente Diego Hernán Gómez Talero (dhgomez@poligran.edu.co) con el pantallazo completo del error y el certificado de inglés.',
+          'Enviar el certificado al correo de Registro y Control esperando de 3 a 5 días hábiles.',
+          'Acercarse presencialmente al Centro de Idiomas para entregar el diploma en físico.'
+        ],
+        correct: 1,
+        docSource: 'NotiBoom: Inconvenientes en Homologación de Inglés',
+        pageRef: 'Guía Rápida Carga Homologación Inglés (Numeral 1 y 2)',
+        hintFeedback: 'Debes revisar el NotiBoom de Homologación de Inglés: las fallas de cargue en Smart Campus se remiten al docente Diego Hernán Gómez Talero (dhgomez@poligran.edu.co).'
+      },
+      {
+        id: 2, room: 1, type: 'triaje',
+        title: 'Triaje: Requisitos del Pantallazo para Homologación de Inglés',
+        caseDesc: 'Un estudiante va a enviar el correo al profesor Diego Gómez por falla en Smart Campus, pero recorta la captura de pantalla mostrando únicamente el recuadro rojo del error, sin barra de tareas ni dirección web.',
+        options: ['PROCEDE (Basta con ver el mensaje de error)', 'NO PROCEDE (El pantallazo debe mostrar fecha, hora y URL del navegador)'],
+        correct: 1,
+        docSource: 'NotiBoom: Inconvenientes en Homologación de Inglés',
+        pageRef: 'Numeral 2: Requisitos de adjuntos obligatorios',
+        hintFeedback: 'Recuerda que la captura de pantalla del error debe ser completa: es indispensable que se visualicen claramente la fecha, la hora y la URL de la página.'
+      },
+      {
+        id: 3, room: 1, type: 'circuito',
+        title: 'Circuito: Ruta de Contingencia ante Fallo en Homologación de Inglés',
+        caseDesc: 'Ordena los pasos que debe cumplir el asesor y el estudiante cuando falla el cargue de homologación de inglés en Smart Campus:',
+        steps: [
+          'Tomar captura de pantalla completa del error (visible fecha, hora y URL).',
+          'Reunir en PDF el certificado de inglés que desea presentar para homologar.',
+          'Redactar correo dirigido al docente Diego Hernán Gómez (dhgomez@poligran.edu.co).',
+          'Adjuntar ambos soportes para que el docente valide y dé continuidad al proceso.'
+        ],
+        correctSequence: [0, 1, 2, 3],
+        docSource: 'NotiBoom: Inconvenientes en Homologación de Inglés',
+        pageRef: 'Paso a paso y Speech de Éxito',
+        hintFeedback: 'Flujo de contingencia de inglés: Captura con fecha/hora/URL + Certificado de inglés -> Correo a dhgomez@poligran.edu.co.'
+      },
+      {
+        id: 4, room: 1, type: 'interrogatorio',
+        title: 'Caso: Envío Incompleto al Docente de Inglés',
+        caseDesc: 'Una estudiante escribió al correo dhgomez@poligran.edu.co enviando el pantallazo perfecto con fecha, hora y URL del fallo en Smart Campus, pero olvidó adjuntar su certificado de inglés. ¿Qué ocurre con su gestión?',
+        options: [
+          'El docente le abre la plataforma para que ella lo suba después.',
+          'Es indispensable adjuntar en el mismo correo tanto el pantallazo del error como el certificado de inglés a homologar para que el docente pueda darle continuidad.',
+          'Se homologa automáticamente con solo ver el error técnico.',
+          'El caso pasa a Convenios Gubernamentales.'
+        ],
+        correct: 1,
+        docSource: 'NotiBoom: Inconvenientes en Homologación de Inglés',
+        pageRef: 'Speech de Éxito: Adjuntos indispensables',
+        hintFeedback: 'Ambos adjuntos son obligatorios en el correo a dhgomez@poligran.edu.co: 1) Captura con fecha, hora y URL, y 2) Certificado de inglés.'
+      },
+      {
+        id: 5, room: 1, type: 'triaje',
+        title: 'Triaje: Módulo Vacacional con Deuda de Segundo Bloque',
+        caseDesc: 'Un estudiante pagó media matrícula en el semestre (pagó su primer bloque) pero actualmente tiene deuda del segundo bloque. Solicita inscribir y cursar un módulo vacacional.',
+        options: ['SÍ PUEDE APLICAR (Tiene matrícula activa por pagar el 1er bloque)', 'NO PUEDE APLICAR (El bloqueo del 2do bloque impide vacacionales)'],
+        correct: 0,
+        docSource: 'Comunicado Grados y Preguntas Frecuentes',
+        pageRef: 'Sección FAQ: Pago media matrícula',
+        hintFeedback: 'Revisa las FAQ: al haber pagado el primer bloque ya cuenta con matrícula activa en el periodo, por lo que el sistema SÍ le permite cursar el vacacional.'
+      },
+      {
+        id: 6, room: 1, type: 'interrogatorio',
+        title: 'Caso: Argumento Técnico de Vacacional en Pago Fraccionado',
+        caseDesc: 'Un compañero duda sobre por qué el sistema permite tomar un vacacional a un estudiante que debe la segunda mitad del semestre. ¿Cuál es la justificación operativa?',
+        options: [
+          'Porque los vacacionales son gratuitos para todos los programas.',
+          'Porque al haber pagado el primer bloque el estudiante ya cuenta con matrícula activa en el periodo académico vigente.',
+          'Porque la deuda se condona automáticamente al inscribir el vacacional.',
+          'Solo aplica si el estudiante pertenece a un convenio.'
+        ],
+        correct: 1,
+        docSource: 'Comunicado Grados y Preguntas Frecuentes',
+        pageRef: 'FAQ #4: Matrícula activa',
+        hintFeedback: 'El pago del primer bloque activa la matrícula del estudiante en el periodo, habilitándolo para aplicar al módulo vacacional.'
+      },
+      {
+        id: 7, room: 1, type: 'triaje',
+        title: 'Triaje: Correo Correcto para Contingencia de Inglés',
+        caseDesc: 'Un asesor le indica al estudiante que envíe su falla de cargue de homologación de inglés al correo dghomez@poligran.edu.co en lugar de dhgomez@poligran.edu.co.',
+        options: ['PROCEDE (Ambos correos llegan al docente)', 'NO PROCEDE (El correo exacto es dhgomez@poligran.edu.co)'],
+        correct: 1,
+        docSource: 'NotiBoom: Inconvenientes en Homologación de Inglés',
+        pageRef: 'Numeral 1: Correo oficial del docente',
+        hintFeedback: 'Cuidado con la digitación: el buzón correcto del profesor Diego Hernán Gómez Talero es dhgomez@poligran.edu.co.'
+      },
+      {
+        id: 8, room: 1, type: 'interrogatorio',
+        title: 'Caso: Tono y Empatía ante Fallas de Carga de Inglés',
+        caseDesc: 'Un estudiante frustrado dice que perderá su oportunidad de grado porque Smart Campus no le deja subir su certificado de inglés. Según el Speech de Éxito, ¿cuál es la postura consultiva adecuada?',
+        options: [
+          'Decirle que intente en la madrugada cuando la página no esté caída.',
+          'Empatizar con la importancia de su avance, lamentar la novedad en Smart Campus y entregarle la solución inmediata remitiendo los 2 soportes a dhgomez@poligran.edu.co.',
+          'Indicarle que presente un examen preparatorio en reemplazo.',
+          'Pedirle que borre las cookies sin darle ruta académica.'
+        ],
+        correct: 1,
+        docSource: 'NotiBoom: Homologación Inglés',
+        pageRef: 'Speech de Éxito',
+        hintFeedback: 'El Speech de Éxito conecta con la necesidad del estudiante y le da solución inmediata a través del correo del docente.'
+      },
+      {
+        id: 9, room: 1, type: 'triaje',
+        title: 'Triaje: Fotografía desde Celular sin URL en Falla',
+        caseDesc: 'El estudiante toma una foto borrosa con su celular a la pantalla del computador donde no se ve la barra de direcciones (URL) ni el reloj del sistema, para la homologación de inglés.',
+        options: ['PROCEDE (Cualquier foto sirve)', 'NO PROCEDE (Debe verse claramente fecha, hora y URL de la página)'],
+        correct: 1,
+        docSource: 'NotiBoom: Homologación Inglés',
+        pageRef: 'Numeral 2: Condiciones de la captura',
+        hintFeedback: 'Para evitar rechazos, la captura debe mostrar claramente la fecha, la hora y la URL del navegador.'
+      },
+      {
+        id: 10, room: 1, type: 'interrogatorio',
+        title: 'Caso: Validación Integral de Requisitos Institucionales',
+        caseDesc: 'Cuando un estudiante consulta por su ruta hacia grados, además del requisito de inglés y el avance de materias, ¿qué otros elementos debemos indagar siempre de forma integral?',
+        options: [
+          'Únicamente si tiene carnet estudiantil físico.',
+          'Indagar siempre por el cumplimiento de Pruebas Saber Pro, opción de grado aprobada, inglés y reconocimiento de créditos.',
+          'Solo revisar si pagó el curso de inducción de primer semestre.',
+          'Preguntar únicamente si desea ceremonia en diciembre.'
+        ],
+        correct: 1,
+        docSource: 'Comunicado Grados',
+        pageRef: 'Numeral 3: Requisitos Institucionales',
+        hintFeedback: 'Siempre debemos hacer validación integral: Pruebas Saber Pro, opción de grado aprobada, inglés y reconocimiento de créditos.'
+      },
+
+      // ==========================================
+      // SECTOR 2: PRÁCTICAS EN ADMINISTRACIÓN VIRTUAL
+      // ==========================================
+      {
+        id: 11, room: 2, type: 'interrogatorio',
+        title: 'Caso: Prerrequisito de Práctica según Cohorte',
+        caseDesc: 'Dos estudiantes de Admin Virtual (Plan Nuevo): Laura ingresó en 2024-2 y Mateo en 2025-1. ¿Qué asignatura prerrequisito debe tener aprobada cada uno para ir a práctica?',
+        options: [
+          'Ambos deben tener aprobado Consultorio Empresarial.',
+          'Laura (2024-2) requiere Análisis Estratégico aprobado; Mateo (desde 2025-1) requiere Gestión Estratégica aprobado.',
+          'Laura requiere Gestión Estratégica y Mateo Análisis Estratégico.',
+          'Ninguno requiere prerrequisito si eligen Liderazgo.'
+        ],
+        correct: 1,
+        docSource: 'NotiBoom & Infografía: Prácticas Admin Virtual',
+        pageRef: 'Sección 4: ¿Quiénes deben cursar la práctica?',
+        hintFeedback: 'Regla por cohorte: Matriculados en 2024-2 exigen "Análisis Estratégico"; matriculados desde 2025-1 exigen "Gestión Estratégica".'
+      },
+      {
+        id: 12, room: 2, type: 'triaje',
+        title: 'Triaje: Estudiante de Plan Antiguo sin Prácticas en Malla',
+        caseDesc: 'Un estudiante antiguo de Administración de Empresas Virtual revisa su malla y nota que su plan de estudios NO incluye la asignatura de prácticas. Pregunta si está obligado a cursarla.',
+        options: ['SÍ DEBE CURSARLA (Obligatoria para todos)', 'NO DEBE CURSARLA (Su plan antiguo no la exige)'],
+        correct: 1,
+        docSource: 'NotiBoom: Prácticas Admin Virtual',
+        pageRef: 'Numeral 4: Plan de estudios antiguo',
+        hintFeedback: 'Si el estudiante pertenece al plan antiguo y NO tiene prácticas dentro de su plan de estudios, no tiene obligación de cursarla.'
+      },
+      {
+        id: 13, room: 2, type: 'triaje',
+        title: 'Triaje: Solicitud de "Práctica Social" en Admin Virtual',
+        caseDesc: 'Una estudiante de Administración de Empresas Virtual solicita inscribir "Práctica Social" porque una amiga de Psicología la está haciendo.',
+        options: ['PROCEDE (Es la 5ta modalidad del programa)', 'NO PROCEDE (Admin Virtual NO tiene Práctica Social; es de Psicología)'],
+        correct: 1,
+        docSource: 'Infografía: Prácticas Admin Virtual',
+        pageRef: 'Alerta Clave y Sección Recuerda',
+        hintFeedback: '¡Alerta clave!: Administración de Empresas Virtual NO tiene Práctica Social (esa corresponde al programa de Psicología).'
+      },
+      {
+        id: 14, room: 2, type: 'interrogatorio',
+        title: 'Caso: Módulo Académico para Cursar las Modalidades',
+        caseDesc: 'Un estudiante de Admin Virtual eligió la modalidad de "Vinculación laboral" y pregunta cómo se llama el módulo académico que debe inscribir en su matrícula.',
+        options: [
+          'Módulo de Práctica en Innovación (todas las modalidades se gestionan allí).',
+          'Módulo de Consultorio Administrativo I.',
+          'Módulo de Pasantía Externa Empresarial.',
+          'No debe inscribir ningún módulo.'
+        ],
+        correct: 0,
+        docSource: 'NotiBoom & Infografía: Prácticas Admin Virtual',
+        pageRef: 'Numeral 1 y 3: ¿Dónde se gestionan?',
+        hintFeedback: 'Todas las 4 modalidades (Consultoría, Vinculación, Contrato y Liderazgo) se cursan dentro del módulo "Práctica en Innovación".'
+      },
+      {
+        id: 15, room: 2, type: 'interrogatorio',
+        title: 'Caso: Naturaleza de la Práctica en Liderazgo',
+        caseDesc: 'Un estudiante cree que después de terminar su contrato de aprendizaje está obligado a hacer una segunda práctica llamada "Práctica en Liderazgo". ¿Qué debes aclararle?',
+        options: [
+          'Que sí es obligatoria como requisito adicional de grado.',
+          'Que Práctica en Liderazgo es una alternativa elegible, NO una segunda práctica obligatoria.',
+          'Que Liderazgo solo dura 4 semanas y no tiene docente.',
+          'Que Liderazgo solo aplica para estudiantes de Derecho.'
+        ],
+        correct: 1,
+        docSource: 'NotiBoom: Prácticas Admin Virtual',
+        pageRef: 'Numeral 5 y Sección Recuerda',
+        hintFeedback: 'La Práctica en Liderazgo es una de las 4 alternativas elegibles, NUNCA una segunda práctica obligatoria.'
+      },
+      {
+        id: 16, room: 2, type: 'circuito',
+        title: 'Circuito: Proceso de Aprobación e Inscripción de Práctica',
+        caseDesc: 'Ordena las 4 etapas oficiales del proceso de aprobación e inscripción de prácticas en Admin Virtual:',
+        steps: [
+          'Postulación del estudiante en la página de prácticas según modalidad.',
+          'Validación de información y emisión de aprobación por el Centro de Prácticas.',
+          'Reporte de aprobados y habilitación del módulo por parte de Operaciones.',
+          'Inscripción académica del módulo Práctica en Innovación y legalización documental.'
+        ],
+        correctSequence: [0, 1, 2, 3],
+        docSource: 'Infografía: Prácticas Admin Virtual',
+        pageRef: 'Sección 7: Proceso de aprobación e inscripción',
+        hintFeedback: '1. Postulación -> 2. Aprobación Centro -> 3. Habilitación Operaciones -> 4. Inscripción y legalización.'
+      },
+      {
+        id: 17, room: 2, type: 'triaje',
+        title: 'Triaje: Confusión entre Aprobación e Inscripción',
+        caseDesc: 'Un estudiante recibió el correo de aprobación del Centro de Prácticas y por eso no inscribió el módulo ni subió documentos, confiando en que ya estaba matriculado.',
+        options: ['ACTUÓ CORRECTAMENTE', 'ERROR GRAVE (La aprobación del Centro NO reemplaza la inscripción ni la legalización)'],
+        correct: 1,
+        docSource: 'Infografía: Prácticas Admin Virtual',
+        pageRef: 'Numeral 7 y Sección Recuerda',
+        hintFeedback: 'Regla crítica: La aprobación emitida por el Centro de Prácticas NO reemplaza la inscripción académica del módulo ni la legalización.'
+      },
+      {
+        id: 18, room: 2, type: 'interrogatorio',
+        title: 'Caso: Diferencia entre Sector Externo y Laboratorio de Prácticas',
+        caseDesc: 'Según la guía visual de Administración Virtual, ¿cómo se agrupan internamente las 4 modalidades de práctica?',
+        options: [
+          'Todas se llaman Laboratorio Externo.',
+          'Sector Externo agrupa Vinculación y Contrato de aprendizaje; Laboratorio de Prácticas incluye Consultoría y Liderazgo.',
+          'Sector Externo es solo para ONG y Laboratorio para contratos SENA.',
+          'Consultoría pertenece a Sector Externo.'
+        ],
+        correct: 1,
+        docSource: 'Infografía: Prácticas Admin Virtual',
+        pageRef: 'Sección 6: Sector Externo y Laboratorio',
+        hintFeedback: 'Sector Externo = "Ya tengo trabajo" + "Mi primera práctica". Laboratorio = Consultoría + Liderazgo.'
+      },
+      {
+        id: 19, room: 2, type: 'interrogatorio',
+        title: 'Caso: Requisitos de Práctica en Consultoría',
+        caseDesc: 'Un estudiante desea elegir la modalidad 1 (Práctica en Consultoría). ¿En qué consiste exactamente y qué requisitos exige?',
+        options: [
+          'Es la segunda parte del módulo de Consultorio Empresarial para implementar la propuesta formulada; exige haberlo aprobado y aceptación de la empresa.',
+          'Consiste en buscar un contrato de aprendizaje sin haber visto Consultorio.',
+          'Es un examen oral ante jurados sin intervención de empresa.',
+          'Consiste en crear una fundación desde cero.'
+        ],
+        correct: 0,
+        docSource: 'Infografía: Prácticas Admin Virtual',
+        pageRef: 'Sección 5, Modalidad 1',
+        hintFeedback: 'La Consultoría implementa el diagnóstico formulado en Consultorio Empresarial (requiere haberlo aprobado y aval de la empresa).'
+      },
+      {
+        id: 20, room: 2, type: 'circuito',
+        title: 'Circuito: Legalización Específica para Modalidad Consultoría',
+        caseDesc: 'Ordena los 4 pasos de legalización establecidos para la modalidad de Consultoría (continuidad):',
+        steps: [
+          'Solicitar la carta a través del recurso establecido.',
+          'El Centro de Prácticas valida y emite la carta de aprobación.',
+          'Continuar con la ruta operativa de "Mi primera práctica".',
+          'Gestionar formato de aceptación, carta aval de la empresa y correo de aprobación.'
+        ],
+        correctSequence: [0, 1, 2, 3],
+        docSource: 'Infografía: Prácticas Admin Virtual',
+        pageRef: 'Sección 8: Legalización',
+        hintFeedback: 'Solicitar carta -> Emisión por Centro -> Ruta "Mi primera práctica" -> Formato aceptación y carta aval.'
+      },
+
+      // ==========================================
+      // SECTOR 3: CONVENIOS GUBERNAMENTALES 2027-1
+      // ==========================================
+      {
+        id: 21, room: 3, type: 'interrogatorio',
+        title: 'Caso: Convenios Impactados por la Nueva Ruta 2027-1',
+        caseDesc: '¿Cuáles son los convenios gubernamentales impactados por la directriz de autogestión de renovación en Smart Campus para 2027-1?',
+        options: [
+          'Únicamente becas internas de monitoría académica.',
+          'Jóvenes a la E, FEST Atenea y Gobernación de Cundinamarca.',
+          'Solo créditos directos con bancos privados.',
+          'Estudiantes de posgrado en el exterior.'
+        ],
+        correct: 1,
+        docSource: 'NotiBoom & Guía PDF: Renovación 2027-1',
+        pageRef: 'Portada Guía y Alcance NotiBoom',
+        hintFeedback: 'Los tres convenios impactados son: Jóvenes a la E, FEST Atenea y Gobernación de Cundinamarca.'
+      },
+      {
+        id: 22, room: 3, type: 'triaje',
+        title: 'Triaje: Consecuencia de No Renovar dentro de la Fecha Límite',
+        caseDesc: 'Un estudiante de Jóvenes a la E dejó pasar la fecha límite de renovación y solicita un plazo extraordinario.',
+        options: ['PROCEDE (Se le abre plataforma 15 días)', 'NO PROCEDE (Sin plazos extra; reportado como abandono de formación)'],
+        correct: 1,
+        docSource: 'NotiBoom & Guía PDF: Renovación 2027-1',
+        pageRef: 'Aviso IMPORTANTE',
+        hintFeedback: 'La renovación es obligatoria dentro de las fechas: no habrá plazos extraordinarios y puede reportarse como abandono ante la entidad.'
+      },
+      {
+        id: 23, room: 3, type: 'triaje',
+        title: 'Triaje: Correo Exigido en el Formulario de Renovación',
+        caseDesc: 'Al diligenciar el Paso 6 en Smart Campus, el estudiante escribe su correo institucional (@poligran.edu.co).',
+        options: ['CORRECTO (Mejor institucional)', 'INCORRECTO (Debe registrar obligatoriamente su CORREO PERSONAL activo)'],
+        correct: 1,
+        docSource: 'NotiBoom & Guía PDF: Renovación 2027-1',
+        pageRef: 'Paso 6: Completa los datos',
+        hintFeedback: 'Alerta clave: debe registrar un correo PERSONAL actualizado (NO el institucional) para recibir la confirmación.'
+      },
+      {
+        id: 24, room: 3, type: 'circuito',
+        title: 'Circuito: Paso a Paso de Renovación de Convenios',
+        caseDesc: 'Ordena la ruta en Smart Campus para autogestionar la renovación del convenio 2027-1:',
+        steps: [
+          'Ingresar a smartcampus.poli.edu.co ➡️ Académico ➡️ Convenios Gubernamentales.',
+          'Revisar fechas límite y hacer clic en el botón "Crear solicitud".',
+          'Seleccionar Categoría: CONVENIOS y Servicio: RENOVACION CONVENIOS GUBERNAMENTALES.',
+          'Elegir su estado en Proceso de renovación, digitar correo personal y celular, y Guardar.'
+        ],
+        correctSequence: [0, 1, 2, 3],
+        docSource: 'Guía PDF: Renovación de Matrícula',
+        pageRef: 'Pasos 1 al 6',
+        hintFeedback: 'Académico > Convenios Gubernamentales > Crear solicitud > Categoría CONVENIOS / Servicio RENOVACION CONVENIOS GUBERNAMENTALES > Guardar.'
+      },
+      {
+        id: 25, room: 3, type: 'interrogatorio',
+        title: 'Caso: Tipificación Exacta en Convenios',
+        caseDesc: '¿Qué opciones exactas debe seleccionar en las listas desplegables del Paso 5 antes de oprimir "Continuar"?',
+        options: [
+          'Categoría: FINANCIERO / Servicio: DESCUENTO MATRÍCULA.',
+          'Categoría: CONVENIOS / Servicio: RENOVACION CONVENIOS GUBERNAMENTALES.',
+          'Categoría: CERTIFICADOS / Servicio: CONSTANCIA ESTUDIO.',
+          'Categoría: GRADOS / Servicio: PAZ Y SALVO.'
+        ],
+        correct: 1,
+        docSource: 'Guía PDF: Renovación de Matrícula',
+        pageRef: 'Paso 5: Selecciona categoría y servicio',
+        hintFeedback: 'La tipificación exacta es Categoría: CONVENIOS y Servicio: RENOVACION CONVENIOS GUBERNAMENTALES.'
+      },
+      {
+        id: 26, room: 3, type: 'interrogatorio',
+        title: 'Caso: Monitoreo de Estados del Radicado',
+        caseDesc: 'Tras guardar su solicitud de convenio, ¿qué estados visualizará en "Status" y dónde recibirá la respuesta?',
+        options: [
+          'Verá ACTIVA y luego FINALIZADA en la sección, y recibirá confirmación en el correo personal registrado.',
+          'El radicado se borra inmediatamente.',
+          'Aparece en estado TM y llega por correo físico.',
+          'Debe enviar el radicado a Registro y Control.'
+        ],
+        correct: 0,
+        docSource: 'Guía PDF: Renovación de Matrícula',
+        pageRef: 'Paso 7: Conserva el radicado',
+        hintFeedback: 'Status cambia de ACTIVA a FINALIZADA y la notificación llega al correo personal registrado.'
+      },
+      {
+        id: 27, room: 3, type: 'triaje',
+        title: 'Triaje: Campo "Proceso de Renovación" en "Ninguno"',
+        caseDesc: 'En el Paso 6, el campo "PROCESO DE RENOVACION" viene en "Ninguno" y el estudiante intenta guardar así.',
+        options: ['PROCEDE (Se deja en Ninguno)', 'NO PROCEDE (Es campo requerido, debe seleccionar su estado real)'],
+        correct: 1,
+        docSource: 'Guía PDF: Renovación de Matrícula',
+        pageRef: 'Paso 6 (Captura de formulario)',
+        hintFeedback: '"PROCESO DE RENOVACION *" es obligatorio: el estudiante debe elegir el estado que corresponda a su situación.'
+      },
+      {
+        id: 28, room: 3, type: 'interrogatorio',
+        title: 'Caso: Canal para Reportar Dudas en Renovación',
+        caseDesc: 'Según el Paso 8 de la Guía, si el estudiante presenta dudas o inconvenientes con su renovación de convenio, ¿qué canal debe utilizar?',
+        options: [
+          'El Formulario Web institucional dispuesto en el Paso 8.',
+          'El correo del docente de inglés.',
+          'El buzón de Consultorio Jurídico.',
+          'Solicitar recálculo del CAPP en Banner.'
+        ],
+        correct: 0,
+        docSource: 'Guía PDF: Renovación de Matrícula',
+        pageRef: 'Paso 8: Reporta dudas',
+        hintFeedback: 'El Paso 8 de la guía oficial indica utilizar el Formulario Web institucional para reportar dudas de renovación.'
+      },
+      {
+        id: 29, room: 3, type: 'triaje',
+        title: 'Triaje: Consulta de Solicitudes Ya Registradas',
+        caseDesc: 'Un estudiante ya creó su solicitud y quiere verificar en qué estado va. En Convenios Gubernamentales, ¿qué botón debe usar?',
+        options: ['Botón "Consultar solicitud"', 'Volver a darle "Crear solicitud"'],
+        correct: 0,
+        docSource: 'Guía PDF: Renovación de Matrícula',
+        pageRef: 'Paso 4: Crea o consulta tu solicitud',
+        hintFeedback: 'Existen dos botones: "Crear solicitud" para radicarla y "Consultar solicitud" para hacer seguimiento.'
+      },
+      {
+        id: 30, room: 3, type: 'interrogatorio',
+        title: 'Caso: Dónde Consultar las Fechas Límite',
+        caseDesc: 'Un estudiante de Gobernación de Cundinamarca pregunta dónde verificar la fecha límite de su solicitud de renovación.',
+        options: [
+          'Directamente dentro del botón "Convenios Gubernamentales" en Smart Campus (Paso 3 y 7).',
+          'En la cartilla de preparatorios de Derecho.',
+          'No existen fechas límite para este convenio.',
+          'En el portal de prácticas.'
+        ],
+        correct: 0,
+        docSource: 'Guía PDF: Renovación de Matrícula',
+        pageRef: 'Pasos 1 (Paso 3) y 2 (Paso 7)',
+        hintFeedback: 'Dentro del botón Convenios Gubernamentales de Smart Campus se publican las condiciones y fechas límite.'
+      },
+
+      // ==========================================
+      // SECTOR 4: GRADOS EXTEMPORÁNEOS & CAPP
+      // ==========================================
+      {
+        id: 31, room: 4, type: 'interrogatorio',
+        title: 'Caso: Estudiante Cursando Primer Bloque exige Grado Extemporáneo',
+        caseDesc: 'Un estudiante que termina su última materia en este primer bloque exige entrar a los grados extemporáneos actuales.',
+        options: [
+          'Pedir excepción para que le suban la nota hoy.',
+          'Aclararle que el cierre de extemporáneos es el 6 de nov y el cargue de notas del 1er bloque va del 6 al 9 de nov; por tanto, no alcanza y va para 2027.',
+          'Que se inscriba sin notas y luego mande un correo.',
+          'Asegurarle que tendrá ceremonia presencial en diciembre.'
+        ],
+        correct: 1,
+        docSource: 'Comunicado Grados Extemporáneos',
+        pageRef: 'Numeral 1: Realidad de Fechas',
+        hintFeedback: 'Cierre inscripción: 6 de noviembre. Notas 1er bloque: 6 al 9 de noviembre. Quienes cursan materias actualmente NO alcanzan.'
+      },
+      {
+        id: 32, room: 4, type: 'triaje',
+        title: 'Triaje: Ceremonia Presencial en Diciembre',
+        caseDesc: 'Una estudiante de extemporáneos pregunta a qué hora es su ceremonia en diciembre para comprar tiquetes.',
+        options: ['SE LE CONFIRMA CEREMONIA EN DICIEMBRE', 'SE ACLARA: Extemporáneos NO tienen ceremonia y no hay grados en diciembre (van a 2027)'],
+        correct: 1,
+        docSource: 'Comunicado Grados Extemporáneos',
+        pageRef: 'Numeral 1, viñeta 3',
+        hintFeedback: 'Los grados extemporáneos NO tienen ceremonia presencial y en el Poli NO hay ceremonias en diciembre.'
+      },
+      {
+        id: 33, room: 4, type: 'interrogatorio',
+        title: 'Caso: 98% en Analytics con Campo Cumple en "Yes"',
+        caseDesc: 'En Analytics un estudiante marca 98% de avance, pero el campo "Cumple" está en "Yes". ¿Qué debes hacer?',
+        options: [
+          'Radicar ticket para que recalculen el CAPP hasta el 100%.',
+          'No radicar ticket: lo que determina si es apto es que el campo Cumple esté en "Yes" (las variaciones de % son por parametrización).',
+          'Bloquear al estudiante.',
+          'Obligarlo a cursar una electiva.'
+        ],
+        correct: 1,
+        docSource: 'Comunicado Grados Extemporáneos',
+        pageRef: 'Numeral 2: Verificación Analytics',
+        hintFeedback: 'Si el campo "Cumple" está en "Yes", el estudiante está apto académicamente. No radiques tickets por porcentajes de 97% o 102%.'
+      },
+      {
+        id: 34, room: 4, type: 'triaje',
+        title: 'Triaje: Letra "Z" vs "N" en No Cursos',
+        caseDesc: 'El campo de "No cursos" de un estudiante aparece con la letra "Z". Un asesor piensa que la "Z" significa bloqueo.',
+        options: ['EL ASESOR TIENE RAZÓN (Z es bloqueo)', 'FALSO: "Z" significa No Aplica (no requiere cursos extra); "N" es pendiente'],
+        correct: 1,
+        docSource: 'Comunicado Grados Extemporáneos',
+        pageRef: 'Numeral 2, viñeta 3',
+        hintFeedback: '"Z" en no cursos significa "No Aplica". En cambio, si aparece "N", sí tiene pendientes por cumplir.'
+      },
+      {
+        id: 35, room: 4, type: 'circuito',
+        title: 'Circuito: Pasar de Estado "SO" a "TM"',
+        caseDesc: 'Ordena el procedimiento correcto para pasar a un estudiante que cumple todo de estado SO a TM:',
+        steps: [
+          'Verificar que cumpla todos los requisitos institucionales (Cumple Yes, Saber Pro, etc).',
+          'Solicitar primero la actualización del avance curricular (CAPP) indicando que es para grados.',
+          'Validar si tras correr el CAPP en piso el estado cambió a TM.',
+          'Si aún no actualiza a TM, escalar internamente con los datos completos.'
+        ],
+        correctSequence: [0, 1, 2, 3],
+        docSource: 'Comunicado Grados Extemporáneos',
+        pageRef: 'Numeral 3 y FAQ #1',
+        hintFeedback: '1° Solicitar actualización del CAPP. 2° Solo si no cambia tras el CAPP, se reporta internamente con los datos del caso.'
+      },
+      {
+        id: 36, room: 4, type: 'interrogatorio',
+        title: 'Caso: Estado Obligatorio para Inscripción',
+        caseDesc: '¿En qué estado debe figurar el trámite de grado para que la plataforma le permita inscribirse exitosamente?',
+        options: [
+          'En estado SO.',
+          'En estado TM.',
+          'En estado PE.',
+          'En estado ZN.'
+        ],
+        correct: 1,
+        docSource: 'Comunicado Grados Extemporáneos',
+        pageRef: 'Numeral 3: Estado TM',
+        hintFeedback: 'Para inscribirse exitosamente a grados, su estado debe figurar obligatoriamente en TM.'
+      },
+      {
+        id: 37, room: 4, type: 'triaje',
+        title: 'Triaje: Escalamiento sin Actualizar CAPP en SO',
+        caseDesc: 'Un asesor ve a un estudiante en SO y escala el caso directamente sin pedir primero la actualización del CAPP en piso.',
+        options: ['PROCEDE (Ahorra tiempo)', 'NO PROCEDE (Primero se solicita siempre la actualización del CAPP para grados)'],
+        correct: 1,
+        docSource: 'Comunicado Grados Extemporáneos',
+        pageRef: 'FAQ #1',
+        hintFeedback: 'Nunca escales un estado SO sin antes haber solicitado la actualización del avance curricular (CAPP para grados).'
+      },
+      {
+        id: 38, room: 4, type: 'interrogatorio',
+        title: 'Caso: Ceremonias Presenciales 2027',
+        caseDesc: 'Un estudiante quiere recibir su diploma en ceremonia presencial. ¿Cuándo se habilita habitualmente el proceso y cuándo son las ceremonias?',
+        options: [
+          'El proceso se habilita en el transcurso de enero de 2027 y las ceremonias oficiales son habitualmente en abril.',
+          'Se habilita el 24 de diciembre para graduarse el 31.',
+          'Ya no volverán a existir ceremonias.',
+          'Se habilita únicamente en noviembre cada dos años.'
+        ],
+        correct: 0,
+        docSource: 'Comunicado Grados Extemporáneos',
+        pageRef: 'Numeral 1, viñeta 3',
+        hintFeedback: 'Ceremonias oficiales 2027: el proceso se habilita habitualmente en enero y las ceremonias son en abril.'
+      },
+      {
+        id: 39, room: 4, type: 'triaje',
+        title: 'Triaje: Letra "N" en No Cursos',
+        caseDesc: 'En Analytics, un estudiante tiene el indicador de No Cursos en "N". Asegura que ya no debe requisitos.',
+        options: ['ESTÁ APTO (N significa Ningún pendiente)', 'NO ESTÁ APTO ("N" indica que aún tiene pendientes por cumplir)'],
+        correct: 1,
+        docSource: 'Comunicado Grados Extemporáneos',
+        pageRef: 'Numeral 2',
+        hintFeedback: '"N" significa que NO ha cumplido y tiene requisitos pendientes (Z es sin pendientes).'
+      },
+      {
+        id: 40, room: 4, type: 'interrogatorio',
+        title: 'Caso: Excepciones al Cierre del 6 de Noviembre',
+        caseDesc: 'Un estudiante que entrega su trabajo final el 7 de noviembre insiste en que hagamos una excepción para grados extemporáneos.',
+        options: [
+          'No generar falsas expectativas ni pedir excepciones, ya que el cierre de inscripciones es el 6 de noviembre estricto.',
+          'Recibirle los documentos por correo personal.',
+          'Decirle que llame el 8 de noviembre para abrirle el sistema.',
+          'Enviarlo a Mesa de Ayuda.'
+        ],
+        correct: 0,
+        docSource: 'Comunicado Grados Extemporáneos',
+        pageRef: 'Numeral 1',
+        hintFeedback: 'No generemos falsas expectativas ni escalemos casos pidiendo excepciones a las fechas oficiales.'
+      },
+
+      // ==========================================
+      // SECTOR 5: TIEMPOS, REGISTRO Y CONTROL & BOTÓN GRIS PAGO
+      // ==========================================
+      {
+        id: 41, room: 5, type: 'interrogatorio',
+        title: 'Caso: Paz y Salvos Verde pero Botón Gris',
+        caseDesc: '¡Caso Especial! Juan Camilo tiene en SmartCampus TODOS los 9 ítems de Paz y Salvo en verde ("Completado"), pero el botón inferior sale gris: "NO SE HAN CUMPLIDO TODOS LOS REQUISITOS". ¿Ruta exacta?',
+        options: [
+          'Decirle que espere 15 días hábiles.',
+          'Ingresar a SmartCampus ➡️ Certificados o Trámites académicos ➡️ Nueva solicitud ➡️ Categoría: PROCESO DE GRADO / Servicio: PAGO DE DERECHOS DE GRADO ➡️ Continuar y elegir programa para generar la factura.',
+          'Mandarlo a Mesa de Ayuda TI.',
+          'Volver a subir los documentos a Registro y Control.'
+        ],
+        correct: 1,
+        docSource: 'Caso Especial SmartCampus (Botón Gris)',
+        pageRef: 'Ruta Alterna Facturación',
+        hintFeedback: 'Ruta clave: SmartCampus > Certificados o Trámites académicos > Nueva solicitud > PROCESO DE GRADO / PAGO DE DERECHOS DE GRADO.'
+      },
+      {
+        id: 42, room: 5, type: 'circuito',
+        title: 'Circuito: Generar Factura con Botón Gris Inactivo',
+        caseDesc: 'Ordena el paso a paso en SmartCampus para generar la factura cuando el botón de Paz y Salvos está en gris, a pesar de tener todo en verde:',
+        steps: [
+          'Validar que todos los Paz y Salvos salgan en verde ("Completado").',
+          'Ir al menú "Certificados" o "Trámites académicos" ➡️ Nueva solicitud.',
+          'Tipificar Categoría: PROCESO DE GRADO y Servicio: PAGO DE DERECHOS DE GRADO.',
+          'Oprimir Continuar, elegir el programa académico y pagar la factura.'
+        ],
+        correctSequence: [0, 1, 2, 3],
+        docSource: 'Caso Especial SmartCampus',
+        pageRef: 'Generación de Factura',
+        hintFeedback: 'Validar Paz y Salvos verde -> Certificados -> Nueva solicitud -> PROCESO DE GRADO / PAGO DERECHOS GRADO -> Elegir programa.'
+      },
+      {
+        id: 43, room: 5, type: 'triaje',
+        title: 'Triaje: Usar Ruta Alterna sin Paz y Salvos Completos',
+        caseDesc: 'Un estudiante tiene ítems de Paz y Salvo en rojo, pero el asesor le dice que genere la factura por la ruta alterna de Trámites Académicos.',
+        options: ['PROCEDE (Cualquiera puede sacar la factura)', 'NO PROCEDE (Deben estar todos los Paz y Salvos aprobados en verde primero)'],
+        correct: 1,
+        docSource: 'Caso Especial SmartCampus',
+        pageRef: 'Condición de validación',
+        hintFeedback: 'Esta ruta alterna SOLO aplica validando que al estudiante ya le salgan TODOS los paz y salvos aprobados ("Completado").'
+      },
+      {
+        id: 44, room: 5, type: 'interrogatorio',
+        title: 'Caso: Escalamiento Documental > 5 Días Hábiles',
+        caseDesc: 'Un estudiante lleva más de 5 días hábiles esperando revisión de sus documentos de grado. ¿A qué área se escala y cuál está prohibida?',
+        options: [
+          'Se escala única y directamente a Registro y Control; está prohibido enviarlo a Mesa de Ayuda por auditoría.',
+          'Se envía a Mesa de Ayuda TI con prioridad alta.',
+          'Se escala al Centro de Prácticas.',
+          'Se le dice que vuelva a subir los archivos.'
+        ],
+        correct: 0,
+        docSource: 'Comunicado Grados Extemporáneos',
+        pageRef: 'FAQ #3: Tiempos y Prohibición',
+        hintFeedback: 'Por auditoría, los permisos se retiraron de Mesa de Ayuda. Todo vencimiento va directo a Registro y Control.'
+      },
+      {
+        id: 45, room: 5, type: 'triaje',
+        title: 'Triaje: Volver a Cargar Documentos de Grado',
+        caseDesc: 'Un estudiante subió documentos hace 3 días y hoy vuelve a subirlos para que "lo vean más rápido".',
+        options: ['ACELERA EL TRÁMITE', 'REINICIA EL TIEMPO DE ESPERA EN LA COLA (3 a 5 días hábiles de nuevo)'],
+        correct: 1,
+        docSource: 'Comunicado Grados Extemporáneos',
+        pageRef: 'Numeral 4: Tiempos de Registro y Control',
+        hintFeedback: 'Cargar nuevamente los documentos REINICIA el tiempo en la cola de atención de Registro y Control.'
+      },
+      {
+        id: 46, room: 5, type: 'interrogatorio',
+        title: 'Caso: Tiempo de Habilitación tras Inscribirse',
+        caseDesc: '¿Cuál es el tiempo estándar de habilitación tras realizar la inscripción a grados?',
+        options: [
+          'Toma entre 24 y 48 horas tras realizar la inscripción; no es inmediata.',
+          'Es instantáneo en menos de 1 minuto.',
+          'Tarda 30 días calendario.',
+          'Debe pagar nuevamente.'
+        ],
+        correct: 0,
+        docSource: 'Comunicado Grados Extemporáneos',
+        pageRef: 'Numeral 4',
+        hintFeedback: 'La habilitación tras realizar la inscripción a grados toma entre 24 y 48 horas.'
+      },
+      {
+        id: 47, room: 5, type: 'interrogatorio',
+        title: 'Caso: Estudiante Grados Anteriores (Solo faltó pago)',
+        caseDesc: 'Una estudiante de la cohorte pasada completó encuesta y documentos aprobados, solo le faltó pagar. ¿Qué procede?',
+        options: [
+          'Pierde los documentos y debe repetir la carrera.',
+          'La orden se actualiza para que realice el pago en el ciclo de grados extemporáneos.',
+          'Ya no puede graduarse hasta 2028.',
+          'Debe volver a presentar Saber Pro.'
+        ],
+        correct: 1,
+        docSource: 'Comunicado Grados Extemporáneos',
+        pageRef: 'Numeral 5, viñeta 1',
+        hintFeedback: 'Si solo le faltó el pago, la orden se actualiza para que pague en el ciclo extemporáneo.'
+      },
+      {
+        id: 48, room: 5, type: 'triaje',
+        title: 'Triaje: Estudiante Grados Anteriores (Requisitos Incompletos)',
+        caseDesc: 'Un estudiante de la cohorte pasada dejó documentos sin subir y exige que solo le actualicen el recibo de pago.',
+        options: ['PROCEDE (Recibo directo)', 'NO PROCEDE (Debe cargar lo faltante dentro del calendario vigente)'],
+        correct: 1,
+        docSource: 'Comunicado Grados Extemporáneos',
+        pageRef: 'Numeral 5, viñeta 2',
+        hintFeedback: 'Si dejó requisitos incompletos, debe cargar la documentación faltante dentro del calendario actual.'
+      },
+      {
+        id: 49, room: 5, type: 'circuito',
+        title: 'Circuito: Línea de Tiempos del Proceso de Grado',
+        caseDesc: 'Ordena de menor a mayor los tiempos e hitos operativos del proceso de grados:',
+        steps: [
+          'Habilitación post-inscripción: toma de 24 a 48 horas.',
+          'Revisión documental por Registro y Control: toma de 3 a 5 días hábiles.',
+          'Si supera los 5 días: escalar directo a Registro y Control (nunca a Mesa de Ayuda).',
+          'Si tiene Paz y Salvos verde y botón gris: generar factura por Trámites Académicos.'
+        ],
+        correctSequence: [0, 1, 2, 3],
+        docSource: 'Comunicado Grados Extemporáneos',
+        pageRef: 'Numeral 4 y Ruta Alterna',
+        hintFeedback: '24-48h tras inscripción -> 3 a 5 días en Registro y Control -> Escalar a RyC directo.'
+      },
+      {
+        id: 50, room: 5, type: 'interrogatorio',
+        title: 'Caso: Prohibición Escalamientos a Mesa de Ayuda',
+        caseDesc: '¿Por qué debes detener a un compañero que quiere mandar un ticket de documentos vencidos a Mesa de Ayuda?',
+        options: [
+          'Porque por auditoría institucional los permisos fueron retirados de Mesa de Ayuda; se remite a Registro y Control.',
+          'Porque Mesa de Ayuda solo atiende los domingos.',
+          'Porque primero debe enviarlo al docente de inglés.',
+          'Porque Registro y Control tarda 30 días.'
+        ],
+        correct: 0,
+        docSource: 'Comunicado Grados Extemporáneos',
+        pageRef: 'FAQ #3',
+        hintFeedback: 'Por auditoría, los permisos de validación documental fueron retirados de Mesa de Ayuda. Todo va a Registro y Control.'
+      }
+    ];
+
+    class SoundFX {
+      constructor() {
+        this.ctx = null;
+        this.enabled = true;
+      }
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          if (AudioContext) this.ctx = new AudioContext();
+        }
+      }
+      playTone(freq, type = 'sine', duration = 0.1, gain = 0.08) {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+        try {
+          const osc = this.ctx.createOscillator();
+          const g = this.ctx.createGain();
+          osc.type = type;
+          osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+          g.gain.setValueAtTime(gain, this.ctx.currentTime);
+          g.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + duration);
+          osc.connect(g);
+          g.connect(this.ctx.destination);
+          osc.start();
+          osc.stop(this.ctx.currentTime + duration);
+        } catch(e) {}
+      }
+      click() { this.playTone(780, 'sine', 0.05, 0.06); }
+      step() { this.playTone(210, 'triangle', 0.03, 0.025); }
+      type() { this.playTone(850, 'square', 0.02, 0.03); }
+      doorOpen() {
+        this.playTone(320, 'sine', 0.15, 0.09);
+        setTimeout(() => this.playTone(640, 'sine', 0.25, 0.1), 120);
+      }
+      success() {
+        this.playTone(523.25, 'sine', 0.09, 0.08);
+        setTimeout(() => this.playTone(659.25, 'sine', 0.1, 0.09), 80);
+        setTimeout(() => this.playTone(783.99, 'sine', 0.12, 0.1), 160);
+        setTimeout(() => this.playTone(1046.5, 'triangle', 0.28, 0.12), 240);
+      }
+      errorBuzz() {
+        this.playTone(145, 'sawtooth', 0.2, 0.14);
+        setTimeout(() => this.playTone(110, 'sawtooth', 0.28, 0.15), 140);
+      }
+      fanfare() {
+        [523.25, 659.25, 783.99, 1046.5, 1318.5].forEach((f, i) => {
+          setTimeout(() => this.playTone(f, 'triangle', 0.28, 0.12), i * 110);
+        });
+      }
+    }
+
+    const sound = new SoundFX();
+
+    class PoliGameEngine {
+      constructor() {
+        this.canvas = document.getElementById('gameCanvas');
+        this.ctx = this.canvas.getContext('2d');
+
+        this.virtWidth = 1000;
+        this.virtHeight = 562;
+        this.canvas.width = this.virtWidth;
+        this.canvas.height = this.virtHeight;
+
+        this.stars = Array.from({ length: 75 }, () => ({
+          x: Math.random() * this.virtWidth,
+          y: Math.random() * this.virtHeight,
+          r: Math.random() * 1.8 + 0.5,
+          alpha: Math.random() * 0.75 + 0.25,
+          speed: Math.random() * 0.35 + 0.08
+        }));
+
+        this.score = 0;
+        this.phase1Score = 150; 
+        this.lives = 3;
+        this.resolvedCount = 0;
+        this.userBreaches = [];
+        this.isGameOver = false;
+
+        this.player = {
+          x: 178, // Movido un poco a la derecha
+          y: 310,
+          targetX: null,
+          targetY: null,
+          pendingConsole: null,
+          speed: 4.7,
+          facing: 'right',
+          walkCycle: 0,
+          isMoving: false,
+          mainColor: '#00d2ff',
+          darkColor: '#0284c7',
+          hat: 'viking'
+        };
+
+        this.npcs = [
+          { x: 925, y: 125, name: 'Bot_Banner', mainColor: '#38bdf8', darkColor: '#0284c7', hat: 'cap', facing: 'left' }
+        ];
+
+        // Adjusted x positions slightly to the right to be more centered
+        this.rooms = [
+          { id: 1, name: 'Homologación Inglés y Vacacionales', shortTitle: '01. INGLÉS & VACAC.', x: 80, y: 42, w: 174, h: 486, color: '#00d2ff', cleared: false },
+          { id: 2, name: 'Prácticas Admin Empresas Virtual', shortTitle: '02. PRÁCTICAS ADMIN', x: 264, y: 42, w: 174, h: 486, color: '#ffea00', cleared: false },
+          { id: 3, name: 'Renovación Convenios 2027-1', shortTitle: '03. CONVENIOS 2027', x: 448, y: 42, w: 174, h: 486, color: '#00f59b', cleared: false },
+          { id: 4, name: 'Grados Extemporáneos y CAPP', shortTitle: '04. GRADOS & CAPP', x: 632, y: 42, w: 174, h: 486, color: '#c084fc', cleared: false },
+          { id: 5, name: 'Registro y Control & Botón Gris', shortTitle: '05. BOTÓN GRIS PAGO', x: 816, y: 42, w: 174, h: 486, color: '#ff3860', cleared: false }
+        ];
+
+        this.activeConsoles = [];
+        this.activeChallenge = null;
+        this.currentInteractingConsole = null;
+        this.keys = {};
+        this.triajeTimer = null;
+        this.triajeTimeLeft = 20;
+        this.circuitAnswer = [];
+        
+        // Typing Effect State
+        this.isTyping = false;
+        this.typeTimeout = null;
+
+        this.initDOM();
+        this.initControls();
+        this.initSession();
+        this.startLoop();
+      }
+
+      setCrewColor(main, dark, btnElem) {
+        sound.click();
+        this.player.mainColor = main;
+        this.player.darkColor = dark;
+        document.querySelectorAll('.color-btn').forEach(btn => {
+          btn.classList.remove('ring-2', 'ring-white', 'opacity-100');
+          btn.classList.add('opacity-60');
+        });
+        btnElem.classList.remove('opacity-60');
+        btnElem.classList.add('ring-2', 'ring-white', 'opacity-100');
+      }
+
+      setCrewHat(hatType, btnElem) {
+        sound.click();
+        this.player.hat = hatType;
+        document.querySelectorAll('.hat-btn').forEach(btn => {
+          btn.classList.remove('border-white', 'text-white');
+          btn.classList.add('border-slate-600', 'text-slate-400');
+        });
+        btnElem.classList.remove('border-slate-600', 'text-slate-400');
+        btnElem.classList.add('border-white', 'text-white');
+      }
+
+      initDOM() {
+        this.startLobbyModal = document.getElementById('startLobbyModal');
+        this.cutsceneModal = document.getElementById('cutsceneModal');
+        this.typewriterText = document.getElementById('typewriterText');
+        this.btnSkipCutscene = document.getElementById('btnSkipCutscene');
+
+        this.scoreDisplay = document.getElementById('scoreDisplay');
+        this.globalScoreDisplay = document.getElementById('globalScoreDisplay');
+        this.taskBarFill = document.getElementById('taskBarFill');
+        this.livesContainer = document.getElementById('livesContainer');
+        this.progressDisplay = document.getElementById('progressDisplay');
+        this.hudRoomTitle = document.getElementById('hudRoomTitle');
+        this.btnUseConsole = document.getElementById('btnUseConsole');
+        this.useBtnSubtext = document.getElementById('useBtnSubtext');
+
+        this.puzzleModal = document.getElementById('puzzleModal');
+        this.modalBody = document.getElementById('modalBody');
+        this.modalTypeBadge = document.getElementById('modalTypeBadge');
+        this.modalRoomTag = document.getElementById('modalRoomTag');
+        this.btnSubmitPuzzle = document.getElementById('btnSubmitPuzzle');
+        this.btnCloseModal = document.getElementById('btnCloseModal');
+        this.blindFeedbackAlert = document.getElementById('blindFeedbackAlert');
+
+        this.finishModal = document.getElementById('finishModal');
+        this.finalScoreDisplay = document.getElementById('finalScoreDisplay');
+        this.finalTotal300Display = document.getElementById('finalTotal300Display');
+        this.finalAccuracyLabel = document.getElementById('finalAccuracyLabel');
+        this.finalStatusDisplay = document.getElementById('finalStatusDisplay');
+        this.breachListContainer = document.getElementById('breachListContainer');
+
+        document.getElementById('btnInitCutscene').onclick = () => {
+          sound.click();
+          this.startLobbyModal.classList.add('opacity-0');
+          setTimeout(() => {
+            this.startLobbyModal.classList.add('hidden');
+            this.startLobbyModal.classList.remove('opacity-0');
+            this.startCutscene();
+          }, 300);
+        };
+
+        this.btnSkipCutscene.onclick = () => {
+          sound.click();
+          this.endCutscene();
+        };
+
+        document.getElementById('btnOpenRules').onclick = () => {
+          sound.click();
+          this.startLobbyModal.classList.remove('hidden');
+        };
+
+        document.getElementById('btnSound').onclick = (e) => {
+          sound.enabled = !sound.enabled;
+          e.target.innerText = sound.enabled ? '🔊 Sonido' : '🔇 Silencio';
+          sound.click();
+        };
+
+        document.getElementById('btnReset').onclick = () => {
+          sound.click();
+          this.initSession();
+        };
+
+        document.getElementById('btnRestartGame').onclick = () => {
+          sound.click();
+          this.finishModal.classList.add('hidden');
+          this.finishModal.classList.remove('opacity-100');
+          this.initSession();
+        };
+
+        this.btnCloseModal.onclick = () => this.closeModal();
+        this.btnSubmitPuzzle.onclick = () => this.evaluateCurrentPuzzle();
+        this.btnUseConsole.onclick = () => this.handleActionPress();
+      }
+
+      startCutscene() {
+        this.cutsceneModal.classList.remove('hidden');
+        setTimeout(() => this.cutsceneModal.classList.remove('opacity-0'), 10);
+        
+        const dialog = "Tras recuperar el Expediente Central (150 pts), la tripulación descansa en la Nave Nodriza.<br><br><span class='text-amber-400'>¡ALERTA! Sabotaje en 5 compartimentos de carga.</span><br><br>Tu misión: Reparar los portátiles, resolver los casos de esta semana y asegurar los 150 Polipuntos restantes.<br><br>Rumbo a los 300 Polipuntos. Buena suerte.";
+        
+        let i = 0;
+        this.typewriterText.innerHTML = '';
+        this.isTyping = true;
+        
+        const typeChar = () => {
+          if (!this.isTyping) return;
+          if (i < dialog.length) {
+            if (dialog.substring(i, i+4) === '<br>') {
+              this.typewriterText.innerHTML += '<br>';
+              i += 4;
+            } else if (dialog.substring(i, i+5) === '<span') {
+              let tagClose = dialog.indexOf('>', i) + 1;
+              this.typewriterText.innerHTML += dialog.substring(i, tagClose);
+              i = tagClose;
+            } else if (dialog.substring(i, i+7) === '</span>') {
+              this.typewriterText.innerHTML += '</span>';
+              i += 7;
+            } else {
+              this.typewriterText.innerHTML += dialog.charAt(i);
+              i++;
+              if(i % 3 === 0) sound.type();
+            }
+            this.typeTimeout = setTimeout(typeChar, 25);
+          } else {
+            this.isTyping = false;
+            this.btnSkipCutscene.innerText = "COMENZAR MISIÓN 🚀";
+          }
+        };
+        typeChar();
+      }
+
+      endCutscene() {
+        this.isTyping = false;
+        if(this.typeTimeout) clearTimeout(this.typeTimeout);
+        
+        this.cutsceneModal.classList.add('opacity-0');
+        setTimeout(() => {
+          this.cutsceneModal.classList.add('hidden');
+          this.typewriterText.innerHTML = '';
+          this.btnSkipCutscene.innerText = "Saltar [Espacio] >";
+        }, 300);
+      }
+
+      initControls() {
+        window.addEventListener('keydown', (e) => {
+          if (!this.cutsceneModal.classList.contains('hidden') && e.code === 'Space') {
+            e.preventDefault();
+            this.endCutscene();
+            return;
+          }
+
+          if (!this.startLobbyModal.classList.contains('hidden')) return;
+          
+          const k = e.key.toLowerCase();
+          this.keys[k] = true;
+          this.keys[e.code] = true;
+
+          if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright', 'w', 'a', 's', 'd'].includes(k)) {
+            this.player.targetX = null;
+            this.player.targetY = null;
+            this.player.pendingConsole = null;
+          }
+
+          if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(e.code)) {
+            e.preventDefault();
+          }
+          if (e.code === 'KeyE' || e.code === 'Space' || e.code === 'Enter') {
+            this.handleActionPress();
+          }
+        });
+
+        window.addEventListener('keyup', (e) => {
+          this.keys[e.key.toLowerCase()] = false;
+          this.keys[e.code] = false;
+        });
+
+        const bindTouch = (id, key) => {
+          const el = document.getElementById(id);
+          if (!el) return;
+          const start = (ev) => {
+            ev.preventDefault();
+            this.player.targetX = null;
+            this.player.targetY = null;
+            this.keys[key] = true;
+          };
+          const end = (ev) => {
+            ev.preventDefault();
+            this.keys[key] = false;
+          };
+          el.addEventListener('touchstart', start);
+          el.addEventListener('touchend', end);
+          el.addEventListener('mousedown', start);
+          el.addEventListener('mouseup', end);
+        };
+
+        bindTouch('btnUp', 'arrowup');
+        bindTouch('btnDown', 'arrowdown');
+        bindTouch('btnLeft', 'arrowleft');
+        bindTouch('btnRight', 'arrowright');
+
+        this.canvas.addEventListener('pointerdown', (e) => {
+          if (this.isGameOver || !this.puzzleModal.classList.contains('hidden') || !this.cutsceneModal.classList.contains('hidden') || !this.startLobbyModal.classList.contains('hidden')) return;
+
+          const rect = this.canvas.getBoundingClientRect();
+          const scaleX = this.virtWidth / rect.width;
+          const scaleY = this.virtHeight / rect.height;
+          const clickX = (e.clientX - rect.left) * scaleX;
+          const clickY = (e.clientY - rect.top) * scaleY;
+
+          const clickedConsole = this.activeConsoles.find(c => {
+            return Math.hypot(clickX - c.x, clickY - c.y) < 40;
+          });
+
+          const maxAllowedX = this.getMaxUnlockedX();
+
+          if (clickedConsole) {
+            if (clickedConsole.x <= maxAllowedX + 12) {
+              sound.click();
+              this.player.targetX = clickedConsole.x;
+              this.player.targetY = clickedConsole.y + 24;
+              this.player.pendingConsole = clickedConsole;
+            } else {
+              sound.errorBuzz();
+            }
+          } else {
+            sound.step();
+            this.player.targetX = Math.max(95, Math.min(maxAllowedX, clickX));
+            this.player.targetY = Math.max(95, Math.min(this.virtHeight - 52, clickY));
+            this.player.pendingConsole = null;
+          }
+        });
+      }
+
+      getMaxUnlockedX() {
+        for (let i = 0; i < this.rooms.length; i++) {
+          if (!this.rooms[i].cleared) {
+            return this.rooms[i].x + this.rooms[i].w - 22;
+          }
+        }
+        return this.virtWidth - 45;
+      }
+
+      initSession() {
+        this.score = 0;
+        this.lives = 3;
+        this.resolvedCount = 0;
+        this.userBreaches = [];
+        this.isGameOver = false;
+
+        this.player.x = 178; 
+        this.player.y = 305;
+        this.player.targetX = null;
+        this.player.targetY = null;
+        this.player.pendingConsole = null;
+        this.player.facing = 'right';
+
+        this.rooms.forEach(r => r.cleared = false);
+
+        this.activeConsoles = [];
+        for (let roomNum = 1; roomNum <= 5; roomNum++) {
+          const roomPool = MASTER_QUESTION_BANK.filter(q => q.room === roomNum);
+          const shuffled = [...roomPool].sort(() => 0.5 - Math.random());
+          const selected3 = shuffled.slice(0, 3);
+
+          const roomDef = this.rooms[roomNum - 1];
+          const positions = [
+            { x: roomDef.x + 87, y: 175 },
+            { x: roomDef.x + 87, y: 310 },
+            { x: roomDef.x + 87, y: 445 }
+          ];
+
+          selected3.forEach((question, idx) => {
+            this.activeConsoles.push({
+              id: `${roomNum}-${idx}`,
+              room: roomNum,
+              x: positions[idx].x,
+              y: positions[idx].y,
+              questionData: question,
+              status: 'pending'
+            });
+          });
+        }
+
+        this.updateHUD();
+      }
+
+      updateHUD() {
+        this.scoreDisplay.innerText = `${this.score} / 150 PTS`;
+        if (this.globalScoreDisplay) {
+          this.globalScoreDisplay.innerText = `${this.phase1Score + this.score} / 300`;
+        }
+        this.progressDisplay.innerText = `${this.resolvedCount} / 15`;
+        const pct = Math.min(100, Math.round((this.resolvedCount / 15) * 100));
+        this.taskBarFill.style.width = `${pct}%`;
+
+        this.livesContainer.innerHTML = '';
+        for (let i = 0; i < 3; i++) {
+          const span = document.createElement('span');
+          span.className = 'text-sm transition-transform';
+          span.innerText = i < this.lives ? '🛡️' : '💔';
+          if (i >= this.lives) span.classList.add('opacity-40');
+          this.livesContainer.appendChild(span);
+        }
+
+        const currentRoom = this.getCurrentRoom();
+        if (currentRoom) {
+          this.hudRoomTitle.innerText = `NAVE NODRIZA • SECTOR ${currentRoom.id}: ${currentRoom.name}`;
+          this.hudRoomTitle.style.color = currentRoom.color;
+        }
+      }
+
+      getCurrentRoom() {
+        return this.rooms.find(r => this.player.x >= r.x && this.player.x <= (r.x + r.w)) || this.rooms[0];
+      }
+
+      getNearestPendingConsole() {
+        let best = null;
+        let minDist = 64;
+        this.activeConsoles.forEach(c => {
+          if (c.status === 'pending') {
+            const d = Math.hypot(this.player.x - c.x, this.player.y - c.y);
+            if (d < minDist) {
+              minDist = d;
+              best = c;
+            }
+          }
+        });
+        return best;
+      }
+
+      handleActionPress() {
+        if (this.isGameOver) return;
+        if (!this.puzzleModal.classList.contains('hidden')) return;
+
+        const near = this.getNearestPendingConsole();
+        if (near) {
+          this.triggerConsoleInteraction(near);
+        } else {
+          const currentRoom = this.getCurrentRoom();
+          const nextInRoom = this.activeConsoles.find(c => c.room === currentRoom.id && c.status === 'pending');
+          if (nextInRoom) {
+            this.player.targetX = nextInRoom.x;
+            this.player.targetY = nextInRoom.y + 24;
+            this.player.pendingConsole = nextInRoom;
+          }
+        }
+      }
+
+      triggerConsoleInteraction(cons) {
+        if (cons.status !== 'pending') return;
+        this.currentInteractingConsole = cons;
+        this.activeChallenge = cons.questionData;
+        this.openModal(this.activeChallenge);
+      }
+
+      openModal(challenge) {
+        sound.click();
+        this.blindFeedbackAlert.classList.add('hidden');
+        this.btnSubmitPuzzle.disabled = false;
+        this.btnSubmitPuzzle.classList.remove('opacity-50', 'cursor-not-allowed');
+
+        this.modalRoomTag.innerText = `SECTOR 0${challenge.room} • CASO #${challenge.id}`;
+
+        if (challenge.type === 'interrogatorio') {
+          this.modalTypeBadge.className = 'px-3 py-1 rounded-lg text-xs font-orbitron font-bold uppercase bg-cyan-950 text-cyan-300 border border-cyan-400/50';
+          this.modalTypeBadge.innerText = '💻 CASO CLÍNICO EN PORTÁTIL';
+          this.renderInterrogatorioUI(challenge);
+        } else if (challenge.type === 'circuito') {
+          this.modalTypeBadge.className = 'px-3 py-1 rounded-lg text-xs font-orbitron font-bold uppercase bg-amber-950 text-amber-300 border border-amber-400/50';
+          this.modalTypeBadge.innerText = '⚡ RUTA PASO A PASO (ORDENAR)';
+          this.renderCircuitoUI(challenge);
+        } else {
+          this.modalTypeBadge.className = 'px-3 py-1 rounded-lg text-xs font-orbitron font-bold uppercase bg-emerald-950 text-emerald-300 border border-emerald-400/50';
+          this.modalTypeBadge.innerText = '📡 TRIAJE DE AUDITORÍA RÁPIDA';
+          this.renderTriajeUI(challenge);
+        }
+
+        this.puzzleModal.classList.remove('hidden');
+        setTimeout(() => this.puzzleModal.classList.add('opacity-100'), 15);
+      }
+
+      closeModal() {
+        if (this.triajeTimer) clearInterval(this.triajeTimer);
+        this.puzzleModal.classList.remove('opacity-100');
+        setTimeout(() => {
+          this.puzzleModal.classList.add('hidden');
+          this.currentInteractingConsole = null;
+          this.activeChallenge = null;
+        }, 180);
+      }
+
+      renderInterrogatorioUI(challenge) {
+        this.modalBody.innerHTML = `
+          <div class="space-y-4">
+            <div class="bg-slate-900 p-4 rounded-2xl border border-cyan-500/30">
+              <span class="text-[11px] uppercase text-cyan-400 font-bold block mb-1">${challenge.title}</span>
+              <p class="text-sm md:text-base text-white leading-relaxed font-medium">${challenge.caseDesc}</p>
+            </div>
+            <div class="space-y-2.5">
+              <span class="text-xs uppercase text-slate-400 font-bold block">Selecciona el procedimiento o respuesta oficial:</span>
+              ${challenge.options.map((opt, i) => `
+                <label class="flex items-start gap-3 p-3.5 rounded-xl bg-slate-900/90 border-2 border-slate-700 hover:border-amber-400 cursor-pointer transition">
+                  <input type="radio" name="puzzleOpt" value="${i}" class="mt-1 w-4 h-4 accent-amber-400">
+                  <span class="text-xs md:text-sm text-slate-100 font-medium">${opt}</span>
+                </label>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }
+
+      renderCircuitoUI(challenge) {
+        this.circuitAnswer = challenge.steps.map((text, originalIndex) => ({ text, originalIndex }));
+        this.circuitAnswer.sort(() => 0.5 - Math.random());
+
+        this.modalBody.innerHTML = `
+          <div class="space-y-4">
+            <div class="bg-slate-900 p-4 rounded-2xl border border-amber-500/30">
+              <span class="text-[11px] uppercase text-amber-400 font-bold block mb-1">${challenge.title}</span>
+              <p class="text-sm md:text-base text-white leading-relaxed font-medium">${challenge.caseDesc}</p>
+              <p class="text-xs text-amber-300 mt-1.5">⚡ Ordena la secuencia operativa del 1 al 4 con los botones [▲ / ▼]:</p>
+            </div>
+            <div id="circuitList" class="space-y-2"></div>
+          </div>
+        `;
+        this.updateCircuitDOM();
+      }
+
+      updateCircuitDOM() {
+        const list = document.getElementById('circuitList');
+        if (!list) return;
+        list.innerHTML = this.circuitAnswer.map((item, idx) => `
+          <div class="flex items-center justify-between p-3 rounded-xl bg-slate-900 border-2 border-slate-700">
+            <div class="flex items-center gap-3">
+              <span class="font-orbitron font-black text-xs bg-amber-400 text-slate-950 w-7 h-7 rounded-lg flex items-center justify-center shrink-0">
+                ${idx + 1}
+              </span>
+              <span class="text-xs md:text-sm text-white font-medium">${item.text}</span>
+            </div>
+            <div class="flex items-center gap-1.5 shrink-0 ml-2">
+              <button type="button" onclick="window.game.moveCircuitStep(${idx}, -1)" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-amber-400 hover:text-black text-amber-300 font-bold transition cursor-pointer ${idx === 0 ? 'opacity-25 pointer-events-none' : ''}">▲</button>
+              <button type="button" onclick="window.game.moveCircuitStep(${idx}, 1)" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-amber-400 hover:text-black text-amber-300 font-bold transition cursor-pointer ${idx === this.circuitAnswer.length - 1 ? 'opacity-25 pointer-events-none' : ''}">▼</button>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      moveCircuitStep(index, dir) {
+        sound.click();
+        const target = index + dir;
+        if (target < 0 || target >= this.circuitAnswer.length) return;
+        const temp = this.circuitAnswer[index];
+        this.circuitAnswer[index] = this.circuitAnswer[target];
+        this.circuitAnswer[target] = temp;
+        this.updateCircuitDOM();
+      }
+
+      renderTriajeUI(challenge) {
+        this.triajeTimeLeft = 20;
+        this.modalBody.innerHTML = `
+          <div class="space-y-4">
+            <div class="bg-slate-900 p-4 rounded-2xl border border-emerald-500/30">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-[11px] uppercase text-emerald-400 font-bold">${challenge.title}</span>
+                <span id="triajeCountdown" class="font-orbitron text-xs font-bold text-rose-300 px-2.5 py-1 rounded-lg bg-rose-950 border border-rose-500/40 animate-pulse">
+                  ⏱️ 20s
+                </span>
+              </div>
+              <p class="text-sm md:text-base text-white leading-relaxed font-medium">${challenge.caseDesc}</p>
+            </div>
+            <div>
+              <span class="text-xs uppercase text-slate-400 font-bold block mb-2">Dictamen inmediato del experto:</span>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                ${challenge.options.map((opt, i) => `
+                  <button type="button" onclick="window.game.selectTriajeChoice(${i})" class="triaje-opt-btn p-4 rounded-xl bg-slate-900 border-2 border-slate-700 hover:border-emerald-400 text-xs md:text-sm text-left text-white font-semibold transition flex items-center gap-3 cursor-pointer">
+                    <span class="w-4 h-4 rounded-full border-2 border-emerald-400 shrink-0"></span>
+                    <span>${opt}</span>
+                  </button>
+                `).join('')}
+              </div>
+              <input type="hidden" id="triajeSelected" value="-1">
+            </div>
+          </div>
+        `;
+
+        if (this.triajeTimer) clearInterval(this.triajeTimer);
+        this.triajeTimer = setInterval(() => {
+          this.triajeTimeLeft--;
+          const el = document.getElementById('triajeCountdown');
+          if (el) el.innerText = `⏱️ ${this.triajeTimeLeft}s`;
+          if (this.triajeTimeLeft <= 0) {
+            clearInterval(this.triajeTimer);
+            this.evaluateCurrentPuzzle(true);
+          }
+        }, 1000);
+      }
+
+      selectTriajeChoice(index) {
+        sound.click();
+        document.getElementById('triajeSelected').value = index;
+        document.querySelectorAll('.triaje-opt-btn').forEach((btn, i) => {
+          if (i === index) {
+            btn.classList.add('bg-emerald-950', 'border-emerald-400', 'ring-2', 'ring-emerald-400/50');
+          } else {
+            btn.classList.remove('bg-emerald-950', 'border-emerald-400', 'ring-2', 'ring-emerald-400/50');
+          }
+        });
+      }
+
+      evaluateCurrentPuzzle(isTimeout = false) {
+        if (!this.activeChallenge || !this.currentInteractingConsole) return;
+        if (this.triajeTimer) clearInterval(this.triajeTimer);
+
+        let isCorrect = false;
+
+        if (!isTimeout) {
+          if (this.activeChallenge.type === 'interrogatorio') {
+            const selected = document.querySelector('input[name="puzzleOpt"]:checked');
+            if (!selected) return;
+            isCorrect = parseInt(selected.value, 10) === this.activeChallenge.correct;
+          } else if (this.activeChallenge.type === 'circuito') {
+            const userOrder = this.circuitAnswer.map(item => item.originalIndex);
+            isCorrect = JSON.stringify(userOrder) === JSON.stringify(this.activeChallenge.correctSequence);
+          } else if (this.activeChallenge.type === 'triaje') {
+            const chosen = parseInt(document.getElementById('triajeSelected').value, 10);
+            if (chosen < 0) return;
+            isCorrect = chosen === this.activeChallenge.correct;
+          }
+        }
+
+        const roomNum = this.currentInteractingConsole.room;
+
+        if (isCorrect) {
+          sound.success();
+          this.score += 10;
+          this.resolvedCount++;
+          this.currentInteractingConsole.status = 'cleared';
+          this.checkRoomCompletion(roomNum);
+          this.closeModal();
+          this.updateHUD();
+
+          if (this.resolvedCount >= 15) {
+            setTimeout(() => this.triggerFinishGame(true), 450);
+          }
+        } else {
+          sound.errorBuzz();
+          this.lives--;
+          this.currentInteractingConsole.status = 'failed';
+          this.resolvedCount++;
+
+          this.userBreaches.push({
+            room: this.activeChallenge.room,
+            title: this.activeChallenge.title,
+            docSource: this.activeChallenge.docSource,
+            pageRef: this.activeChallenge.pageRef,
+            hintFeedback: this.activeChallenge.hintFeedback
+          });
+
+          this.updateHUD();
+          this.blindFeedbackAlert.classList.remove('hidden');
+          this.btnSubmitPuzzle.disabled = true;
+          this.btnSubmitPuzzle.classList.add('opacity-50', 'cursor-not-allowed');
+
+          if (this.lives <= 0) {
+            setTimeout(() => {
+              this.closeModal();
+              this.triggerFinishGame(false);
+            }, 1900);
+          } else {
+            setTimeout(() => {
+              this.closeModal();
+              this.checkRoomCompletion(roomNum);
+              if (this.resolvedCount >= 15) {
+                this.triggerFinishGame(true);
+              }
+            }, 2100);
+          }
+        }
+      }
+
+      checkRoomCompletion(roomNumber) {
+        if (!roomNumber) return;
+        const consolesInRoom = this.activeConsoles.filter(c => c.room === roomNumber);
+        if (consolesInRoom.every(c => c.status !== 'pending')) {
+          const roomDef = this.rooms[roomNumber - 1];
+          if (!roomDef.cleared) {
+            roomDef.cleared = true;
+            sound.doorOpen();
+          }
+        }
+      }
+
+      triggerFinishGame(survived) {
+        this.isGameOver = true;
+        sound.fanfare();
+
+        const badge = document.getElementById('finishBadge');
+        const title = document.getElementById('finishTitle');
+        const subtitle = document.getElementById('finishSubtitle');
+        const statusDisplay = document.getElementById('finalStatusDisplay');
+
+        this.finalScoreDisplay.innerText = `${this.score} / 150`;
+        this.finalTotal300Display.innerText = `${this.phase1Score + this.score} / 300`;
+        this.finalAccuracyLabel.innerText = `150 (Fase 1) + ${this.score} (Fase 2)`;
+
+        if (survived && this.score >= 100) {
+          badge.className = 'px-4 py-1 rounded-full text-xs font-orbitron font-bold uppercase bg-emerald-950 text-emerald-400 border border-emerald-500/40 inline-block mb-2';
+          badge.innerText = '🏆 META DE 300 POLIPUNTOS ALCANZADA';
+          title.innerText = '¡NAVE NODRIZA DESPEGANDO CON ÉXITO!';
+          subtitle.innerText = 'Dominas los procesos de Inglés, Prácticas Admin, Convenios 2027-1, Grados y Facturación en SmartCampus.';
+          statusDisplay.innerText = 'COMANDANTE ÉLITE';
+          statusDisplay.className = 'font-orbitron font-black text-xl text-emerald-400 mt-2';
+        } else {
+          badge.className = 'px-4 py-1 rounded-full text-xs font-orbitron font-bold uppercase bg-rose-950 text-rose-400 border border-rose-500/40 inline-block mb-2';
+          badge.innerText = '⚠️ DESPEGUE ABORTADO POR SABOTAJE';
+          title.innerText = 'SE AGOTARON LOS ESCUDOS DE LA NAVE';
+          subtitle.innerText = 'Revisa los NotiBoom y guías indicados abajo para asegurar los 300 Polipuntos en tu próximo intento.';
+          statusDisplay.innerText = 'EN REFUERZO';
+          statusDisplay.className = 'font-orbitron font-black text-xl text-rose-400 mt-2';
+        }
+
+        if (this.userBreaches.length === 0) {
+          this.breachListContainer.innerHTML = `
+            <div class="p-5 rounded-2xl bg-emerald-950/40 border border-emerald-500/40 text-center">
+              <span class="text-3xl">🚀👑</span>
+              <h4 class="font-orbitron font-bold text-emerald-300 text-sm mt-1">¡300 / 300 POLIPUNTOS • CERO BRECHAS!</h4>
+              <p class="text-xs text-slate-300 mt-1">Resolviste sin un solo fallo todos los casos de la Fase 2. ¡Estás 100% blindado para acompañar a nuestros estudiantes!</p>
+            </div>
+          `;
+        } else {
+          this.breachListContainer.innerHTML = this.userBreaches.map(b => `
+            <div class="p-3.5 rounded-xl bg-slate-900 border border-rose-500/40">
+              <div class="flex items-center justify-between text-[11px] font-orbitron text-rose-300 mb-1">
+                <span>📌 ${b.docSource} • ${b.pageRef}</span>
+                <span class="text-slate-400">SECTOR 0${b.room}</span>
+              </div>
+              <h5 class="text-xs md:text-sm font-bold text-white">${b.title}</h5>
+              <p class="text-xs text-amber-300 mt-1">💡 <strong>Directriz a repasar:</strong> ${b.hintFeedback}</p>
+            </div>
+          `).join('');
+        }
+
+        this.finishModal.classList.remove('hidden');
+        setTimeout(() => this.finishModal.classList.add('opacity-100'), 20);
+      }
+
+      startLoop() {
+        const loop = () => {
+          this.update();
+          this.render();
+          requestAnimationFrame(loop);
+        };
+        requestAnimationFrame(loop);
+      }
+
+      update() {
+        this.stars.forEach(s => {
+          s.y += s.speed;
+          if (s.y > this.virtHeight) s.y = 0;
+        });
+
+        if (this.isGameOver || !this.puzzleModal.classList.contains('hidden') || !this.startLobbyModal.classList.contains('hidden') || !this.cutsceneModal.classList.contains('hidden')) return;
+
+        let dx = 0;
+        let dy = 0;
+
+        if (this.keys['arrowleft'] || this.keys['a']) { dx -= 1; this.player.facing = 'left'; }
+        if (this.keys['arrowright'] || this.keys['d']) { dx += 1; this.player.facing = 'right'; }
+        if (this.keys['arrowup'] || this.keys['w']) { dy -= 1; }
+        if (this.keys['arrowdown'] || this.keys['s']) { dy += 1; }
+
+        const maxAllowedX = this.getMaxUnlockedX();
+
+        if (dx !== 0 || dy !== 0) {
+          if (dx !== 0 && dy !== 0) {
+            dx *= 0.7071;
+            dy *= 0.7071;
+          }
+          const nextX = this.player.x + dx * this.player.speed;
+          const nextY = this.player.y + dy * this.player.speed;
+
+          this.player.x = Math.max(95, Math.min(maxAllowedX, nextX));
+          this.player.y = Math.max(95, Math.min(this.virtHeight - 52, nextY));
+          this.player.isMoving = true;
+          this.player.walkCycle += 0.28;
+          this.updateHUD();
+        } else if (this.player.targetX !== null && this.player.targetY !== null) {
+          const distX = this.player.targetX - this.player.x;
+          const distY = this.player.targetY - this.player.y;
+          const dist = Math.hypot(distX, distY);
+
+          if (dist > 5) {
+            const step = Math.min(this.player.speed * 1.15, dist);
+            const nx = this.player.x + (distX / dist) * step;
+            const ny = this.player.y + (distY / dist) * step;
+
+            if (distX < -1) this.player.facing = 'left';
+            if (distX > 1) this.player.facing = 'right';
+
+            this.player.x = Math.max(95, Math.min(maxAllowedX, nx));
+            this.player.y = Math.max(95, Math.min(this.virtHeight - 52, ny));
+            this.player.isMoving = true;
+            this.player.walkCycle += 0.32;
+            this.updateHUD();
+          } else {
+            this.player.targetX = null;
+            this.player.targetY = null;
+            this.player.isMoving = false;
+
+            if (this.player.pendingConsole && this.player.pendingConsole.status === 'pending') {
+              const c = this.player.pendingConsole;
+              this.player.pendingConsole = null;
+              this.triggerConsoleInteraction(c);
+            }
+          }
+        } else {
+          this.player.isMoving = false;
+        }
+
+        const nearConsole = this.getNearestPendingConsole();
+        if (nearConsole) {
+          this.btnUseConsole.disabled = false;
+          this.btnUseConsole.classList.remove('opacity-45', 'cursor-not-allowed');
+          this.btnUseConsole.classList.add('opacity-100', 'cursor-pointer', 'scale-105');
+          this.useBtnSubtext.innerText = '¡ABRIR PORTÁTIL!';
+        } else {
+          const currentRoom = this.getCurrentRoom();
+          const hasPendingInRoom = this.activeConsoles.some(c => c.room === currentRoom.id && c.status === 'pending');
+          if (hasPendingInRoom) {
+            this.btnUseConsole.disabled = false;
+            this.btnUseConsole.classList.remove('opacity-45', 'cursor-not-allowed');
+            this.btnUseConsole.classList.add('opacity-90', 'cursor-pointer');
+            this.useBtnSubtext.innerText = 'IR A CAJA';
+          } else {
+            this.btnUseConsole.disabled = true;
+            this.btnUseConsole.classList.add('opacity-45', 'cursor-not-allowed');
+            this.useBtnSubtext.innerText = 'SECTOR LISTO';
+          }
+        }
+      }
+
+      drawRoundedRect(x, y, w, h, r) {
+        const ctx = this.ctx;
+        ctx.beginPath();
+        ctx.moveTo(x + r, y);
+        ctx.lineTo(x + w - r, y);
+        ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+        ctx.lineTo(x + w, y + h - r);
+        ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+        ctx.lineTo(x + r, y + h);
+        ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+        ctx.lineTo(x, y + r);
+        ctx.quadraticCurveTo(x, y, x + r, y);
+        ctx.closePath();
+      }
+
+      drawDropshipCargoCrate(c, isNear) {
+        const ctx = this.ctx;
+        const x = c.x;
+        const y = c.y;
+        const isPending = c.status === 'pending';
+        const isCleared = c.status === 'cleared';
+
+        ctx.save();
+
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.55)';
+        this.drawRoundedRect(x - 26, y - 14, 52, 42, 6);
+        ctx.fill();
+
+        if (isPending) {
+          ctx.shadowColor = '#ffea00';
+          ctx.shadowBlur = isNear ? 22 : 10;
+        }
+
+        let topCol = '#3b6e5c';
+        let frontCol = '#284e40';
+        let borderCol = isPending ? (isNear ? '#ffffff' : '#ffea00') : (isCleared ? '#00f59b' : '#ff3860');
+
+        if (isCleared) {
+          topCol = '#065f46';
+          frontCol = '#064e3b';
+        } else if (c.status === 'failed') {
+          topCol = '#881337';
+          frontCol = '#4c0519';
+        }
+
+        ctx.fillStyle = frontCol;
+        ctx.strokeStyle = '#090d16';
+        ctx.lineWidth = 3;
+        this.drawRoundedRect(x - 24, y - 18, 48, 38, 5);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = topCol;
+        ctx.strokeStyle = borderCol;
+        ctx.lineWidth = isPending ? 2.5 : 2;
+        this.drawRoundedRect(x - 24, y - 22, 48, 22, 4);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.shadowBlur = 0;
+
+        ctx.fillStyle = '#94a3b8';
+        ctx.fillRect(x - 20, y - 19, 3, 2);
+        ctx.fillRect(x + 17, y - 19, 3, 2);
+        ctx.fillRect(x - 6, y + 6, 12, 4);
+
+        ctx.fillStyle = '#cbd5e1';
+        ctx.strokeStyle = '#0f172a';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(x - 12, y - 8);
+        ctx.lineTo(x + 12, y - 8);
+        ctx.lineTo(x + 16, y - 2);
+        ctx.lineTo(x - 16, y - 2);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = '#1e293b';
+        this.drawRoundedRect(x - 12, y - 24, 24, 16, 3);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = isPending ? '#38bdf8' : (isCleared ? '#00f59b' : '#ff3860');
+        ctx.fillRect(x - 9, y - 21, 18, 10);
+
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        if (isPending) {
+          const bounce = Math.sin(Date.now() * 0.008) * 2.5;
+          ctx.fillStyle = '#ffea00';
+          ctx.beginPath();
+          ctx.arc(x + 20, y - 24 + bounce, 8.5, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = '#000';
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+          ctx.fillStyle = '#000000';
+          ctx.font = '900 11px Orbitron';
+          ctx.fillText('!', x + 20, y - 23 + bounce);
+        } else if (isCleared) {
+          ctx.fillStyle = '#022c22';
+          ctx.font = 'bold 11px sans-serif';
+          ctx.fillText('✓', x, y - 15);
+        } else {
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'bold 10px sans-serif';
+          ctx.fillText('✕', x, y - 15);
+        }
+
+        let tag = 'CASO';
+        if (c.questionData.type === 'circuito') tag = 'RUTA';
+        if (c.questionData.type === 'triaje') tag = 'TRIAJE';
+
+        ctx.fillStyle = isPending ? '#fde047' : '#e2e8f0';
+        ctx.font = '800 8.5px Orbitron';
+        ctx.fillText(tag, x, y + 14);
+
+        ctx.restore();
+      }
+
+      render() {
+        const ctx = this.ctx;
+        ctx.clearRect(0, 0, this.virtWidth, this.virtHeight);
+
+        this.stars.forEach(s => {
+          ctx.fillStyle = `rgba(255, 255, 255, ${s.alpha})`;
+          ctx.beginPath();
+          ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+          ctx.fill();
+        });
+
+        ctx.fillStyle = '#1e2430';
+        ctx.strokeStyle = '#334155';
+        ctx.lineWidth = 6;
+        this.drawRoundedRect(68, 28, this.virtWidth - 136, this.virtHeight - 48, 28);
+        ctx.fill();
+        ctx.stroke();
+
+        this.rooms.forEach((r, idx) => {
+          ctx.fillStyle = '#3b4252';
+          this.drawRoundedRect(r.x, r.y, r.w, 195, 12);
+          ctx.fill();
+
+          ctx.fillStyle = '#1f242d';
+          this.drawRoundedRect(r.x, r.y + 185, r.w, r.h - 185, 12);
+          ctx.fill();
+
+          ctx.strokeStyle = 'rgba(234, 179, 8, 0.16)';
+          ctx.lineWidth = 1.5;
+          for (let gx = r.x + 28; gx < r.x + r.w; gx += 38) {
+            ctx.beginPath();
+            ctx.moveTo(gx, r.y + 195);
+            ctx.lineTo(gx, r.y + r.h - 10);
+            ctx.stroke();
+          }
+          for (let gy = r.y + 225; gy < r.y + r.h; gy += 38) {
+            ctx.beginPath();
+            ctx.moveTo(r.x + 8, gy);
+            ctx.lineTo(r.x + r.w - 8, gy);
+            ctx.stroke();
+          }
+
+          ctx.fillStyle = '#475569';
+          ctx.fillRect(r.x + 2, r.y + 182, r.w - 4, 10);
+
+          for (let sx = r.x + 16; sx < r.x + r.w - 30; sx += 36) {
+            ctx.fillStyle = '#0284c7';
+            ctx.strokeStyle = '#0f172a';
+            ctx.lineWidth = 2;
+            this.drawRoundedRect(sx, r.y + 42, 26, 16, 5);
+            ctx.fill();
+            ctx.stroke();
+            ctx.fillStyle = '#38bdf8';
+            this.drawRoundedRect(sx + 3, r.y + 44, 20, 6, 3);
+            ctx.fill();
+          }
+
+          ctx.strokeStyle = r.cleared ? '#00f59b' : r.color;
+          ctx.lineWidth = 2.5;
+          this.drawRoundedRect(r.x, r.y, r.w, r.h, 12);
+          ctx.stroke();
+
+          ctx.fillStyle = 'rgba(9, 13, 24, 0.9)';
+          this.drawRoundedRect(r.x + 6, r.y + 6, r.w - 12, 32, 8);
+          ctx.fill();
+
+          ctx.font = '800 9.5px Orbitron';
+          ctx.fillStyle = r.cleared ? '#00f59b' : r.color;
+          ctx.fillText(r.shortTitle, r.x + 12, r.y + 20);
+
+          ctx.font = '700 8.5px "Plus Jakarta Sans"';
+          ctx.fillStyle = r.cleared ? '#00f59b' : '#cbd5e1';
+          ctx.fillText(r.cleared ? '✓ MÓDULO REPARADO' : '⚡ 3 PORTÁTILES', r.x + 12, r.y + 32);
+
+          if (idx < this.rooms.length - 1) {
+            const gateX = r.x + r.w + 5;
+            ctx.fillStyle = '#27303f';
+            ctx.fillRect(r.x + r.w, 255, 10, 95);
+
+            if (!r.cleared) {
+              const pulse = 0.65 + Math.sin(Date.now() * 0.008) * 0.3;
+              ctx.strokeStyle = `rgba(255, 56, 96, ${pulse})`;
+              ctx.lineWidth = 5;
+              ctx.beginPath();
+              ctx.moveTo(gateX, r.y + 15);
+              ctx.lineTo(gateX, r.y + r.h - 15);
+              ctx.stroke();
+
+              ctx.fillStyle = '#0f172a';
+              ctx.strokeStyle = '#ff3860';
+              ctx.lineWidth = 2;
+              ctx.beginPath();
+              ctx.arc(gateX, 302, 10, 0, Math.PI * 2);
+              ctx.fill();
+              ctx.stroke();
+
+              ctx.font = '9px sans-serif';
+              ctx.textAlign = 'center';
+              ctx.textBaseline = 'middle';
+              ctx.fillText('🔒', gateX, 303);
+              ctx.textAlign = 'left';
+              ctx.textBaseline = 'alphabetic';
+            } else {
+              ctx.strokeStyle = 'rgba(0, 245, 155, 0.4)';
+              ctx.lineWidth = 2;
+              ctx.setLineDash([6, 6]);
+              ctx.beginPath();
+              ctx.moveTo(gateX, r.y + 20);
+              ctx.lineTo(gateX, r.y + r.h - 20);
+              ctx.stroke();
+              ctx.setLineDash([]);
+            }
+          }
+        });
+
+        const nearConsole = this.getNearestPendingConsole();
+        this.activeConsoles.forEach(c => {
+          const isNear = nearConsole && nearConsole.id === c.id;
+          this.drawDropshipCargoCrate(c, isNear);
+        });
+
+        this.npcs.forEach(npc => {
+          this.drawAmongUsCrewmate(npc, npc.name, false);
+        });
+
+        if (this.player.targetX !== null && this.player.targetY !== null) {
+          ctx.strokeStyle = 'rgba(255, 234, 0, 0.75)';
+          ctx.lineWidth = 2.5;
+          ctx.beginPath();
+          ctx.arc(this.player.targetX, this.player.targetY, 10, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+
+        this.drawAmongUsCrewmate(this.player, 'EXPERTO POLI', true);
+      }
+
+      drawAmongUsCrewmate(p, labelText, isMainPlayer) {
+        const ctx = this.ctx;
+        ctx.save();
+        ctx.translate(p.x, p.y);
+
+        const bobY = p.isMoving ? Math.abs(Math.sin(p.walkCycle)) * -4 : 0;
+        const legOffset = p.isMoving ? Math.sin(p.walkCycle) * 5 : 0;
+
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.55)';
+        ctx.beginPath();
+        ctx.ellipse(0, 20, 16, 6, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        const dir = p.facing === 'left' ? -1 : 1;
+        ctx.scale(dir, 1);
+        ctx.translate(0, bobY);
+
+        ctx.fillStyle = p.darkColor;
+        ctx.strokeStyle = '#020617';
+        ctx.lineWidth = 3;
+        this.drawRoundedRect(-19, -8, 9, 20, 4);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = p.darkColor;
+        this.drawRoundedRect(-11, 10 + legOffset * 0.5, 9, 10, 4);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = p.mainColor;
+        this.drawRoundedRect(1, 10 - legOffset * 0.5, 9, 10, 4);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = p.mainColor;
+        this.drawRoundedRect(-13, -18, 25, 31, 12);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = p.darkColor;
+        ctx.beginPath();
+        ctx.arc(0, 3, 11, 0.15 * Math.PI, 0.85 * Math.PI);
+        ctx.fill();
+
+        ctx.fillStyle = '#7dd3fc';
+        ctx.strokeStyle = '#020617';
+        ctx.lineWidth = 2.8;
+        this.drawRoundedRect(-2, -13, 17, 11, 5.5);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = '#ffffff';
+        this.drawRoundedRect(2, -11, 8, 3.5, 2);
+        ctx.fill();
+
+        if (p.hat === 'viking') {
+          ctx.fillStyle = '#92400e';
+          ctx.strokeStyle = '#020617';
+          ctx.lineWidth = 2.2;
+          ctx.beginPath();
+          ctx.arc(0, -17, 11, Math.PI, 0);
+          ctx.fill();
+          ctx.stroke();
+
+          ctx.fillStyle = '#fde047';
+          ctx.beginPath();
+          ctx.moveTo(-9, -19);
+          ctx.lineTo(-18, -28);
+          ctx.lineTo(-6, -23);
+          ctx.closePath();
+          ctx.fill();
+          ctx.stroke();
+
+          ctx.beginPath();
+          ctx.moveTo(9, -19);
+          ctx.lineTo(18, -28);
+          ctx.lineTo(6, -23);
+          ctx.closePath();
+          ctx.fill();
+          ctx.stroke();
+        } else if (p.hat === 'crown') {
+          ctx.fillStyle = '#ffea00';
+          ctx.strokeStyle = '#020617';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(-9, -17);
+          ctx.lineTo(-9, -26);
+          ctx.lineTo(-3, -21);
+          ctx.lineTo(0, -28);
+          ctx.lineTo(4, -21);
+          ctx.lineTo(10, -26);
+          ctx.lineTo(10, -17);
+          ctx.closePath();
+          ctx.fill();
+          ctx.stroke();
+        } else if (p.hat === 'cap') {
+          ctx.fillStyle = '#1e3a8a';
+          ctx.strokeStyle = '#020617';
+          ctx.lineWidth = 2;
+          this.drawRoundedRect(-10, -23, 20, 7, 3);
+          ctx.fill();
+          ctx.stroke();
+          ctx.fillStyle = '#f8fafc';
+          ctx.fillRect(2, -19, 13, 3);
+        }
+
+        ctx.restore();
+
+        ctx.save();
+        ctx.font = isMainPlayer ? '800 10.5px "Plus Jakarta Sans"' : '700 9.5px "Plus Jakarta Sans"';
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#000000';
+        ctx.fillText(labelText, p.x + 1, p.y - 31 + bobY);
+        ctx.fillStyle = isMainPlayer ? '#ffea00' : '#cbd5e1';
+        ctx.fillText(labelText, p.x, p.y - 32 + bobY);
+        ctx.restore();
+      }
+    }
+
+    window.onload = function () {
+      window.game = new PoliGameEngine();
+    };
+  </script>
+</body>
+</html>
