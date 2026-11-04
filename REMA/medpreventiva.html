@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medicina Preventiva Comercial | Ruta Formativa</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        clinica: {
+                            light: '#e0f2fe',
+                            DEFAULT: '#0284c7', // Blue 600
+                            dark: '#0369a1',
+                            accent: '#0d9488' // Teal 600
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #f0f9ff;
+            color: #1e293b;
+        }
+
+        /* Flip Card Styles */
+        .flip-card {
+            background-color: transparent;
+            width: 100%;
+            height: 320px;
+            perspective: 1000px;
+            cursor: pointer;
+        }
+
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
+            transform-style: preserve-3d;
+        }
+
+        .flip-card:hover .flip-card-inner, .flip-card.flipped .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .flip-card-front {
+            background-color: white;
+            border-top: 4px solid #0284c7;
+        }
+
+        .flip-card-back {
+            background-color: #0284c7;
+            color: white;
+            transform: rotateY(180deg);
+        }
+
+        /* Accordion transition */
+        .accordion-content {
+            transition: max-height 0.3s ease-in-out, opacity 0.3s ease-in-out;
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+        }
+        .accordion-content.open {
+            max-height: 500px; /* arbitrary large height */
+            opacity: 1;
+        }
+
+        /* Custom scrollbar for inner elements */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; 
+        }
+    </style>
+</head>
+<body class="antialiased selection:bg-clinica-accent selection:text-white pb-20">
+
+    <!-- Header -->
+    <header class="bg-gradient-to-r from-clinica-dark to-clinica-accent text-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col sm:flex-row items-center justify-between">
+            <div class="flex items-center space-x-4">
+                <div class="bg-white/20 p-3 rounded-full backdrop-blur-sm">
+                    <i class="fa-solid fa-stethoscope text-3xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl sm:text-3xl font-bold tracking-tight">Medicina Preventiva Comercial</h1>
+                    <p class="text-clinica-light text-sm sm:text-base opacity-90">Diagnóstico, Triage y Cierre en Rematrícula</p>
+                </div>
+            </div>
+            <div class="mt-4 sm:mt-0 bg-white text-clinica-dark px-4 py-2 rounded-full font-semibold text-sm shadow flex items-center space-x-2">
+                <i class="fa-solid fa-calendar-check"></i>
+                <span>Taller Mensual - Noviembre</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 space-y-12">
+
+        <!-- Intro & Context (Accordions) -->
+        <section>
+            <div class="flex items-center space-x-3 mb-6">
+                <i class="fa-solid fa-notes-medical text-2xl text-clinica-dark"></i>
+                <h2 class="text-2xl font-bold text-gray-800">Historia Clínica General (Diagnóstico)</h2>
+            </div>
+            
+            <div class="space-y-4">
+                <!-- Accordion 1 -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                    <button onclick="toggleAccordion('acc1')" class="w-full px-6 py-4 text-left flex justify-between items-center focus:outline-none hover:bg-gray-50 transition-colors">
+                        <span class="font-semibold text-gray-800 text-lg flex items-center">
+                            <i class="fa-solid fa-chart-line text-clinica-accent w-6"></i> Hallazgos de Calidad (Base de Monitoreos)
+                        </span>
+                        <i id="icon-acc1" class="fa-solid fa-chevron-down text-gray-400 transition-transform duration-300"></i>
+                    </button>
+                    <div id="acc1" class="accordion-content bg-gray-50 px-6">
+                        <div class="py-4 text-gray-600 space-y-3">
+                            <p>El análisis de nuestras auditorías revela que el <strong>bloqueo ante objeciones "difíciles"</strong> es la principal causa de mortalidad en la rematrícula. Los asesores escuchan excusas académicas o financieras e inmediatamente asumen una posición defensiva o de cierre administrativo.</p>
+                            <ul class="list-disc pl-5 space-y-1 mt-2">
+                                <li><strong>Síntoma principal:</strong> Olvidar que la rematrícula <em>es servicio</em>. Sin continuidad, no hay servicio que prestar.</li>
+                                <li><strong>Patología:</strong> Prometer tickets vacíos ("vamos a escalar el caso") que generan falsas expectativas.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Accordion 2 -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                    <button onclick="toggleAccordion('acc2')" class="w-full px-6 py-4 text-left flex justify-between items-center focus:outline-none hover:bg-gray-50 transition-colors">
+                        <span class="font-semibold text-gray-800 text-lg flex items-center">
+                            <i class="fa-solid fa-bullseye text-clinica-accent w-6"></i> Objetivo del Tratamiento
+                        </span>
+                        <i id="icon-acc2" class="fa-solid fa-chevron-down text-gray-400 transition-transform duration-300"></i>
+                    </button>
+                    <div id="acc2" class="accordion-content bg-gray-50 px-6">
+                        <div class="py-4 text-gray-600">
+                            <p>Pasar de una respuesta <strong>reactiva</strong> frente a la negación, a una gestión <strong>preventiva y consultiva</strong>. Queremos que el equipo aprenda a revisar el historial (HubSpot) antes de llamar, a soltar lo que no pueden controlar (notas, reglas) y a empoderar al estudiante resaltando su buen desempeño y las alternativas viables (Becas, ICETEX).</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Flip Cards (El Botiquín) -->
+        <section>
+            <div class="flex items-center space-x-3 mb-6">
+                <i class="fa-solid fa-briefcase-medical text-2xl text-clinica-dark"></i>
+                <h2 class="text-2xl font-bold text-gray-800">El Botiquín Comercial (Soluciones Reales)</h2>
+            </div>
+            <p class="text-gray-600 mb-8">Pasa el cursor (o toca) cada tarjeta para descubrir la prescripción adecuada frente a los dolores más comunes de los estudiantes.</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                
+                <!-- Card 1 -->
+                <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front group">
+                            <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4 text-red-500 group-hover:scale-110 transition-transform">
+                                <i class="fa-solid fa-wallet text-2xl"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-800 mb-2">Calamidad / Desempleo</h3>
+                            <p class="text-sm text-gray-500 text-center">"Me despidieron", "El sismo dañó mi casa", "No tengo ni para la comida".</p>
+                            <span class="mt-4 text-xs font-semibold text-clinica-accent bg-clinica-light px-3 py-1 rounded-full">Ver Prescripción</span>
+                        </div>
+                        <div class="flip-card-back">
+                            <i class="fa-solid fa-prescription-bottle-medical text-3xl mb-3 text-clinica-light"></i>
+                            <h3 class="text-lg font-bold mb-3 border-b border-white/30 pb-2">Tratamiento</h3>
+                            <ul class="text-sm text-left space-y-2">
+                                <li><i class="fa-solid fa-check mr-2 text-green-300"></i><strong>Inmediato:</strong> Ofrecer crédito de Sostenibilidad ICETEX.</li>
+                                <li><i class="fa-solid fa-check mr-2 text-green-300"></i><strong>Hasta 16 Nov:</strong> Validar perfil para postulación a Becas.</li>
+                                <li><i class="fa-solid fa-check mr-2 text-green-300"></i><strong>Valor Agregado:</strong> Portal de Empleabilidad de la universidad.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front group">
+                            <div class="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mb-4 text-orange-500 group-hover:scale-110 transition-transform">
+                                <i class="fa-solid fa-graduation-cap text-2xl"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-800 mb-2">Dolor Académico</h3>
+                            <p class="text-sm text-gray-500 text-center">"El profe me calificó mal", "Odio los trabajos en grupo", "Material desactualizado".</p>
+                            <span class="mt-4 text-xs font-semibold text-clinica-accent bg-clinica-light px-3 py-1 rounded-full">Ver Prescripción</span>
+                        </div>
+                        <div class="flip-card-back" style="background-color: #0d9488;"> <!-- Teal -->
+                            <i class="fa-solid fa-prescription text-3xl mb-3 text-teal-100"></i>
+                            <h3 class="text-lg font-bold mb-3 border-b border-white/30 pb-2">Tratamiento</h3>
+                            <ul class="text-sm text-left space-y-2">
+                                <li><i class="fa-solid fa-xmark mr-2 text-red-300"></i><strong>NO HACER:</strong> Prometer escalar el caso o recuperar notas pasadas.</li>
+                                <li><i class="fa-solid fa-check mr-2 text-green-300"></i><strong>Reflejo Positivo:</strong> "Entiendo tu molestia, pero veo en sistema que tus otras notas son excelentes. No dejes que una materia limite tu grado".</li>
+                                <li><i class="fa-solid fa-check mr-2 text-green-300"></i><strong>Soltar:</strong> Avanzar enfocándose en el nuevo ciclo.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front group">
+                            <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4 text-blue-500 group-hover:scale-110 transition-transform">
+                                <i class="fa-solid fa-building-columns text-2xl"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-800 mb-2">Competencia (Gratuidad)</h3>
+                            <p class="text-sm text-gray-500 text-center">"Me voy para la UNAD porque allá me salió política de gratuidad".</p>
+                            <span class="mt-4 text-xs font-semibold text-clinica-accent bg-clinica-light px-3 py-1 rounded-full">Ver Prescripción</span>
+                        </div>
+                        <div class="flip-card-back" style="background-color: #3b82f6;"> <!-- Blue -->
+                            <i class="fa-solid fa-comment-medical text-3xl mb-3 text-blue-100"></i>
+                            <h3 class="text-lg font-bold mb-3 border-b border-white/30 pb-2">Tratamiento</h3>
+                            <ul class="text-sm text-left space-y-2">
+                                <li><i class="fa-solid fa-magnifying-glass mr-2 text-white"></i><strong>Indagación Apreciativa:</strong> Felicitarlo, y luego preguntar sin confrontar.</li>
+                                <li><i class="fa-solid fa-check mr-2 text-green-300"></i><strong>Argumentar:</strong> "¿Empezarás de cero? Recuerda que aquí ya tienes avance y no perderás el tiempo que ya invertiste."</li>
+                                <li><i class="fa-solid fa-check mr-2 text-green-300"></i><strong>Sembrar duda:</strong> Comparar tiempos reales de grado vs. empezar de nuevo.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Interactive Activity (Semáforo Triage) -->
+        <section class="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden relative" id="game-section">
+            <div class="bg-gray-800 text-white px-6 py-4 flex justify-between items-center">
+                <h2 class="text-xl font-bold flex items-center">
+                    <i class="fa-solid fa-traffic-light mr-3 text-yellow-400"></i> 
+                    Simulador: Triage en Sala de Urgencias
+                </h2>
+                <div class="text-sm font-semibold bg-gray-700 px-3 py-1 rounded-lg">
+                    Caso <span id="current-case-num">1</span> de <span id="total-cases">3</span>
+                </div>
+            </div>
+            
+            <div class="p-6 md:p-10 flex flex-col lg:flex-row gap-8 items-center">
+                
+                <!-- Patient File (Case Description) -->
+                <div class="w-full lg:w-3/5 bg-gray-50 rounded-xl p-6 border-l-4 border-clinica-dark shadow-inner relative h-64 flex flex-col justify-center">
+                    <div class="absolute -top-4 -left-4 bg-clinica-dark text-white w-10 h-10 rounded-full flex items-center justify-center font-bold shadow-lg">
+                        <i class="fa-solid fa-user-injured"></i>
+                    </div>
+                    <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Motivo de Consulta (HubSpot):</h4>
+                    <p id="case-text" class="text-lg md:text-xl text-gray-700 font-medium italic mb-4">
+                        Cargando caso clínico...
+                    </p>
+                    <p id="case-hint" class="text-sm text-clinica-accent font-semibold hidden">
+                        <!-- Hint text goes here -->
+                    </p>
+                </div>
+
+                <!-- Triage Buttons -->
+                <div class="w-full lg:w-2/5 flex flex-col space-y-4" id="triage-buttons">
+                    <p class="text-sm text-gray-500 font-semibold mb-2 text-center">¿Cuál es tu acción inmediata como experto?</p>
+                    
+                    <button onclick="checkAnswer('verde')" class="group relative w-full flex items-center justify-between px-6 py-4 bg-white border-2 border-green-500 rounded-xl hover:bg-green-50 transition-all shadow-sm">
+                        <div class="flex items-center">
+                            <div class="w-4 h-4 rounded-full bg-green-500 mr-4 shadow-[0_0_10px_rgba(34,197,94,0.8)] group-hover:animate-pulse"></div>
+                            <span class="font-bold text-gray-800">Verde: Prescribir Solución</span>
+                        </div>
+                        <i class="fa-solid fa-arrow-right text-green-500 opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                    </button>
+
+                    <button onclick="checkAnswer('amarillo')" class="group relative w-full flex items-center justify-between px-6 py-4 bg-white border-2 border-yellow-400 rounded-xl hover:bg-yellow-50 transition-all shadow-sm">
+                        <div class="flex items-center">
+                            <div class="w-4 h-4 rounded-full bg-yellow-400 mr-4 shadow-[0_0_10px_rgba(250,204,21,0.8)] group-hover:animate-pulse"></div>
+                            <span class="font-bold text-gray-800">Amarillo: Indagar Contexto</span>
+                        </div>
+                        <i class="fa-solid fa-arrow-right text-yellow-500 opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                    </button>
+
+                    <button onclick="checkAnswer('rojo')" class="group relative w-full flex items-center justify-between px-6 py-4 bg-white border-2 border-red-500 rounded-xl hover:bg-red-50 transition-all shadow-sm">
+                        <div class="flex items-center">
+                            <div class="w-4 h-4 rounded-full bg-red-500 mr-4 shadow-[0_0_10px_rgba(239,68,68,0.8)] group-hover:animate-pulse"></div>
+                            <span class="font-bold text-gray-800">Rojo: Soltar lo incontrolable</span>
+                        </div>
+                        <i class="fa-solid fa-arrow-right text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                    </button>
+                </div>
+
+                <!-- Feedback Overlay -->
+                <div id="feedback-overlay" class="absolute inset-0 bg-white/95 backdrop-blur-sm z-10 hidden flex-col items-center justify-center p-8 text-center transition-opacity">
+                    <div id="feedback-icon" class="text-6xl mb-4"></div>
+                    <h3 id="feedback-title" class="text-2xl font-bold mb-2"></h3>
+                    <p id="feedback-desc" class="text-gray-600 text-lg max-w-2xl mb-8"></p>
+                    <button id="next-btn" onclick="nextCase()" class="bg-clinica-dark hover:bg-clinica-accent text-white px-8 py-3 rounded-full font-bold shadow-lg transition-colors transform hover:scale-105">
+                        Siguiente Paciente <i class="fa-solid fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="mt-16 text-center text-gray-400 text-sm pb-8">
+        <p>Desarrollado para la Ruta Formativa - Equipo Comercial & Calidad</p>
+    </footer>
+
+    <script>
+        // --- Accordion Logic ---
+        function toggleAccordion(id) {
+            const content = document.getElementById(id);
+            const icon = document.getElementById('icon-' + id);
+            
+            if (content.classList.contains('open')) {
+                content.classList.remove('open');
+                icon.style.transform = 'rotate(0deg)';
+            } else {
+                content.classList.add('open');
+                icon.style.transform = 'rotate(180deg)';
+            }
+        }
+
+        // --- Game Logic ---
+        const cases = [
+            {
+                text: `"Hola, llamo para saber cuándo son las fechas de reingreso. Quiero volver a estudiar el próximo semestre, ya tengo el dinero."`,
+                correct: 'verde',
+                feedbackTitle: '¡Exacto! Cierre en Caliente',
+                feedbackDesc: 'No le des solo la fecha para colgar. Prescribe inmediatamente: genera el compromiso en el sistema y ayúdalo a emitir la orden. ¡El paciente está listo para el alta!',
+                icon: '<i class="fa-solid fa-circle-check text-green-500"></i>'
+            },
+            {
+                text: `"No me voy a matricular. Llevo 2 meses pidiendo que me cambien la nota del trabajo en grupo porque mis compañeros no hicieron nada y el profesor es pésimo."`,
+                correct: 'rojo',
+                feedbackTitle: '¡Bien diagnosticado! Soltar',
+                feedbackDesc: 'No puedes prometer cambiar la nota (es incontrolable) ni crear tickets falsos. Aplica Rojo (soltar la queja del pasado), ten empatía y enfócate en sus buenas notas generales para motivar el nuevo semestre.',
+                icon: '<i class="fa-solid fa-circle-check text-red-500"></i>'
+            },
+            {
+                text: `"No voy a seguir porque perdí mi empleo en los recortes del mes pasado. Lo poquito que me dieron es para la comida y el colegio de los niños."`,
+                correct: 'amarillo',
+                feedbackTitle: '¡Perfecto! Indagar primero',
+                feedbackDesc: 'Antes de ofrecer becas a ciegas (Verde), debes aplicar Amarillo: Indagar en HubSpot si ya tiene algún apoyo, escuchar su situación con empatía y luego sí prescribir la beca (hasta 16 nov) o el crédito ICETEX de sostenibilidad.',
+                icon: '<i class="fa-solid fa-circle-check text-yellow-500"></i>'
+            }
+        ];
+
+        let currentCaseIndex = 0;
+
+        const caseTextEl = document.getElementById('case-text');
+        const caseNumEl = document.getElementById('current-case-num');
+        const totalCasesEl = document.getElementById('total-cases');
+        const feedbackOverlay = document.getElementById('feedback-overlay');
+        const feedbackIcon = document.getElementById('feedback-icon');
+        const feedbackTitle = document.getElementById('feedback-title');
+        const feedbackDesc = document.getElementById('feedback-desc');
+        const nextBtn = document.getElementById('next-btn');
+
+        function initGame() {
+            totalCasesEl.textContent = cases.length;
+            loadCase();
+        }
+
+        function loadCase() {
+            feedbackOverlay.classList.add('hidden');
+            const currentCase = cases[currentCaseIndex];
+            caseTextEl.innerHTML = currentCase.text;
+            caseNumEl.textContent = currentCaseIndex + 1;
+        }
+
+        function checkAnswer(selectedColor) {
+            const currentCase = cases[currentCaseIndex];
+            
+            feedbackOverlay.classList.remove('hidden');
+            feedbackOverlay.classList.add('flex');
+
+            if (selectedColor === currentCase.correct) {
+                feedbackIcon.innerHTML = currentCase.icon;
+                feedbackTitle.textContent = currentCase.feedbackTitle;
+                feedbackTitle.className = `text-2xl font-bold mb-2 text-${selectedColor}-600`;
+                if(selectedColor === 'amarillo') feedbackTitle.className = `text-2xl font-bold mb-2 text-yellow-500`;
+                feedbackDesc.textContent = currentCase.feedbackDesc;
+            } else {
+                feedbackIcon.innerHTML = '<i class="fa-solid fa-circle-xmark text-gray-400"></i>';
+                feedbackTitle.textContent = 'Diagnóstico Incorrecto';
+                feedbackTitle.className = 'text-2xl font-bold mb-2 text-gray-700';
+                feedbackDesc.textContent = `La acción ideal era el semáforo ${currentCase.correct.toUpperCase()}. ` + currentCase.feedbackDesc;
+            }
+
+            if (currentCaseIndex === cases.length - 1) {
+                nextBtn.innerHTML = '<i class="fa-solid fa-rotate-right mr-2"></i> Reiniciar Turno';
+            } else {
+                nextBtn.innerHTML = 'Siguiente Paciente <i class="fa-solid fa-arrow-right ml-2"></i>';
+            }
+        }
+
+        function nextCase() {
+            currentCaseIndex++;
+            if (currentCaseIndex >= cases.length) {
+                currentCaseIndex = 0; // Reset game
+            }
+            loadCase();
+        }
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', initGame);
+
+    </script>
+</body>
+</html>
