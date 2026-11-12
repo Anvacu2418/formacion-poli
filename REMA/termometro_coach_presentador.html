@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Termómetro Comercial Poli - Tablero Coach Master</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --poli-azul-oscuro: #10385b;
+    --poli-azul-claro: #44aed8;
+    --poli-verde: #a3cb36;
+    --poli-amarillo: #fbb017;
+    --poli-magenta: #d8066b;
+    --bg-dark: #091a2b;
+    --glass-bg: rgba(255, 255, 255, 0.96);
+    --glass-border: rgba(255, 255, 255, 0.35);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Open Sans', sans-serif;
+    background: radial-gradient(circle at top right, #1b4b73, #10385b 45%, #091a2b 100%);
+    color: #1e293b;
+    min-height: 100vh;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  header {
+    width: 100%;
+    max-width: 1320px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: white;
+    margin-bottom: 20px;
+    padding: 12px 24px;
+    background: rgba(16, 56, 91, 0.75);
+    backdrop-filter: blur(12px);
+    border-radius: 16px;
+    border: 1px solid rgba(68, 174, 216, 0.3);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+  }
+  .brand-title {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 24px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+  }
+  .brand-title span { color: var(--poli-azul-claro); }
+  .badge-coach {
+    background: var(--poli-magenta);
+    color: white;
+    font-size: 12px;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .main-grid {
+    width: 100%;
+    max-width: 1320px;
+    display: grid;
+    grid-template-columns: 1.15fr 0.85fr;
+    gap: 22px;
+  }
+  @media (max-width: 1024px) {
+    .main-grid { grid-template-columns: 1fr; }
+  }
+
+  .card {
+    background: var(--glass-bg);
+    border-radius: 18px;
+    padding: 24px;
+    box-shadow: 0 14px 40px rgba(0,0,0,0.3);
+    border: 1px solid var(--glass-border);
+  }
+
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    border-bottom: 2px solid #e2e8f0;
+    padding-bottom: 12px;
+  }
+  .card-title {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--poli-azul-oscuro);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .badge-tag {
+    font-size: 11px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-weight: 800;
+    text-transform: uppercase;
+    background: #e0f2fe;
+    color: #0284c7;
+  }
+
+  /* Case Navigation */
+  .case-nav {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 18px;
+    overflow-x: auto;
+    padding-bottom: 6px;
+  }
+  .case-btn {
+    padding: 9px 15px;
+    background: #e2e8f0;
+    border: none;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.25s;
+    color: #475569;
+  }
+  .case-btn:hover { background: #cbd5e1; }
+  .case-btn.active {
+    background: var(--poli-azul-oscuro);
+    color: white;
+    box-shadow: 0 4px 12px rgba(16, 56, 91, 0.4);
+    transform: translateY(-1px);
+  }
+
+  /* Case Box */
+  .case-box {
+    background: #f8fafc;
+    border-radius: 14px;
+    border-left: 6px solid var(--poli-azul-claro);
+    padding: 18px;
+    margin-bottom: 18px;
+  }
+  .case-scenario {
+    font-size: 14px;
+    line-height: 1.6;
+    color: #1e293b;
+    margin-bottom: 12px;
+  }
+  .analytics-card {
+    background: #ffffff;
+    border: 1px dashed #cbd5e1;
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 13px;
+    color: #334155;
+    line-height: 1.5;
+  }
+  .analytics-card strong { color: var(--poli-azul-oscuro); }
+
+  /* 3D FLIP CARD FOR GIRO CONSULTIVO */
+  .flip-card-container {
+    perspective: 1200px;
+    margin-top: 14px;
+    height: 220px;
+  }
+  .flip-card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    transition: transform 0.75s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-style: preserve-3d;
+    cursor: pointer;
+  }
+  .flip-card-inner.flipped {
+    transform: rotateY(180deg);
+  }
+  .flip-card-front, .flip-card-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    border-radius: 16px;
+    padding: 22px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  }
+  .flip-card-front {
+    background: linear-gradient(135deg, #10385b 0%, #1b4b73 100%);
+    color: white;
+    border: 2px dashed rgba(68, 174, 216, 0.7);
+  }
+  .flip-card-front .lock-icon {
+    font-size: 38px;
+    margin-bottom: 10px;
+    animation: pulse 2.2s infinite;
+  }
+  .flip-card-front h3 {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 17px;
+    font-weight: 800;
+    margin-bottom: 6px;
+    letter-spacing: 0.5px;
+  }
+  .flip-card-front p {
+    font-size: 12.5px;
+    color: #cbd5e1;
+    max-width: 440px;
+  }
+  .flip-card-front .hint-btn {
+    margin-top: 14px;
+    padding: 8px 18px;
+    background: var(--poli-azul-claro);
+    color: white;
+    border: none;
+    border-radius: 25px;
+    font-size: 12px;
+    font-weight: 800;
+    box-shadow: 0 4px 12px rgba(68, 174, 216, 0.4);
+    cursor: pointer;
+  }
+  .flip-card-back {
+    background: #ecfdf5;
+    color: #065f46;
+    transform: rotateY(180deg);
+    border: 2.5px solid var(--poli-verde);
+    text-align: left;
+    align-items: flex-start;
+    overflow-y: auto;
+  }
+  .flip-card-back h3 {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 15px;
+    font-weight: 900;
+    color: #047857;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+  }
+  .flip-card-back p {
+    font-size: 13px;
+    line-height: 1.6;
+    color: #064e3b;
+  }
+
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.12); }
+  }
+
+  /* Thermometer Graphics */
+  .thermometer-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px 0;
+  }
+  .thermo-display {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    width: 100%;
+    margin-bottom: 18px;
+  }
+  .thermo-tube {
+    width: 36px;
+    height: 250px;
+    background: #e2e8f0;
+    border-radius: 20px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: inset 0 3px 8px rgba(0,0,0,0.25);
+    border: 3.5px solid #cbd5e1;
+  }
+  .thermo-fill {
+    width: 100%;
+    height: 50%;
+    background: linear-gradient(to top, #3b82f6, #fbb017, #ef4444);
+    position: absolute;
+    bottom: 0;
+    transition: height 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .thermo-bulb {
+    width: 56px;
+    height: 56px;
+    background: #f59e0b;
+    border-radius: 50%;
+    margin-top: -16px;
+    border: 3.5px solid #cbd5e1;
+    box-shadow: 0 6px 16px rgba(245, 158, 11, 0.45);
+    transition: background 0.4s;
+  }
+
+  .thermo-levels {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 250px;
+  }
+  .level-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    transition: all 0.25s;
+  }
+  .level-item.active-level {
+    border-color: #cbd5e1;
+    background: #f8fafc;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.06);
+  }
+  .level-dot { width: 16px; height: 16px; border-radius: 50%; }
+  .level-text { font-size: 13.5px; font-weight: 800; }
+  .level-desc { font-size: 11.5px; color: #64748b; }
+
+  /* Live Results Tally */
+  .live-results {
+    background: #0f172a;
+    border-radius: 16px;
+    padding: 20px;
+    color: white;
+    margin-top: 10px;
+    box-shadow: inset 0 2px 8px rgba(0,0,0,0.3);
+  }
+  .live-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13.5px;
+    font-weight: 800;
+    color: #94a3b8;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .bar-group { margin-bottom: 12px; }
+  .bar-label { display: flex; justify-content: space-between; font-size: 12.5px; margin-bottom: 5px; font-weight: 600; }
+  .bar-bg { height: 11px; background: #334155; border-radius: 6px; overflow: hidden; }
+  .bar-val { height: 100%; border-radius: 6px; transition: width 0.45s ease-in-out; }
+
+  .voter-log {
+    margin-top: 14px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    padding: 10px 14px;
+    max-height: 110px;
+    overflow-y: auto;
+    font-size: 11.5px;
+    color: #94a3b8;
+    line-height: 1.6;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  .voter-log span { color: #f1f5f9; font-weight: 700; }
+
+  .reset-btn {
+    margin-top: 12px;
+    background: transparent;
+    border: 1px solid #475569;
+    color: #94a3b8;
+    padding: 7px 12px;
+    border-radius: 8px;
+    font-size: 11.5px;
+    font-weight: 700;
+    cursor: pointer;
+    width: 100%;
+    transition: all 0.2s;
+  }
+  .reset-btn:hover { background: #334155; color: white; }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="brand-title">TERMÓMETRO <span>COMERCIAL</span> POLI</div>
+    <div style="font-size: 12px; color: #cbd5e1; margin-top: 2px;">Tablero Maestro del Coach | Control de Sala y Proyección en Vivo</div>
+  </div>
+  <div>
+    <span class="badge-coach">🎙️ Sala de Coaching</span>
+  </div>
+</header>
+
+<div class="main-grid">
+
+  <!-- Left Column: Case Scenario & 3D Flip Card -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">
+        <span>🎙️ Caso de Simulación en Piso</span>
+      </div>
+      <span class="badge-tag" id="case-badge">Pre-Emisión</span>
+    </div>
+
+    <!-- Case Navigation -->
+    <div class="case-nav">
+      <button class="case-btn active" onclick="loadCase(0)">1. Sin orden generada</button>
+      <button class="case-btn" onclick="loadCase(1)">2. Reintegro indeciso</button>
+      <button class="case-btn" onclick="loadCase(2)">3. "No tengo plata"</button>
+      <button class="case-btn" onclick="loadCase(3)">4. Solo vino por el dato</button>
+    </div>
+
+    <!-- Case Scenario Details -->
+    <div class="case-box">
+      <div class="case-scenario" id="case-text">Cargando caso...</div>
+      <div class="analytics-card" id="case-analytics">Cargando historial de Analytics...</div>
+    </div>
+
+    <!-- 3D Flip Card for Hidden Giro Consultivo -->
+    <div class="flip-card-container">
+      <div class="flip-card-inner" id="flip-card" onclick="toggleFlipCard()">
+        <div class="flip-card-front">
+          <div class="lock-icon">🔒</div>
+          <h3>GIRO CONSULTIVO OCULTO</h3>
+          <p>Mantenlo cerrado mientras los asesores debaten y votan desde sus equipos.</p>
+          <button class="hint-btn">🔄 Clic para Girar y Revelar la Solución</button>
+        </div>
+        <div class="flip-card-back">
+          <h3>
+            <span>💡 EL GIRO CONSULTIVO ESTRATÉGICO</span>
+            <span style="font-size:11.5px; cursor:pointer;" onclick="toggleFlipCard(event)">Voltear ↻</span>
+          </h3>
+          <p id="card-tip-text">Cargando solución...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right Column: Room Thermometer & Live Tally -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">
+        <span>🌡️ Termómetro Promedio de Sala</span>
+      </div>
+      <span class="badge-tag" style="background:#fef3c7; color:#b45309;" id="temp-badge">50°C - En Riesgo</span>
+    </div>
+
+    <div class="thermometer-wrapper">
+      <div class="thermo-display">
+        <div style="display:flex; flex-direction:column; align-items:center;">
+          <div class="thermo-tube">
+            <div class="thermo-fill" id="thermo-bar"></div>
+          </div>
+          <div class="thermo-bulb" id="thermo-bulb"></div>
+        </div>
+
+        <div class="thermo-levels">
+          <div class="level-item" id="level-hot">
+            <div class="level-dot" style="background:#ef4444;"></div>
+            <div>
+              <div class="level-text" style="color:#ef4444;">100°C - Venta Consultiva / Empoderado</div>
+              <div class="level-desc">Servicio con intención: perfila, usa Analytics y concreta fecha.</div>
+            </div>
+          </div>
+          <div class="level-item" id="level-warm">
+            <div class="level-dot" style="background:#f59e0b;"></div>
+            <div>
+              <div class="level-text" style="color:#d97706;">60°C - Informativo Plano / En Riesgo</div>
+              <div class="level-desc">Responde la duda pero deja el control en manos del estudiante.</div>
+            </div>
+          </div>
+          <div class="level-item" id="level-cold">
+            <div class="level-dot" style="background:#3b82f6;"></div>
+            <div>
+              <div class="level-text" style="color:#2563eb;">20°C - Congelada / Pérdida de Control</div>
+              <div class="level-desc">"No hay recibos, llame el 25". El estudiante domina y cuelga.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Live Voting Results Table -->
+    <div class="live-results">
+      <div class="live-header">
+        <span>Votación en Vivo del Equipo</span>
+        <span id="total-votes-count">0 Votos</span>
+      </div>
+
+      <div class="bar-group">
+        <div class="bar-label">
+          <span>🔥 Venta Consultiva (100°C)</span>
+          <span id="pct-green">0% (0)</span>
+        </div>
+        <div class="bar-bg"><div class="bar-val" id="bar-green" style="width:0%; background:#10b981;"></div></div>
+      </div>
+
+      <div class="bar-group">
+        <div class="bar-label">
+          <span>⛅ Informativo Plano (60°C)</span>
+          <span id="pct-orange">0% (0)</span>
+        </div>
+        <div class="bar-bg"><div class="bar-val" id="bar-orange" style="width:0%; background:#f59e0b;"></div></div>
+      </div>
+
+      <div class="bar-group">
+        <div class="bar-label">
+          <span>❄️ Despacho sin Control (20°C)</span>
+          <span id="pct-red">0% (0)</span>
+        </div>
+        <div class="bar-bg"><div class="bar-val" id="bar-red" style="width:0%; background:#ef4444;"></div></div>
+      </div>
+
+      <div class="voter-log" id="voter-log">
+        <em>Esperando votos de los colaboradores desde la app votante...</em>
+      </div>
+
+      <button class="reset-btn" onclick="resetRoomVotes()">🔄 Reiniciar Votación de este Caso</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const casesData = [
+    {
+      badge: "Pre-Emisión (Sin Recibo)",
+      text: "<strong>Caso 1: El estudiante impaciente.</strong><br>El estudiante Juan David llama el 11 de noviembre diciendo: <em>'Buenas, quiero pagar ya mi semestre porque tengo la plata completa de las cesantías y no veo la orden en el Smart Campus. ¿Por qué no me la han subido?'</em>",
+      analytics: "<strong>Historial Analytics:</strong> Estudiante de 6° semestre de Adm. Empresas. Paga habitualmente con cesantías de Porvenir. Nunca ha financiado. No tiene materias reprobadas.",
+      tip: "<strong>El Giro Consultivo:</strong> Si decimos <em>'Aún no están, salen el 24'</em>, nos congelamos a 20°C. Lo consultivo es: <em>'Juan David, te felicito por tener listo tu recurso; las emisiones oficiales arrancan el 24-25 de noviembre. Ya mismo te valido tu plan para confirmar que tus materias estén proyectadas y verificar si Porvenir te exige carta de liquidación con antelación, para dejarla radicada hoy y que no pierdas tu descuento por pronto pago.'</em>"
+    },
+    {
+      badge: "Reintegros (Inician 16 Nov)",
+      text: "<strong>Caso 2: El Reingreso indeciso.</strong><br>Llama Laura manifestando: <em>'Yo aplacé hace dos semestres por temas económicos. Vi que reintegros abren el 16 de noviembre pero no sé si volver porque los precios suben mucho y no sé cuánto me va a salir.'</em>",
+      analytics: "<strong>Historial Analytics:</strong> Aplazó en 2025-2. Promedio 4.2. Trabajaba independiente. En llamadas anteriores manifestó temor al endeudamiento con entidades financieras.",
+      tip: "<strong>El Giro Consultivo:</strong> No esperes al 16 para actuar. Dile: <em>'Laura, qué gran alegría que quieras retomar. El 16 abrimos plataforma, pero hoy mismo podemos simular tu carga académica de reintegro. Además, por reingresar cuentas con beneficios exclusivos y podemos mirar alternativas directas de cuotas con la U para que la plata no sea tu freno. ¿Hacemos la proyección de una vez?'</em>"
+    },
+    {
+      badge: "Manejo de Objeciones",
+      text: "<strong>Caso 3: 'Todo está muy caro / No tengo plata'.</strong><br>El estudiante Carlos se comunica y dice: <em>'Mire, la situación está durísima, la verdad no creo que me matricule este semestre. Todo subió y no me alcanza.'</em>",
+      analytics: "<strong>Historial Analytics:</strong> Cursa 7° semestre de Psicología (a 3 semestres de graduarse). Pagos anteriores realizados por PSE en fecha ordinaria. Jamás ha solicitado crédito ni fraccionamiento 50/50.",
+      tip: "<strong>El Giro Consultivo:</strong> No des un 'bueno, lo entiendo y ojalá vuelva'. Pregunta: <em>'Carlos, estás a solo 3 semestres de recibir tu título profesional. Dejarlo ahora te aleja de esa meta. Cuéntame con sinceridad, ¿cuál es el monto mensual que hoy podrías aportar sin desajustar tus gastos familiares?'</em> De ahí nacerá el fraccionamiento 50/50 o crédito directo."
+    },
+    {
+      badge: "Pérdida de Control / Cierre",
+      text: "<strong>Caso 4: El 'Solo vine por el dato'.</strong><br>El estudiante pregunta únicamente: <em>'¿Hasta cuándo hay plazo de pagar con descuento?'</em> El asesor responde: <em>'Hasta el 15 de diciembre'</em> y el estudiante dice <em>'Listo, gracias, chao'</em>.",
+      analytics: "<strong>Historial Analytics:</strong> Estudiante que el semestre pasado pagó el último día de extraordinaria con recargo de intereses por falta de seguimiento.",
+      tip: "<strong>El Giro Consultivo:</strong> Si dejas que el estudiante cuelgue, perdiste el control. Retén con autoridad y servicio: <em>'Con gusto, Carlos. Ten presente que esa fecha es límite, pero para que no te pase como el periodo anterior donde tuviste recargo, ¿cuál es tu plan de pago para este ciclo? Te sugiero dejar agendado tu recordatorio hoy mismo.'</em>"
+    }
+  ];
+
+  let currentCase = 0;
+  let syncChannel;
+
+  try {
+    syncChannel = new BroadcastChannel('poli_thermo_sync');
+    syncChannel.onmessage = (event) => {
+      if (event.data.type === 'VOTE_SUBMITTED' && event.data.caseIdx === currentCase) {
+        renderResults();
+      }
+    };
+  } catch (e) {
+    console.log("BroadcastChannel fallback to storage events");
+  }
+
+  window.addEventListener('storage', (e) => {
+    if (e.key === `poli_votes_case_${currentCase}`) {
+      renderResults();
+    }
+  });
+
+  function getVotesKey(caseIdx) { return `poli_votes_case_${caseIdx}`; }
+
+  function getVotes(caseIdx) {
+    const raw = localStorage.getItem(getVotesKey(caseIdx));
+    if (!raw) return { green: 0, orange: 0, red: 0, voters: [] };
+    return JSON.parse(raw);
+  }
+
+  function saveVotes(caseIdx, data) {
+    localStorage.setItem(getVotesKey(caseIdx), JSON.stringify(data));
+  }
+
+  function loadCase(idx) {
+    currentCase = idx;
+    document.querySelectorAll('.case-nav .case-btn').forEach((b, i) => {
+      b.classList.toggle('active', i === idx);
+    });
+
+    const c = casesData[idx];
+    document.getElementById('case-badge').innerText = c.badge;
+    document.getElementById('case-text').innerHTML = c.text;
+    document.getElementById('case-analytics').innerHTML = c.analytics;
+    document.getElementById('card-tip-text').innerHTML = c.tip;
+
+    // Reset flip card to locked front
+    document.getElementById('flip-card').classList.remove('flipped');
+
+    renderResults();
+
+    // Broadcast active case change to student voter devices
+    if (syncChannel) {
+      syncChannel.postMessage({ type: 'CASE_CHANGED_BY_COACH', caseIdx: idx });
+    }
+    localStorage.setItem('poli_active_case', idx);
+  }
+
+  function toggleFlipCard(e) {
+    if (e) e.stopPropagation();
+    document.getElementById('flip-card').classList.toggle('flipped');
+  }
+
+  function renderResults() {
+    const data = getVotes(currentCase);
+    const total = data.green + data.orange + data.red;
+    document.getElementById('total-votes-count').innerText = `${total} Voto${total === 1 ? '' : 's'}`;
+
+    let pGreen = 0, pOrange = 0, pRed = 0;
+    let avgTemp = 50;
+
+    if (total > 0) {
+      pGreen = Math.round((data.green / total) * 100);
+      pOrange = Math.round((data.orange / total) * 100);
+      pRed = Math.round((data.red / total) * 100);
+      avgTemp = Math.round(((data.green * 100) + (data.orange * 60) + (data.red * 20)) / total);
+    }
+
+    document.getElementById('bar-green').style.width = pGreen + '%';
+    document.getElementById('pct-green').innerText = `${pGreen}% (${data.green})`;
+
+    document.getElementById('bar-orange').style.width = pOrange + '%';
+    document.getElementById('pct-orange').innerText = `${pOrange}% (${data.orange})`;
+
+    document.getElementById('bar-red').style.width = pRed + '%';
+    document.getElementById('pct-red').innerText = `${pRed}% (${data.red})`;
+
+    const bar = document.getElementById('thermo-bar');
+    const bulb = document.getElementById('thermo-bulb');
+    const badge = document.getElementById('temp-badge');
+
+    bar.style.height = avgTemp + '%';
+    document.querySelectorAll('.level-item').forEach(el => el.classList.remove('active-level'));
+
+    if (avgTemp >= 75) {
+      bulb.style.background = '#10b981';
+      badge.style.background = '#dcfce7';
+      badge.style.color = '#15803d';
+      badge.innerText = `${avgTemp}°C - Control Total / Pro`;
+      document.getElementById('level-hot').classList.add('active-level');
+    } else if (avgTemp >= 45) {
+      bulb.style.background = '#f59e0b';
+      badge.style.background = '#fef3c7';
+      badge.style.color = '#b45309';
+      badge.innerText = `${avgTemp}°C - En Riesgo / Tibio`;
+      document.getElementById('level-warm').classList.add('active-level');
+    } else {
+      bulb.style.background = '#3b82f6';
+      badge.style.background = '#dbeafe';
+      badge.style.color = '#1d4ed8';
+      badge.innerText = `${avgTemp}°C - Congelada / Sin Control`;
+      document.getElementById('level-cold').classList.add('active-level');
+    }
+
+    const logBox = document.getElementById('voter-log');
+    if (data.voters.length === 0) {
+      logBox.innerHTML = '<em>Esperando votos de los colaboradores desde la app votante...</em>';
+    } else {
+      logBox.innerHTML = data.voters.map(v => `<div><span>${v.name}</span> votó <strong>${v.vote}</strong> <span style="font-size:10px; color:#64748b;">(${v.time})</span></div>`).join('');
+    }
+  }
+
+  function resetRoomVotes() {
+    if (!confirm("¿Deseas reiniciar los votos de la sala para este caso?")) return;
+    const data = getVotes(currentCase);
+    data.voters.forEach(v => {
+      localStorage.removeItem(`poli_voted_${currentCase}_${v.name}`);
+    });
+    saveVotes(currentCase, { green: 0, orange: 0, red: 0, voters: [] });
+    renderResults();
+    if (syncChannel) {
+      syncChannel.postMessage({ type: 'VOTES_RESET', caseIdx: currentCase });
+    }
+  }
+
+  loadCase(0);
+</script>
+
+</body>
+</html>

@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Votación Termómetro Poli - Tu Respuesta</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --poli-azul-oscuro: #10385b;
+    --poli-azul-claro: #44aed8;
+    --poli-verde: #a3cb36;
+    --poli-amarillo: #fbb017;
+    --poli-magenta: #d8066b;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Open Sans', sans-serif;
+    background: radial-gradient(circle at top center, #1b4b73, #10385b 55%, #091a2b 100%);
+    color: #1e293b;
+    min-height: 100vh;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .app-container {
+    width: 100%;
+    max-width: 520px;
+    background: rgba(255, 255, 255, 0.96);
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: 0 16px 45px rgba(0,0,0,0.35);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+  }
+
+  .top-brand {
+    text-align: center;
+    margin-bottom: 18px;
+  }
+  .top-brand h1 {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--poli-azul-oscuro);
+  }
+  .top-brand h1 span { color: var(--poli-azul-claro); }
+  .top-brand p {
+    font-size: 12px;
+    color: #64748b;
+    font-weight: 600;
+  }
+
+  /* Screen 1: Registration */
+  #screen-register {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .input-group label {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--poli-azul-oscuro);
+    display: block;
+    margin-bottom: 6px;
+  }
+  .input-field {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 2px solid #cbd5e1;
+    font-size: 14px;
+    font-weight: 600;
+    outline: none;
+    transition: all 0.2s;
+  }
+  .input-field:focus {
+    border-color: var(--poli-azul-claro);
+    box-shadow: 0 0 0 3px rgba(68, 174, 216, 0.25);
+  }
+  .btn-enter {
+    background: linear-gradient(135deg, var(--poli-azul-claro), #0284c7);
+    color: white;
+    border: none;
+    padding: 14px;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 800;
+    font-family: 'Montserrat', sans-serif;
+    cursor: pointer;
+    box-shadow: 0 6px 18px rgba(2, 132, 199, 0.35);
+    transition: all 0.2s;
+  }
+  .btn-enter:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 22px rgba(2, 132, 199, 0.45);
+  }
+
+  /* Screen 2: Case & Voting */
+  #screen-vote {
+    display: none;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .user-badge-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f1f5f9;
+    padding: 8px 14px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--poli-azul-oscuro);
+  }
+  .btn-change-user {
+    background: none;
+    border: none;
+    color: var(--poli-magenta);
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    text-decoration: underline;
+  }
+
+  .case-banner {
+    background: #f8fafc;
+    border-left: 5px solid var(--poli-azul-claro);
+    border-radius: 12px;
+    padding: 14px;
+  }
+  .case-tag {
+    font-size: 10.5px;
+    font-weight: 800;
+    color: #0284c7;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+  }
+  .case-question {
+    font-size: 13.5px;
+    line-height: 1.55;
+    color: #1e293b;
+    font-weight: 600;
+  }
+
+  /* Kahoot-like Big Vote Buttons */
+  .vote-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .big-vote-btn {
+    border: 2.5px solid;
+    background: white;
+    padding: 16px;
+    border-radius: 14px;
+    cursor: pointer;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    transition: all 0.2s;
+  }
+  .big-vote-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+  }
+  .big-vote-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+  .big-vote-btn.selected-btn {
+    background: #f0fdf4 !important;
+    border-color: #16a34a !important;
+    box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.25);
+  }
+
+  .btn-green { border-color: #10b981; }
+  .btn-green .icon-box { background: #dcfce7; color: #059669; }
+  .btn-orange { border-color: #f59e0b; }
+  .btn-orange .icon-box { background: #fef3c7; color: #d97706; }
+  .btn-red { border-color: #ef4444; }
+  .btn-red .icon-box { background: #fee2e2; color: #dc2626; }
+
+  .icon-box {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+  .btn-title {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 13.5px;
+    font-weight: 800;
+    color: #0f172a;
+    margin-bottom: 2px;
+  }
+  .btn-desc {
+    font-size: 11.5px;
+    color: #64748b;
+  }
+
+  /* Personal Mini Thermometer */
+  .personal-thermo-box {
+    background: #f8fafc;
+    border-radius: 12px;
+    padding: 14px;
+    border: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .mini-tube {
+    width: 18px;
+    height: 65px;
+    background: #e2e8f0;
+    border-radius: 10px;
+    position: relative;
+    overflow: hidden;
+    border: 2px solid #cbd5e1;
+    flex-shrink: 0;
+  }
+  .mini-fill {
+    width: 100%;
+    height: 50%;
+    position: absolute;
+    bottom: 0;
+    background: #f59e0b;
+    transition: all 0.5s;
+  }
+  .thermo-status-text {
+    font-size: 12.5px;
+    line-height: 1.45;
+    color: #334155;
+  }
+  .thermo-status-text strong {
+    font-family: 'Montserrat', sans-serif;
+    display: block;
+    font-size: 13.5px;
+    margin-bottom: 2px;
+  }
+
+  .confirmation-alert {
+    display: none;
+    background: #dcfce7;
+    color: #166534;
+    border: 1.5px solid #86efac;
+    padding: 12px;
+    border-radius: 10px;
+    font-size: 12.5px;
+    font-weight: 700;
+    text-align: center;
+    animation: fadeIn 0.3s;
+  }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+
+  .case-switcher-mini {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 8px;
+    border-top: 1px solid #e2e8f0;
+  }
+  .btn-mini-nav {
+    background: #e2e8f0;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #475569;
+    cursor: pointer;
+  }
+  .btn-mini-nav:disabled { opacity: 0.4; cursor: not-allowed; }
+</style>
+</head>
+<body>
+
+<div class="app-container">
+
+  <div class="top-brand">
+    <h1>TERMÓMETRO <span>POLI</span></h1>
+    <p>Plataforma Interactiva de Votación del Asesor</p>
+  </div>
+
+  <!-- Screen 1: Registration Form -->
+  <div id="screen-register">
+    <div class="input-group">
+      <label for="reg-select">Selecciona tu Nombre del Equipo:</label>
+      <select id="reg-select" class="input-field" onchange="toggleManualInput()">
+        <option value="">-- Buscar en la lista de 25 asesores --</option>
+        <option value="José Gabriel Ardila">José Gabriel Ardila (PDI)</option>
+        <option value="Karen Tatiana Tapiero">Karen Tatiana Tapiero</option>
+        <option value="Diego Armando Marín">Diego Armando Marín</option>
+        <option value="Andrés Esteban Judex">Andrés Esteban Judex</option>
+        <option value="Laura Lisceth Quesada">Laura Lisceth Quesada</option>
+        <option value="Amalia Mendivelso">Amalia Mendivelso</option>
+        <option value="Iván Darío Huertas">Iván Darío Huertas</option>
+        <option value="David Santiago Almonacid">David Santiago Almonacid</option>
+        <option value="Stephanny Sánchez">Stephanny Sánchez González</option>
+        <option value="María Isabel Meléndez">María Isabel Meléndez</option>
+        <option value="Mayra Alejandra Montalvo">Mayra Alejandra Montalvo</option>
+        <option value="Blanca Lucía Cárdenas">Blanca Lucía Cárdenas</option>
+        <option value="Alejandra Ramírez">Alejandra Ramírez Ordoñez</option>
+        <option value="Brayan Ayala">Brayan Ayala Arguello</option>
+        <option value="Angie Lorena Muñoz">Angie Lorena Muñoz</option>
+        <option value="Berti Tatiana Pedroza">Berti Tatiana Pedroza</option>
+        <option value="Clemencia Rengifo">Clemencia Rengifo</option>
+        <option value="Juan Jesús Gil">Juan Jesús Gil</option>
+        <option value="Valentina Cuéllar">Valentina Cuéllar</option>
+        <option value="Cindy Katherin Roldán">Cindy Katherin Roldán</option>
+        <option value="David Felipe Espinosa">David Felipe Espinosa</option>
+        <option value="Gisel Callejas">Gisel Callejas</option>
+        <option value="Carolina Obando">Carolina Obando</option>
+        <option value="Diana Daniela Díaz">Diana Daniela Díaz</option>
+        <option value="Jonathan Cruz">Jonathan Cruz</option>
+        <option value="__otro__">✍️ Escribir mi nombre manualmente...</option>
+      </select>
+    </div>
+
+    <div class="input-group" id="manual-name-group" style="display:none;">
+      <label for="reg-manual">Nombre y Apellido:</label>
+      <input type="text" id="reg-manual" class="input-field" placeholder="Ej. Juan Pérez">
+    </div>
+
+    <button class="btn-enter" onclick="registerUser()">🚀 Ingresar a la Votación</button>
+  </div>
+
+  <!-- Screen 2: Voting Interface -->
+  <div id="screen-vote">
+    <div class="user-badge-bar">
+      <span>👤 Asesor: <span id="display-username" style="color:var(--poli-azul-claro);">--</span></span>
+      <button class="btn-change-user" onclick="logoutUser()">Cambiar</button>
+    </div>
+
+    <div class="case-banner">
+      <div class="case-tag" id="voter-case-tag">Caso 1: Pre-Emisión</div>
+      <div class="case-question" id="voter-case-text">Cargando caso...</div>
+    </div>
+
+    <!-- Personal Thermometer Gauge -->
+    <div class="personal-thermo-box">
+      <div class="mini-tube">
+        <div class="mini-fill" id="voter-mini-bar"></div>
+      </div>
+      <div class="thermo-status-text">
+        <strong id="voter-temp-text">Temperatura: Sin Votar</strong>
+        <span id="voter-temp-sub">Elige tu postura para ver cómo calibras tu llamada.</span>
+      </div>
+    </div>
+
+    <!-- Big Kahoot-style buttons -->
+    <div class="vote-options">
+      <button class="big-vote-btn btn-green" id="btn-voter-3" onclick="submitVoterChoice(3)">
+        <div class="icon-box">🔥</div>
+        <div>
+          <div class="btn-title">100°C - Venta Consultiva / Pro</div>
+          <div class="btn-desc">Empodera, anticipa fecha de orden y asegura el compromiso.</div>
+        </div>
+      </button>
+
+      <button class="big-vote-btn btn-orange" id="btn-voter-2" onclick="submitVoterChoice(2)">
+        <div class="icon-box">⛅</div>
+        <div>
+          <div class="btn-title">60°C - Informativa / Tibia</div>
+          <div class="btn-desc">Da la información que pide pero no indaga ni ata el cierre.</div>
+        </div>
+      </button>
+
+      <button class="big-vote-btn btn-red" id="btn-voter-1" onclick="submitVoterChoice(1)">
+        <div class="icon-box">❄️</div>
+        <div>
+          <div class="btn-title">20°C - Plana / Despacho</div>
+          <div class="btn-desc">"Aún no hay recibos, llame el 25". Pierde el control de la llamada.</div>
+        </div>
+      </button>
+    </div>
+
+    <div class="confirmation-alert" id="voter-confirm">
+      🎉 ¡Tu voto fue enviado a la pantalla de la coach! Ya no puedes votar de nuevo en este caso.
+    </div>
+
+    <div class="case-switcher-mini">
+      <button class="btn-mini-nav" id="btn-prev-case" onclick="switchCase(-1)">⬅️ Anterior</button>
+      <span style="font-size:11.5px; font-weight:700; color:#64748b;" id="case-counter">Caso 1 de 4</span>
+      <button class="btn-mini-nav" id="btn-next-case" onclick="switchCase(1)">Siguiente ➡️</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const casesData = [
+    {
+      badge: "Caso 1: Pre-Emisión (Sin Recibo)",
+      text: "El estudiante Juan David llama diciendo: 'Quiero pagar ya mi semestre con mis cesantías y no veo la orden en Smart Campus. ¿Por qué no me la han subido?'"
+    },
+    {
+      badge: "Caso 2: Reintegros (Inician 16 Nov)",
+      text: "Llama Laura: 'Yo aplacé hace dos semestres por dinero. Vi que reintegros abren el 16 de noviembre pero no sé si volver porque los precios suben mucho.'"
+    },
+    {
+      badge: "Caso 3: 'Todo está muy caro / No tengo plata'",
+      text: "Carlos comunica: 'La situación está muy dura, la verdad no creo que me matricule este semestre. Todo subió y no me alcanza.'"
+    },
+    {
+      badge: "Caso 4: Solo vino por el dato",
+      text: "El estudiante pregunta únicamente: '¿Hasta cuándo hay plazo de pagar con descuento?' El asesor dice 'Hasta el 15 de diciembre' y el estudiante dice 'Listo, gracias, chao'."
+    }
+  ];
+
+  let currentCase = 0;
+  let currentUser = localStorage.getItem('poli_voter_name') || '';
+  let syncChannel;
+
+  try {
+    syncChannel = new BroadcastChannel('poli_thermo_sync');
+    syncChannel.onmessage = (event) => {
+      if (event.data.type === 'CASE_CHANGED_BY_COACH') {
+        currentCase = event.data.caseIdx;
+        loadVoterCase();
+      } else if (event.data.type === 'VOTES_RESET' && event.data.caseIdx === currentCase) {
+        loadVoterCase();
+      }
+    };
+  } catch(e) {
+    console.log("No BroadcastChannel");
+  }
+
+  function toggleManualInput() {
+    const sel = document.getElementById('reg-select').value;
+    document.getElementById('manual-name-group').style.display = (sel === '__otro__') ? 'block' : 'none';
+  }
+
+  function registerUser() {
+    const sel = document.getElementById('reg-select').value;
+    let name = sel;
+    if (sel === '__otro__') {
+      name = document.getElementById('reg-manual').value.trim();
+    }
+    if (!name) {
+      alert("Por favor selecciona o escribe tu nombre completo para ingresar.");
+      return;
+    }
+    currentUser = name;
+    localStorage.setItem('poli_voter_name', currentUser);
+    initVoterScreen();
+  }
+
+  function logoutUser() {
+    localStorage.removeItem('poli_voter_name');
+    currentUser = '';
+    document.getElementById('screen-register').style.display = 'flex';
+    document.getElementById('screen-vote').style.display = 'none';
+  }
+
+  function initVoterScreen() {
+    document.getElementById('screen-register').style.display = 'none';
+    document.getElementById('screen-vote').style.display = 'flex';
+    document.getElementById('display-username').innerText = currentUser;
+
+    // Check if coach set active case in localStorage
+    const savedActive = localStorage.getItem('poli_active_case');
+    if (savedActive !== null) {
+      currentCase = parseInt(savedActive, 10);
+    }
+    loadVoterCase();
+  }
+
+  function loadVoterCase() {
+    const c = casesData[currentCase];
+    document.getElementById('voter-case-tag').innerText = c.badge;
+    document.getElementById('voter-case-text').innerText = c.text;
+    document.getElementById('case-counter').innerText = `Caso ${currentCase + 1} de ${casesData.length}`;
+
+    document.getElementById('btn-prev-case').disabled = (currentCase === 0);
+    document.getElementById('btn-next-case').disabled = (currentCase === casesData.length - 1);
+
+    // Reset button styles
+    [1, 2, 3].forEach(n => {
+      const b = document.getElementById(`btn-voter-${n}`);
+      b.classList.remove('selected-btn');
+      b.disabled = false;
+    });
+
+    const userKey = `poli_voted_${currentCase}_${currentUser}`;
+    const pastVote = localStorage.getItem(userKey);
+
+    const miniBar = document.getElementById('voter-mini-bar');
+    const tempText = document.getElementById('voter-temp-text');
+    const tempSub = document.getElementById('voter-temp-sub');
+    const alertBox = document.getElementById('voter-confirm');
+
+    if (pastVote) {
+      // User has already voted
+      [1, 2, 3].forEach(n => document.getElementById(`btn-voter-${n}`).disabled = true);
+      document.getElementById(`btn-voter-${pastVote}`).classList.add('selected-btn');
+      alertBox.style.display = 'block';
+
+      if (pastVote === '3') {
+        miniBar.style.height = '100%';
+        miniBar.style.background = '#10b981';
+        tempText.innerText = "Tu postura: 100°C (Consultiva / Pro)";
+        tempSub.innerText = "¡Empoderado! Aseguras la continuidad y anticipas el pago.";
+      } else if (pastVote === '2') {
+        miniBar.style.height = '60%';
+        miniBar.style.background = '#f59e0b';
+        tempText.innerText = "Tu postura: 60°C (Informativa / Tibia)";
+        tempSub.innerText = "Entregas datos pero dejas la iniciativa en el estudiante.";
+      } else {
+        miniBar.style.height = '20%';
+        miniBar.style.background = '#ef4444';
+        tempText.innerText = "Tu postura: 20°C (Congelada / Despacho)";
+        tempSub.innerText = "Pérdida de control. Solo se le pide al estudiante que llame luego.";
+      }
+    } else {
+      miniBar.style.height = '0%';
+      tempText.innerText = "Temperatura: Sin Votar";
+      tempSub.innerText = "Elige una opción arriba para calibrar tu llamada.";
+      alertBox.style.display = 'none';
+    }
+  }
+
+  function submitVoterChoice(type) {
+    if (!currentUser) return;
+    const userKey = `poli_voted_${currentCase}_${currentUser}`;
+    if (localStorage.getItem(userKey)) {
+      alert("Ya has votado en este caso.");
+      return;
+    }
+
+    // Save individual vote
+    localStorage.setItem(userKey, type);
+
+    // Update room totals
+    const votesKey = `poli_votes_case_${currentCase}`;
+    let data = { green: 0, orange: 0, red: 0, voters: [] };
+    const raw = localStorage.getItem(votesKey);
+    if (raw) data = JSON.parse(raw);
+
+    if (type === 3) data.green++;
+    else if (type === 2) data.orange++;
+    else if (type === 1) data.red++;
+
+    const label = type === 3 ? '🔥 Consultiva' : type === 2 ? '⛅ Tibia' : '❄️ Plana';
+    data.voters.unshift({
+      name: currentUser,
+      vote: label,
+      time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+    });
+
+    localStorage.setItem(votesKey, JSON.stringify(data));
+
+    // Send broadcast to coach screen
+    if (syncChannel) {
+      syncChannel.postMessage({ type: 'VOTE_SUBMITTED', caseIdx: currentCase, user: currentUser, type: type });
+    }
+
+    loadVoterCase();
+  }
+
+  function switchCase(delta) {
+    currentCase = Math.max(0, Math.min(casesData.length - 1, currentCase + delta));
+    loadVoterCase();
+  }
+
+  // Check login on load
+  if (currentUser) {
+    initVoterScreen();
+  }
+</script>
+
+</body>
+</html>
