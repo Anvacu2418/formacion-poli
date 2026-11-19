@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>M6 Presentación Ejecutiva | Proyecto Milagro - IA Aplicada</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brandNavy: '#00264D',
+                        brandTeal: '#00A0C6',
+                        brandGreen: '#7EB536',
+                        brandAmber: '#FFB81C',
+                        brandRose: '#E00070',
+                        surfaceLight: '#F8FAFC'
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F4F7FA;
+            color: #1E293B;
+            overflow-x: hidden;
+        }
+
+        /* Animación suave entre slides */
+        .slide-panel {
+            display: none;
+            animation: slideFadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .slide-panel.active {
+            display: block;
+        }
+        @keyframes slideFadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Flip Cards 3D Interactivas (Click para voltear, ideal para compartir en Teams) */
+        .flip-card {
+            perspective: 1200px;
+            cursor: pointer;
+            min-height: 220px;
+        }
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            min-height: 220px;
+            transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
+            transform-style: preserve-3d;
+        }
+        .flip-card.flipped .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .flip-card-back {
+            transform: rotateY(180deg);
+        }
+
+        /* Acordeones limpios y espaciados */
+        details > summary {
+            list-style: none;
+        }
+        details > summary::-webkit-details-marker {
+            display: none;
+        }
+        details[open] .accordion-chevron {
+            transform: rotate(180deg);
+        }
+        .accordion-chevron {
+            transition: transform 0.25s ease;
+        }
+
+        /* Scrollbar sutil */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 999px; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between antialiased selection:bg-brandTeal/20 selection:text-brandNavy">
+
+    <!-- ===================================================================== -->
+    <!-- BARRA SUPERIOR DE NAVEGACIÓN Y CONTROL DE TIEMPO (15 MIN)             -->
+    <!-- ===================================================================== -->
+    <header class="bg-white/95 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-40 px-4 sm:px-8 py-3.5 shadow-2xs">
+        <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
+            
+            <!-- Identidad del Programa y Proyecto -->
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-brandNavy text-white flex items-center justify-center font-black text-sm shadow-sm">
+                    IA
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-[11px] font-black uppercase tracking-widest text-brandGreen">Areandina IA Aplicada</span>
+                        <span class="text-slate-300">•</span>
+                        <span class="text-[11px] font-bold text-slate-500">M6 Presentación Ejecutiva</span>
+                    </div>
+                    <p class="text-sm font-extrabold text-brandNavy leading-tight">Proyecto Milagro: Orquestación Agéntica de Calidad y Formación</p>
+                </div>
+            </div>
+
+            <!-- Selector de las 4 Slides -->
+            <nav class="flex items-center bg-slate-100 p-1 rounded-2xl border border-slate-200/70" aria-label="Navegación de diapositivas">
+                <button onclick="goToSlide(1)" id="nav-pill-1" class="nav-pill px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all bg-brandNavy text-white shadow-xs">
+                    01. Proceso Actual
+                </button>
+                <button onclick="goToSlide(2)" id="nav-pill-2" class="nav-pill px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all text-slate-600 hover:text-brandNavy">
+                    02. Flujo Solución
+                </button>
+                <button onclick="goToSlide(3)" id="nav-pill-3" class="nav-pill px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all text-slate-600 hover:text-brandNavy">
+                    03. En Acción
+                </button>
+                <button onclick="goToSlide(4)" id="nav-pill-4" class="nav-pill px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all text-slate-600 hover:text-brandNavy">
+                    04. Pruebas y KPI
+                </button>
+            </nav>
+
+            <!-- Cronómetro de Exposición (15 min sugeridos) -->
+            <div class="hidden md:flex items-center gap-2.5 bg-slate-50 border border-slate-200 px-3.5 py-1.5 rounded-xl">
+                <i class="fas fa-stopwatch text-brandTeal text-xs"></i>
+                <span id="timer-display" class="font-mono text-xs font-black text-slate-700">15:00</span>
+                <button onclick="toggleTimer()" id="timer-btn" class="text-[11px] font-bold px-2 py-0.5 rounded-md bg-brandTeal/10 text-brandTeal hover:bg-brandTeal hover:text-white transition">
+                    Iniciar
+                </button>
+                <button onclick="resetTimer()" class="text-slate-400 hover:text-slate-600 text-xs" title="Reiniciar reloj">
+                    <i class="fas fa-rotate-left"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ===================================================================== -->
+    <!-- CONTENEDOR PRINCIPAL DE DIAPOSITIVAS (AIRE ESPACIADO Y LIMPIO)        -->
+    <!-- ===================================================================== -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-8 py-8 md:py-10 flex flex-col justify-center">
+
+        <!-- ================================================================= -->
+        <!-- SLIDE 1: PROCESO ACTUAL + TÍTULO INTEGRADO DEL PROYECTO           -->
+        <!-- ================================================================= -->
+        <section id="slide-1" class="slide-panel active space-y-8">
+            
+            <!-- Encabezado Integrado (Título del Proyecto + Título Ejecutivo Slide 1) -->
+            <div class="bg-white rounded-3xl p-7 md:p-9 border border-slate-200/90 shadow-xs space-y-4">
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-brandNavy/5 text-brandNavy text-xs font-extrabold tracking-wide">
+                        <span class="w-2 h-2 rounded-full bg-brandTeal"></span>
+                        PROYECTO MILAGRO • COACH PERFORMANCE HUB
+                    </div>
+                    <span class="text-xs font-semibold text-slate-400">Slide 1 de 4 • Línea Base del Proceso</span>
+                </div>
+                
+                <h1 class="text-2xl sm:text-3xl md:text-4xl font-black text-brandNavy leading-tight tracking-tight">
+                    El proceso actual requiere <span class="text-brandRose underline decoration-brandRose/30 decoration-4 underline-offset-4">30 horas manuales</span> en el mes; el retrabajo por evidencias incompletas registra <span class="text-brandTeal">58 casos por cada 100 monitoreos</span>
+                </h1>
+                
+                <p class="text-sm md:text-base text-slate-600 max-w-4xl leading-relaxed">
+                    <strong>Alcance:</strong> Inicia desde la recepción de correos de monitoreo de calidad (<em>Impacto + Mínimo: Sí</em>) y descarga de la matriz <code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs font-semibold">BASE_MONITOREOS</code>, hasta el cruce de asesores reincidentes, diseño de talleres de calibración y envío del informe ejecutivo a líderes operativos.
+                </p>
+            </div>
+
+            <!-- Dos Datos de Referencia Clave (Tiempo Manual y KPI) -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                
+                <!-- Métrica 1: Tiempo Manual -->
+                <div class="bg-white rounded-3xl p-6 md:p-7 border border-slate-200/90 shadow-xs flex flex-col justify-between">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-xs font-extrabold uppercase tracking-wider text-slate-400">Esfuerzo Manual Mensual</span>
+                        <div class="w-10 h-10 rounded-2xl bg-rose-50 text-brandRose flex items-center justify-center text-lg">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="text-4xl font-black text-brandNavy">30,0 <span class="text-lg font-bold text-slate-500">horas / mes</span></div>
+                        <p class="text-xs text-slate-500 mt-2 leading-relaxed">
+                            <strong>12 sesiones/mes × 150 min</strong> manuales ÷ 60 (consolidación de correos, cruce de errores, diseño de casos y actas).
+                        </p>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+                        <span class="text-slate-500 font-medium">Tiempo de espera entre áreas:</span>
+                        <span class="font-extrabold text-amber-600 bg-amber-50 px-2.5 py-0.5 rounded-lg">48 horas / ciclo</span>
+                    </div>
+                </div>
+
+                <!-- Métrica 2: KPI del Equipo -->
+                <div class="bg-white rounded-3xl p-6 md:p-7 border border-slate-200/90 shadow-xs flex flex-col justify-between">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-xs font-extrabold uppercase tracking-wider text-slate-400">KPI Principal del Equipo</span>
+                        <div class="w-10 h-10 rounded-2xl bg-cyan-50 text-brandTeal flex items-center justify-center text-lg">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="text-4xl font-black text-brandTeal">58 <span class="text-lg font-bold text-slate-500">/ 100 monitoreos</span></div>
+                        <p class="text-xs text-slate-500 mt-2 leading-relaxed">
+                            <strong>Tasa de insumos incompletos o con retrabajo</strong> (celdas de evidencia vacías o resúmenes truncados en base mensual).
+                        </p>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+                        <span class="text-slate-500 font-medium">Valor inicial medido:</span>
+                        <span class="font-extrabold text-brandNavy bg-slate-100 px-2.5 py-0.5 rounded-lg">58% retrabajo</span>
+                    </div>
+                </div>
+
+                <!-- Flip Card: Actores, Sistemas y Causa Raíz -->
+                <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                    <div class="flip-card-inner">
+                        <!-- Frente -->
+                        <div class="flip-card-front bg-brandNavy text-white p-6 md:p-7 shadow-sm">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-extrabold uppercase tracking-wider text-brandAmber">Actores y Sistemas</span>
+                                <span class="text-[11px] bg-white/10 px-2.5 py-1 rounded-full text-cyan-200 flex items-center gap-1.5">
+                                    <i class="fas fa-rotate"></i> Clic para ver cuello de botella
+                                </span>
+                            </div>
+                            <div class="space-y-2.5 my-3 text-xs text-slate-200">
+                                <p><strong class="text-white">Equipos:</strong> Analistas de Calidad, Coaches/Formadores, Expertos de Atención y Líderes.</p>
+                                <p><strong class="text-white">Sistemas:</strong> Formulario Excel con Macro VBA, Outlook, Bases de Calidad y correo manual.</p>
+                            </div>
+                            <div class="text-[11px] text-cyan-300 font-semibold">
+                                Fuente de datos: Matriz BASE_MONITOREOS y correos de feedback.
+                            </div>
+                        </div>
+                        <!-- Reverso -->
+                        <div class="flip-card-back bg-slate-900 text-white p-6 md:p-7 border border-brandTeal/40 shadow-md">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-extrabold uppercase tracking-wider text-brandTeal">Hallazgo Raíz Detectado</span>
+                                <i class="fas fa-magnifying-glass-chart text-brandAmber"></i>
+                            </div>
+                            <p class="text-xs text-slate-200 leading-relaxed my-2">
+                                La macro VBA de Calidad usaba hipervínculos <code class="text-brandAmber">mailto:</code> con límite de ~1.158 caracteres. Al superarlo, los analistas editaban el detalle directo en Outlook sin guardarlo en Excel, dejando al Coach sin evidencia textual para preparar los talleres.
+                            </p>
+                            <div class="text-[11px] text-emerald-400 font-bold">
+                                <i class="fas fa-arrow-left mr-1"></i> Clic para volver
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mapa Sencillo del Proceso Actual (As-Is) -->
+            <div class="bg-white rounded-3xl p-6 md:p-7 border border-slate-200/90 shadow-xs">
+                <div class="flex items-center justify-between mb-5">
+                    <h2 class="text-sm font-black uppercase tracking-wider text-slate-500 flex items-center gap-2">
+                        <i class="fas fa-diagram-project text-brandNavy"></i> Mapa del Proceso Actual (As-Is) y Puntos de Fricción
+                    </h2>
+                    <span class="text-xs text-slate-400 hidden sm:inline">4 traspasos manuales antes de iniciar el coaching</span>
+                </div>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 relative">
+                        <span class="text-[10px] font-black text-slate-400 uppercase">1. Registro Calidad</span>
+                        <h3 class="text-sm font-bold text-slate-800 mt-1">Excel + Correo Manual</h3>
+                        <p class="text-xs text-slate-500 mt-1.5 leading-relaxed">Analista evalúa llamada; por límite de caracteres en macro, completa evidencia solo en Outlook.</p>
+                    </div>
+                    <div class="p-4 rounded-2xl bg-amber-50/60 border border-amber-200/80 relative">
+                        <span class="text-[10px] font-black text-amber-700 uppercase">2. Espera y Solicitud</span>
+                        <h3 class="text-sm font-bold text-slate-800 mt-1">48h de Latencia</h3>
+                        <p class="text-xs text-slate-600 mt-1.5 leading-relaxed">Formación solicita corte de base y filtra manualmente quiénes tienen ≥4 afectaciones mínimas.</p>
+                    </div>
+                    <div class="p-4 rounded-2xl bg-rose-50/60 border border-rose-200/80 relative">
+                        <span class="text-[10px] font-black text-brandRose uppercase">3. Preparación (Retrabajo)</span>
+                        <h3 class="text-sm font-bold text-slate-800 mt-1">Búsqueda Correo a Correo</h3>
+                        <p class="text-xs text-slate-600 mt-1.5 leading-relaxed">El Coach rastrea correos en bandeja para reconstruir evidencias faltantes y redactar casos.</p>
+                    </div>
+                    <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 relative">
+                        <span class="text-[10px] font-black text-slate-400 uppercase">4. Cierre y Reporte</span>
+                        <h3 class="text-sm font-bold text-slate-800 mt-1">Acta y Gráficas Manuales</h3>
+                        <p class="text-xs text-slate-500 mt-1.5 leading-relaxed">Ejecución de sesión sin pizarra sincronizada y armado manual de gráficas y correo a líderes.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================================================================= -->
+        <!-- SLIDE 2: DISEÑO DE LA SOLUCIÓN Y FLUJO DE EXTREMO A EXTREMO       -->
+        <!-- ================================================================= -->
+        <section id="slide-2" class="slide-panel space-y-8">
+            
+            <!-- Título Ejecutivo Slide 2 -->
+            <div class="bg-white rounded-3xl p-7 md:p-9 border border-slate-200/90 shadow-xs space-y-3">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-black uppercase tracking-widest text-brandTeal">Arquitectura y Control Humano</span>
+                    <span class="text-xs font-semibold text-slate-400">Slide 2 de 4 • Flujo de la Solución</span>
+                </div>
+                <h1 class="text-2xl sm:text-3xl md:text-4xl font-black text-brandNavy leading-tight tracking-tight">
+                    El flujo explica cómo la solución llega de <span class="text-brandTeal">correos y bases de calidad</span> a un <span class="text-brandGreen">taller interactivo y reporte ejecutivo</span>
+                </h1>
+                <p class="text-sm text-slate-600 max-w-4xl">
+                    Combinamos automatización en <strong>Make</strong>, orquestación agéntica en <strong>OpenCode (MCP + Skills)</strong> y una aplicación colaborativa en tiempo real (<strong>Coach Performance Hub</strong>), manteniendo puntos explícitos de revisión humana y anonimización de datos.
+                </p>
+            </div>
+
+            <!-- Diagrama de Izquierda a Derecha (5 Etapas Claras) -->
+            <div class="bg-white rounded-3xl p-6 md:p-8 border border-slate-200/90 shadow-xs">
+                <div class="flex flex-wrap items-center justify-between gap-2 mb-6">
+                    <h2 class="text-sm font-black uppercase tracking-wider text-slate-500">Recorrido de Izquierda a Derecha</h2>
+                    <div class="flex items-center gap-4 text-xs font-semibold">
+                        <span class="flex items-center gap-1.5 text-brandTeal"><span class="w-2.5 h-2.5 rounded-full bg-brandTeal"></span> Automatización / IA</span>
+                        <span class="flex items-center gap-1.5 text-brandAmber"><span class="w-2.5 h-2.5 rounded-full bg-brandAmber"></span> Revisión Humana</span>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-5 gap-4 items-stretch">
+                    
+                    <!-- Etapa 1: Entrada -->
+                    <div class="rounded-2xl p-5 bg-slate-50 border border-slate-200 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="px-2.5 py-0.5 rounded-md bg-slate-200 text-slate-700 text-[10px] font-black uppercase">1. Entrada</span>
+                                <i class="fas fa-envelope-open-text text-brandNavy"></i>
+                            </div>
+                            <h3 class="text-sm font-extrabold text-brandNavy">Outlook + Excel VBA</h3>
+                            <p class="text-xs text-slate-600 mt-2 leading-relaxed">
+                                Correos con asunto <code class="text-[11px] bg-white px-1 rounded border">Feedback</code> y macro VBA mejorada que guarda evidencias completas sin límite de caracteres.
+                            </p>
+                        </div>
+                        <div class="mt-4 pt-2.5 border-t border-slate-200/70 text-[11px] font-bold text-slate-500">
+                            <i class="fas fa-user text-slate-400 mr-1"></i> Analista de Calidad
+                        </div>
+                    </div>
+
+                    <!-- Etapa 2: Automatización Make -->
+                    <div class="rounded-2xl p-5 bg-cyan-50/50 border border-brandTeal/30 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="px-2.5 py-0.5 rounded-md bg-brandTeal text-white text-[10px] font-black uppercase">2. Captura</span>
+                                <i class="fas fa-gears text-brandTeal"></i>
+                            </div>
+                            <h3 class="text-sm font-extrabold text-brandNavy">Make + Gemini Flash</h3>
+                            <p class="text-xs text-slate-600 mt-2 leading-relaxed">
+                                Vigila carpeta Calidad, filtra <strong>Impacto + Mínimo: Sí</strong> (bloquea <em>Mínimo: NO</em>), estructura JSON y alimenta <code class="text-[11px] bg-white px-1 rounded">MI_BASE_MONITOREOS</code>.
+                            </p>
+                        </div>
+                        <div class="mt-4 pt-2.5 border-t border-brandTeal/20 text-[11px] font-bold text-brandTeal">
+                            <i class="fas fa-robot mr-1"></i> Automatización + IA
+                        </div>
+                    </div>
+
+                    <!-- Etapa 3: Orquestación OpenCode -->
+                    <div class="rounded-2xl p-5 bg-indigo-50/50 border border-indigo-200 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="px-2.5 py-0.5 rounded-md bg-indigo-600 text-white text-[10px] font-black uppercase">3. Síntesis</span>
+                                <i class="fas fa-brain text-indigo-600"></i>
+                            </div>
+                            <h3 class="text-sm font-extrabold text-brandNavy">OpenCode (MCP + Skills)</h3>
+                            <p class="text-xs text-slate-600 mt-2 leading-relaxed">
+                                Comando <code class="text-[11px] bg-white px-1 rounded">/taller</code> cruza fechas y asesores, anonimiza cédulas y genera S.B.I., diagnóstico y <strong>Examen Trampa</strong> por canal.
+                            </p>
+                        </div>
+                        <div class="mt-4 pt-2.5 border-t border-indigo-200/70 text-[11px] font-bold text-indigo-700">
+                            <i class="fas fa-shield-halved mr-1"></i> IA + Reglas de Privacidad
+                        </div>
+                    </div>
+
+                    <!-- Etapa 4: Revisión Humana (Destacada) -->
+                    <div class="rounded-2xl p-5 bg-amber-50 border-2 border-brandAmber flex flex-col justify-between shadow-xs">
+                        <div>
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="px-2.5 py-0.5 rounded-md bg-brandAmber text-brandNavy text-[10px] font-black uppercase">4. Control Humano</span>
+                                <i class="fas fa-user-check text-amber-700"></i>
+                            </div>
+                            <h3 class="text-sm font-extrabold text-brandNavy">Calibración y Facilitación</h3>
+                            <p class="text-xs text-slate-700 mt-2 leading-relaxed">
+                                El Coach valida el diagnóstico, facilita la pizarra colaborativa, evalúa la respuesta real del experto al simulador y registra notas privadas.
+                            </p>
+                        </div>
+                        <div class="mt-4 pt-2.5 border-t border-brandAmber/40 text-[11px] font-black text-amber-800">
+                            <i class="fas fa-hand-paper mr-1"></i> Coach + Experto (En vivo)
+                        </div>
+                    </div>
+
+                    <!-- Etapa 5: Resultado -->
+                    <div class="rounded-2xl p-5 bg-emerald-50/60 border border-brandGreen/40 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="px-2.5 py-0.5 rounded-md bg-brandGreen text-white text-[10px] font-black uppercase">5. Resultado</span>
+                                <i class="fas fa-chart-pie text-brandGreen"></i>
+                            </div>
+                            <h3 class="text-sm font-extrabold text-brandNavy">Hub + Reporte Ejecutivo</h3>
+                            <p class="text-xs text-slate-600 mt-2 leading-relaxed">
+                                Compromiso sellado, gráficas institucionales descargables y correo narrativo consolidado para líderes de operación.
+                            </p>
+                        </div>
+                        <div class="mt-4 pt-2.5 border-t border-brandGreen/30 text-[11px] font-bold text-emerald-800">
+                            <i class="fas fa-users mr-1"></i> Líderes y Formación
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Acordeones de Gobernanza: Trabajo Manual vs. Dependencias y Privacidad -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <details class="bg-white rounded-2xl border border-slate-200 p-5 shadow-2xs" open>
+                    <summary class="flex items-center justify-between cursor-pointer font-bold text-sm text-brandNavy">
+                        <span class="flex items-center gap-2"><i class="fas fa-user-gear text-brandAmber"></i> ¿Qué sigue siendo trabajo humano y por qué?</span>
+                        <i class="fas fa-chevron-down text-xs text-slate-400 accordion-chevron"></i>
+                    </summary>
+                    <div class="mt-3 pt-3 border-t border-slate-100 text-xs text-slate-600 space-y-2 leading-relaxed">
+                        <p>• <strong>Juicio pedagógico:</strong> El Coach revisa y edita el diagnóstico y el caso trampa antes de proyectarlo al asesor.</p>
+                        <p>• <strong>Facilitación y calificación:</strong> La evaluación de templanza, empatía y compromiso real del experto durante el Role Play es 100% humana.</p>
+                        <p>• <strong>Aprobación de envío:</strong> El correo de cierre se genera como borrador analítico y el Coach decide su envío final en Outlook.</p>
+                    </div>
+                </details>
+
+                <details class="bg-white rounded-2xl border border-slate-200 p-5 shadow-2xs" open>
+                    <summary class="flex items-center justify-between cursor-pointer font-bold text-sm text-brandNavy">
+                        <span class="flex items-center gap-2"><i class="fas fa-lock text-brandTeal"></i> Privacidad de datos y dependencias pendientes</span>
+                        <i class="fas fa-chevron-down text-xs text-slate-400 accordion-chevron"></i>
+                    </summary>
+                    <div class="mt-3 pt-3 border-t border-slate-100 text-xs text-slate-600 space-y-2 leading-relaxed">
+                        <p>• <strong>Cuidado de datos personales:</strong> Enmascaramiento automático de cédulas (<code class="bg-slate-100 px-1 rounded">[DATO OCULTO]</code>) y eliminación de nombres de estudiantes en los casos simulados.</p>
+                        <p>• <strong>Dependencias técnicas:</strong> Cupo de operaciones mensuales en Make (o migración a Power Automate M365) y acceso directo de lectura a la carpeta compartida de Calidad.</p>
+                    </div>
+                </details>
+            </div>
+        </section>
+
+        <!-- ================================================================= -->
+        <!-- SLIDE 3: LA SOLUCIÓN EN ACCIÓN (CASO DE PRUEBA REPRESENTATIVO)    -->
+        <!-- ================================================================= -->
+        <section id="slide-3" class="slide-panel space-y-8">
+            
+            <!-- Título Ejecutivo Slide 3 -->
+            <div class="bg-white rounded-3xl p-7 md:p-9 border border-slate-200/90 shadow-xs space-y-3">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-black uppercase tracking-widest text-brandGreen">Prototipo Funcional Validado</span>
+                    <span class="text-xs font-semibold text-slate-400">Slide 3 de 4 • Caso Representativo Anonimizado</span>
+                </div>
+                <h1 class="text-2xl sm:text-3xl md:text-4xl font-black text-brandNavy leading-tight tracking-tight">
+                    De <span class="text-brandTeal">correos dispersos de monitoreo</span> a una <span class="text-brandGreen">sesión calibrada con simulador y reporte</span>: la solución en acción
+                </h1>
+                <p class="text-sm text-slate-600 max-w-4xl">
+                    <strong>Caso de prueba representativo:</strong> Taller de reincidentes para <em>"Camila Ríos"</em> (datos ficticios • Segmento: Servicio y Rematrícula • Canal: Redes Sociales/Chat), quien acumuló <strong>4 alertas de Impacto</strong> en <em>Registro correcto de la información</em> y <em>Solución integral</em>, con 2 registros sin detalle en la columna Evidencias del Excel.
+                </p>
+            </div>
+
+            <!-- Recorrido en 4 Flip Cards Interactivas (Entrada -> Procesamiento -> Demo -> Revisión Humana) -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+                
+                <!-- Card 1: Entrada -->
+                <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front bg-white p-6 border border-slate-200 shadow-xs">
+                            <div>
+                                <div class="flex items-center justify-between mb-3">
+                                    <span class="px-2.5 py-1 rounded-lg bg-slate-100 text-brandNavy text-[11px] font-black">PASO 1 • ENTRADA</span>
+                                    <i class="fas fa-rotate text-slate-400 text-xs"></i>
+                                </div>
+                                <h3 class="text-base font-extrabold text-brandNavy">Captura desde Outlook</h3>
+                                <p class="text-xs text-slate-600 mt-2 leading-relaxed">
+                                    Entra correo de feedback con nota 86, <em>Monitoreo: Impacto</em> y <em>Mínimo: Sí</em>.
+                                </p>
+                            </div>
+                            <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 text-[11px] text-slate-500">
+                                <strong>Evidencia real en correo:</strong> Omisión de validación de datos y falta de registro en CRM.
+                            </div>
+                        </div>
+                        <div class="flip-card-back bg-brandNavy text-white p-6 shadow-md">
+                            <span class="text-[11px] font-black text-brandTeal uppercase">Salida del Módulo Make</span>
+                            <p class="text-xs text-slate-200 leading-relaxed my-2">
+                                Gemini extrae y limpia 10 campos en JSON (`fecha_monitoreo`, `experto`, `canal`, `atributos_afectados`, `evidencias`) y guarda la fila completa en Google Sheets sin recorte de caracteres.
+                            </p>
+                            <span class="text-[11px] text-brandAmber font-bold">Clic para volver</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 2: Orquestación -->
+                <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front bg-white p-6 border border-slate-200 shadow-xs">
+                            <div>
+                                <div class="flex items-center justify-between mb-3">
+                                    <span class="px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-700 text-[11px] font-black">PASO 2 • AGENTE</span>
+                                    <i class="fas fa-rotate text-slate-400 text-xs"></i>
+                                </div>
+                                <h3 class="text-base font-extrabold text-brandNavy">Comando <code class="text-indigo-600">/taller</code></h3>
+                                <p class="text-xs text-slate-600 mt-2 leading-relaxed">
+                                    El Coach indica institución, segmento y rango de fechas en OpenCode.
+                                </p>
+                            </div>
+                            <div class="bg-indigo-50/50 p-3 rounded-xl border border-indigo-100 text-[11px] text-indigo-900">
+                                <strong>Skill activa:</strong> <code class="font-bold">generador-hub-performance</code> cruza base y anonimiza cédulas.
+                            </div>
+                        </div>
+                        <div class="flip-card-back bg-indigo-950 text-white p-6 shadow-md">
+                            <span class="text-[11px] font-black text-indigo-300 uppercase">JSON de Sesión Generado</span>
+                            <p class="text-xs text-slate-200 leading-relaxed my-2">
+                                Genera S.B.I. individual, 3 preguntas poderosas, diagnóstico ejecutivo para el Coach y un <strong>Caso Trampa de Chat</strong> donde un estudiante exige radicar grado bajo presión.
+                            </p>
+                            <span class="text-[11px] text-brandAmber font-bold">Clic para volver</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 3: Simulador en Vivo -->
+                <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front bg-white p-6 border border-slate-200 shadow-xs">
+                            <div>
+                                <div class="flex items-center justify-between mb-3">
+                                    <span class="px-2.5 py-1 rounded-lg bg-cyan-50 text-brandTeal text-[11px] font-black">PASO 3 • PRÁCTICA</span>
+                                    <i class="fas fa-rotate text-slate-400 text-xs"></i>
+                                </div>
+                                <h3 class="text-base font-extrabold text-brandNavy">Coach Performance Hub</h3>
+                                <p class="text-xs text-slate-600 mt-2 leading-relaxed">
+                                    Experto ingresa con código de 6 dígitos; trabaja Pizarra, Simulador y Compromiso.
+                                </p>
+                            </div>
+                            <div class="bg-cyan-50/50 p-3 rounded-xl border border-cyan-100 text-[11px] text-cyan-950">
+                                <strong>Sincronización:</strong> Firebase muestra la respuesta del simulador al Coach en tiempo real.
+                            </div>
+                        </div>
+                        <div class="flip-card-back bg-slate-900 text-white p-6 shadow-md">
+                            <span class="text-[11px] font-black text-brandTeal uppercase">Evidencia en Pantalla</span>
+                            <p class="text-xs text-slate-200 leading-relaxed my-2">
+                                La experta responde el chat simulado validando el registro académico correcto antes de radicar, entrega número de ticket y sella su compromiso con fecha de inicio.
+                            </p>
+                            <span class="text-[11px] text-brandAmber font-bold">Clic para volver</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 4: Revisión Humana y Salida -->
+                <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front bg-amber-50/70 p-6 border-2 border-brandAmber/70 shadow-xs">
+                            <div>
+                                <div class="flex items-center justify-between mb-3">
+                                    <span class="px-2.5 py-1 rounded-lg bg-brandAmber text-brandNavy text-[11px] font-black">PASO 4 • REVISIÓN</span>
+                                    <i class="fas fa-rotate text-amber-700 text-xs"></i>
+                                </div>
+                                <h3 class="text-base font-extrabold text-brandNavy">Aprobación y Reporte</h3>
+                                <p class="text-xs text-slate-700 mt-2 leading-relaxed">
+                                    El Coach asigna calificación (ej. 92%), registra notas privadas y genera el informe.
+                                </p>
+                            </div>
+                            <div class="bg-white p-3 rounded-xl border border-brandAmber/40 text-[11px] text-slate-700">
+                                <strong>Entregable:</strong> Gráficas con color institucional + correo narrativo consolidado.
+                            </div>
+                        </div>
+                        <div class="flip-card-back bg-emerald-950 text-white p-6 shadow-md">
+                            <span class="text-[11px] font-black text-emerald-300 uppercase">Control de Calidad Final</span>
+                            <p class="text-xs text-slate-200 leading-relaxed my-2">
+                                El Coach revisa que el correo refleje la evolución real observada en sesión (sin tecnicismos robóticos ni datos sensibles) y autoriza el envío a líderes.
+                            </p>
+                            <span class="text-[11px] text-brandAmber font-bold">Clic para volver</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vista Previa Compacta de Entrada vs. Resultado + Protocolo de Demo -->
+            <div class="bg-white rounded-3xl p-6 md:p-7 border border-slate-200/90 shadow-xs flex flex-col lg:flex-row items-center justify-between gap-6">
+                <div class="space-y-2 max-w-2xl">
+                    <div class="inline-flex items-center gap-2 text-xs font-black uppercase tracking-wider text-brandNavy">
+                        <i class="fas fa-desktop text-brandTeal"></i> Entorno de Demostración en Vivo
+                    </div>
+                    <p class="text-xs md:text-sm text-slate-600 leading-relaxed">
+                        El prototipo opera en entorno web (<code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs font-semibold">Coach Performance Hub</code>) conectado a Make y OpenCode con datos anonimizados. En el siguiente bloque presentamos los resultados medidos en las pruebas controladas.
+                    </p>
+                </div>
+                <div class="flex flex-wrap gap-3 flex-shrink-0">
+                    <div class="px-4 py-3 rounded-2xl bg-slate-50 border border-slate-200 text-xs">
+                        <span class="text-slate-400 font-bold block uppercase text-[10px]">Entrada</span>
+                        <span class="font-extrabold text-brandNavy">Correo + Base Calidad</span>
+                    </div>
+                    <div class="self-center text-brandTeal"><i class="fas fa-arrow-right"></i></div>
+                    <div class="px-4 py-3 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs">
+                        <span class="text-emerald-700 font-bold block uppercase text-[10px]">Resultado</span>
+                        <span class="font-extrabold text-emerald-950">Sesión Hub + Gráficas + Acta</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================================================================= -->
+        <!-- SLIDE 4: EVIDENCIA DE PRUEBAS Y COMPARACIÓN ANTES / DESPUÉS       -->
+        <!-- ================================================================= -->
+        <section id="slide-4" class="slide-panel space-y-8">
+            
+            <!-- Título Ejecutivo Slide 4 -->
+            <div class="bg-white rounded-3xl p-7 md:p-9 border border-slate-200/90 shadow-xs space-y-3">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-black uppercase tracking-widest text-brandRose">Evidencia de Pruebas y Métricas</span>
+                    <span class="text-xs font-semibold text-slate-400">Slide 4 de 4 • Impacto y Continuidad</span>
+                </div>
+                <h1 class="text-2xl sm:text-3xl md:text-4xl font-black text-brandNavy leading-tight tracking-tight">
+                    El tiempo manual pasa de <span class="text-slate-400 line-through decoration-2">30</span> a <span class="text-brandGreen">7,5 horas</span> en el mes; el retrabajo por evidencias incompletas cambia de <span class="text-slate-400 line-through decoration-2">58</span> a <span class="text-brandTeal">4 casos por cada 100 monitoreos</span>
+                </h1>
+            </div>
+
+            <!-- Comparación Antes vs. Después (Mismo alcance, unidad y periodo) -->
+            <div class="bg-white rounded-3xl p-6 md:p-7 border border-slate-200/90 shadow-xs overflow-x-auto">
+                <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+                    <h2 class="text-sm font-black uppercase tracking-wider text-brandNavy">Comparativo de Impacto (Periodo Mensual • 12 Sesiones)</h2>
+                    <div class="flex items-center gap-2 text-[11px]">
+                        <span class="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold">Medido en pruebas</span>
+                        <span class="px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 font-bold">Proyectado mensual</span>
+                    </div>
+                </div>
+
+                <table class="w-full text-left border-collapse text-xs sm:text-sm">
+                    <thead>
+                        <tr class="border-b-2 border-slate-200 text-slate-500 text-xs uppercase">
+                            <th class="py-3 pr-4 font-extrabold">Métrica / Indicador</th>
+                            <th class="py-3 px-4 font-extrabold">Antes (Proceso Manual)</th>
+                            <th class="py-3 px-4 font-extrabold">Después (Con Solución + Revisión Humana)</th>
+                            <th class="py-3 pl-4 font-extrabold text-right">Variación / Tipo</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        <tr>
+                            <td class="py-3.5 pr-4 font-bold text-brandNavy">Tiempo de trabajo manual mensual</td>
+                            <td class="py-3.5 px-4 text-slate-600"><strong>30,0 horas/mes</strong> <span class="text-xs text-slate-400">(150 min × 12 sesiones)</span></td>
+                            <td class="py-3.5 px-4 text-emerald-700 font-bold">7,5 horas/mes <span class="text-xs font-normal text-slate-500">(incluye 37,5 min de revisión humana/sesión)</span></td>
+                            <td class="py-3.5 pl-4 text-right"><span class="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 font-black text-xs">-75% (Proyectado)</span></td>
+                        </tr>
+                        <tr>
+                            <td class="py-3.5 pr-4 font-bold text-brandNavy">KPI: Insumos con retrabajo por evidencia incompleta</td>
+                            <td class="py-3.5 px-4 text-slate-600"><strong>58 / 100 monitoreos</strong> <span class="text-xs text-slate-400">(58%)</span></td>
+                            <td class="py-3.5 px-4 text-brandTeal font-bold">4 / 100 monitoreos <span class="text-xs font-normal text-slate-500">(4% casos atípicos)</span></td>
+                            <td class="py-3.5 pl-4 text-right"><span class="px-2.5 py-1 rounded-lg bg-cyan-50 text-brandTeal font-black text-xs">-93% (Medido/Proy.)</span></td>
+                        </tr>
+                        <tr>
+                            <td class="py-3.5 pr-4 font-bold text-brandNavy">Tiempo de espera entre áreas</td>
+                            <td class="py-3.5 px-4 text-slate-600"><strong>48 horas</strong> por consolidación</td>
+                            <td class="py-3.5 px-4 text-emerald-700 font-bold">0 horas <span class="text-xs font-normal text-slate-500">(sincronización continua)</span></td>
+                            <td class="py-3.5 pl-4 text-right"><span class="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 font-black text-xs">Inmediato (Medido)</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Matriz de las 3 Pruebas Obligatorias (Flip Cards: Esperado vs. Observado) -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                
+                <!-- Prueba 1: Caso Habitual -->
+                <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front bg-white p-6 border border-slate-200 shadow-xs">
+                            <div>
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="px-2.5 py-0.5 rounded-md bg-emerald-100 text-emerald-800 text-[10px] font-black uppercase">Prueba 1 • Caso Habitual</span>
+                                    <i class="fas fa-rotate text-slate-400 text-xs"></i>
+                                </div>
+                                <h3 class="text-sm font-extrabold text-brandNavy">Correo Completo (Impacto + Mínimo: Sí)</h3>
+                                <p class="text-xs text-slate-600 mt-2 leading-relaxed">
+                                    <strong>Esperado:</strong> Extraer campos, registrar fila en Sheets y generar S.B.I. + caso práctico.
+                                </p>
+                            </div>
+                            <div class="text-xs font-bold text-emerald-700 flex items-center gap-1.5">
+                                <i class="fas fa-circle-check"></i> Observado: Cumplido al 100% (Medido)
+                            </div>
+                        </div>
+                        <div class="flip-card-back bg-emerald-950 text-white p-6 shadow-md">
+                            <span class="text-[10px] font-black text-emerald-300 uppercase">Detalle Observado & Hallazgo</span>
+                            <p class="text-xs text-slate-200 leading-relaxed my-2">
+                                Procesamiento en ~12 seg/correo. <strong>Hallazgo de prueba:</strong> Al cargar >45 correos históricos en una sola corrida gratuita, Make detiene a los 10 min (Timeout). Se mitigó configurando lotes de 15–20 correos.
+                            </p>
+                            <span class="text-[11px] text-brandAmber font-bold">Clic para volver</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Prueba 2: Información Faltante -->
+                <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front bg-white p-6 border border-slate-200 shadow-xs">
+                            <div>
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="px-2.5 py-0.5 rounded-md bg-amber-100 text-amber-800 text-[10px] font-black uppercase">Prueba 2 • Dato Faltante</span>
+                                    <i class="fas fa-rotate text-slate-400 text-xs"></i>
+                                </div>
+                                <h3 class="text-sm font-extrabold text-brandNavy">Base con Columna Evidencias Vacía</h3>
+                                <p class="text-xs text-slate-600 mt-2 leading-relaxed">
+                                    <strong>Esperado:</strong> No bloquear el simulador; inferir caso trampa desde atributos en mínimo y canal.
+                                </p>
+                            </div>
+                            <div class="text-xs font-bold text-emerald-700 flex items-center gap-1.5">
+                                <i class="fas fa-circle-check"></i> Observado: Respaldo activo (Medido)
+                            </div>
+                        </div>
+                        <div class="flip-card-back bg-brandNavy text-white p-6 shadow-md">
+                            <span class="text-[10px] font-black text-brandAmber uppercase">Detalle Observado</span>
+                            <p class="text-xs text-slate-200 leading-relaxed my-2">
+                                El agente y el Hub generaron el caso práctico según universidad y segmento sin dejar campos vacíos. Además, se actualizó la macro VBA de Calidad con copia al portapapeles para evitar futuros cortes de texto.
+                            </p>
+                            <span class="text-[11px] text-brandAmber font-bold">Clic para volver</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Prueba 3: Acción a Evitar -->
+                <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front bg-white p-6 border border-slate-200 shadow-xs">
+                            <div>
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="px-2.5 py-0.5 rounded-md bg-rose-100 text-brandRose text-[10px] font-black uppercase">Prueba 3 • Acción a Evitar</span>
+                                    <i class="fas fa-rotate text-slate-400 text-xs"></i>
+                                </div>
+                                <h3 class="text-sm font-extrabold text-brandNavy">Filtrar "Mínimo: NO" y Cédulas</h3>
+                                <p class="text-xs text-slate-600 mt-2 leading-relaxed">
+                                    <strong>Esperado:</strong> Bloquear correos sin afectación mínima y ocultar documentos de identidad.
+                                </p>
+                            </div>
+                            <div class="text-xs font-bold text-emerald-700 flex items-center gap-1.5">
+                                <i class="fas fa-circle-check"></i> Observado: 0 fugas (Medido)
+                            </div>
+                        </div>
+                        <div class="flip-card-back bg-slate-900 text-white p-6 shadow-md">
+                            <span class="text-[10px] font-black text-rose-400 uppercase">Detalle Observado</span>
+                            <p class="text-xs text-slate-200 leading-relaxed my-2">
+                                El filtro negativo (<code class="text-brandAmber">Does not contain: Mínimo: NO</code>) detuvo el 100% de monitoreos aprobados, y el enmascaramiento reemplazó números largos por <code class="text-emerald-400">[DATO OCULTO]</code>.
+                            </p>
+                            <span class="text-[11px] text-brandAmber font-bold">Clic para volver</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Condición de Continuidad, Costo y Mantenimiento -->
+            <div class="bg-brandNavy text-white rounded-3xl p-6 md:p-7 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                <div class="space-y-1.5 max-w-3xl">
+                    <span class="text-[11px] font-black uppercase tracking-widest text-brandAmber">Gobernanza y Condición para Continuar</span>
+                    <h3 class="text-base md:text-lg font-extrabold">Mantenimiento por Equipo de Formación • Costo Operativo Mínimo</h3>
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        El flujo queda documentado en <code class="text-cyan-300">reglas/LEEME.md</code> para ser mantenido por Formación. En entorno piloto opera a <strong>$0 USD</strong> (cuentas gratuitas con lotes controlados); para operación continua sin tope de 1.000 créditos/mes se requiere plan Make Core (<strong>~$10,59 USD/mes</strong>) o migración a <strong>Power Automate</strong> incluido en Microsoft 365 institucional.
+                    </p>
+                </div>
+                <div class="flex-shrink-0 bg-white/10 border border-white/15 rounded-2xl px-5 py-3.5 text-center">
+                    <span class="text-[10px] uppercase tracking-wider text-cyan-200 font-bold block">Ahorro Proyectado</span>
+                    <span class="text-2xl font-black text-brandGreen">22,5 h / mes</span>
+                    <span class="text-[11px] text-slate-300 block">liberadas para coaching</span>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ===================================================================== -->
+    <!-- BARRA INFERIOR DE NAVEGACIÓN Y GUÍA DE PARTICIPACIÓN                  -->
+    <!-- ===================================================================== -->
+    <footer class="bg-white border-t border-slate-200/80 px-4 sm:px-8 py-3.5">
+        <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
+            
+            <button onclick="prevSlide()" id="btn-prev" class="px-4 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition flex items-center gap-2">
+                <i class="fas fa-arrow-left"></i> Anterior
+            </button>
+
+            <div class="text-center">
+                <span id="speaker-hint" class="text-xs font-semibold text-slate-500">
+                    <i class="fas fa-microphone-lines text-brandTeal mr-1.5"></i>
+                    Participación sugerida: <strong>Responsable del proceso</strong> • Tiempo estimado: <strong>3 min</strong>
+                </span>
+            </div>
+
+            <button onclick="nextSlide()" id="btn-next" class="px-5 py-2 rounded-xl bg-brandNavy hover:bg-blue-950 text-white text-xs font-bold shadow-xs transition flex items-center gap-2">
+                Siguiente <i class="fas fa-arrow-right"></i>
+            </button>
+        </div>
+    </footer>
+
+    <script>
+        let currentSlide = 1;
+        const totalSlides = 4;
+
+        const SPEAKER_HINTS = {
+            1: 'Participación sugerida: <strong>Responsable del proceso</strong> • Tiempo sugerido: <strong>3 min</strong>',
+            2: 'Participación sugerida: <strong>Integrantes a cargo del diseño y controles</strong> • Tiempo sugerido: <strong>4 min</strong>',
+            3: 'Participación sugerida: <strong>Integrantes a cargo del prototipo y datos de prueba</strong> • Tiempo sugerido: <strong>5 min</strong>',
+            4: 'Participación sugerida: <strong>Integrantes a cargo de pruebas y medición</strong> • Tiempo sugerido: <strong>3 min</strong>'
+        };
+
+        function goToSlide(slideNum) {
+            if (slideNum < 1 || slideNum > totalSlides) return;
+            currentSlide = slideNum;
+
+            // Ocultar todas las slides y activar la elegida
+            document.querySelectorAll('.slide-panel').forEach(panel => panel.classList.remove('active'));
+            const activePanel = document.getElementById(`slide-${slideNum}`);
+            if (activePanel) activePanel.classList.add('active');
+
+            // Actualizar pills superiores
+            for (let i = 1; i <= totalSlides; i++) {
+                const pill = document.getElementById(`nav-pill-${i}`);
+                if (!pill) continue;
+                if (i === slideNum) {
+                    pill.className = 'nav-pill px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all bg-brandNavy text-white shadow-xs';
+                } else {
+                    pill.className = 'nav-pill px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all text-slate-600 hover:text-brandNavy';
+                }
+            }
+
+            // Actualizar botones inferior y texto de participación
+            document.getElementById('btn-prev').disabled = (slideNum === 1);
+            const btnNext = document.getElementById('btn-next');
+            if (slideNum === totalSlides) {
+                btnNext.innerHTML = 'Volver al Inicio <i class="fas fa-rotate-left"></i>';
+                btnNext.onclick = () => goToSlide(1);
+            } else {
+                btnNext.innerHTML = 'Siguiente <i class="fas fa-arrow-right"></i>';
+                btnNext.onclick = () => nextSlide();
+            }
+
+            const hintEl = document.getElementById('speaker-hint');
+            if (hintEl) {
+                hintEl.innerHTML = `<i class="fas fa-microphone-lines text-brandTeal mr-1.5"></i>${SPEAKER_HINTS[slideNum]}`;
+            }
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function nextSlide() {
+            if (currentSlide < totalSlides) goToSlide(currentSlide + 1);
+        }
+
+        function prevSlide() {
+            if (currentSlide > 1) goToSlide(currentSlide - 1);
+        }
+
+        // Navegación con teclado (Flechas izquierda / derecha)
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') nextSlide();
+            if (e.key === 'ArrowLeft') prevSlide();
+        });
+
+        // Gestos táctiles (Swipe en móviles/tablets)
+        let touchStartX = 0;
+        document.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+        }, { passive: true });
+
+        document.addEventListener('touchend', (e) => {
+            const touchEndX = e.changedTouches[0].screenX;
+            const diff = touchStartX - touchEndX;
+            if (Math.abs(diff) > 60) {
+                if (diff > 0) nextSlide();
+                else prevSlide();
+            }
+        }, { passive: true });
+
+        // Temporizador de 15 minutos para exposición en Teams
+        let secondsLeft = 15 * 60;
+        let timerInterval = null;
+
+        function toggleTimer() {
+            const btn = document.getElementById('timer-btn');
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+                btn.innerText = 'Reanudar';
+            } else {
+                btn.innerText = 'Pausar';
+                timerInterval = setInterval(() => {
+                    if (secondsLeft > 0) {
+                        secondsLeft--;
+                        updateTimerUI();
+                    } else {
+                        clearInterval(timerInterval);
+                        timerInterval = null;
+                    }
+                }, 1000);
+            }
+        }
+
+        function resetTimer() {
+            clearInterval(timerInterval);
+            timerInterval = null;
+            secondsLeft = 15 * 60;
+            document.getElementById('timer-btn').innerText = 'Iniciar';
+            updateTimerUI();
+        }
+
+        function updateTimerUI() {
+            const mins = Math.floor(secondsLeft / 60);
+            const secs = secondsLeft % 60;
+            const display = document.getElementById('timer-display');
+            display.innerText = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+            if (secondsLeft <= 180) {
+                display.classList.add('text-brandRose');
+            } else {
+                display.classList.remove('text-brandRose');
+            }
+        }
+
+        // Inicializar estado
+        goToSlide(1);
+    </script>
+</body>
+</html>
