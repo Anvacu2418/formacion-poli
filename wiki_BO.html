@@ -105,20 +105,44 @@
                 { id: 20, title: 'Cambio SO a TM', desc: 'Analytics muestra todo aprobado para grado pero el estado continúa en SO.', tipificacion: 'PAZ Y SALVOS GRADOS' },
                 { id: 22, title: 'Retiro de cargos financieros', desc: 'Reversión de cargos por certificados, 50%, licencias, etc. No aplica concepto CRÉDITO DEUDA.', tipificacion: 'CARTERA-DEUDA O ABONO' }
             ],
-            chatPisoItems: [
-                { id: 1, title: 'Media Matrícula', desc: 'Gestión y aplicación directa.' },
-                { id: 2, title: 'Actualización CAPP', desc: 'Solo cuando sea necesario (fechas masivas) o casuística particular.' },
-                { id: 3, title: 'Certificados de Idiomas', desc: 'Generación de orden de pago.' },
-                { id: 4, title: 'Diferencia 50%', desc: 'Generación de la segunda orden de pago.' },
-                { id: 5, title: 'Estimación de Cuota', desc: 'Inserción de cargos de matrícula en Banner.' },
-                { id: 6, title: 'Licencia ED', desc: 'Generación de orden de pago English Discoveries.' },
-                { id: 7, title: 'Anticipo de Matrícula', desc: 'Generación de ordenes (cheques con centavos).' },
-                { id: 8, title: 'Certificados Primer Nivel', desc: 'Revisar pago y validar con estudiante ruta de descarga (SmartCampus).' },
-                { id: 9, title: 'Última Materia', desc: 'Si avance curricular muestra que falta solo una.' },
-                { id: 10, title: 'Ajuste de Créditos', desc: 'Gestión directa de ajuste de créditos por BO.' },
-                { id: 11, title: 'Ampliación de Créditos', desc: 'Cuando por plan de estudios el estudiante debe inscribir más materias y requiere más créditos.' },
-                { id: 12, title: 'Inscripción de Asignaturas', desc: 'Aplica para campañas de vacacionales e intersemestrales cuando se habilitan inscripciones manuales.' },
-                { id: 13, title: 'Actualización Correo Personal y Celular', desc: 'Actualización de correo personal y número de teléfono del estudiante. Indicar siempre el número del indicativo.' }
+            chatPisoGroups: [
+                {
+                    id: 'ordenes',
+                    title: '💳 Órdenes de Pago y Finanzas',
+                    headerBg: 'bg-emerald-600',
+                    hoverBg: 'hover:bg-emerald-50/70',
+                    items: [
+                        { id: 1, title: 'Media Matrícula', desc: 'Gestión y aplicación directa.' },
+                        { id: 4, title: 'Diferencia 50%', desc: 'Generación de la segunda orden de pago.' },
+                        { id: 5, title: 'Estimación de Cuota', desc: 'Inserción de cargos de matrícula en Banner.' },
+                        { id: 7, title: 'Anticipo de Matrícula', desc: 'Generación de ordenes (cheques con centavos).' },
+                        { id: 6, title: 'Licencia ED', desc: 'Generación de orden de pago English Discoveries.' },
+                        { id: 3, title: 'Certificados de Idiomas', desc: 'Generación de orden de pago.' }
+                    ]
+                },
+                {
+                    id: 'inscripcion',
+                    title: '📚 Créditos e Inscripción',
+                    headerBg: 'bg-indigo-600',
+                    hoverBg: 'hover:bg-indigo-50/70',
+                    items: [
+                        { id: 10, title: 'Ajuste de Créditos', desc: 'Gestión directa de ajuste de créditos por BO.' },
+                        { id: 11, title: 'Ampliación de Créditos', desc: 'Cuando por plan de estudios el estudiante debe inscribir más materias y requiere más créditos.' },
+                        { id: 12, title: 'Inscripción de Asignaturas', desc: 'Aplica para campañas de vacacionales e intersemestrales cuando se habilitan inscripciones manuales.' },
+                        { id: 9, title: 'Última Materia', desc: 'Si avance curricular muestra que falta solo una.' }
+                    ]
+                },
+                {
+                    id: 'actualizaciones',
+                    title: '⚙️ Actualizaciones y Certificados',
+                    headerBg: 'bg-blue-600',
+                    hoverBg: 'hover:bg-blue-50/70',
+                    items: [
+                        { id: 13, title: 'Actualización Correo Personal y Celular', desc: 'Actualización de correo personal y número de teléfono del estudiante. Indicar siempre el número del indicativo.' },
+                        { id: 2, title: 'Actualización CAPP', desc: 'Solo cuando sea necesario (fechas masivas) o casuística particular.' },
+                        { id: 8, title: 'Certificados Primer Nivel', desc: 'Revisar pago y validar con estudiante ruta de descarga (SmartCampus).' }
+                    ]
+                }
             ],
             idiomasInfo: {
                 tipos: [
@@ -436,30 +460,43 @@
                             <div className="p-3 bg-blue-50 rounded-full"><Clock className="w-6 h-6 text-blue-600"/></div>
                             <div>
                                 <h3 className="font-bold text-gray-800">Tiempos de Respuesta (SLA)</h3>
-                                <div className="flex gap-4 mt-1 text-sm text-gray-600">
+                                <div className="flex flex-wrap gap-4 mt-1 text-sm text-gray-600">
                                     <span className="flex items-center"><CheckCircle className="w-4 h-4 text-emerald-500 mr-1"/> BO: <b>INMEDIATO</b></span>
                                     <span className="flex items-center"><Clock className="w-4 h-4 text-amber-500 mr-1"/> Mesa de Ayuda: <b>24 a 72 hrs hábiles</b></span>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="grid md:grid-cols-2 gap-8">
-                            <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
-                                <div className="bg-indigo-600 px-6 py-4 text-white font-bold flex items-center">
-                                    <ShieldCheck className="w-5 h-5 mr-2 opacity-80"/> Gestiones Directas
+                        {/* Tablero de 3 columnas 100% visible sin scroll interno */}
+                        <div className="grid md:grid-cols-3 gap-5 items-start">
+                            {wikiData.chatPisoGroups.map(group => (
+                                <div key={group.id} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                                    <div className={`${group.headerBg} px-4 py-3.5 text-white font-bold text-sm flex items-center justify-between`}>
+                                        <span>{group.title}</span>
+                                        <span className="bg-white/20 text-white text-xs px-2 py-0.5 rounded-full">{group.items.length}</span>
+                                    </div>
+                                    <div className="divide-y divide-gray-100">
+                                        {group.items.map(item => (
+                                            <div key={item.id} className={`p-3.5 ${group.hoverBg} transition-colors`}>
+                                                <p className="font-bold text-gray-800 text-sm mb-0.5">{item.title}</p>
+                                                <p className="text-xs text-gray-500 leading-relaxed">{item.desc}</p>
+                                            </div>
+                                        ))}
+                                    </div>
                                 </div>
-                                <div className="divide-y divide-gray-100 overflow-y-auto max-h-[500px]">
-                                    {wikiData.chatPisoItems.map(item => (
-                                        <div key={item.id} className="p-4 hover:bg-indigo-50 transition-colors">
-                                            <p className="font-bold text-gray-800 text-sm mb-1">{item.title}</p>
-                                            <p className="text-xs text-gray-500">{item.desc}</p>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                            <div className="flex flex-col gap-6">
-                                <div className="bg-slate-800 text-white rounded-xl p-6">
-                                    <h3 className="font-bold mb-4 flex items-center text-indigo-300"><Clipboard className="w-5 h-5 mr-2"/> Plantilla Chat</h3>
+                            ))}
+                        </div>
+
+                        {/* Plantilla Chat y Botón de Acceso en barra inferior */}
+                        <div className="grid md:grid-cols-3 gap-6 items-stretch">
+                            <div className="md:col-span-2 bg-slate-800 text-white rounded-xl p-6 flex flex-col justify-between">
+                                <div>
+                                    <div className="flex items-center justify-between mb-3">
+                                        <h3 className="font-bold flex items-center text-indigo-300"><Clipboard className="w-5 h-5 mr-2"/> Plantilla Chat</h3>
+                                        <button onClick={copyChatTemplate} className="bg-indigo-500 hover:bg-indigo-400 px-4 py-2 rounded-lg font-bold text-xs flex items-center transition-colors">
+                                            <Copy className="w-4 h-4 mr-1.5"/> Copiar Plantilla
+                                        </button>
+                                    </div>
                                     <div className="bg-slate-900/50 p-4 rounded-lg font-mono text-xs text-gray-300 border border-slate-700 whitespace-pre-wrap leading-loose">
                                         ID: <br/>
                                         Tipo de estudiante: <br/>
@@ -467,11 +504,13 @@
                                         Consulta: <br/>
                                         Soportes: 
                                     </div>
-                                    <button onClick={copyChatTemplate} className="mt-4 w-full bg-indigo-500 hover:bg-indigo-400 py-3 rounded-lg font-bold flex justify-center items-center transition-colors">
-                                        <Copy className="w-4 h-4 mr-2"/> Copiar Plantilla
-                                    </button>
                                 </div>
-                                <a href={wikiData.links.teamsSoporte} target="_blank" className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-4 rounded-lg font-bold flex items-center justify-center shadow-lg transition-transform hover:-translate-y-1"><Send className="w-5 h-5 mr-2"/> Ir al Chat de Piso</a>
+                            </div>
+                            <div className="flex flex-col justify-center bg-white rounded-xl p-6 border border-gray-200 shadow-sm text-center">
+                                <p className="text-sm font-semibold text-gray-700 mb-3">¿Tienes lista la plantilla?</p>
+                                <a href={wikiData.links.teamsSoporte} target="_blank" className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-4 px-4 rounded-lg font-bold flex items-center justify-center shadow-lg transition-transform hover:-translate-y-1">
+                                    <Send className="w-5 h-5 mr-2"/> Ir al Chat de Piso
+                                </a>
                             </div>
                         </div>
                     </div>
